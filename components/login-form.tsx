@@ -1,44 +1,52 @@
 "use client"
 
 import * as React from "react"
-import { zodResolver } from "@hookform/resolvers/zod"
+import { ArrowPathIcon } from "@heroicons/react/24/outline"
 import { useTranslations } from "next-intl"
-import { useForm } from "react-hook-form"
+import type { UseFormReturn } from "react-hook-form"
 
-import { cn } from "@/lib/utils"
+import { ToastAlert } from "@/components/ui/toast-alert"
 import { Button } from "@/components/ui/button"
 import {
   Field,
   FieldDescription,
-  FieldError,
   FieldGroup,
   FieldLabel,
   FieldSeparator,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { createLoginSchema, type LoginFormValues } from "@/lib/validators/login"
+import { cn } from "@/lib/utils"
+import type { LoginFormValues } from "@/lib/schemas/login.schema"
+
+export type WiredLoginFormProps = {
+  form: UseFormReturn<LoginFormValues>
+  onSubmit: (values: LoginFormValues) => Promise<void>
+  isLoading: boolean
+  serverError: string | null
+  clearServerError: () => void
+}
 
 export function LoginForm({
+  form,
+  onSubmit,
+  isLoading,
+  serverError,
+  clearServerError,
   className,
   ...props
-}: React.ComponentProps<"form">) {
+}: WiredLoginFormProps & Omit<React.ComponentProps<"form">, "onSubmit">) {
   const t = useTranslations("Login")
-  const schema = React.useMemo(() => createLoginSchema(t), [t])
-
-  const form = useForm<LoginFormValues>({
-    resolver: zodResolver(schema),
-    defaultValues: { email: "", password: "" },
-  })
-
-  function onSubmit() {
-    // Spring Boot JWT / Google OAuth wired here later
-  }
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = form
 
   return (
     <form
       noValidate
       className={cn("flex flex-col gap-6", className)}
-      onSubmit={form.handleSubmit(onSubmit)}
+      onSubmit={handleSubmit(onSubmit)}
       {...props}
     >
       <FieldGroup>
@@ -46,19 +54,21 @@ export function LoginForm({
           <h1 className="text-2xl font-bold">{t("title")}</h1>
           <p className="text-sm text-balance text-muted-foreground">{t("subtitle")}</p>
         </div>
-        <Field data-invalid={!!form.formState.errors.email}>
-          <FieldLabel htmlFor="email">{t("email")}</FieldLabel>
+        <Field data-invalid={!!errors.username}>
+          <FieldLabel htmlFor="username">{t("username")}</FieldLabel>
           <Input
-            id="email"
-            type="email"
-            placeholder={t("emailPlaceholder")}
-            autoComplete="email"
-            aria-invalid={!!form.formState.errors.email}
-            {...form.register("email")}
+            id="username"
+            type="text"
+            placeholder={t("usernamePlaceholder")}
+            autoComplete="username"
+            aria-invalid={!!errors.username}
+            {...register("username")}
           />
-          <FieldError errors={[form.formState.errors.email]} />
+          {errors.username ? (
+            <p className="mt-1 text-xs text-destructive">{errors.username.message}</p>
+          ) : null}
         </Field>
-        <Field data-invalid={!!form.formState.errors.password}>
+        <Field data-invalid={!!errors.password}>
           <div className="flex items-center">
             <FieldLabel htmlFor="password">{t("password")}</FieldLabel>
             <a
@@ -72,13 +82,29 @@ export function LoginForm({
             id="password"
             type="password"
             autoComplete="current-password"
-            aria-invalid={!!form.formState.errors.password}
-            {...form.register("password")}
+            aria-invalid={!!errors.password}
+            {...register("password")}
           />
-          <FieldError errors={[form.formState.errors.password]} />
+          {errors.password ? (
+            <p className="mt-1 text-xs text-destructive">{errors.password.message}</p>
+          ) : null}
         </Field>
+        {serverError ? (
+          <ToastAlert
+            variant="error"
+            title={serverError}
+            banner
+            onClose={clearServerError}
+          />
+        ) : null}
         <Field>
-          <Button type="submit">{t("submit")}</Button>
+          <Button type="submit" disabled={isLoading} className="w-full">
+            {isLoading ? (
+              <ArrowPathIcon className="size-4 animate-spin" aria-hidden />
+            ) : (
+              t("submit")
+            )}
+          </Button>
         </Field>
         <FieldSeparator>{t("separator")}</FieldSeparator>
         <Field>
