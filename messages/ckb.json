@@ -1,0 +1,100 @@
+{
+  "Brand": {
+    "name": "دەزگای کەلەپوری کورد"
+  },
+  "Home": {
+    "title": "پڕۆژە ئامادەیە!",
+    "line1": "ئێستا دەتوانیت کۆمپۆنێنت زیاد بکەیت و دەست بە دروستکردن بکەیت.",
+    "line2": "دوگمەیەکمان بۆ تۆ بەردەستکردووە.",
+    "demoButton": "دوگمە",
+    "toggleHint": "کلیلی d پەنجە بدە بۆ گۆڕینی ڕووناکی/تاریکی"
+  },
+  "Login": {
+    "title": "چوونەژوورەوە بۆ هەژمارەکەتان",
+    "subtitle": "ئیمەیڵەکەت بنووسە بۆ چوونەژوورەوە بۆ ڕێکخستنی ناوەڕۆک",
+    "email": "ئیمەیڵ",
+    "emailPlaceholder": "brwa@example.com",
+    "password": "وشەی نهێنی",
+    "forgotPassword": "وشەی نهێنیت لەبیرچووە؟",
+    "submit": "چوونەژوورەوە",
+    "separator": "یان بەردەوام بە لەگەڵ",
+    "google": "چوونەژوورەوە لەگەڵ گووگڵ",
+    "noAccount": "هەژمارت نییە؟",
+    "signUp": "تۆمارکردن",
+    "validation": {
+      "emailRequired": "ئیمەیڵ پێویستە.",
+      "emailInvalid": "ئیمەیڵێکی دروست بنووسە.",
+      "passwordRequired": "وشەی نهێنی پێویستە."
+    }
+  },
+  "Sidebar": {
+    "header": {
+      "title": "دەزگای کەلەپوری کورد",
+      "subtitle": "پێشەڕۆ"
+    },
+    "labels": {
+      "platform": "پلاتفۆرم",
+      "projects": "پڕۆژەکان"
+    },
+    "mainNav": {
+      "playground": {
+        "title": "مەیدانی تاقیکردنەوە",
+        "items": {
+          "history": "مێژوو",
+          "starred": "دڵخوازەکان",
+          "settings": "ڕێکخستن"
+        }
+      },
+      "models": {
+        "title": "مۆدێلەکان",
+        "items": {
+          "genesis": "جنێسیس",
+          "explorer": "گەڕان",
+          "quantum": "کوانتۆم"
+        }
+      },
+      "documentation": {
+        "title": "بەڵگەنامەکان",
+        "items": {
+          "introduction": "پێشەکی",
+          "getStarted": "دەستپێکردن",
+          "tutorials": "فێرکاری",
+          "changelog": "گۆڕانکاریەکان"
+        }
+      },
+      "settings": {
+        "title": "ڕێکخستنەکان",
+        "items": {
+          "general": "گشتی",
+          "team": "تیم",
+          "billing": "پارەدان",
+          "limits": "سنورەکان"
+        }
+      }
+    },
+    "secondaryNav": {
+      "support": "پشتگیری",
+      "feedback": "ڕەخنە و پێشنیار"
+    },
+    "projects": {
+      "designEngineering": "ئەندازیاری دیزاین",
+      "salesMarketing": "فرۆشتن و مارکێتینگ",
+      "travel": "گەشتەوەرایەتی",
+      "viewProject": "بینینی پڕۆژە",
+      "shareProject": "هاوبەشکردنی پڕۆژە",
+      "deleteProject": "سڕینەوەی پڕۆژە",
+      "more": "زیاتر"
+    },
+    "a11y": {
+      "toggleSubmenu": "کردنەوەی ژێربەش",
+      "openProjectMenu": "زیاتر"
+    },
+    "user": {
+      "upgradePro": "بەرزکردنەوە بۆ ڤێژنی پڕۆ",
+      "account": "هەژمار",
+      "billing": "پارەدان",
+      "notifications": "ئاگادارکردنەوەکان",
+      "logOut": "دەرچوون"
+    }
+  }
+}

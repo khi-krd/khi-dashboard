@@ -93,3 +93,28 @@ types/                → Global TS types & API response shapes
         lighter red destructive
 - Charts: blue family (--chart-1 to --chart-5) both modes
 - Sidebar matches theme
+
+## Typography
+Three fonts are configured — use each strictly by role:
+
+- Noto Naskh Arabic  → Titles & headings (h1, h2, h3, card titles, page headings)
+- Vazirmatn          → UI text (nav, sidebar, buttons, labels, badges, stats, numbers)
+- Noto Sans Arabic   → Body & subtext (descriptions, subtitles, tooltips, table cells)
+- Geist Mono         → Code blocks only
+
+Font assignment by element:
+- Page title          : Noto Naskh Arabic, weight 600
+- Section heading     : Noto Naskh Arabic, weight 500
+- Card title          : Noto Naskh Arabic, weight 500
+- Nav / sidebar items : Vazirmatn, weight 400
+- Buttons             : Vazirmatn, weight 500
+- Form labels         : Vazirmatn, weight 400
+- Badges / tags       : Vazirmatn, weight 500
+- Stat numbers        : Vazirmatn, weight 600
+- Body / description  : Noto Sans Arabic, weight 400
+- Subtext / muted     : Noto Sans Arabic, weight 400
+- Tooltips            : Noto Sans Arabic, weight 400
+
+Never use a font outside its assigned role.
+Never use Geist Sans or system fonts for Arabic/Kurdish text.
+Always set font-feature-settings and text rendering for Arabic scripts.
