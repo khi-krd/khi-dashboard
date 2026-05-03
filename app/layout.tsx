@@ -4,6 +4,7 @@ import { getMessages } from "next-intl/server"
 
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
+import Providers from "@/app/providers"
 import { notoNaskhArabic, notoSansArabic, vazirmatn } from "@/lib/fonts"
 import { cn } from "@/lib/utils"
 import { Toaster } from "@/components/ui/sonner"
@@ -34,17 +35,19 @@ export default async function RootLayout({
       )}
     >
       <body>
-        <NextIntlClientProvider locale="ckb" messages={messages} timeZone="Asia/Baghdad">
-          <ThemeProvider>{children}</ThemeProvider>
-        </NextIntlClientProvider>
-        <Toaster
-          position="bottom-left"
-          dir="rtl"
-          richColors
-          closeButton
-          duration={4000}
-          theme="system"
-        />
+        <Providers>
+          <NextIntlClientProvider locale="ckb" messages={messages} timeZone="Asia/Baghdad">
+            <ThemeProvider>{children}</ThemeProvider>
+          </NextIntlClientProvider>
+          <Toaster
+            position="bottom-left"
+            dir="rtl"
+            richColors
+            closeButton
+            duration={4000}
+            theme="system"
+          />
+        </Providers>
       </body>
     </html>
   )
