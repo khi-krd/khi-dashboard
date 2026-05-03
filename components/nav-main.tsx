@@ -1,5 +1,7 @@
 "use client"
 
+import * as React from "react"
+import { usePathname } from "next/navigation"
 import { useTranslations } from "next-intl"
 import {
   Collapsible,
@@ -34,49 +36,57 @@ export function NavMain({
     }[]
   }[]
 }) {
+  const pathname = usePathname()
   const t = useTranslations("Sidebar")
   return (
     <SidebarGroup>
       <SidebarGroupLabel>{t("labels.platform")}</SidebarGroupLabel>
       <SidebarMenu>
-        {items.map((item) => (
-          <Collapsible
-            key={item.title}
-            defaultOpen={item.isActive}
-            render={<SidebarMenuItem />}
-          >
-            <SidebarMenuButton
-              tooltip={item.title}
-              render={<a href={item.url} />}
+        {items.map((item) => {
+          const isActive =
+            item.url === "/"
+              ? pathname === "/"
+              : pathname.startsWith(item.url)
+          return (
+            <Collapsible
+              key={item.title}
+              defaultOpen={item.isActive ?? isActive}
+              render={<SidebarMenuItem />}
             >
-              {item.icon}
-              <span>{item.title}</span>
-            </SidebarMenuButton>
-            {item.items?.length ? (
-              <>
-                <CollapsibleTrigger
-                  render={
-                    <SidebarMenuAction className="aria-expanded:rotate-90" />
-                  }
-                >
-                  <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={2} />
-                  <span className="sr-only">{t("a11y.toggleSubmenu")}</span>
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                  <SidebarMenuSub>
-                    {item.items?.map((subItem) => (
-                      <SidebarMenuSubItem key={subItem.title}>
-                        <SidebarMenuSubButton render={<a href={subItem.url} />}>
-                          <span>{subItem.title}</span>
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                    ))}
-                  </SidebarMenuSub>
-                </CollapsibleContent>
-              </>
-            ) : null}
-          </Collapsible>
-        ))}
+              <SidebarMenuButton
+                tooltip={item.title}
+                isActive={isActive}
+                render={<a href={item.url} />}
+              >
+                {item.icon}
+                <span>{item.title}</span>
+              </SidebarMenuButton>
+              {item.items?.length ? (
+                <>
+                  <CollapsibleTrigger
+                    render={
+                      <SidebarMenuAction className="aria-expanded:rotate-90" />
+                    }
+                  >
+                    <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={2} />
+                    <span className="sr-only">{t("a11y.toggleSubmenu")}</span>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <SidebarMenuSub>
+                      {item.items?.map((subItem) => (
+                        <SidebarMenuSubItem key={subItem.title}>
+                          <SidebarMenuSubButton render={<a href={subItem.url} />}>
+                            <span>{subItem.title}</span>
+                          </SidebarMenuSubButton>
+                        </SidebarMenuSubItem>
+                      ))}
+                    </SidebarMenuSub>
+                  </CollapsibleContent>
+                </>
+              ) : null}
+            </Collapsible>
+          )
+        })}
       </SidebarMenu>
     </SidebarGroup>
   )

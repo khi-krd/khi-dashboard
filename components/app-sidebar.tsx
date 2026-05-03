@@ -17,46 +17,77 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { ComputerTerminalIcon, RoboticIcon, BookOpen02Icon, Settings05Icon, ChartRingIcon, SentIcon, CropIcon, PieChartIcon, MapsIcon, CommandIcon } from "@hugeicons/core-free-icons"
+import {
+  AlbumIcon,
+  BookOpen02Icon,
+  Briefcase01Icon,
+  Call02Icon,
+  CommandIcon,
+  CropIcon,
+  DashboardSquare01Icon,
+  FolderKanbanIcon,
+  InformationCircleIcon,
+  MapsIcon,
+  MusicNote01Icon,
+  News01Icon,
+  PieChartIcon,
+  Video02Icon,
+} from "@hugeicons/core-free-icons"
+import { useAuthStore } from "@/store/auth.store"
 
-const navMainConfig = [
+const navMainItems = [
   {
-    titleKey: "playground" as const,
-    url: "#",
-    icon: <HugeiconsIcon icon={ComputerTerminalIcon} strokeWidth={2} />,
-    isActive: true,
-    itemKeys: ["history", "starred", "settings"] as const,
+    title: "داشبۆرد",
+    url: "/",
+    icon: <HugeiconsIcon icon={DashboardSquare01Icon} strokeWidth={2} />,
   },
   {
-    titleKey: "models" as const,
-    url: "#",
-    icon: <HugeiconsIcon icon={RoboticIcon} strokeWidth={2} />,
-    itemKeys: ["genesis", "explorer", "quantum"] as const,
+    title: "هەواڵەکان",
+    url: "/news",
+    icon: <HugeiconsIcon icon={News01Icon} strokeWidth={2} />,
   },
   {
-    titleKey: "documentation" as const,
-    url: "#",
+    title: "پرۆژەکان",
+    url: "/projects",
+    icon: <HugeiconsIcon icon={FolderKanbanIcon} strokeWidth={2} />,
+  },
+  {
+    title: "نووسراوەکان",
+    url: "/writings",
     icon: <HugeiconsIcon icon={BookOpen02Icon} strokeWidth={2} />,
-    itemKeys: ["introduction", "getStarted", "tutorials", "changelog"] as const,
   },
   {
-    titleKey: "settings" as const,
-    url: "#",
-    icon: <HugeiconsIcon icon={Settings05Icon} strokeWidth={2} />,
-    itemKeys: ["general", "team", "billing", "limits"] as const,
+    title: "کۆکراوەی وێنەکان",
+    url: "/images",
+    icon: <HugeiconsIcon icon={AlbumIcon} strokeWidth={2} />,
+  },
+  {
+    title: "ئاوازەکان",
+    url: "/soundtracks",
+    icon: <HugeiconsIcon icon={MusicNote01Icon} strokeWidth={2} />,
+  },
+  {
+    title: "ڤیدیۆکان",
+    url: "/videos",
+    icon: <HugeiconsIcon icon={Video02Icon} strokeWidth={2} />,
   },
 ]
 
-const navSecondaryConfig = [
+const navSecondaryItems = [
   {
-    titleKey: "support" as const,
-    url: "#",
-    icon: <HugeiconsIcon icon={ChartRingIcon} strokeWidth={2} />,
+    title: "دەربارە",
+    url: "/about",
+    icon: <HugeiconsIcon icon={InformationCircleIcon} strokeWidth={2} />,
   },
   {
-    titleKey: "feedback" as const,
-    url: "#",
-    icon: <HugeiconsIcon icon={SentIcon} strokeWidth={2} />,
+    title: "خزمەتگوزاری",
+    url: "/service",
+    icon: <HugeiconsIcon icon={Briefcase01Icon} strokeWidth={2} />,
+  },
+  {
+    title: "پەیوەندی",
+    url: "/contact",
+    icon: <HugeiconsIcon icon={Call02Icon} strokeWidth={2} />,
   },
 ]
 
@@ -80,28 +111,24 @@ const projectsConfig = [
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const t = useTranslations("Sidebar")
+  const authUser = useAuthStore((s) => s.user)
+
+  const avatarSrc =
+    authUser?.imageUrl?.trim() || authUser?.profileImage?.trim() || ""
+
+  const sidebarUser = {
+    name:
+      authUser?.name?.trim() ||
+      authUser?.username?.trim() ||
+      "بەکارهێنەر",
+    email: authUser?.email?.trim() || "",
+    avatar: avatarSrc,
+  }
 
   const data = {
-    user: {
-      name: "shadcn",
-      email: "m@example.com",
-      avatar: "/avatars/shadcn.jpg",
-    },
-    navMain: navMainConfig.map((item) => ({
-      title: t(`mainNav.${item.titleKey}.title`),
-      url: item.url,
-      icon: item.icon,
-      isActive: item.isActive,
-      items: item.itemKeys.map((key) => ({
-        title: t(`mainNav.${item.titleKey}.items.${key}`),
-        url: "#",
-      })),
-    })),
-    navSecondary: navSecondaryConfig.map((item) => ({
-      title: t(`secondaryNav.${item.titleKey}`),
-      url: item.url,
-      icon: item.icon,
-    })),
+    user: sidebarUser,
+    navMain: navMainItems,
+    navSecondary: navSecondaryItems,
     projects: projectsConfig.map((p) => ({
       name: t(`projects.${p.nameKey}`),
       url: p.url,

@@ -1,6 +1,8 @@
 "use client"
 
 import { useTranslations } from "next-intl"
+
+import { useLogout } from "@/hooks/use-logout"
 import {
   Avatar,
   AvatarFallback,
@@ -35,7 +37,13 @@ export function NavUser({
 }) {
   const t = useTranslations("Sidebar")
   const { isMobile } = useSidebar()
-  const initials = user.name.slice(0, 2).toUpperCase()
+  const { handleLogout } = useLogout()
+  const initialsSource =
+    user.name.trim().length > 0 ? user.name.trim() : user.email.trim()
+  const initials =
+    initialsSource.length > 0
+      ? initialsSource.slice(0, 2).toUpperCase()
+      : "؟"
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -98,7 +106,11 @@ export function NavUser({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => {
+                void handleLogout()
+              }}
+            >
               <HugeiconsIcon icon={LogoutIcon} strokeWidth={2} />
               {t("user.logOut")}
             </DropdownMenuItem>

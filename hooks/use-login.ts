@@ -72,7 +72,7 @@ export function useLogin() {
         const user = await getMe()
         useAuthStore.getState().setUser(user)
 
-        router.push("/dashboard")
+        router.push("/")
       } catch (error: unknown) {
         if (isAxiosError(error) && error.response) {
           const status = error.response.status

@@ -22,7 +22,7 @@ export function middleware(request: NextRequest) {
   const hasSessionCookie = Boolean(token)
 
   if (hasSessionCookie && PUBLIC_PATHS.includes(pathname)) {
-    return NextResponse.redirect(new URL("/dashboard", request.url))
+    return NextResponse.redirect(new URL("/", request.url))
   }
 
   if (!hasSessionCookie && !PUBLIC_PATHS.includes(pathname)) {
