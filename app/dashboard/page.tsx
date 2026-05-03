@@ -1,3 +1,5 @@
+import { ThemeToggleButton } from "@/components/examples/c-button-43"
+import { FullscreenToggleButton } from "@/components/fullscreen-toggle-button"
 import { AppSidebar } from "@/components/app-sidebar"
 import {
   Breadcrumb,
@@ -19,8 +21,8 @@ export default function Page() {
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2">
-          <div className="flex items-center gap-2 px-4">
+        <header className="flex h-16 shrink-0 items-center gap-2 px-4">
+          <div className="flex min-w-0 flex-1 items-center gap-2">
             <SidebarTrigger className="-ms-1" />
             <Separator
               orientation="vertical"
@@ -39,6 +41,10 @@ export default function Page() {
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
+          </div>
+          <div className="flex shrink-0 items-center gap-2">
+            <ThemeToggleButton />
+            <FullscreenToggleButton />
           </div>
         </header>
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
