@@ -17,17 +17,14 @@ import {
 } from "@/components/ui/sidebar"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
-  AlbumIcon,
-  BookOpen02Icon,
   Briefcase01Icon,
   Call02Icon,
+  CollectionsBookmarkIcon,
   CommandIcon,
   DashboardSquare01Icon,
   FolderKanbanIcon,
   InformationCircleIcon,
-  MusicNote01Icon,
   News01Icon,
-  Video02Icon,
 } from "@hugeicons/core-free-icons"
 import { useAuthStore } from "@/store/auth.store"
 
@@ -53,24 +50,29 @@ const navMainItems = [
     icon: <HugeiconsIcon icon={Briefcase01Icon} strokeWidth={2} />,
   },
   {
-    title: "نووسراوەکان",
-    url: "/dashboard/writings",
-    icon: <HugeiconsIcon icon={BookOpen02Icon} strokeWidth={2} />,
-  },
-  {
-    title: "کۆکراوەی وێنەکان",
-    url: "/dashboard/images",
-    icon: <HugeiconsIcon icon={AlbumIcon} strokeWidth={2} />,
-  },
-  {
-    title: "ئاوازەکان",
-    url: "/dashboard/soundtracks",
-    icon: <HugeiconsIcon icon={MusicNote01Icon} strokeWidth={2} />,
-  },
-  {
-    title: "ڤیدیۆکان",
-    url: "/dashboard/videos",
-    icon: <HugeiconsIcon icon={Video02Icon} strokeWidth={2} />,
+    title: "بڵاوکراوەکان",
+    url: "#",
+    icon: (
+      <HugeiconsIcon icon={CollectionsBookmarkIcon} strokeWidth={2} />
+    ),
+    items: [
+      {
+        title: "ڤیدیۆکان",
+        url: "/dashboard/videos",
+      },
+      {
+        title: "دەنگەکان",
+        url: "/dashboard/soundtracks",
+      },
+      {
+        title: "کۆمەڵە وێنەکان",
+        url: "/dashboard/images",
+      },
+      {
+        title: "نووسراوەکان",
+        url: "/dashboard/writings",
+      },
+    ],
   },
 ]
 
