@@ -1,9 +1,5 @@
-export default function ServicePage() {
-  return (
-    <div className="flex min-h-[60vh] items-center justify-center">
-      <p className="text-sm text-muted-foreground">
-        خزمەتگوزاری — بەزووی دێت
-      </p>
-    </div>
-  )
+import { redirect } from "next/navigation"
+
+export default function LegacyServicePage() {
+  redirect("/dashboard/services")
 }

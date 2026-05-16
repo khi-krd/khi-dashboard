@@ -48,6 +48,11 @@ const navMainItems = [
     icon: <HugeiconsIcon icon={FolderKanbanIcon} strokeWidth={2} />,
   },
   {
+    title: "خزمەتگوزارییەکان",
+    url: "/dashboard/services",
+    icon: <HugeiconsIcon icon={Briefcase01Icon} strokeWidth={2} />,
+  },
+  {
     title: "نووسراوەکان",
     url: "/dashboard/writings",
     icon: <HugeiconsIcon icon={BookOpen02Icon} strokeWidth={2} />,
@@ -74,11 +79,6 @@ const navSecondaryItems = [
     title: "دەربارە",
     url: "/dashboard/about",
     icon: <HugeiconsIcon icon={InformationCircleIcon} strokeWidth={2} />,
-  },
-  {
-    title: "خزمەتگوزاری",
-    url: "/dashboard/service",
-    icon: <HugeiconsIcon icon={Briefcase01Icon} strokeWidth={2} />,
   },
   {
     title: "پەیوەندی",

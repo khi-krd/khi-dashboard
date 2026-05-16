@@ -20,6 +20,7 @@ const SEGMENT_LABELS: Record<string, string> = {
   new: "هەواڵی نوێ",
   edit: "دەستکاری هەواڵ",
   projects: "پرۆژەکان",
+  services: "خزمەتگوزارییەکان",
   writings: "نووسراوەکان",
   images: "کۆکراوەی وێنەکان",
   soundtracks: "ئاوازەکان",
@@ -43,6 +44,10 @@ export function DashboardBreadcrumbs() {
   }
 
   if (pathname.startsWith("/dashboard/projects")) {
+    return null
+  }
+
+  if (pathname.startsWith("/dashboard/services")) {
     return null
   }
 
