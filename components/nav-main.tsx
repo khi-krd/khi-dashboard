@@ -44,8 +44,8 @@ export function NavMain({
       <SidebarMenu>
         {items.map((item) => {
           const isActive =
-            item.url === "/"
-              ? pathname === "/"
+            item.url === "/dashboard"
+              ? pathname === "/dashboard"
               : pathname.startsWith(item.url)
           return (
             <Collapsible

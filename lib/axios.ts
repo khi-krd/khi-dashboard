@@ -29,6 +29,10 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
+    // Defaults set application/json — that breaks multipart: server never sees boundary.
+    if (typeof FormData !== "undefined" && config.data instanceof FormData) {
+      config.headers.delete("Content-Type")
+    }
     return config
   },
   (error: unknown) => Promise.reject(error),
@@ -43,6 +47,11 @@ api.interceptors.response.use(
       if (!isLoginAttempt) {
         useAuthStore.getState().clearAuth()
         if (typeof window !== "undefined") {
+          void import("sonner").then(({ toast }) => {
+            toast.error("ناچار بوویتە دیسان بچیتە ژوورەوە", {
+              duration: 2800,
+            })
+          })
           void fetch("/api/auth/session", { method: "DELETE" }).catch(() => {
             /* ignore */
           })

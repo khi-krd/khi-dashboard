@@ -38,37 +38,37 @@ import { useAuthStore } from "@/store/auth.store"
 const navMainItems = [
   {
     title: "داشبۆرد",
-    url: "/",
+    url: "/dashboard",
     icon: <HugeiconsIcon icon={DashboardSquare01Icon} strokeWidth={2} />,
   },
   {
     title: "هەواڵەکان",
-    url: "/news",
+    url: "/dashboard/news",
     icon: <HugeiconsIcon icon={News01Icon} strokeWidth={2} />,
   },
   {
     title: "پرۆژەکان",
-    url: "/projects",
+    url: "/dashboard/projects",
     icon: <HugeiconsIcon icon={FolderKanbanIcon} strokeWidth={2} />,
   },
   {
     title: "نووسراوەکان",
-    url: "/writings",
+    url: "/dashboard/writings",
     icon: <HugeiconsIcon icon={BookOpen02Icon} strokeWidth={2} />,
   },
   {
     title: "کۆکراوەی وێنەکان",
-    url: "/images",
+    url: "/dashboard/images",
     icon: <HugeiconsIcon icon={AlbumIcon} strokeWidth={2} />,
   },
   {
     title: "ئاوازەکان",
-    url: "/soundtracks",
+    url: "/dashboard/soundtracks",
     icon: <HugeiconsIcon icon={MusicNote01Icon} strokeWidth={2} />,
   },
   {
     title: "ڤیدیۆکان",
-    url: "/videos",
+    url: "/dashboard/videos",
     icon: <HugeiconsIcon icon={Video02Icon} strokeWidth={2} />,
   },
 ]
@@ -76,17 +76,17 @@ const navMainItems = [
 const navSecondaryItems = [
   {
     title: "دەربارە",
-    url: "/about",
+    url: "/dashboard/about",
     icon: <HugeiconsIcon icon={InformationCircleIcon} strokeWidth={2} />,
   },
   {
     title: "خزمەتگوزاری",
-    url: "/service",
+    url: "/dashboard/service",
     icon: <HugeiconsIcon icon={Briefcase01Icon} strokeWidth={2} />,
   },
   {
     title: "پەیوەندی",
-    url: "/contact",
+    url: "/dashboard/contact",
     icon: <HugeiconsIcon icon={Call02Icon} strokeWidth={2} />,
   },
 ]

@@ -1,11 +1,28 @@
 import api from "@/lib/axios"
+import { normalizeNewsDto } from "@/lib/news-media-normalize"
 import type {
   ApiResponse,
   NewsListResponse,
   NewsSingleResponse,
-} from "@/src/types/news"
+} from "@/types/news"
 
 const BASE = "/api/v1/news"
+
+function normalizedList(resp: NewsListResponse): NewsListResponse {
+  if (!resp.success || !resp.data?.content) return resp
+  return {
+    ...resp,
+    data: {
+      ...resp.data,
+      content: resp.data.content.map(normalizeNewsDto),
+    },
+  }
+}
+
+function normalizedSingle(resp: NewsSingleResponse): NewsSingleResponse {
+  if (!resp.success || !resp.data) return resp
+  return { ...resp, data: normalizeNewsDto(resp.data) }
+}
 
 export async function getNewsList(
   page: number,
@@ -14,23 +31,27 @@ export async function getNewsList(
   const { data } = await api.get<NewsListResponse>(BASE, {
     params: { page, size },
   })
-  return data
+  return normalizedList(data)
 }
 
 export async function getNewsById(id: number): Promise<NewsSingleResponse> {
   const { data } = await api.get<NewsSingleResponse>(`${BASE}/${id}`)
-  return data
+  return normalizedSingle(data)
 }
 
 export async function searchNews(
-  query: string,
+  keyword: string,
   page: number,
   size: number,
 ): Promise<NewsListResponse> {
   const { data } = await api.get<NewsListResponse>(`${BASE}/search`, {
-    params: { query, page, size },
+    params: { keyword, page, size },
   })
-  return data
+  return normalizedList(data)
+}
+
+export async function bulkDeleteNews(ids: number[]): Promise<void> {
+  await Promise.all(ids.map((id) => deleteNews(id)))
 }
 
 export async function createNews(
@@ -40,7 +61,7 @@ export async function createNews(
     `${BASE}/with-files`,
     formData,
   )
-  return data
+  return normalizedSingle(data)
 }
 
 export async function updateNews(
@@ -51,7 +72,7 @@ export async function updateNews(
     `${BASE}/${id}/with-files`,
     formData,
   )
-  return data
+  return normalizedSingle(data)
 }
 
 export async function deleteNews(id: number): Promise<ApiResponse<null>> {

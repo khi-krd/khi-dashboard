@@ -13,9 +13,12 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 
-/** Kurdish labels for first path segment — matches sidebar module routes. */
+/** Kurdish labels for path segments under /dashboard. */
 const SEGMENT_LABELS: Record<string, string> = {
+  dashboard: "داشبۆرد",
   news: "هەواڵەکان",
+  new: "هەواڵی نوێ",
+  edit: "دەستکاری هەواڵ",
   projects: "پرۆژەکان",
   writings: "نووسراوەکان",
   images: "کۆکراوەی وێنەکان",
@@ -28,23 +31,28 @@ const SEGMENT_LABELS: Record<string, string> = {
 
 function labelForSegment(segment: string): string {
   const decoded = decodeURIComponent(segment)
+  if (/^\d+$/.test(decoded)) return `#${decoded}`
   return SEGMENT_LABELS[decoded] ?? decoded
 }
 
 export function DashboardBreadcrumbs() {
   const pathname = usePathname()
-  const segments = pathname.split("/").filter(Boolean)
 
-  const crumbs: { href: string; label: string }[] =
-    segments.length === 0
-      ? [{ href: "/", label: "داشبۆرد" }]
-      : [
-          { href: "/", label: "داشبۆرد" },
-          ...segments.map((seg, i) => ({
-            href: `/${segments.slice(0, i + 1).join("/")}`,
-            label: labelForSegment(seg),
-          })),
-        ]
+  if (pathname.startsWith("/dashboard/news")) {
+    return null
+  }
+
+  const segments = pathname.split("/").filter(Boolean)
+  const tail =
+    segments[0] === "dashboard" ? segments.slice(1) : segments
+
+  const crumbs: { href: string; label: string }[] = [
+    { href: "/dashboard", label: "داشبۆرد" },
+    ...tail.map((seg, i) => ({
+      href: `/dashboard/${tail.slice(0, i + 1).join("/")}`,
+      label: labelForSegment(seg),
+    })),
+  ]
 
   return (
     <Breadcrumb>
