@@ -4,7 +4,6 @@ import * as React from "react"
 import { useTranslations } from "next-intl"
 
 import { NavMain } from "@/components/nav-main"
-import { NavProjects } from "@/components/nav-projects"
 import { NavSecondary } from "@/components/nav-secondary"
 import { NavUser } from "@/components/nav-user"
 import {
@@ -23,14 +22,11 @@ import {
   Briefcase01Icon,
   Call02Icon,
   CommandIcon,
-  CropIcon,
   DashboardSquare01Icon,
   FolderKanbanIcon,
   InformationCircleIcon,
-  MapsIcon,
   MusicNote01Icon,
   News01Icon,
-  PieChartIcon,
   Video02Icon,
 } from "@hugeicons/core-free-icons"
 import { useAuthStore } from "@/store/auth.store"
@@ -91,24 +87,6 @@ const navSecondaryItems = [
   },
 ]
 
-const projectsConfig = [
-  {
-    nameKey: "designEngineering" as const,
-    url: "#",
-    icon: <HugeiconsIcon icon={CropIcon} strokeWidth={2} />,
-  },
-  {
-    nameKey: "salesMarketing" as const,
-    url: "#",
-    icon: <HugeiconsIcon icon={PieChartIcon} strokeWidth={2} />,
-  },
-  {
-    nameKey: "travel" as const,
-    url: "#",
-    icon: <HugeiconsIcon icon={MapsIcon} strokeWidth={2} />,
-  },
-]
-
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const t = useTranslations("Sidebar")
   const authUser = useAuthStore((s) => s.user)
@@ -129,11 +107,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     user: sidebarUser,
     navMain: navMainItems,
     navSecondary: navSecondaryItems,
-    projects: projectsConfig.map((p) => ({
-      name: t(`projects.${p.nameKey}`),
-      url: p.url,
-      icon: p.icon,
-    })),
   }
 
   return (
@@ -155,7 +128,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>

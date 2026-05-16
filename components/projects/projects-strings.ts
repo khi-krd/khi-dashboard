@@ -1,0 +1,180 @@
+/** Central CKB copy for the projects module (verbatim from spec §10). */
+
+export const NS = {
+  dash: "—",
+  error: {
+    generic: "هەڵەیەک ڕوویدا. دووبارە هەوڵبدەرەوە.",
+    retry: "دووبارە هەوڵبدەرەوە",
+  },
+  page: {
+    title: "پڕۆژەکان",
+    subtitle: "بەڕێوەبردن و چاودێریکردنی هەموو پڕۆژەکانی دەزگا",
+  },
+  breadcrumb: {
+    dashboard: "داشبۆرد",
+    projects: "پڕۆژەکان",
+    new: "پڕۆژەی نوێ",
+    edit: "دەستکاری پڕۆژە",
+  },
+  action: {
+    new: "پڕۆژەی نوێ",
+    view: "بینین",
+    edit: "دەستکاری",
+    delete: "سڕینەوە",
+    back: "گەڕانەوە",
+    save: "پاشەکەوتکردن",
+    saving: "پاشەکەوتکردن…",
+    cancel: "هەڵوەشاندنەوە",
+    change: "گۆڕین",
+    reset_filters: "پاککردنەوەی فلتەرەکان",
+    add_link: "زیادکردنی لینکی دەرەکی",
+    add_file: "بارکردنی فایل",
+    add_media: "زیادکردنی میدیا",
+    add_type: "زیادکردنی جۆری نوێ",
+    add: "زیادکردن",
+    use_url_instead: "یان لینکی URL بەکاربهێنە",
+    embed_helper: "خۆکار وەربگرە لە YouTube/Vimeo",
+    copy_url: "لەبەرگرتنەوەی ناونیشانی URL",
+    share: "هاوبەشکردن",
+    view_on_site: "بینین لە سایت",
+    remove_cover: "سڕینەوە",
+  },
+  filter: {
+    search_placeholder: "گەڕان لە ناونیشان، تاگ، یان کلیلەوشە",
+    all_statuses: "هەموو دۆخەکان",
+    all_languages: "هەموو زمانەکان",
+    all_types: "هەموو جۆرەکان",
+    lang_ckb_only: "تەنیا سۆرانی",
+    lang_kmr_only: "تەنیا کورمانجی",
+    lang_both: "هەردووکیان",
+  },
+  status: {
+    ongoing: "بەردەوام",
+    completed: "تەواو",
+    draft_new: "ڕەشنووسی نوێ",
+  },
+  col: {
+    cover: "ڕووکار",
+    title: "ناونیشان",
+    type: "جۆر",
+    status: "دۆخ",
+    location: "شوێن",
+    languages: "زمانەکان",
+    date: "بەروار",
+    media: "میدیا",
+    actions: "کردارەکان",
+  },
+  section: {
+    languages: "زمانەکان",
+    type: "جۆری پڕۆژە",
+    schedule: "بەروار",
+    classification: "پۆلبەندی",
+    location: "شوێن",
+    contents: "ناوەرۆکەکان",
+    tags: "تاگەکان",
+    keywords: "کلیلەوشەکان",
+    media: "میدیا",
+    system: "زانیاری سیستەم",
+    actions: "کردارەکان",
+    dates: "بەروارەکان",
+  },
+  field: {
+    title_ckb: "ناونیشانی پڕۆژە بە سۆرانی…",
+    title_kmr: "Sernavê projeyê bi Kurmancî…",
+    body_ckb: "وەسفی پڕۆژەکەت لێرە بنووسە…",
+    body_kmr: "Vekolîna projeya xwe li vir binivîse…",
+    location_ckb: "شوێن یان ناوچە…",
+    location_kmr: "Cih an navçe…",
+    type_helper: "بۆ نموونە: توێژینەوە، دۆکیومینتاری، فیستیڤاڵ…",
+    schedule_helper: "بەرواری دەستپێکردن یان ئەنجامدانی پڕۆژە",
+    caption: "نووسە",
+    caption_placeholder: "نووسەی میدیا…",
+    tag_helper: "Enter یان `,` بۆ زیادکردن",
+    cover_drop: "وێنە و فایلەکانت دابنێ یان کلیک بکە بۆ هەڵبژاردن",
+    cover_helper: "PNG، JPEG، WEBP · زۆرترین قەبارە ٥ MB",
+    media_helper: "وێنە، ڤیدیۆ، دەنگ، PDF و بەڵگەنامە پشتگیریکراون",
+    caption_add: "زیادکردنی نووسە…",
+  },
+  list: {
+    totalCount: (count: string) => `کۆی ${count} پڕۆژە`,
+    paginationRange: (from: string, to: string, total: string) =>
+      `ڕیزی ${from}–${to} لە ${total}`,
+  },
+  lang: {
+    ckb: "سۆرانی",
+    kmr: "کورمانجی",
+    ckbShort: "CKB",
+    kmrShort: "KMR",
+  },
+  empty: {
+    no_projects: {
+      title: "هیچ پڕۆژەیەک نییە",
+      subtitle: "یەکەم پڕۆژەی خۆت دروست بکە بۆ دەستپێکردن",
+    },
+    no_results: {
+      title: "هیچ ئەنجامێک نەدۆزرایەوە",
+      subtitle: "هەوڵبدە کلیلەوشە یان فلتەرەکانت بگۆڕیت",
+      cta: "پاککردنەوەی فلتەرەکان",
+    },
+    no_cover: "بێ وێنەی ڕووکار",
+    no_body: "وەسف بۆ ئەم زمانە بەردەست نییە.",
+    no_media: "هیچ میدیایەک نییە",
+  },
+  not_found: {
+    title: "پڕۆژە نەدۆزرایەوە",
+    cta: "گەڕانەوە بۆ لیست",
+  },
+  toast: {
+    created: "پڕۆژە بەسەرکەوتوویی دروستکرا",
+    updated: "پڕۆژە بەسەرکەوتوویی نوێکرایەوە",
+    saved: "پڕۆژە بەسەرکەوتوویی پاشەکەوتکرا",
+    deleted: "پڕۆژە سڕایەوە",
+    copied: "لەبەرگیرایەوە",
+    view_action: "بینین",
+  },
+  dialog: {
+    delete: {
+      title: "سڕینەوەی ئەم پڕۆژەیە؟",
+      body: "ئەم کردارە ناتوانرێت بگەڕێندرێتەوە. پڕۆژەکە بەو هەموو میدیا و ناوەڕۆکەکانییەوە بۆ هەمیشە دەسڕێتەوە.",
+    },
+  },
+  unsaved: {
+    indicator: "گۆڕانکارییە پاشەکەوتنەکراوەکان",
+  },
+  help: {
+    save_requirements:
+      "بۆ پاشەکەوتکردن: لانیکەم زمانێک، ناونیشان و وێنەی ڕووکار پێویستن.",
+  },
+  system: {
+    id: "ناسنامە",
+    created_at: "دروستکراوە",
+    updated_at: "نوێکراوەتەوە",
+    created_by: "دروستکراوە لەلایەن",
+    updated_by: "نوێکراوەتەوە لەلایەن",
+    project_date: "بەرواری پڕۆژە",
+  },
+  validation: {
+    languageRequired: "لانیکەم زمانێک پێویستە.",
+    coverRequired: "پێویستە وێنەی ڕووکار دیاری بکرێت یان لینکێک بدرێت.",
+    typeBothLanguages: "ئەگەر جۆر دیاری دەکەیت، هەردوو زمان پڕ بکەرەوە.",
+    titleCkbRequired: "ناونیشانی سۆرانی پێویستە",
+    titleKmrRequired: "ناونیشانی کرمانجی پێویستە",
+    titleMax: "ناونیشان دەبێت ٢٥٥ پیت یان کەمتر بێت",
+    locationMax: "شوێن دەبێت ٢٥٥ پیت یان کەمتر بێت",
+    captionMax: "نووسە دەبێت ٢٥٥ پیت یان کەمتر بێت",
+    mediaUrlRequired: "لینک یان فایل بۆ ئەم میدیا پێویستە",
+    generic: "داواکارییەکە هەڵەی هەیە — تکایە خانەکان بپشکنە.",
+  },
+  media: {
+    audio: "دەنگ",
+    pdf: "PDF",
+    document: "بەڵگەنامە",
+    section_count: (n: string) => `میدیا (${n})`,
+  },
+} as const
+
+export function truncateTitle(s: string, max = 40) {
+  const t = s.trim()
+  if (t.length <= max) return t
+  return `${t.slice(0, max)}…`
+}

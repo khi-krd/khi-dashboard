@@ -2,14 +2,61 @@
 
 function relativeTimeFormatter(): Intl.RelativeTimeFormat {
   try {
-    return new Intl.RelativeTimeFormat("ckb-IQ", { numeric: "auto" })
+    return new Intl.RelativeTimeFormat("ckb-IQ", { numeric: "always" })
   } catch {
     try {
-      return new Intl.RelativeTimeFormat("ku", { numeric: "auto" })
+      return new Intl.RelativeTimeFormat("ku", { numeric: "always" })
     } catch {
-      return new Intl.RelativeTimeFormat("ar", { numeric: "auto" })
+      return new Intl.RelativeTimeFormat("ar", { numeric: "always" })
     }
   }
+}
+
+function hasArabicScript(s: string) {
+  return /[\u0600-\u06FF\u0750-\u077F]/.test(s)
+}
+
+/** English / token fallbacks when `Intl` has no Sorani strings. */
+function formatRelativeTimeKuFallback(
+  value: number,
+  unit: Intl.RelativeTimeFormatUnit,
+): string {
+  const abs = Math.abs(value)
+  const past = value < 0
+  const ago = past ? " لەمەوبەر" : " لە دوای ئێستا"
+
+  const unitLabel: Partial<Record<Intl.RelativeTimeFormatUnit, [string, string]>> = {
+    second: ["چرکە", "چرکە"],
+    minute: ["خولەک", "خولەک"],
+    hour: ["کاتژمێر", "کاتژمێر"],
+    day: ["ڕۆژ", "ڕۆژ"],
+    week: ["هەفتە", "هەفتە"],
+    month: ["مانگ", "مانگ"],
+    quarter: ["چارەک", "چارەک"],
+    year: ["ساڵ", "ساڵ"],
+  }
+
+  if (unit === "month" && past && abs === 1) return "مانگی ڕابردوو"
+  if (unit === "year" && past && abs === 1) return "ساڵی ڕابردوو"
+  if (unit === "day" && past && abs === 1) return "دوێنێ"
+  if (unit === "week" && past && abs === 1) return "هەفتەی ڕابردوو"
+
+  const [one, many] = unitLabel[unit] ?? ["", ""]
+  const label = abs === 1 ? one : many
+  return `${abs} ${label}${ago}`
+}
+
+function formatRelativeUnit(
+  rtf: Intl.RelativeTimeFormat,
+  value: number,
+  unit: Intl.RelativeTimeFormatUnit,
+): string {
+  const formatted = rtf.format(value, unit)
+  if (hasArabicScript(formatted)) return formatted
+  if (/^[a-z0-9_\s-]+$/i.test(formatted)) {
+    return formatRelativeTimeKuFallback(value, unit)
+  }
+  return formatted
 }
 
 /** `dateIso` relative to now (`Intl.RelativeTimeFormat`). */
@@ -29,18 +76,18 @@ export function formatRelativeTimeKu(dateIso: string): string {
 
   const rtf = relativeTimeFormatter()
 
-  if (abs < MIN) return rtf.format(deltaSec, "second")
+  if (abs < MIN) return formatRelativeUnit(rtf, deltaSec, "second")
   if (abs < HOUR)
-    return rtf.format(Math.trunc(deltaSec / MIN), "minute")
+    return formatRelativeUnit(rtf, Math.trunc(deltaSec / MIN), "minute")
   if (abs < DAY)
-    return rtf.format(Math.trunc(deltaSec / HOUR), "hour")
+    return formatRelativeUnit(rtf, Math.trunc(deltaSec / HOUR), "hour")
   if (abs < WEEK)
-    return rtf.format(Math.trunc(deltaSec / DAY), "day")
+    return formatRelativeUnit(rtf, Math.trunc(deltaSec / DAY), "day")
   if (abs < MONTH)
-    return rtf.format(Math.trunc(deltaSec / WEEK), "week")
+    return formatRelativeUnit(rtf, Math.trunc(deltaSec / WEEK), "week")
   if (abs < YEAR)
-    return rtf.format(Math.trunc(deltaSec / MONTH), "month")
-  return rtf.format(Math.trunc(deltaSec / YEAR), "year")
+    return formatRelativeUnit(rtf, Math.trunc(deltaSec / MONTH), "month")
+  return formatRelativeUnit(rtf, Math.trunc(deltaSec / YEAR), "year")
 }
 
 export function formatFullTimestampKu(dateIso: string): string {
