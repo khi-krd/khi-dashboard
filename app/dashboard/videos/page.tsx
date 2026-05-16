@@ -1,9 +1,5 @@
+import { VideosListClient } from "@/components/videos/videos-list-client"
+
 export default function VideosPage() {
-  return (
-    <div className="flex min-h-[60vh] items-center justify-center">
-      <p className="text-sm text-muted-foreground">
-        ڤیدیۆکان — بەزووی دێت
-      </p>
-    </div>
-  )
+  return <VideosListClient />
 }

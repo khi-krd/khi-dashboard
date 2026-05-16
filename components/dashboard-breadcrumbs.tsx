@@ -47,6 +47,10 @@ export function DashboardBreadcrumbs() {
     return null
   }
 
+  if (pathname.startsWith("/dashboard/videos")) {
+    return null
+  }
+
   if (pathname.startsWith("/dashboard/services")) {
     return null
   }
