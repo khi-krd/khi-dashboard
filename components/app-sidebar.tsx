@@ -62,11 +62,11 @@ const navMainItems = [
       },
       {
         title: "دەنگەکان",
-        url: "/dashboard/soundtracks",
+        url: "/dashboard/sounds",
       },
       {
         title: "کۆمەڵە وێنەکان",
-        url: "/dashboard/images",
+        url: "/dashboard/image-collections",
       },
       {
         title: "نووسراوەکان",

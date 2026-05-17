@@ -3,6 +3,7 @@ import { getLocale, getMessages } from "next-intl/server"
 import type { ReactNode } from "react"
 
 import { AppSidebar } from "@/components/app-sidebar"
+import { DashboardSoundPlayer } from "@/components/sounds/dashboard-sound-player"
 import { DashboardBreadcrumbs } from "@/components/dashboard-breadcrumbs"
 import { ThemeToggleButton } from "@/components/examples/c-button-43"
 import { FullscreenToggleButton } from "@/components/fullscreen-toggle-button"
@@ -40,7 +41,10 @@ export default async function DashboardLayout({
               <FullscreenToggleButton />
             </div>
           </header>
-          <div className="flex flex-1 flex-col gap-4 p-4 pt-0">{children}</div>
+          <div className="flex flex-1 flex-col gap-4 p-4 pt-0 pb-24">
+            {children}
+            <DashboardSoundPlayer />
+          </div>
         </SidebarInset>
       </SidebarProvider>
     </NextIntlClientProvider>

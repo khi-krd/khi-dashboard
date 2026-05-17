@@ -46,6 +46,16 @@ function formatRelativeTimeKuFallback(
   return `${abs} ${label}${ago}`
 }
 
+/** ICU / English fallbacks like `1 m-`, `last month`, `in 1 mo.` */
+function isBrokenRelativeString(s: string): boolean {
+  const t = s.trim()
+  if (/last\s+month/i.test(t)) return true
+  if (/^\d+\s*m-?$/i.test(t)) return true
+  if (/^\d+\s*mo\.?$/i.test(t)) return true
+  if (/month/i.test(t) && !hasArabicScript(t)) return true
+  return false
+}
+
 function formatRelativeUnit(
   rtf: Intl.RelativeTimeFormat,
   value: number,
@@ -53,7 +63,7 @@ function formatRelativeUnit(
 ): string {
   const formatted = rtf.format(value, unit)
   if (hasArabicScript(formatted)) return formatted
-  if (/^[a-z0-9_\s-]+$/i.test(formatted)) {
+  if (isBrokenRelativeString(formatted) || /^[a-z0-9_\s.-]+$/i.test(formatted)) {
     return formatRelativeTimeKuFallback(value, unit)
   }
   return formatted

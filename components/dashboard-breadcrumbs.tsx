@@ -17,13 +17,17 @@ import {
 const SEGMENT_LABELS: Record<string, string> = {
   dashboard: "داشبۆرد",
   news: "هەواڵەکان",
-  new: "هەواڵی نوێ",
-  edit: "دەستکاری هەواڵ",
+  new: "نوێ",
+  edit: "دەستکاری",
   projects: "پرۆژەکان",
   services: "خزمەتگوزارییەکان",
   writings: "نووسراوەکان",
+  topics: "بابەتەکان",
+  series: "زنجیرەکان",
   images: "کۆکراوەی وێنەکان",
+  "image-collections": "کۆکراوەی وێنەکان",
   soundtracks: "ئاوازەکان",
+  sounds: "دەنگەکان",
   videos: "ڤیدیۆکان",
   about: "دەربارە",
   service: "خزمەتگوزاری",
@@ -52,6 +56,22 @@ export function DashboardBreadcrumbs() {
   }
 
   if (pathname.startsWith("/dashboard/services")) {
+    return null
+  }
+
+  if (pathname.startsWith("/dashboard/sounds")) {
+    return null
+  }
+
+  if (pathname.startsWith("/dashboard/image-collections")) {
+    return null
+  }
+
+  if (pathname.startsWith("/dashboard/writings")) {
+    return null
+  }
+
+  if (pathname.startsWith("/dashboard/about")) {
     return null
   }
 
