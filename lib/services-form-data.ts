@@ -55,25 +55,3 @@ export function serviceFormValuesToPayload(
   }
 }
 
-/** JSON-only save: files already uploaded to S3 during collection editing. */
-export function serviceFormValuesToMultipart(
-  mode: "create" | "edit",
-  serviceId: number | undefined,
-  values: ServiceFormValues,
-  options?: { dataField?: string },
-): FormData {
-  const dataField = options?.dataField ?? "data"
-  const fd = new FormData()
-  const payload = serviceFormValuesToPayload(mode, serviceId, values)
-
-  const jsonBlob = new Blob([JSON.stringify(payload)], {
-    type: "application/json",
-  })
-  fd.append(dataField, jsonBlob)
-
-  if (values.coverFile) {
-    fd.append("cover", values.coverFile)
-  }
-
-  return fd
-}

@@ -22,11 +22,10 @@ import {
   ProjectBreadcrumbBar,
   dashboardProjectsCrumbHref,
 } from "@/components/projects/project-breadcrumb"
-import { ProjectCoverUpload } from "@/components/projects/project-cover-upload"
-import { ProjectMediaGallery } from "@/components/projects/project-media-gallery"
 import { ProjectStatusPill } from "@/components/projects/project-status-pill"
+import { MediaCoverUpload } from "@/components/shared/media-cover-upload"
 import { ProjectTagInput } from "@/components/projects/project-tag-input"
-import { ProjectTiptapEditor } from "@/components/projects/project-tiptap-editor"
+import { TiptapEditor } from "@/components/shared/tiptap-editor"
 import { ProjectTypeCombobox } from "@/components/projects/project-type-combobox"
 import { ProjectsErrorState } from "@/components/projects/projects-error-state"
 import { NS } from "@/components/projects/projects-strings"
@@ -45,8 +44,7 @@ import {
   mergeProjectsDerivedTypes,
   pushInlineProjectType,
 } from "@/lib/projects-derived-cache"
-import { projectFormValuesToMultipart } from "@/lib/projects-form-data"
-import { normalizeProjectMediaList } from "@/lib/projects-media-normalize"
+import { projectFormValuesToPayload } from "@/lib/projects-form-data"
 import {
   formatFullTimestampKu,
   formatRelativeTimeKu,
@@ -60,11 +58,7 @@ import { formatCkbDigits } from "@/lib/intl-ckb"
 import { cn } from "@/lib/utils"
 import type { Language, ProjectDto } from "@/types/projects"
 import { useQueryClient } from "@tanstack/react-query"
-import {
-  HashtagIcon,
-  PuzzlePieceIcon,
-  TagIcon,
-} from "@heroicons/react/24/outline"
+import { HashtagIcon, TagIcon } from "@heroicons/react/24/outline"
 
 const sectionDivider =
   "mt-6 border-t border-border/60 pt-6 [&:first-child]:mt-0 [&:first-child]:border-t-0 [&:first-child]:pt-0"
@@ -101,8 +95,7 @@ function dtoToFormValues(d: ProjectDto): ProjectFormValues {
         : ["CKB"],
     projectTypeCkb: d.projectTypeCkb ?? "",
     projectTypeKmr: d.projectTypeKmr ?? "",
-    coverFile: null,
-    coverUrl: null,
+    coverUrl: d.coverUrl ?? null,
     existingCoverUrl: d.coverUrl ?? null,
     projectDate: date || undefined,
     ckbContent: {
@@ -115,10 +108,6 @@ function dtoToFormValues(d: ProjectDto): ProjectFormValues {
       description: d.kmrContent?.description ?? "",
       location: d.kmrContent?.location ?? "",
     },
-    contents: {
-      ckb: d.contentsCkb ?? [],
-      kmr: d.contentsKmr ?? [],
-    },
     tags: {
       ckb: d.tagsCkb ?? [],
       kmr: d.tagsKmr ?? [],
@@ -127,15 +116,6 @@ function dtoToFormValues(d: ProjectDto): ProjectFormValues {
       ckb: d.keywordsCkb ?? [],
       kmr: d.keywordsKmr ?? [],
     },
-    mediaItems: normalizeProjectMediaList(d.media ?? []).map((m) => ({
-      id: m.id,
-      mediaType: m.mediaType,
-      url: m.url ?? null,
-      externalUrl: m.externalUrl ?? null,
-      embedUrl: m.embedUrl ?? null,
-      caption: m.caption ?? "",
-      stagedFile: null,
-    })),
   }
 }
 
@@ -189,28 +169,14 @@ export function ProjectForm({
   }, [editDto, reset])
 
   const [activeLang, setActiveLang] = useState<Language>("CKB")
-  const [coverBlobPreview, setCoverBlobPreview] = useState<string | null>(null)
-
   const contentLanguages = watch("contentLanguages")
-  const coverFile = watch("coverFile")
   const coverUrl = watch("coverUrl")
+  const existingCoverUrl = watch("existingCoverUrl")
   const status = watch("status")
 
-  useEffect(() => {
-    if (!coverFile) {
-      setCoverBlobPreview(null)
-      return
-    }
-    const u = URL.createObjectURL(coverFile)
-    setCoverBlobPreview(u)
-    return () => URL.revokeObjectURL(u)
-  }, [coverFile])
-
   const coverPreviewUrl =
-    coverBlobPreview ??
     (coverUrl?.trim() ? coverUrl.trim() : null) ??
-    watch("existingCoverUrl")?.trim() ??
-    null
+    (existingCoverUrl?.trim() ? existingCoverUrl.trim() : null)
 
   const pending = createMut.isPending || updateMut.isPending
   const submitDisabled = !isDirty || !isValid || pending
@@ -231,14 +197,10 @@ export function ProjectForm({
   }, [errors])
 
   async function onSubmit(values: ProjectFormValues) {
-    const fd = projectFormValuesToMultipart(
-      mode,
-      mode === "edit" ? projectId : undefined,
-      values,
-    )
+    const payload = projectFormValuesToPayload(values)
     try {
       if (mode === "create") {
-        const res = await createMut.mutateAsync(fd)
+        const res = await createMut.mutateAsync(payload)
         if (res.success && res.data?.id) {
           toast.success(NS.toast.saved, {
             action: {
@@ -249,7 +211,7 @@ export function ProjectForm({
           router.push(`/dashboard/projects/${res.data.id}`)
         }
       } else if (projectId) {
-        const res = await updateMut.mutateAsync({ id: projectId, formData: fd })
+        const res = await updateMut.mutateAsync({ id: projectId, payload })
         if (res.success) {
           toast.success(NS.toast.saved)
           router.push(`/dashboard/projects/${projectId}`)
@@ -480,12 +442,19 @@ export function ProjectForm({
               })}
             </div>
 
-            <ProjectCoverUpload
-              file={coverFile ?? null}
+            <MediaCoverUpload
               previewUrl={coverPreviewUrl}
               urlValue={coverUrl ?? ""}
-              onFileChange={(f) => setValue("coverFile", f, { shouldDirty: true })}
-              onUrlChange={(v) => setValue("coverUrl", v, { shouldDirty: true })}
+              onUrlChange={(v) => {
+                setValue("coverUrl", v.length ? v : null, { shouldDirty: true })
+                if (v.trim()) {
+                  setValue("existingCoverUrl", null, { shouldDirty: true })
+                } else if (mode === "edit" && editDto?.coverUrl) {
+                  setValue("existingCoverUrl", editDto.coverUrl, {
+                    shouldDirty: true,
+                  })
+                }
+              }}
               urlError={
                 typeof errors.coverUrl?.message === "string"
                   ? errors.coverUrl.message
@@ -516,8 +485,11 @@ export function ProjectForm({
                     {...register("ckbContent.location")}
                   />
                 </div>
-                <ProjectTiptapEditor
+                <TiptapEditor
+                  stickyToolbar
                   lang="CKB"
+                  className="mt-6"
+                  placeholder={NS.field.body_ckb}
                   value={watch("ckbContent.description") ?? ""}
                   onChange={(v) =>
                     setValue("ckbContent.description", v, { shouldDirty: true })
@@ -542,8 +514,11 @@ export function ProjectForm({
                     {...register("kmrContent.location")}
                   />
                 </div>
-                <ProjectTiptapEditor
+                <TiptapEditor
+                  stickyToolbar
                   lang="KMR"
+                  className="mt-6"
+                  placeholder={NS.field.body_kmr}
                   value={watch("kmrContent.description") ?? ""}
                   onChange={(v) =>
                     setValue("kmrContent.description", v, { shouldDirty: true })
@@ -551,25 +526,6 @@ export function ProjectForm({
                 />
               </div>
             )}
-
-            <section className={sectionDivider}>
-              <Label className="mb-2 flex items-center gap-2 text-sm">
-                <PuzzlePieceIcon className="size-4" />
-                {NS.section.contents} ({langLabel})
-              </Label>
-              <Controller
-                name={activeLang === "CKB" ? "contents.ckb" : "contents.kmr"}
-                control={control}
-                render={({ field }) => (
-                  <ProjectTagInput
-                    value={field.value}
-                    onChange={field.onChange}
-                    chipClassName="bg-primary/5 text-primary border border-primary/15"
-                    placeholder={NS.field.tag_helper}
-                  />
-                )}
-              />
-            </section>
 
             <section className="mt-6">
               <Label className="mb-2 flex items-center gap-2 text-sm">
@@ -607,7 +563,6 @@ export function ProjectForm({
               />
             </section>
 
-            <ProjectMediaGallery />
           </div>
 
         </div>

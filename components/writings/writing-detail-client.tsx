@@ -40,7 +40,10 @@ import {
   formatFullTimestampKu,
   formatRelativeTimeKu,
 } from "@/lib/news-relative-time"
-import { sanitizeNewsBodyHtml } from "@/lib/sanitize-news-html"
+import {
+  isRichTextEmpty,
+  sanitizeNewsBodyHtml,
+} from "@/lib/sanitize-news-html"
 import { humanReadableSize } from "@/lib/writing-format"
 import { formatCkbDigits } from "@/lib/intl-ckb"
 import { cn } from "@/lib/utils"
@@ -48,16 +51,6 @@ import { isPartOfMultiBookSeries } from "@/types/writings-ui"
 import type { Language, WritingDto } from "@/types/writings"
 
 const sectionDivider = "border-t border-border/60 pt-6"
-
-function isHtmlEmpty(html: string | undefined | null) {
-  if (!html?.trim()) return true
-  const stripped = html
-    .replace(/<[^>]*>/g, " ")
-    .replace(/&nbsp;/gi, " ")
-    .replace(/\s+/g, " ")
-    .trim()
-  return stripped.length === 0
-}
 
 function toProseHtml(raw: string) {
   const t = raw.trim()
@@ -534,7 +527,7 @@ function WritingDetailLoaded({
 
           <section className={cn(sectionDivider, "mt-10")}>
             <h2 className="mb-3 text-sm font-medium">{NS.section.description}</h2>
-            {isHtmlEmpty(activeDesc) ? (
+            {isRichTextEmpty(activeDesc) ? (
               <p className="text-muted-foreground text-sm italic">
                 {NS.empty.no_body}
               </p>

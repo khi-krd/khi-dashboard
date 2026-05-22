@@ -353,28 +353,6 @@ export function ProjectsDataGrid({
         ),
       },
       {
-        id: "mediaCount",
-        enableSorting: false,
-        size: 64,
-        meta: {
-          headerTitle: NS.col.media,
-          cellClassName: "w-16 text-center",
-          skeleton: <Skeleton className="mx-auto h-3.5 w-12" />,
-        },
-        header: NS.col.media,
-        cell: ({ row }) => {
-          const n = row.original.media?.length ?? 0
-          return (
-            <span className="text-muted-foreground inline-flex items-center justify-center gap-1 text-sm">
-              <PhotoIcon className="size-4 opacity-80" />
-              <span className="font-mono text-xs tabular-nums">
-                {n > 0 ? formatCkbDigits(n) : NS.dash}
-              </span>
-            </span>
-          )
-        },
-      },
-      {
         id: "actions",
         enableSorting: false,
         size: 112,

@@ -6,6 +6,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query"
 
+import type { NewsWritePayload } from "@/lib/news-form-data"
 import {
   bulkDeleteNews,
   createNews,
@@ -46,7 +47,7 @@ export function useNewsDetailQuery(id: number) {
 export function useCreateNews() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (formData: FormData) => createNews(formData),
+    mutationFn: (payload: NewsWritePayload) => createNews(payload),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: newsKeys.lists() })
     },
@@ -56,8 +57,8 @@ export function useCreateNews() {
 export function useUpdateNews() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (variables: { id: number; formData: FormData }) =>
-      updateNews(variables.id, variables.formData),
+    mutationFn: (variables: { id: number; payload: NewsWritePayload }) =>
+      updateNews(variables.id, variables.payload),
     onSuccess: (res, variables) => {
       if (res.success && res.data?.id === variables.id) {
         queryClient.setQueryData(newsKeys.detail(variables.id), res)

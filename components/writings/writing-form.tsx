@@ -30,7 +30,7 @@ import { WritingInstituteSwitch } from "@/components/writings/writing-institute-
 import { WritingLanguageToggleChip } from "@/components/writings/writing-language-chip"
 import { WritingSeriesSection } from "@/components/writings/writing-series-section"
 import { WritingTagInput } from "@/components/writings/writing-tag-input"
-import { WritingTiptapEditor } from "@/components/writings/writing-tiptap-editor"
+import { TiptapEditor } from "@/components/shared/tiptap-editor"
 import { WritingTopicCombobox } from "@/components/writings/writing-topic-combobox"
 import { NS } from "@/components/writings/writings-strings"
 import { Button, buttonVariants } from "@/components/ui/button"
@@ -473,8 +473,10 @@ export function WritingForm({
                     {...register("ckbContent.genre")}
                   />
                 </div>
-                <WritingTiptapEditor
+                <TiptapEditor
+                  stickyToolbar
                   lang="CKB"
+                  placeholder={NS.field.body_ckb}
                   value={watch("ckbContent.description") ?? ""}
                   onChange={(v) =>
                     setValue("ckbContent.description", v, { shouldDirty: true })
@@ -513,8 +515,10 @@ export function WritingForm({
                     {...register("kmrContent.genre")}
                   />
                 </div>
-                <WritingTiptapEditor
+                <TiptapEditor
+                  stickyToolbar
                   lang="KMR"
+                  placeholder={NS.field.body_kmr}
                   value={watch("kmrContent.description") ?? ""}
                   onChange={(v) =>
                     setValue("kmrContent.description", v, { shouldDirty: true })

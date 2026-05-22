@@ -48,7 +48,10 @@ import {
   formatFullTimestampKu,
   formatRelativeTimeKu,
 } from "@/lib/news-relative-time"
-import { sanitizeNewsBodyHtml } from "@/lib/sanitize-news-html"
+import {
+  isRichTextEmpty,
+  sanitizeNewsBodyHtml,
+} from "@/lib/sanitize-news-html"
 import {
   formatCkbDigits,
   formatNewsDateLong,
@@ -60,16 +63,6 @@ import { cn } from "@/lib/utils"
 import type { Language, VideoClipItemDto, VideoDto } from "@/types/videos"
 
 const sectionDivider = "border-t border-border/60 pt-6"
-
-function isHtmlEmpty(html: string | undefined | null) {
-  if (!html?.trim()) return true
-  const stripped = html
-    .replace(/<[^>]*>/g, " ")
-    .replace(/&nbsp;/gi, " ")
-    .replace(/\s+/g, " ")
-    .trim()
-  return stripped.length === 0
-}
 
 function escapeHtml(text: string) {
   return text
@@ -181,7 +174,7 @@ function ArticleBodyTabs({
 
   if (!multi) {
     const html = hasCkb ? descCkb : descKmr
-    if (isHtmlEmpty(html)) {
+    if (isRichTextEmpty(html)) {
       return (
         <p className="text-muted-foreground mt-6 text-sm italic">
           {NS.empty.no_body}
@@ -218,7 +211,7 @@ function ArticleBodyTabs({
           ) : null,
         )}
       </div>
-      {isHtmlEmpty(tab === "CKB" ? descCkb : descKmr) ? (
+      {isRichTextEmpty(tab === "CKB" ? descCkb : descKmr) ? (
         <p className="text-muted-foreground mt-6 text-sm italic">
           {NS.empty.no_body}
         </p>

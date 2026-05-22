@@ -95,7 +95,7 @@ export function useServiceTypesQuery() {
 export function useCreateService() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (formData: FormData) => createService(formData),
+    mutationFn: (payload: unknown) => createService(payload),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: servicesKeys.lists() })
     },
@@ -105,8 +105,8 @@ export function useCreateService() {
 export function useUpdateService() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (variables: { id: number; formData: FormData }) =>
-      updateService(variables.id, variables.formData),
+    mutationFn: (variables: { id: number; payload: unknown }) =>
+      updateService(variables.id, variables.payload),
     onSuccess: (res, variables) => {
       if (res.success && res.data?.id === variables.id) {
         queryClient.setQueryData(servicesKeys.detail(variables.id), res)

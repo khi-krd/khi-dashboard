@@ -24,11 +24,11 @@ import {
 } from "@/components/services/service-breadcrumb"
 import { ServiceActiveSwitch } from "@/components/services/service-active-switch"
 import { ServiceCollectionsEditor } from "@/components/services/service-collections-editor"
-import { ServiceCoverUpload } from "@/components/services/service-cover-upload"
+import { MediaCoverUpload } from "@/components/shared/media-cover-upload"
 import { ServiceFormPublishingSummary } from "@/components/services/service-form-publishing-summary"
 import { ServiceFormSectionCard } from "@/components/services/service-form-section-card"
 import { ServicePublishDateTime } from "@/components/services/service-publish-datetime"
-import { ServiceTiptapEditor } from "@/components/services/service-tiptap-editor"
+import { TiptapEditor } from "@/components/shared/tiptap-editor"
 import { ServiceTypeCombobox } from "@/components/services/service-type-combobox"
 import { ServicesErrorState } from "@/components/services/services-error-state"
 import { NS } from "@/components/services/services-strings"
@@ -43,7 +43,7 @@ import {
   useServiceTypesQuery,
   useUpdateService,
 } from "@/hooks/useServices"
-import { serviceFormValuesToMultipart } from "@/lib/services-form-data"
+import { serviceFormValuesToPayload } from "@/lib/services-form-data"
 import { formatRelativeTimeKu } from "@/lib/news-relative-time"
 import {
   defaultServiceFormValues,
@@ -116,21 +116,15 @@ export function ServiceForm({
   }, [mode, dto, reset])
 
   const contentLanguages = watch("contentLanguages")
-  const coverFile = watch("coverFile")
   const coverMediaUrl = watch("coverMediaUrl")
   const existingCover = watch("existingCoverMediaUrl")
   const serviceType = watch("serviceType")
 
   useEffect(() => {
-    if (coverFile) {
-      const url = URL.createObjectURL(coverFile)
-      setCoverPreview(url)
-      return () => URL.revokeObjectURL(url)
-    }
     if (coverMediaUrl?.trim()) setCoverPreview(coverMediaUrl.trim())
     else if (existingCover?.trim()) setCoverPreview(existingCover.trim())
     else setCoverPreview(null)
-  }, [coverFile, coverMediaUrl, existingCover])
+  }, [coverMediaUrl, existingCover])
 
   const typeOptions = useMemo(() => {
     const set = new Set(typesQuery.data ?? [])
@@ -156,22 +150,15 @@ export function ServiceForm({
 
   const hasCover = Boolean(
     coverPreview?.trim() ||
-      coverFile ||
       coverMediaUrl?.trim() ||
       existingCover?.trim(),
   )
 
   const onSubmit = handleSubmit((values) => {
-    const fd = serviceFormValuesToMultipart(
+    const payload = serviceFormValuesToPayload(
       mode,
       serviceId,
-      {
-        ...values,
-        coverMediaUrl:
-          values.coverMediaUrl?.trim() ||
-          values.existingCoverMediaUrl?.trim() ||
-          "",
-      },
+      values,
     )
     const onSuccess = (res: { success?: boolean; data?: { id?: number } }) => {
       if (!res.success) {
@@ -195,13 +182,13 @@ export function ServiceForm({
     }
 
     if (mode === "create") {
-      createMut.mutate(fd, {
+      createMut.mutate(payload, {
         onSuccess,
         onError: () => toastError(NS.error.generic),
       })
     } else if (serviceId) {
       updateMut.mutate(
-        { id: serviceId, formData: fd },
+        { id: serviceId, payload },
         {
           onSuccess,
           onError: () => toastError(NS.error.generic),
@@ -264,15 +251,21 @@ export function ServiceForm({
           className="grid grid-cols-1 gap-6 px-4 py-6 lg:grid-cols-[340px_minmax(0,1fr)] lg:gap-8 lg:px-6"
         >
           <aside dir="rtl" className="space-y-4 lg:sticky lg:top-20 lg:self-start">
-            <ServiceCoverUpload
-              file={coverFile ?? null}
+            <MediaCoverUpload
+              label={NS.section.coverHero}
               previewUrl={coverPreview}
               urlValue={coverMediaUrl ?? ""}
-              onFileChange={(f) => {
-                setValue("coverFile", f, { shouldDirty: true })
-              }}
               onUrlChange={(s) => {
-                setValue("coverMediaUrl", s, { shouldDirty: true })
+                setValue("coverMediaUrl", s.length ? s : null, {
+                  shouldDirty: true,
+                })
+                if (s.trim()) {
+                  setValue("existingCoverMediaUrl", null, { shouldDirty: true })
+                } else if (mode === "edit" && dto?.coverMediaUrl) {
+                  setValue("existingCoverMediaUrl", dto.coverMediaUrl, {
+                    shouldDirty: true,
+                  })
+                }
               }}
             />
 
@@ -499,7 +492,8 @@ export function ServiceForm({
                   name={descPath}
                   control={control}
                   render={({ field }) => (
-                    <ServiceTiptapEditor
+                    <TiptapEditor
+                      lang={canvasLang}
                       value={field.value ?? ""}
                       onChange={field.onChange}
                       placeholder={

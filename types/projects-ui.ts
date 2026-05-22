@@ -75,17 +75,6 @@ export function matchesProjectClientKeywordFilter(
   )
 }
 
-export function matchesProjectClientContentFilter(
-  p: ProjectDto,
-  content: string | null,
-): boolean {
-  const c = content?.trim()
-  if (!c) return true
-  return [...(p.contentsCkb ?? []), ...(p.contentsKmr ?? [])].some((x) =>
-    trimmedEq(x, c),
-  )
-}
-
 /** Client-side title/tag/keyword search on current page */
 export function matchesProjectClientSearchFilter(
   p: ProjectDto,

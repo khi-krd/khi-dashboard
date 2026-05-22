@@ -26,11 +26,6 @@ import { AboutDetailSidebar } from "@/components/about/about-detail-sidebar"
 import { AboutDetailSkeleton } from "@/components/about/about-detail-skeleton"
 import { AboutErrorState } from "@/components/about/about-error-state"
 import { AboutStatusPill } from "@/components/about/about-status-pill"
-import {
-  BlockDetailCard,
-  StatBlocksBand,
-  groupBlocksForDetail,
-} from "@/components/about/block-detail-card"
 import { NS, truncateTitle } from "@/components/about/about-strings"
 import { SlugChip } from "@/components/about/slug-chip"
 import { Button, buttonVariants } from "@/components/ui/button"
@@ -38,9 +33,14 @@ import {
   useAboutDetailQuery,
   useDeleteAboutMutation,
 } from "@/hooks/useAbout"
+import { aboutDisplayTitle } from "@/lib/about-normalize"
 import { aboutPublicUrl } from "@/lib/about-url-helpers"
 import { formatCkbDigits } from "@/lib/intl-ckb"
 import { formatRelativeTimeKu } from "@/lib/news-relative-time"
+import {
+  isRichTextEmpty,
+  sanitizeNewsBodyHtml,
+} from "@/lib/sanitize-news-html"
 import { cn } from "@/lib/utils"
 import type { AboutDto, Language } from "@/types/about"
 
@@ -71,9 +71,18 @@ export function AboutDetailClient({ aboutId }: { aboutId: number }) {
   const bothLangs =
     about.contentLanguages.includes("CKB") &&
     about.contentLanguages.includes("KMR")
+  const titleCkb = about.ckbContent?.title
+  const titleKmr = about.kmrContent?.title
   const subtitle =
-    activeLang === "CKB" ? about.subtitleCkb : about.subtitleKmr
-  const groups = groupBlocksForDetail(about.blocks ?? [])
+    activeLang === "CKB"
+      ? about.ckbContent?.subtitle
+      : about.kmrContent?.subtitle
+  const seoDesc =
+    activeLang === "CKB"
+      ? about.ckbContent?.metaDescription
+      : about.kmrContent?.metaDescription
+  const body =
+    activeLang === "CKB" ? about.ckbContent?.body : about.kmrContent?.body
   const publicUrl = about.slugCkb?.trim()
     ? aboutPublicUrl(about.slugCkb.trim())
     : ""
@@ -86,7 +95,7 @@ export function AboutDetailClient({ aboutId }: { aboutId: number }) {
             { label: NS.breadcrumb.dashboard, href: dashboardAboutCrumbHref() },
             { label: NS.breadcrumb.about, href: "/dashboard/about" },
             {
-              label: truncateTitle(about.titleCkb ?? `#${about.id}`, 40),
+              label: truncateTitle(aboutDisplayTitle(about) || `#${about.id}`, 40),
             },
           ]}
         />
@@ -188,15 +197,15 @@ export function AboutDetailClient({ aboutId }: { aboutId: number }) {
             </div>
 
             <h1 className="mt-5 text-4xl leading-tight font-bold tracking-tight md:text-5xl">
-              {about.titleCkb}
+              {titleCkb}
             </h1>
-            {about.titleKmr?.trim() ? (
+            {titleKmr?.trim() ? (
               <h2 className="text-muted-foreground mt-2 text-xl leading-snug font-medium md:text-2xl">
-                {about.titleKmr}
+                {titleKmr}
               </h2>
             ) : null}
 
-            {(about.subtitleCkb || about.subtitleKmr) && (
+            {(about.ckbContent?.subtitle || about.kmrContent?.subtitle) && (
               <div className="mt-5">
                 {bothLangs ? (
                   <div className="mb-3 flex gap-2">
@@ -227,51 +236,58 @@ export function AboutDetailClient({ aboutId }: { aboutId: number }) {
               </div>
             )}
 
-            {about.seoDescriptionCkb?.trim() ? (
+            {seoDesc?.trim() ? (
               <aside className="border-border/40 bg-muted/30 mt-6 rounded-lg border p-3.5">
                 <div className="text-muted-foreground mb-1.5 flex items-center gap-1.5 text-[10px] font-medium tracking-wide uppercase">
                   <MagnifyingGlassIcon className="size-3" />
                   {NS.detail.seo}
                 </div>
                 <p className="text-muted-foreground line-clamp-2 text-xs leading-relaxed">
-                  {about.seoDescriptionCkb}
+                  {seoDesc}
                 </p>
               </aside>
             ) : null}
 
-            <section className="border-border/60 mt-12 border-t pt-8">
-              <header className="mb-6 flex items-baseline justify-between">
-                <h3 className="text-base font-semibold">{NS.detail.blocks}</h3>
-                <span className="text-muted-foreground font-mono text-xs">
-                  {NS.detail.block_count(
-                    formatCkbDigits(about.blocks?.length ?? 0),
-                  )}
-                </span>
-              </header>
-              <div className="space-y-6">
-                {groups.map((g, gi) => {
-                  if (g.kind === "stats") {
-                    return (
-                      <StatBlocksBand
-                        key={`stats-${gi}`}
-                        blocks={about.blocks!}
-                        indices={g.indices}
-                        lang={activeLang}
-                      />
-                    )
-                  }
-                  const block = about.blocks![g.index]
-                  return (
-                    <BlockDetailCard
-                      key={String(block.id ?? g.index)}
-                      block={block}
-                      index={g.index}
-                      lang={activeLang}
-                    />
-                  )
-                })}
-              </div>
-            </section>
+            {!isRichTextEmpty(body) ? (
+              <section className="border-border/60 mt-12 border-t pt-8">
+                <div
+                  className="prose prose-neutral dark:prose-invert max-w-none"
+                  dangerouslySetInnerHTML={{
+                    __html: sanitizeNewsBodyHtml(body ?? ""),
+                  }}
+                />
+              </section>
+            ) : null}
+
+            {(about.stats?.length ?? 0) > 0 ? (
+              <section className="border-border/60 mt-12 border-t pt-8">
+                <header className="mb-6 flex items-baseline justify-between">
+                  <h3 className="text-base font-semibold">{NS.detail.stats}</h3>
+                  <span className="text-muted-foreground font-mono text-xs">
+                    {NS.detail.stat_count(
+                      formatCkbDigits(about.stats.length),
+                    )}
+                  </span>
+                </header>
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+                  {about.stats.map((stat, i) => (
+                    <div
+                      key={i}
+                      className="border-border bg-muted/20 rounded-xl border p-4 text-center"
+                    >
+                      <div className="text-3xl font-bold tabular-nums">
+                        {stat.value}
+                      </div>
+                      <div className="text-muted-foreground mt-1 text-sm">
+                        {activeLang === "CKB"
+                          ? stat.labelCkb || stat.labelKmr
+                          : stat.labelKmr || stat.labelCkb}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            ) : null}
           </div>
         </article>
       </div>
@@ -295,4 +311,3 @@ export function AboutDetailClient({ aboutId }: { aboutId: number }) {
     </div>
   )
 }
-

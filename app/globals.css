@@ -178,9 +178,3 @@
     cursor: pointer;
   }
 }
-
-[contenteditable][data-placeholder]:empty::before {
-  content: attr(data-placeholder);
-  color: hsl(var(--muted-foreground) / 0.5);
-  pointer-events: none;
-}

@@ -17,6 +17,7 @@ import { AboutStatusPill } from "@/components/about/about-status-pill"
 import { NS } from "@/components/about/about-strings"
 import { SlugChip } from "@/components/about/slug-chip"
 import { Button } from "@/components/ui/button"
+import { aboutDisplayTitle } from "@/lib/about-normalize"
 import { formatCkbDigits } from "@/lib/intl-ckb"
 import { formatRelativeTimeKu } from "@/lib/news-relative-time"
 import { cn } from "@/lib/utils"
@@ -55,7 +56,7 @@ export function AboutsTable({
               <th className="w-14 py-2.5 text-start">{NS.table.id}</th>
               <th className="w-44 py-2.5 text-start">{NS.table.slugs}</th>
               <th className="py-2.5 text-start">{NS.table.title}</th>
-              <th className="w-20 py-2.5 text-start">{NS.table.blocks}</th>
+              <th className="w-20 py-2.5 text-start">{NS.table.stats}</th>
               <th className="w-24 py-2.5 text-start">{NS.table.language}</th>
               <th className="w-24 py-2.5 text-start">{NS.table.status}</th>
               <th className="w-28 py-2.5 text-start">{NS.table.date}</th>
@@ -100,15 +101,15 @@ export function AboutsTable({
                   </td>
                   <td className="min-w-0 py-3">
                     <div className="truncate font-medium">
-                      {about.titleCkb?.trim() ? (
-                        about.titleCkb
+                      {aboutDisplayTitle(about) ? (
+                        aboutDisplayTitle(about)
                       ) : (
                         <em className="text-muted-foreground/60">—</em>
                       )}
                     </div>
-                    {about.titleKmr?.trim() ? (
+                    {about.kmrContent?.title?.trim() ? (
                       <div className="text-muted-foreground mt-0.5 truncate text-xs">
-                        {about.titleKmr}
+                        {about.kmrContent.title}
                       </div>
                     ) : null}
                   </td>
@@ -116,7 +117,7 @@ export function AboutsTable({
                     <span className="inline-flex items-center gap-1">
                       <Squares2X2Icon className="size-3.5" />
                       <span className="font-mono">
-                        {formatCkbDigits(about.blocks?.length ?? 0)}
+                        {formatCkbDigits(about.stats?.length ?? 0)}
                       </span>
                     </span>
                   </td>

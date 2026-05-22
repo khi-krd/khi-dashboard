@@ -6,6 +6,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query"
 
+import type { AboutWritePayload } from "@/lib/about-form-data"
 import { aboutKeys } from "@/lib/about-query-keys"
 import {
   createAbout,
@@ -90,8 +91,8 @@ export function useCreateAbout() {
 export function useUpdateAbout() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ id, formData }: { id: number; formData: FormData }) =>
-      updateAbout(id, formData),
+    mutationFn: ({ id, payload }: { id: number; payload: AboutWritePayload }) =>
+      updateAbout(id, payload),
     onSuccess: (data) => {
       void queryClient.invalidateQueries({ queryKey: aboutKeys.lists() })
       if (data.id) {

@@ -6,19 +6,12 @@ import { useState } from "react"
 import { CollectionLightbox } from "@/components/image-collections/collection-lightbox"
 import { NS } from "@/components/image-collections/collections-strings"
 import { albumItemSrc, sortAlbumItems } from "@/lib/image-album-utils"
-import { sanitizeNewsBodyHtml } from "@/lib/sanitize-news-html"
+import {
+  isRichTextEmpty,
+  sanitizeNewsBodyHtml,
+} from "@/lib/sanitize-news-html"
 import { cn } from "@/lib/utils"
 import type { CollectionDto, Language } from "@/types/image-collections"
-
-function isHtmlEmpty(html: string | undefined | null) {
-  if (!html?.trim()) return true
-  const stripped = html
-    .replace(/<[^>]*>/g, " ")
-    .replace(/&nbsp;/gi, " ")
-    .replace(/\s+/g, " ")
-    .trim()
-  return stripped.length === 0
-}
 
 export function CollectionDetailSingle({
   collection,
@@ -83,7 +76,7 @@ export function CollectionDetailSingle({
           {NS.item.no_caption}
         </p>
       )}
-      {!isHtmlEmpty(description) ? (
+      {!isRichTextEmpty(description) ? (
         <div
           className={cn("prose prose-base mt-6 max-w-none dark:prose-invert")}
           dangerouslySetInnerHTML={{ __html: sanitizeNewsBodyHtml(description!) }}

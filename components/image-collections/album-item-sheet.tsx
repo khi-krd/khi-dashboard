@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 
 import { CollectionItemSourcePanel } from "@/components/image-collections/collection-item-source-panel"
-import { CollectionTiptapEditor } from "@/components/image-collections/collection-tiptap-editor"
+import { TiptapEditor } from "@/components/shared/tiptap-editor"
 import { NS } from "@/components/image-collections/collections-strings"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -79,9 +79,9 @@ export function AlbumItemSheet({
 
           <div className="space-y-2">
             <Label className="text-xs">{NS.lang.ckb} — وەسف</Label>
-            <CollectionTiptapEditor
+            <TiptapEditor
               lang="CKB"
-              minHeight="min-h-[160px]"
+              contentMinHeightClass="min-h-[160px]"
               value={draft.descriptionCkb ?? ""}
               onChange={(v) => patch({ descriptionCkb: v })}
               placeholder={NS.field.description_placeholder.ckb}
@@ -91,9 +91,9 @@ export function AlbumItemSheet({
           {showKmrFields ? (
             <div className="space-y-2">
               <Label className="text-xs">{NS.lang.kmr} — vekolîn</Label>
-              <CollectionTiptapEditor
+              <TiptapEditor
                 lang="KMR"
-                minHeight="min-h-[160px]"
+                contentMinHeightClass="min-h-[160px]"
                 value={draft.descriptionKmr ?? ""}
                 onChange={(v) => patch({ descriptionKmr: v })}
                 placeholder={NS.field.description_placeholder.kmr}

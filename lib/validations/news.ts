@@ -1,32 +1,7 @@
 import { z } from "zod"
 
 import { NS } from "@/components/news/news-strings"
-
-const NEWS_MEDIA_TYPE_VALUES = [
-  "IMAGE",
-  "VIDEO",
-  "AUDIO",
-  "DOCUMENT",
-  "OTHER",
-] as const
-
-function stripHtmlText(html: string | undefined | null): string {
-  if (!html) return ""
-  return html
-    .replace(/<[^>]*>/g, " ")
-    .replace(/&nbsp;/gi, " ")
-    .replace(/\s+/g, " ")
-    .trim()
-}
-
-const mediaItemSchema = z.object({
-  type: z.enum(NEWS_MEDIA_TYPE_VALUES),
-  id: z.number().optional(),
-  url: z.string().optional().nullable(),
-  externalUrl: z.string().optional().nullable(),
-  embedUrl: z.string().optional().nullable(),
-  stagedFile: z.instanceof(File).optional().nullable(),
-})
+import { isRichTextEmpty } from "@/lib/sanitize-news-html"
 
 export const newsFormSchema = z
   .object({
@@ -41,7 +16,6 @@ export const newsFormSchema = z
       ckbName: z.string().min(1),
       kmrName: z.string().min(1),
     }),
-    coverFile: z.instanceof(File).optional().nullable(),
     coverUrl: z.string().optional().nullable(),
     /** Preserved server cover URL in edit mode (counts as valid cover). */
     existingCoverUrl: z.string().optional().nullable(),
@@ -66,11 +40,9 @@ export const newsFormSchema = z
       ckb: z.array(z.string()),
       kmr: z.array(z.string()),
     }),
-    mediaItems: z.array(mediaItemSchema).default([]),
   })
   .superRefine((data, ctx) => {
     const hasCover =
-      !!data.coverFile ||
       !!(data.coverUrl && data.coverUrl.trim()) ||
       !!(data.existingCoverUrl && data.existingCoverUrl.trim())
 
@@ -99,7 +71,7 @@ export const newsFormSchema = z
       }
 
       const desc = data.ckbContent?.description
-      if (!desc || stripHtmlText(desc).length === 0) {
+      if (isRichTextEmpty(desc)) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "وەسفی سۆرانی پێویستە",
@@ -125,7 +97,7 @@ export const newsFormSchema = z
       }
 
       const desc = data.kmrContent?.description
-      if (!desc || stripHtmlText(desc).length === 0) {
+      if (isRichTextEmpty(desc)) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "وەسفی کرمانجی پێویستە",
@@ -133,33 +105,6 @@ export const newsFormSchema = z
         })
       }
     }
-
-    data.mediaItems.forEach((m, idx) => {
-      if (m.type === "IMAGE" || m.type === "DOCUMENT") {
-        const ok = !!(m.stagedFile || (m.url && m.url.trim()))
-        if (!ok) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: "لینک یان فایل بۆ ئەم میدیا پێویستە",
-            path: ["mediaItems", idx, "url"],
-          })
-        }
-      }
-      if (m.type === "VIDEO" || m.type === "AUDIO") {
-        const ok =
-          !!m.stagedFile ||
-          !!(m.url && m.url.trim()) ||
-          !!(m.externalUrl && m.externalUrl.trim()) ||
-          !!(m.embedUrl && m.embedUrl.trim())
-        if (!ok) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: "لینک یان فایل بۆ ئەم میدیا پێویستە",
-            path: ["mediaItems", idx, "externalUrl"],
-          })
-        }
-      }
-    })
   })
 
 export type NewsFormValues = z.infer<typeof newsFormSchema>
@@ -170,7 +115,6 @@ export function defaultNewsFormValues(): NewsFormValues {
     contentLanguages: ["CKB"],
     category: { ckbName: "", kmrName: "" },
     subCategory: { ckbName: "", kmrName: "" },
-    coverFile: null,
     coverUrl: null,
     existingCoverUrl: null,
     datePublished: today,
@@ -178,6 +122,5 @@ export function defaultNewsFormValues(): NewsFormValues {
     kmrContent: { title: "", description: "" },
     tags: { ckb: [], kmr: [] },
     keywords: { ckb: [], kmr: [] },
-    mediaItems: [],
   }
 }

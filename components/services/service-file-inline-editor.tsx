@@ -7,7 +7,7 @@ import { NS } from "@/components/services/services-strings"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
+import { TiptapEditor } from "@/components/shared/tiptap-editor"
 import type { ServiceFormValues } from "@/lib/validations/services"
 import type { ServiceMediaType } from "@/types/services"
 import { cn } from "@/lib/utils"
@@ -28,6 +28,8 @@ export function ServiceFileInlineEditor({
   const { watch, setValue } = useFormContext<ServiceFormValues>()
   const base = `mediaCollections.${collectionIndex}.files.${fileIndex}` as const
   const file = watch(base)
+  const contentLanguages = watch("contentLanguages")
+  const showKmr = contentLanguages.includes("KMR")
   const preview = file?.thumbnailUrl?.trim() || file?.fileUrl?.trim() || null
 
   return (
@@ -144,21 +146,95 @@ export function ServiceFileInlineEditor({
 
           <div className="space-y-1.5">
             <Label className="text-xs">{NS.file.descriptionCkb}</Label>
-            <Textarea
-              className="min-h-[100px] resize-y"
+            <TiptapEditor
+              toolbar="compact"
+              lang="CKB"
+              contentMinHeightClass="min-h-[120px]"
+              placeholder={NS.field.bodyCkb}
               value={file?.ckbContent?.description ?? ""}
-              onChange={(e) =>
+              onChange={(html) =>
                 setValue(
                   `${base}.ckbContent`,
                   {
                     ...file?.ckbContent,
-                    description: e.target.value,
+                    description: html,
                   },
                   { shouldDirty: true },
                 )
               }
             />
           </div>
+
+          {showKmr ? (
+            <>
+              <div className="space-y-1.5">
+                <Label className="flex items-center gap-2 text-xs">
+                  {NS.file.titleKmr}
+                  <span
+                    className={cn(
+                      "text-primary border-primary/20 bg-primary/10 rounded border px-1 py-0.5 text-[10px] font-medium",
+                    )}
+                  >
+                    {NS.lang.kmrShort}
+                  </span>
+                </Label>
+                <Input
+                  dir="ltr"
+                  value={file?.kmrContent?.title ?? ""}
+                  onChange={(e) =>
+                    setValue(
+                      `${base}.kmrContent`,
+                      {
+                        ...file?.kmrContent,
+                        title: e.target.value,
+                      },
+                      { shouldDirty: true },
+                    )
+                  }
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs">{NS.file.captionKmr}</Label>
+                <Input
+                  dir="ltr"
+                  value={file?.kmrContent?.caption ?? ""}
+                  onChange={(e) =>
+                    setValue(
+                      `${base}.kmrContent`,
+                      {
+                        ...file?.kmrContent,
+                        caption: e.target.value,
+                      },
+                      { shouldDirty: true },
+                    )
+                  }
+                  placeholder={NS.file.captionPlaceholder}
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs">{NS.file.descriptionKmr}</Label>
+                <TiptapEditor
+                  toolbar="compact"
+                  lang="KMR"
+                  contentMinHeightClass="min-h-[120px]"
+                  placeholder={NS.field.bodyKmr}
+                  value={file?.kmrContent?.description ?? ""}
+                  onChange={(html) =>
+                    setValue(
+                      `${base}.kmrContent`,
+                      {
+                        ...file?.kmrContent,
+                        description: html,
+                      },
+                      { shouldDirty: true },
+                    )
+                  }
+                />
+              </div>
+            </>
+          ) : null}
         </div>
       </div>
     </div>

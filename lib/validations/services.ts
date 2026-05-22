@@ -54,8 +54,7 @@ export const serviceFormSchema = z
       .min(1, NS.field.typeRequired)
       .max(100),
     location: z.string().max(200).optional().or(z.literal("")),
-    coverMediaUrl: z.string().url().optional().or(z.literal("")),
-    coverFile: z.instanceof(File).optional().nullable(),
+    coverMediaUrl: z.string().optional().nullable(),
     existingCoverMediaUrl: z.string().optional().nullable(),
     active: z.boolean().default(true),
     publishedAt: z.string().nullable().optional(),
@@ -88,8 +87,7 @@ export function defaultServiceFormValues(): ServiceFormValues {
   return {
     serviceType: "",
     location: "",
-    coverMediaUrl: "",
-    coverFile: null,
+    coverMediaUrl: null,
     existingCoverMediaUrl: null,
     active: true,
     publishedAt: null,
@@ -124,8 +122,7 @@ export function serviceDtoToFormValues(
   return {
     serviceType: dto.serviceType ?? "",
     location: dto.location ?? "",
-    coverMediaUrl: dto.coverMediaUrl ?? "",
-    coverFile: null,
+    coverMediaUrl: dto.coverMediaUrl ?? null,
     existingCoverMediaUrl: dto.coverMediaUrl ?? null,
     active: dto.active ?? true,
     publishedAt: dto.publishedAt ?? null,

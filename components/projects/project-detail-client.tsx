@@ -27,7 +27,6 @@ import {
   dashboardProjectsCrumbHref,
 } from "@/components/projects/project-breadcrumb"
 import { ProjectDeleteDialog } from "@/components/projects/project-delete-dialog"
-import { ProjectDetailMediaGrid } from "@/components/projects/project-detail-media-grid"
 import { ProjectDetailSkeleton } from "@/components/projects/project-detail-skeleton"
 import { ProjectLanguageChipRow } from "@/components/projects/project-language-chip"
 import { projectUrlPublic } from "@/components/projects/project-media-helpers"
@@ -51,21 +50,14 @@ import {
   formatFullTimestampKu,
   formatRelativeTimeKu,
 } from "@/lib/news-relative-time"
-import { sanitizeNewsBodyHtml } from "@/lib/sanitize-news-html"
+import {
+  isRichTextEmpty,
+  sanitizeNewsBodyHtml,
+} from "@/lib/sanitize-news-html"
 import { formatCkbDigits, formatNewsDateLong, formatNewsDateShort } from "@/lib/intl-ckb"
 import { cn } from "@/lib/utils"
 import type { Language, ProjectDto } from "@/types/projects"
 import { useQueryClient } from "@tanstack/react-query"
-
-function isHtmlEmpty(html: string | undefined | null) {
-  if (!html?.trim()) return true
-  const stripped = html
-    .replace(/<[^>]*>/g, " ")
-    .replace(/&nbsp;/gi, " ")
-    .replace(/\s+/g, " ")
-    .trim()
-  return stripped.length === 0
-}
 
 function escapeHtml(text: string) {
   return text
@@ -138,7 +130,7 @@ function ArticleBodyTabs({ dto }: { dto: ProjectDto }) {
 
   if (!multi) {
     const html = hasCkb ? descCkb : descKmr
-    if (isHtmlEmpty(html)) {
+    if (isRichTextEmpty(html)) {
       return <p className="text-muted-foreground mt-6 text-sm italic">{NS.empty.no_body}</p>
     }
     return (
@@ -171,7 +163,7 @@ function ArticleBodyTabs({ dto }: { dto: ProjectDto }) {
           ) : null,
         )}
       </div>
-      {isHtmlEmpty(tab === "CKB" ? descCkb : descKmr) ? (
+      {isRichTextEmpty(tab === "CKB" ? descCkb : descKmr) ? (
         <p className="text-muted-foreground mt-6 text-sm italic">{NS.empty.no_body}</p>
       ) : (
         <div
@@ -241,10 +233,6 @@ export function ProjectDetailClient({ projectId }: { projectId: number }) {
   const titleKmr = dto.kmrContent?.title?.trim() ?? ""
   const publicUrl = projectUrlPublic(dto.id)
 
-  const contentItems = [
-    ...(dto.contentsCkb ?? []).map((t) => ({ lang: "ckb" as const, v: t })),
-    ...(dto.contentsKmr ?? []).map((t) => ({ lang: "kmr" as const, v: t })),
-  ]
   const tagItems = [
     ...(dto.tagsCkb ?? []).map((t) => ({ lang: "ckb" as const, v: t })),
     ...(dto.tagsKmr ?? []).map((t) => ({ lang: "kmr" as const, v: t })),
@@ -540,28 +528,8 @@ export function ProjectDetailClient({ projectId }: { projectId: number }) {
 
               <ArticleBodyTabs dto={dto} />
 
-              {contentItems.length > 0 ? (
-                <section className={cn("mt-12", sectionDivider)}>
-                  <h3 className="text-muted-foreground mb-3 flex items-center gap-2 text-xs font-medium uppercase tracking-wide">
-                    <PuzzlePieceIcon className="size-4" />
-                    {NS.section.contents}
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {contentItems.map((item) => (
-                      <TaxonomyChip
-                        key={`c-${item.lang}-${item.v}`}
-                        label={item.v}
-                        lang={item.lang}
-                        variant="contents"
-                        href={`/dashboard/projects?content=${encodeURIComponent(item.v)}`}
-                      />
-                    ))}
-                  </div>
-                </section>
-              ) : null}
-
               {tagItems.length > 0 ? (
-                <section className={cn(contentItems.length ? "mt-6" : "mt-12", contentItems.length ? "" : sectionDivider)}>
+                <section className={cn("mt-12", sectionDivider)}>
                   <h3 className="text-muted-foreground mb-3 flex items-center gap-2 text-xs font-medium uppercase tracking-wide">
                     <TagIcon className="size-4" />
                     {NS.section.tags}
@@ -600,14 +568,6 @@ export function ProjectDetailClient({ projectId }: { projectId: number }) {
                 </section>
               ) : null}
 
-              {(dto.media?.length ?? 0) > 0 ? (
-                <section className={cn("mt-12", sectionDivider)}>
-                  <h3 className="text-sm font-semibold">
-                    {NS.media.section_count(formatCkbDigits(dto.media!.length))}
-                  </h3>
-                  <ProjectDetailMediaGrid media={dto.media ?? []} />
-                </section>
-              ) : null}
             </div>
           </main>
 

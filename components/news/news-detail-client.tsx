@@ -29,7 +29,6 @@ import {
   NewsBreadcrumbBar,
 } from "@/components/news/news-breadcrumb"
 import { NewsDeleteDialog } from "@/components/news/news-delete-dialog"
-import { NewsDetailMediaGrid } from "@/components/news/news-detail-media-grid"
 import { NewsDetailSkeleton } from "@/components/news/news-detail-skeleton"
 import { NewsErrorState } from "@/components/news/news-error-state"
 import { newsUrlPublic } from "@/components/news/news-media-helpers"
@@ -49,22 +48,15 @@ import {
   formatFullTimestampKu,
   formatRelativeTimeKu,
 } from "@/lib/news-relative-time"
-import { sanitizeNewsBodyHtml } from "@/lib/sanitize-news-html"
+import {
+  isRichTextEmpty,
+  sanitizeNewsBodyHtml,
+} from "@/lib/sanitize-news-html"
 import { formatCkbDigits, formatNewsDateLong, formatNewsDateShort } from "@/lib/intl-ckb"
 import { cn } from "@/lib/utils"
 import type { Language, NewsDto } from "@/types/news"
 import { newsRowStatus } from "@/types/news-ui"
 import { useQueryClient } from "@tanstack/react-query"
-
-function isHtmlEmpty(html: string | undefined | null) {
-  if (!html?.trim()) return true
-  const stripped = html
-    .replace(/<[^>]*>/g, " ")
-    .replace(/&nbsp;/gi, " ")
-    .replace(/\s+/g, " ")
-    .trim()
-  return stripped.length === 0
-}
 
 function miniStatusPill(dto: NewsDto) {
   const s = newsRowStatus(dto)
@@ -170,7 +162,7 @@ function ArticleBodyTabs({
     <div className="">
       {!multi ? (
         <>
-          {!isHtmlEmpty(hasCkb ? descCkb : descKmr) ? (
+          {!isRichTextEmpty(hasCkb ? descCkb : descKmr) ? (
             // eslint-disable-next-line react/no-danger
             <div
               dir="rtl"
@@ -202,7 +194,7 @@ function ArticleBodyTabs({
               ) : null,
             )}
           </div>
-          {!isHtmlEmpty(tab === "CKB" ? descCkb : descKmr) ? (
+          {!isRichTextEmpty(tab === "CKB" ? descCkb : descKmr) ? (
             // eslint-disable-next-line react/no-danger
             <div
               dir={tab === "KMR" ? "ltr" : "rtl"}
@@ -521,19 +513,6 @@ export function NewsDetailClient({ newsId }: { newsId: number }) {
                 </Fragment>
               ) : null}
 
-              {dto.media?.length ? (
-                <section className="border-border/60 mt-12 border-t pt-6">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h2 className="text-foreground text-sm font-semibold">{NS.section.media}</h2>
-                    <Badge variant="primary-light" className="tabular-nums">
-                      {formatCkbDigits(dto.media?.length ?? 0)}
-                    </Badge>
-                  </div>
-                  <div className="mt-4">
-                    <NewsDetailMediaGrid media={dto.media} />
-                  </div>
-                </section>
-              ) : null}
             </div>
           </main>
 

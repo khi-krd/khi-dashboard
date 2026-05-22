@@ -37,7 +37,10 @@ import {
   formatFullTimestampKu,
   formatRelativeTimeKu,
 } from "@/lib/news-relative-time"
-import { sanitizeNewsBodyHtml } from "@/lib/sanitize-news-html"
+import {
+  isRichTextEmpty,
+  sanitizeNewsBodyHtml,
+} from "@/lib/sanitize-news-html"
 import { formatBytes, formatDuration } from "@/lib/sound-format"
 import { formatCkbDigits } from "@/lib/intl-ckb"
 import { cn } from "@/lib/utils"
@@ -47,16 +50,6 @@ const sectionDivider = "border-t border-border/60 pt-6"
 
 function MetaDot() {
   return <span className="mx-2 text-muted-foreground/60">·</span>
-}
-
-function isHtmlEmpty(html: string | undefined | null) {
-  if (!html?.trim()) return true
-  const stripped = html
-    .replace(/<[^>]*>/g, " ")
-    .replace(/&nbsp;/gi, " ")
-    .replace(/\s+/g, " ")
-    .trim()
-  return stripped.length === 0
 }
 
 function toProseHtml(raw: string) {
@@ -517,7 +510,7 @@ function SoundDetailLoaded({
                 ))}
               </div>
             ) : null}
-            {isHtmlEmpty(activeDesc) ? (
+            {isRichTextEmpty(activeDesc) ? (
               <p className="text-muted-foreground mt-4 text-sm italic">
                 {NS.empty.no_body}
               </p>

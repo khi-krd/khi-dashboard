@@ -2,28 +2,10 @@ export type Language = "CKB" | "KMR"
 
 export type ProjectStatus = "ONGOING" | "COMPLETED"
 
-export type ProjectMediaType =
-  | "IMAGE"
-  | "VIDEO"
-  | "AUDIO"
-  | "PDF"
-  | "DOCUMENT"
-
 export type ProjectLanguageContentDto = {
   title: string
   description?: string | null
   location?: string | null
-}
-
-export type ProjectMediaDto = {
-  id?: number
-  mediaType: ProjectMediaType
-  url?: string | null
-  externalUrl?: string | null
-  embedUrl?: string | null
-  caption?: string | null
-  sortOrder?: number
-  createdAt?: string
 }
 
 export type ProjectDto = {
@@ -40,13 +22,10 @@ export type ProjectDto = {
   contentLanguages: Language[]
   ckbContent?: ProjectLanguageContentDto | null
   kmrContent?: ProjectLanguageContentDto | null
-  contentsCkb?: string[]
-  contentsKmr?: string[]
   tagsCkb?: string[]
   tagsKmr?: string[]
   keywordsCkb?: string[]
   keywordsKmr?: string[]
-  media?: ProjectMediaDto[]
 }
 
 export type ApiResponse<T> = {

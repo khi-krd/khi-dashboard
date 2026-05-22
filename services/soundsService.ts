@@ -12,7 +12,7 @@ import type {
   TrackState,
 } from "@/types/sounds"
 
-const BASE = "/api/v1/soundtracks"
+const BASE = "/api/v1/sound-tracks"
 
 export async function getSoundsList(
   page: number,

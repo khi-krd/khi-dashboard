@@ -8,17 +8,13 @@ import {
 import { toast } from "sonner"
 
 import { AboutStatusPill } from "@/components/about/about-status-pill"
-import {
-  BLOCK_TYPE_VARIANTS,
-  BlockTypeIcon,
-} from "@/components/about/block-type-pill"
 import { CompletionBar } from "@/components/about/completion-bar"
 import { NS } from "@/components/about/about-strings"
 import { SeoCountChip } from "@/components/about/seo-count-chip"
 import { SlugChip } from "@/components/about/slug-chip"
 import { Button } from "@/components/ui/button"
 import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard"
-import { blockCountsByType, computeAboutCompletion } from "@/lib/validations/about"
+import { computeAboutCompletion } from "@/lib/validations/about"
 import { aboutPublicUrl } from "@/lib/about-url-helpers"
 import { formatCkbDigits } from "@/lib/intl-ckb"
 import type { AboutDto } from "@/types/about"
@@ -27,15 +23,15 @@ const divider = "border-border/60 -mx-5 border-t"
 
 export function AboutDetailSidebar({ about }: { about: AboutDto }) {
   const { copyToClipboard } = useCopyToClipboard()
-  const counts = blockCountsByType(about.blocks ?? [])
   const formLike = {
-    titleCkb: about.titleCkb,
-    titleKmr: about.titleKmr,
-    subtitleCkb: about.subtitleCkb,
-    subtitleKmr: about.subtitleKmr,
-    seoDescriptionCkb: about.seoDescriptionCkb,
-    seoDescriptionKmr: about.seoDescriptionKmr,
-    blocks: about.blocks ?? [],
+    titleCkb: about.ckbContent?.title,
+    titleKmr: about.kmrContent?.title,
+    subtitleCkb: about.ckbContent?.subtitle,
+    subtitleKmr: about.kmrContent?.subtitle,
+    seoDescriptionCkb: about.ckbContent?.metaDescription,
+    seoDescriptionKmr: about.kmrContent?.metaDescription,
+    bodyCkb: about.ckbContent?.body,
+    bodyKmr: about.kmrContent?.body,
   }
   const ckbScore = computeAboutCompletion(formLike, "CKB")
   const kmrScore = computeAboutCompletion(formLike, "KMR")
@@ -87,7 +83,7 @@ export function AboutDetailSidebar({ about }: { about: AboutDto }) {
             </dt>
             <dd>
               <SeoCountChip
-                value={about.titleCkb?.length ?? 0}
+                value={about.ckbContent?.title?.length ?? 0}
                 max={60}
                 titleMax
               />
@@ -99,7 +95,7 @@ export function AboutDetailSidebar({ about }: { about: AboutDto }) {
             </dt>
             <dd>
               <SeoCountChip
-                value={about.seoDescriptionCkb?.length ?? 0}
+                value={about.ckbContent?.metaDescription?.length ?? 0}
                 max={160}
               />
             </dd>
@@ -111,34 +107,11 @@ export function AboutDetailSidebar({ about }: { about: AboutDto }) {
 
       <section>
         <h4 className="text-muted-foreground mb-2 text-[10px] font-medium tracking-wide uppercase">
-          {NS.sidebar.blocks}
+          {NS.sidebar.stats}
         </h4>
-        <dl className="space-y-1 text-xs">
-          {(Object.keys(BLOCK_TYPE_VARIANTS) as (keyof typeof BLOCK_TYPE_VARIANTS)[]).map(
-            (type) => {
-              const count = counts[type] ?? 0
-              if (count <= 0) return null
-              return (
-                <div
-                  key={type}
-                  className="flex items-center justify-between gap-2"
-                >
-                  <dt className="text-muted-foreground flex items-center gap-1.5">
-                    <BlockTypeIcon type={type} className="size-3.5" />
-                    {BLOCK_TYPE_VARIANTS[type].label}
-                  </dt>
-                  <dd className="font-mono">{formatCkbDigits(count)}</dd>
-                </div>
-              )
-            },
-          )}
-          <div className="border-border/30 text-foreground mt-1.5 flex items-center justify-between border-t pt-1.5 font-medium">
-            <dt>{NS.sidebar.total}</dt>
-            <dd className="font-mono">
-              {formatCkbDigits(about.blocks?.length ?? 0)}
-            </dd>
-          </div>
-        </dl>
+        <p className="font-mono text-xs">
+          {formatCkbDigits(about.stats?.length ?? 0)}
+        </p>
       </section>
 
       <div className={divider} />

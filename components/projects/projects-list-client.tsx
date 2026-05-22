@@ -45,7 +45,6 @@ import type {
 } from "@/types/projects-ui"
 import {
   deriveProjectTypeOptions,
-  matchesProjectClientContentFilter,
   matchesProjectClientKeywordFilter,
   matchesProjectClientSearchFilter,
   matchesProjectClientTagFilter,
@@ -185,7 +184,6 @@ function ProjectsListClientInner() {
       if (!matchesProjectTypeFilter(r, typeFilter)) return false
       if (!matchesProjectClientTagFilter(r, urlTag)) return false
       if (!matchesProjectClientKeywordFilter(r, urlKeyword)) return false
-      if (!matchesProjectClientContentFilter(r, urlContent)) return false
       if (
         debouncedKw.length >= 2 &&
         !urlTag?.trim() &&

@@ -22,22 +22,24 @@ import {
   AboutBreadcrumbBar,
   dashboardAboutCrumbHref,
 } from "@/components/about/about-breadcrumb"
-import { AboutBlocksSection } from "@/components/about/about-blocks-section"
 import { AboutErrorState } from "@/components/about/about-error-state"
 import { AboutFormSidebar } from "@/components/about/about-form-sidebar"
-import { HeroDropzone } from "@/components/about/hero-dropzone"
+import { AboutStatsEditor } from "@/components/about/about-stats-editor"
 import { NS } from "@/components/about/about-strings"
+import { MediaCoverUpload } from "@/components/shared/media-cover-upload"
+import { TiptapEditor } from "@/components/shared/tiptap-editor"
 import { SeoCountChip } from "@/components/about/seo-count-chip"
 import { aboutSiteBaseUrl } from "@/lib/about-url-helpers"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import { Spinner } from "@/components/ui/spinner"
 import {
   useAboutDetailQuery,
   useCreateAbout,
   useUpdateAbout,
 } from "@/hooks/useAbout"
-import { aboutFormValuesToMultipart } from "@/lib/about-form-data"
+import { aboutFormValuesToPayload } from "@/lib/about-form-data"
 import {
   aboutDtoToFormValues,
   aboutFormSchema,
@@ -134,8 +136,6 @@ export function AboutForm({
   }, [editDto, reset])
 
   const [activeLang, setActiveLang] = useState<Language>("CKB")
-  const [heroUrlInput, setHeroUrlInput] = useState("")
-
   const contentLanguages = watch("contentLanguages")
   const slugCkb = watch("slugCkb")
   const titleCkb = watch("titleCkb")
@@ -143,22 +143,11 @@ export function AboutForm({
   const subtitleCkb = watch("subtitleCkb")
   const subtitleKmr = watch("subtitleKmr")
   const seoDescriptionCkb = watch("seoDescriptionCkb")
-  const heroImageFile = watch("heroImageFile")
   const heroImageUrl = watch("heroImageUrl")
   const existingHero = watch("existingHeroImageUrl")
 
-  const heroPreview = useMemo(() => {
-    if (heroImageFile) return URL.createObjectURL(heroImageFile)
-    return heroImageUrl?.trim() || existingHero?.trim() || null
-  }, [heroImageFile, heroImageUrl, existingHero])
-
-  useEffect(() => {
-    return () => {
-      if (heroImageFile && heroPreview?.startsWith("blob:")) {
-        URL.revokeObjectURL(heroPreview)
-      }
-    }
-  }, [heroImageFile, heroPreview])
+  const heroPreview =
+    heroImageUrl?.trim() || existingHero?.trim() || null
 
   useEffect(() => {
     if (!contentLanguages.includes(activeLang) && contentLanguages[0]) {
@@ -177,20 +166,16 @@ export function AboutForm({
   const seoLen = (watch(seoField)?.length ?? 0)
 
   async function onSubmit(values: AboutFormValues) {
-    const fd = aboutFormValuesToMultipart(
-      mode,
-      mode === "edit" ? aboutId : undefined,
-      values,
-    )
+    const payload = aboutFormValuesToPayload(values)
     try {
       if (mode === "create") {
-        const res = await createMut.mutateAsync(fd)
+        const res = await createMut.mutateAsync(payload)
         if (res.id) {
           toast.success(NS.toast.saved)
           router.push(`/dashboard/about/${res.id}`)
         }
       } else if (aboutId) {
-        await updateMut.mutateAsync({ id: aboutId, formData: fd })
+        await updateMut.mutateAsync({ id: aboutId, payload })
         toast.success(NS.toast.saved)
         router.push(`/dashboard/about/${aboutId}`)
       }
@@ -301,24 +286,21 @@ export function AboutForm({
                   {NS.form.hero_shared}
                 </span>
               </h3>
-              <HeroDropzone
+              <MediaCoverUpload
+                label={NS.form.hero}
                 previewUrl={heroPreview}
-                onFile={(f) => {
-                  setValue("heroImageFile", f, { shouldDirty: true })
-                  setValue("heroImageUrl", "", { shouldDirty: true })
-                }}
-                onClear={() => {
-                  setValue("heroImageFile", null, { shouldDirty: true })
-                  setValue("heroImageUrl", "", { shouldDirty: true })
-                  setValue("existingHeroImageUrl", null, { shouldDirty: true })
-                }}
-                urlValue={heroUrlInput}
-                onUrlChange={setHeroUrlInput}
-                onUrlApply={() => {
-                  setValue("heroImageUrl", heroUrlInput.trim(), {
+                urlValue={heroImageUrl ?? ""}
+                onUrlChange={(url) => {
+                  setValue("heroImageUrl", url.length ? url : null, {
                     shouldDirty: true,
                   })
-                  setValue("heroImageFile", null, { shouldDirty: true })
+                  if (url.trim()) {
+                    setValue("existingHeroImageUrl", null, { shouldDirty: true })
+                  } else if (mode === "edit" && editDto?.heroImageUrl) {
+                    setValue("existingHeroImageUrl", editDto.heroImageUrl, {
+                      shouldDirty: true,
+                    })
+                  }
                 }}
               />
               <p className="text-muted-foreground mt-2 text-xs">
@@ -393,11 +375,11 @@ export function AboutForm({
                   </div>
                   <SeoCountChip value={seoLen} max={160} />
                 </div>
-                <textarea
+                <Textarea
                   rows={3}
                   maxLength={160}
                   placeholder="وەسفی کورت بۆ سێرچ ئەنجین…"
-                  className="placeholder:text-muted-foreground/50 w-full resize-none border-0 bg-transparent text-sm focus:ring-0"
+                  className="resize-none"
                   {...register(seoField)}
                 />
                 <div className="border-border/40 mt-3 border-t pt-3">
@@ -422,7 +404,30 @@ export function AboutForm({
               </div>
             </section>
 
-            <AboutBlocksSection activeLang={activeLang} />
+            <section className="border-border/60 mt-10 border-t pt-6">
+              <h3 className="mb-3 text-sm font-medium">{NS.form.body}</h3>
+              {activeLang === "CKB" ? (
+                <TiptapEditor
+                  stickyToolbar
+                  lang="CKB"
+                  value={watch("bodyCkb") ?? ""}
+                  onChange={(v) =>
+                    setValue("bodyCkb", v, { shouldDirty: true })
+                  }
+                />
+              ) : (
+                <TiptapEditor
+                  stickyToolbar
+                  lang="KMR"
+                  value={watch("bodyKmr") ?? ""}
+                  onChange={(v) =>
+                    setValue("bodyKmr", v, { shouldDirty: true })
+                  }
+                />
+              )}
+            </section>
+
+            <AboutStatsEditor activeLang={activeLang} />
           </article>
         </div>
 

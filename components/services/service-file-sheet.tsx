@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { InformationCircleIcon } from "@heroicons/react/24/outline"
 
 import { ServiceMediaTypeBadge } from "@/components/services/service-media-type-badge"
-import { ServiceTiptapEditor } from "@/components/services/service-tiptap-editor"
+import { TiptapEditor } from "@/components/shared/tiptap-editor"
 import { NS } from "@/components/services/services-strings"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -172,9 +172,13 @@ export function ServiceFileSheet({
               <label className="text-muted-foreground mb-1 block text-xs">
                 {NS.file.description}
               </label>
-              <ServiceTiptapEditor
-                compact
+              <TiptapEditor
+                toolbar="compact"
+                lang={tab}
                 contentMinHeightClass="min-h-[160px]"
+                placeholder={
+                  tab === "CKB" ? NS.field.bodyCkb : NS.field.bodyKmr
+                }
                 value={active.description ?? ""}
                 onChange={(html) =>
                   setActive((p) => ({ ...p, description: html }))

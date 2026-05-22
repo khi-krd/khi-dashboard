@@ -31,7 +31,7 @@ import { SoundFilesList } from "@/components/sounds/sound-files-list"
 import { SoundLanguageToggleChip } from "@/components/sounds/sound-language-chip"
 import { SoundStateToggle } from "@/components/sounds/sound-state-toggle"
 import { SoundTagInput } from "@/components/sounds/sound-tag-input"
-import { SoundTiptapEditor } from "@/components/sounds/sound-tiptap-editor"
+import { TiptapEditor } from "@/components/shared/tiptap-editor"
 import { SoundTopicCombobox } from "@/components/sounds/sound-topic-combobox"
 import { SoundTypeCombobox } from "@/components/sounds/sound-type-combobox"
 import { NS } from "@/components/sounds/sounds-strings"
@@ -452,8 +452,10 @@ export function SoundForm({
                 {errors.ckbContent?.title ? (
                   <FieldError>{errors.ckbContent.title.message}</FieldError>
                 ) : null}
-                <SoundTiptapEditor
+                <TiptapEditor
+                  stickyToolbar
                   lang="CKB"
+                  placeholder={NS.field.body_ckb}
                   value={watch("ckbContent.description") ?? ""}
                   onChange={(v) =>
                     setValue("ckbContent.description", v, { shouldDirty: true })
@@ -472,8 +474,10 @@ export function SoundForm({
                 {errors.kmrContent?.title ? (
                   <FieldError>{errors.kmrContent.title.message}</FieldError>
                 ) : null}
-                <SoundTiptapEditor
+                <TiptapEditor
+                  stickyToolbar
                   lang="KMR"
+                  placeholder={NS.field.body_kmr}
                   value={watch("kmrContent.description") ?? ""}
                   onChange={(v) =>
                     setValue("kmrContent.description", v, { shouldDirty: true })

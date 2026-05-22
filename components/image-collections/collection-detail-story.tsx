@@ -7,19 +7,12 @@ import { CollectionLightbox } from "@/components/image-collections/collection-li
 import { NS } from "@/components/image-collections/collections-strings"
 import { formatCkbDigits } from "@/lib/intl-ckb"
 import { albumItemSrc, sortAlbumItems } from "@/lib/image-album-utils"
-import { sanitizeNewsBodyHtml } from "@/lib/sanitize-news-html"
+import {
+  isRichTextEmpty,
+  sanitizeNewsBodyHtml,
+} from "@/lib/sanitize-news-html"
 import { cn } from "@/lib/utils"
 import type { CollectionDto, ImageAlbumItemDto, Language } from "@/types/image-collections"
-
-function isHtmlEmpty(html: string | undefined | null) {
-  if (!html?.trim()) return true
-  const stripped = html
-    .replace(/<[^>]*>/g, " ")
-    .replace(/&nbsp;/gi, " ")
-    .replace(/\s+/g, " ")
-    .trim()
-  return stripped.length === 0
-}
 
 export function CollectionDetailStory({
   collection,
@@ -160,7 +153,7 @@ function StoryStep({
       ) : (
         <p className="text-muted-foreground text-sm italic">{NS.item.no_caption}</p>
       )}
-      {!isHtmlEmpty(description) ? (
+      {!isRichTextEmpty(description) ? (
         <div
           className="prose prose-sm mt-3 max-w-none dark:prose-invert"
           dangerouslySetInnerHTML={{ __html: sanitizeNewsBodyHtml(description!) }}

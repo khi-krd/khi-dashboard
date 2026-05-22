@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 
 import { VideoMetadataGrid } from "@/components/videos/video-metadata-grid"
 import { VideoPlayerBlock } from "@/components/videos/video-player-block"
-import { VideoTiptapEditor } from "@/components/videos/video-tiptap-editor"
+import { TiptapEditor } from "@/components/shared/tiptap-editor"
 import { NS } from "@/components/videos/videos-strings"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -136,9 +136,10 @@ export function VideoClipItemSheet({
                 onChange={(e) => patch({ titleCkb: e.target.value })}
                 placeholder={NS.field.title_ckb}
               />
-              <VideoTiptapEditor
+              <TiptapEditor
                 lang="CKB"
-                minHeight="min-h-[160px]"
+                contentMinHeightClass="min-h-[160px]"
+                placeholder={NS.field.body_ckb}
                 value={draft.descriptionCkb ?? ""}
                 onChange={(html) => patch({ descriptionCkb: html })}
               />
@@ -150,9 +151,10 @@ export function VideoClipItemSheet({
                 onChange={(e) => patch({ titleKmr: e.target.value })}
                 placeholder={NS.field.title_kmr}
               />
-              <VideoTiptapEditor
+              <TiptapEditor
                 lang="KMR"
-                minHeight="min-h-[160px]"
+                contentMinHeightClass="min-h-[160px]"
+                placeholder={NS.field.body_kmr}
                 value={draft.descriptionKmr ?? ""}
                 onChange={(html) => patch({ descriptionKmr: html })}
               />

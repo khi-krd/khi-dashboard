@@ -8,7 +8,6 @@ import { Fragment, useEffect, useMemo, useState } from "react"
 import {
   Controller,
   FormProvider,
-  useFieldArray,
   useForm,
   type Control,
   type FieldErrors,
@@ -25,12 +24,11 @@ import {
   newsListCrumbLabel,
 } from "@/components/news/news-breadcrumb"
 import { NewsCategoryCombobox } from "@/components/news/news-category-combobox"
-import { NewsCoverUpload } from "@/components/news/news-cover-upload"
 import { NewsErrorState } from "@/components/news/news-error-state"
-import { NewsFormMediaGallery } from "@/components/news/news-form-media-gallery"
 import { NS } from "@/components/news/news-strings"
+import { MediaCoverUpload } from "@/components/shared/media-cover-upload"
 import { NewsTagInput } from "@/components/news/news-tag-input"
-import { NewsTiptapEditor } from "@/components/news/news-tiptap-editor"
+import { TiptapEditor } from "@/components/shared/tiptap-editor"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { FieldError } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
@@ -57,8 +55,7 @@ import {
   pushInlineCategory,
   pushInlineSubcategory,
 } from "@/lib/news-derived-cache"
-import { newsFormValuesToMultipart } from "@/lib/news-form-data"
-import { normalizeNewsMediaList } from "@/lib/news-media-normalize"
+import { newsFormValuesToPayload } from "@/lib/news-form-data"
 import {
   formatFullTimestampKu,
   formatRelativeTimeKu,
@@ -88,8 +85,7 @@ function dtoToFormValues(d: NewsDto): NewsFormValues {
         : ["CKB"],
     category: d.category ?? { ckbName: "", kmrName: "" },
     subCategory: d.subCategory ?? { ckbName: "", kmrName: "" },
-    coverFile: null,
-    coverUrl: null,
+    coverUrl: d.coverUrl ?? null,
     existingCoverUrl: d.coverUrl ?? null,
     datePublished: date || undefined,
     ckbContent: {
@@ -108,14 +104,6 @@ function dtoToFormValues(d: NewsDto): NewsFormValues {
       ckb: d.keywords?.ckb ?? [],
       kmr: d.keywords?.kmr ?? [],
     },
-    mediaItems: normalizeNewsMediaList(d.media ?? []).map((m) => ({
-      id: m.id,
-      type: m.type,
-      url: m.url ?? null,
-      externalUrl: m.externalUrl ?? null,
-      embedUrl: m.embedUrl ?? null,
-      stagedFile: null,
-    })),
   }
 }
 
@@ -148,8 +136,6 @@ export function NewsForm({
     if (editDto) mergeNewsDerivedTaxonomy(queryClient, [editDto])
   }, [editDto, queryClient])
 
-  const [coverBlobPreview, setCoverBlobPreview] = useState<string | null>(null)
-
   const formDefaults = useMemo(
     () => (mode === "create" ? defaultNewsFormValues() : undefined),
     [mode],
@@ -178,7 +164,6 @@ export function NewsForm({
 
   const contentLanguages = watch("contentLanguages")
   const category = watch("category")
-  const coverFile = watch("coverFile")
   const coverUrl = watch("coverUrl")
   const existingCoverUrl = watch("existingCoverUrl")
 
@@ -200,27 +185,12 @@ export function NewsForm({
     }
   }, [contentLanguages, activeLangTab])
 
-  useEffect(() => {
-    if (!coverFile) {
-      setCoverBlobPreview(null)
-      return
-    }
-    const u = URL.createObjectURL(coverFile)
-    setCoverBlobPreview(u)
-    return () => URL.revokeObjectURL(u)
-  }, [coverFile])
-
   const catsQ = useNewsDerivedCategories()
   const derivedCats = catsQ.data ?? []
 
   const { items: subcatItems } = useNewsDerivedSubcategories(
     category?.ckbName?.trim(),
   )
-
-  const { fields, append, remove, move } = useFieldArray({
-    control,
-    name: "mediaItems",
-  })
 
   const createMut = useCreateNews()
   const updateMut = useUpdateNews()
@@ -232,15 +202,14 @@ export function NewsForm({
   }
 
   const coverPreviewUrl =
-    coverBlobPreview ??
     (coverUrl?.trim() ? coverUrl.trim() : null) ??
     (existingCoverUrl?.trim() ? existingCoverUrl.trim() : null)
 
   async function onSubmit(values: NewsFormValues) {
     try {
+      const payload = newsFormValuesToPayload(values)
       if (mode === "create") {
-        const fd = newsFormValuesToMultipart("create", undefined, values)
-        const res = await createMut.mutateAsync(fd)
+        const res = await createMut.mutateAsync(payload)
         const newId = res.data?.id
         toast.success(NS.toast.created, {
           action:
@@ -260,8 +229,7 @@ export function NewsForm({
         return
       }
       if (!newsId) return
-      const fd = newsFormValuesToMultipart("edit", newsId, values)
-      await updateMut.mutateAsync({ id: newsId, formData: fd })
+      await updateMut.mutateAsync({ id: newsId, payload })
       toast.success(NS.toast.updated, {
         action: {
           label: NS.action.view,
@@ -505,15 +473,6 @@ export function NewsForm({
                 </div>
               </section>
 
-              <section className={cn("space-y-3", sectionDivider)}>
-                <NewsFormMediaGallery
-                  fields={fields}
-                  append={append}
-                  remove={remove}
-                  move={move}
-                  errors={errors.mediaItems}
-                />
-              </section>
             </div>
 
             <aside className="space-y-6 lg:sticky lg:top-20 lg:col-span-1 lg:self-start">
@@ -532,10 +491,8 @@ export function NewsForm({
                   name="coverUrl"
                   control={control}
                   render={({ field }) => (
-                    <NewsCoverUpload
-                      layout="sidebar"
-                      file={coverFile ?? null}
-                      previewUrl={coverPreviewUrl ?? null}
+                    <MediaCoverUpload
+                      previewUrl={coverPreviewUrl}
                       urlValue={field.value ?? ""}
                       urlError={
                         typeof errors.coverUrl?.message === "string"
@@ -543,7 +500,7 @@ export function NewsForm({
                           : undefined
                       }
                       onUrlChange={(s) => {
-                        field.onChange(s.length ? s : "", {
+                        field.onChange(s.length ? s : null, {
                           shouldDirty: true,
                         })
                         if (s.trim()) {
@@ -554,13 +511,6 @@ export function NewsForm({
                           setValue("existingCoverUrl", editDto.coverUrl, {
                             shouldDirty: true,
                           })
-                        }
-                      }}
-                      onFileChange={(f) => {
-                        setValue("coverFile", f)
-                        field.onChange("", { shouldDirty: true })
-                        if (!f && mode === "edit" && editDto?.coverUrl) {
-                          setValue("existingCoverUrl", editDto.coverUrl)
                         }
                       }}
                     />
@@ -797,10 +747,12 @@ function CkbLangFields({
         </div>
       </div>
 
-      <NewsTiptapEditor
+      <TiptapEditor
+        lang="CKB"
         label={undefined}
         error={errors.ckbContent?.description?.message}
         value={watch("ckbContent.description") ?? ""}
+        placeholder={NS.field.description}
         onChange={(html) =>
           setValue("ckbContent.description", html, {
             shouldValidate: true,
@@ -884,10 +836,12 @@ function KmrLangFields({
         </div>
       </div>
 
-      <NewsTiptapEditor
+      <TiptapEditor
+        lang="KMR"
         label={undefined}
         error={errors.kmrContent?.description?.message}
         value={watch("kmrContent.description") ?? ""}
+        placeholder={NS.field.description}
         onChange={(html) =>
           setValue("kmrContent.description", html, {
             shouldValidate: true,

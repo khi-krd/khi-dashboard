@@ -392,29 +392,6 @@ export function NewsDataGrid({
         ),
       },
       {
-        id: "mediaCount",
-        enableSorting: false,
-        size: 80,
-        minSize: 80,
-        meta: {
-          headerTitle: NS.column.media,
-          cellClassName: "w-20 min-w-20 max-w-20 text-center",
-          skeleton: <Skeleton className="mx-auto h-3.5 w-12" aria-hidden />,
-        },
-        header: NS.column.media,
-        cell: ({ row }) => {
-          const n = row.original.media?.length ?? 0
-          return (
-            <span className="text-muted-foreground inline-flex items-center justify-center gap-1 text-sm">
-              <PhotoIcon className="size-4 opacity-80" aria-hidden />
-              <span className="font-mono text-xs tabular-nums">
-                {n > 0 ? formatCkbDigits(n) : NS.dash}
-              </span>
-            </span>
-          )
-        },
-      },
-      {
         id: "actions",
         enableSorting: false,
         size: 112,

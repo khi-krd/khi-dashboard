@@ -1,4 +1,6 @@
+import { tiptapContentType } from "@/components/shared/tiptap-content"
 import DOMPurify from "dompurify"
+import { marked } from "marked"
 
 const ALLOWED_TAGS = [
   "p",
@@ -20,6 +22,8 @@ const ALLOWED_TAGS = [
   "u",
   "s",
   "img",
+  "video",
+  "audio",
   "hr",
   "table",
   "thead",
@@ -28,13 +32,70 @@ const ALLOWED_TAGS = [
   "th",
   "td",
   "br",
+  "div",
 ] as const
 
-/** Sanitize news body HTML before `dangerouslySetInnerHTML`. */
-export function sanitizeNewsBodyHtml(html: string): string {
+function stripHtmlText(html: string): string {
+  return html
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+}
+
+function stripMarkdownText(md: string): string {
+  return md
+    .replace(/```[\s\S]*?```/g, " ")
+    .replace(/`[^`]*`/g, " ")
+    .replace(/!\[[^\]]*]\([^)]*\)/g, " ")
+    .replace(/\[[^\]]*]\([^)]*\)/g, " ")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/[#>*_~\-]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+}
+
+/** True when rich text (Markdown or HTML) has no visible content. */
+export function isRichTextEmpty(content: string | undefined | null): boolean {
+  const t = (content ?? "").trim()
+  if (!t) return true
+  if (tiptapContentType(t) === "html") {
+    return stripHtmlText(t).length === 0
+  }
+  return stripMarkdownText(t).length === 0
+}
+
+function sanitizeHtml(html: string): string {
   return DOMPurify.sanitize(html, {
     ALLOWED_TAGS: [...ALLOWED_TAGS],
-    ALLOWED_ATTR: ["href", "target", "rel", "src", "alt", "title", "class"],
+    ALLOWED_ATTR: [
+      "href",
+      "target",
+      "rel",
+      "src",
+      "alt",
+      "title",
+      "class",
+      "controls",
+    ],
     KEEP_CONTENT: false,
   })
+}
+
+function markdownToHtml(md: string): string {
+  const html = marked.parse(md, { async: false, gfm: true }) as string
+  return sanitizeHtml(html)
+}
+
+/**
+ * Render stored rich text for `dangerouslySetInnerHTML`.
+ * Accepts Markdown (preferred) or legacy HTML from the API.
+ */
+export function sanitizeNewsBodyHtml(content: string): string {
+  const trimmed = content.trim()
+  if (!trimmed) return ""
+  if (tiptapContentType(trimmed) === "markdown") {
+    return markdownToHtml(trimmed)
+  }
+  return sanitizeHtml(trimmed)
 }

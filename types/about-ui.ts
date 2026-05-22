@@ -42,10 +42,10 @@ export function matchesAboutClientSearchFilter(
   const kw = keyword.trim().toLowerCase()
   if (!kw) return true
   const hay = [
-    row.titleCkb,
-    row.titleKmr,
-    row.subtitleCkb,
-    row.subtitleKmr,
+    row.ckbContent?.title,
+    row.kmrContent?.title,
+    row.ckbContent?.subtitle,
+    row.kmrContent?.subtitle,
     row.slugCkb,
     row.slugKmr,
   ]
@@ -59,7 +59,7 @@ export function aboutContentLanguages(row: AboutDto): Language[] {
   const langs = row.contentLanguages ?? []
   if (langs.length) return langs
   const out: Language[] = []
-  if (row.titleCkb?.trim() || row.slugCkb?.trim()) out.push("CKB")
-  if (row.titleKmr?.trim() || row.slugKmr?.trim()) out.push("KMR")
+  if (row.ckbContent?.title?.trim() || row.slugCkb?.trim()) out.push("CKB")
+  if (row.kmrContent?.title?.trim() || row.slugKmr?.trim()) out.push("KMR")
   return out.length ? out : ["CKB"]
 }

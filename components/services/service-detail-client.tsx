@@ -50,7 +50,10 @@ import {
   formatFullTimestampKu,
   formatRelativeTimeKu,
 } from "@/lib/news-relative-time"
-import { sanitizeNewsBodyHtml } from "@/lib/sanitize-news-html"
+import {
+  isRichTextEmpty,
+  sanitizeNewsBodyHtml,
+} from "@/lib/sanitize-news-html"
 import { formatNewsDateLong, formatNewsDateShort } from "@/lib/intl-ckb"
 import { cn } from "@/lib/utils"
 import type { Language, ServiceDto } from "@/types/services"
@@ -65,16 +68,6 @@ function MetaDot() {
       ·
     </span>
   )
-}
-
-function isHtmlEmpty(html: string | undefined | null) {
-  if (!html?.trim()) return true
-  const stripped = html
-    .replace(/<[^>]*>/g, " ")
-    .replace(/&nbsp;/gi, " ")
-    .replace(/\s+/g, " ")
-    .trim()
-  return stripped.length === 0
 }
 
 function ArticleBodyTabs({ dto }: { dto: ServiceDto }) {
@@ -124,7 +117,7 @@ function ArticleBodyTabs({ dto }: { dto: ServiceDto }) {
           ) : null}
         </div>
       ) : null}
-      {isHtmlEmpty(html) ? (
+      {isRichTextEmpty(html) ? (
         <p className="text-muted-foreground text-sm italic">{NS.empty.no_body}</p>
       ) : (
         <div

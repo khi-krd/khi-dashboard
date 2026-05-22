@@ -1,3 +1,5 @@
+import type { AboutStatus, Language } from "@/types/about"
+
 import type { AboutFormValues } from "@/lib/validations/about"
 
 function trimOrUndef(s: string | null | undefined) {
@@ -5,89 +7,67 @@ function trimOrUndef(s: string | null | undefined) {
   return t || undefined
 }
 
-function serializeBlocks(values: AboutFormValues) {
-  return values.blocks.map((b, index) => ({
-    id: typeof b.id === "number" ? b.id : undefined,
-    type: b.type,
-    sortOrder: index,
-    contentLanguages: b.contentLanguages ?? values.contentLanguages,
-    headingCkb: trimOrUndef(b.headingCkb),
-    headingKmr: trimOrUndef(b.headingKmr),
-    bodyCkb: b.bodyCkb ?? undefined,
-    bodyKmr: b.bodyKmr ?? undefined,
-    imageUrl: trimOrUndef(b.imageUrl),
-    captionCkb: trimOrUndef(b.captionCkb),
-    captionKmr: trimOrUndef(b.captionKmr),
-    alignment: b.alignment ?? undefined,
-    embedUrl: trimOrUndef(b.embedUrl),
-    audioUrl: trimOrUndef(b.audioUrl),
-    titleCkb: trimOrUndef(b.titleCkb),
-    titleKmr: trimOrUndef(b.titleKmr),
-    durationSeconds: b.durationSeconds ?? undefined,
-    images: (b.images ?? []).map((img, i) => ({
-      id: img.id,
-      imageUrl: trimOrUndef(img.imageUrl),
-      sortOrder: img.sortOrder ?? i,
-    })),
-    textCkb: trimOrUndef(b.textCkb),
-    textKmr: trimOrUndef(b.textKmr),
-    attributionCkb: trimOrUndef(b.attributionCkb),
-    attributionKmr: trimOrUndef(b.attributionKmr),
-    value: trimOrUndef(b.value),
-    unitCkb: trimOrUndef(b.unitCkb),
-    unitKmr: trimOrUndef(b.unitKmr),
-    labelCkb: trimOrUndef(b.labelCkb),
-    labelKmr: trimOrUndef(b.labelKmr),
-  }))
+export type AboutWritePayload = {
+  status: AboutStatus
+  slugCkb: string
+  slugKmr?: string | null
+  heroImageUrl?: string | null
+  contentLanguages: Language[]
+  ckbContent?: {
+    title?: string
+    subtitle?: string
+    metaDescription?: string
+    body?: string
+  }
+  kmrContent?: {
+    title?: string
+    subtitle?: string
+    metaDescription?: string
+    body?: string
+  }
+  stats: Array<{
+    labelCkb?: string
+    labelKmr?: string
+    value: string
+  }>
 }
 
-export function aboutFormValuesToMultipart(
-  mode: "create" | "edit",
-  aboutId: number | undefined,
+export function aboutFormValuesToPayload(
   values: AboutFormValues,
-): FormData {
-  const fd = new FormData()
+): AboutWritePayload {
+  const heroImageUrl =
+    trimOrUndef(values.heroImageUrl) ??
+    trimOrUndef(values.existingHeroImageUrl) ??
+    null
 
-  const payload: Record<string, unknown> = {
-    ...(mode === "edit" && typeof aboutId === "number" ? { id: aboutId } : {}),
+  return {
     status: values.status,
     slugCkb: values.slugCkb.trim(),
     slugKmr: trimOrUndef(values.slugKmr) ?? null,
-    titleCkb: trimOrUndef(values.titleCkb),
-    titleKmr: trimOrUndef(values.titleKmr),
-    subtitleCkb: trimOrUndef(values.subtitleCkb),
-    subtitleKmr: trimOrUndef(values.subtitleKmr),
-    seoDescriptionCkb: trimOrUndef(values.seoDescriptionCkb),
-    seoDescriptionKmr: trimOrUndef(values.seoDescriptionKmr),
-    heroImageUrl: values.heroImageFile
-      ? null
-      : trimOrUndef(values.heroImageUrl) ?? trimOrUndef(values.existingHeroImageUrl),
+    heroImageUrl,
     contentLanguages: values.contentLanguages,
-    blocks: serializeBlocks(values),
+    ckbContent: values.contentLanguages.includes("CKB")
+      ? {
+          title: trimOrUndef(values.titleCkb),
+          subtitle: trimOrUndef(values.subtitleCkb),
+          metaDescription: trimOrUndef(values.seoDescriptionCkb),
+          body: values.bodyCkb ?? undefined,
+        }
+      : undefined,
+    kmrContent: values.contentLanguages.includes("KMR")
+      ? {
+          title: trimOrUndef(values.titleKmr),
+          subtitle: trimOrUndef(values.subtitleKmr),
+          metaDescription: trimOrUndef(values.seoDescriptionKmr),
+          body: values.bodyKmr ?? undefined,
+        }
+      : undefined,
+    stats: (values.stats ?? [])
+      .map((s) => ({
+        labelCkb: trimOrUndef(s.labelCkb),
+        labelKmr: trimOrUndef(s.labelKmr),
+        value: s.value?.trim() ?? "",
+      }))
+      .filter((s) => s.value.length > 0),
   }
-
-  fd.append(
-    "data",
-    new Blob([JSON.stringify(payload)], { type: "application/json" }),
-  )
-
-  if (values.heroImageFile) {
-    fd.append("heroImage", values.heroImageFile)
-  }
-
-  values.blocks.forEach((block, blockIndex) => {
-    if (block.imageFile) {
-      fd.append(`blockImages[${blockIndex}]`, block.imageFile)
-    }
-    ;(block.images ?? []).forEach((img, imgIndex) => {
-      if (img.imageFile) {
-        fd.append(
-          `blockGalleryImages[${blockIndex}][${imgIndex}]`,
-          img.imageFile,
-        )
-      }
-    })
-  })
-
-  return fd
 }

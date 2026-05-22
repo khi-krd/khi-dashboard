@@ -1,4 +1,5 @@
 import api from "@/lib/axios"
+import type { AboutWritePayload } from "@/lib/about-form-data"
 import {
   normalizeAboutDto,
   normalizeAboutPage,
@@ -51,16 +52,20 @@ export async function getAboutById(id: number): Promise<AboutDto | null> {
   return null
 }
 
-export async function createAbout(formData: FormData): Promise<AboutDto> {
-  const { data } = await api.post<unknown>(BASE, formData)
+export async function createAbout(payload: AboutWritePayload): Promise<AboutDto> {
+  const { data } = await api.post<unknown>(BASE, payload, {
+    headers: { "Content-Type": "application/json" },
+  })
   return normalizeAboutDto(unwrapApiData(data))
 }
 
 export async function updateAbout(
   id: number,
-  formData: FormData,
+  payload: AboutWritePayload,
 ): Promise<AboutDto> {
-  const { data } = await api.put<unknown>(`${BASE}/${id}`, formData)
+  const { data } = await api.put<unknown>(`${BASE}/${id}`, payload, {
+    headers: { "Content-Type": "application/json" },
+  })
   return normalizeAboutDto(unwrapApiData(data))
 }
 

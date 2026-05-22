@@ -26,12 +26,12 @@ export function AboutDeleteDialog({
 }: {
   open: boolean
   onOpenChange: (v: boolean) => void
-  target: Pick<AboutDto, "id" | "status" | "heroImageUrl" | "titleCkb"> | null
+  target: Pick<AboutDto, "id" | "status" | "heroImageUrl" | "ckbContent"> | null
   onConfirm: () => void
   isPending?: boolean
 }) {
   if (!target) return null
-  const title = target.titleCkb?.trim() || `#${target.id}`
+  const title = target.ckbContent?.title?.trim() || `#${target.id}`
   const hero = target.heroImageUrl?.trim()
 
   return (

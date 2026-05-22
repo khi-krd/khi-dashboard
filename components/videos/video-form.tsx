@@ -29,7 +29,7 @@ import { VideoLanguageToggleChip } from "@/components/videos/video-language-chip
 import { VideoMetadataGrid } from "@/components/videos/video-metadata-grid"
 import { VideoSourcePanel } from "@/components/videos/video-source-panel"
 import { VideoTagInput } from "@/components/videos/video-tag-input"
-import { VideoTiptapEditor } from "@/components/videos/video-tiptap-editor"
+import { TiptapEditor } from "@/components/shared/tiptap-editor"
 import { VideoTopicCombobox } from "@/components/videos/video-topic-combobox"
 import { VideoTypeToggle } from "@/components/videos/video-type-toggle"
 import { VideosErrorState } from "@/components/videos/video-error-state"
@@ -476,8 +476,10 @@ export function VideoForm({
                     {...register("ckbContent.location")}
                   />
                 </div>
-                <VideoTiptapEditor
+                <TiptapEditor
+                  stickyToolbar
                   lang="CKB"
+                  placeholder={NS.field.body_ckb}
                   value={watch("ckbContent.description") ?? ""}
                   onChange={(v) =>
                     setValue("ckbContent.description", v, { shouldDirty: true })
@@ -526,8 +528,10 @@ export function VideoForm({
                     {...register("kmrContent.location")}
                   />
                 </div>
-                <VideoTiptapEditor
+                <TiptapEditor
+                  stickyToolbar
                   lang="KMR"
+                  placeholder={NS.field.body_kmr}
                   value={watch("kmrContent.description") ?? ""}
                   onChange={(v) =>
                     setValue("kmrContent.description", v, { shouldDirty: true })

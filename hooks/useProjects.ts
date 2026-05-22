@@ -6,6 +6,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query"
 
+import type { ProjectWritePayload } from "@/lib/projects-form-data"
 import {
   createProject,
   deleteProject,
@@ -95,7 +96,7 @@ export function useProjectDetailQuery(id: number) {
 export function useCreateProject() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (formData: FormData) => createProject(formData),
+    mutationFn: (payload: ProjectWritePayload) => createProject(payload),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: projectKeys.lists() })
     },
@@ -105,8 +106,8 @@ export function useCreateProject() {
 export function useUpdateProject() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (variables: { id: number; formData: FormData }) =>
-      updateProject(variables.id, variables.formData),
+    mutationFn: (variables: { id: number; payload: ProjectWritePayload }) =>
+      updateProject(variables.id, variables.payload),
     onSuccess: (res, variables) => {
       if (res.success && res.data?.id === variables.id) {
         queryClient.setQueryData(projectKeys.detail(variables.id), res)

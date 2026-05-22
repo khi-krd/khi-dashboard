@@ -1,12 +1,5 @@
 export type Language = "CKB" | "KMR"
 
-export type NewsMediaType =
-  | "IMAGE"
-  | "VIDEO"
-  | "AUDIO"
-  | "DOCUMENT"
-  | "OTHER"
-
 export type LanguageContentDto = {
   title: string
   description?: string | null
@@ -27,16 +20,6 @@ export type SubCategoryDto = {
   kmrName: string
 }
 
-export type MediaDto = {
-  id?: number
-  type: NewsMediaType
-  url?: string | null
-  externalUrl?: string | null
-  embedUrl?: string | null
-  sortOrder?: number
-  createdAt?: string
-}
-
 export type NewsDto = {
   id?: number
   coverUrl?: string | null
@@ -50,7 +33,6 @@ export type NewsDto = {
   kmrContent?: LanguageContentDto | null
   tags?: BilingualSet
   keywords?: BilingualSet
-  media?: MediaDto[]
 }
 
 export type ApiResponse<T> = {

@@ -1,5 +1,10 @@
 import api from "@/lib/axios"
 import { normalizeServiceDto } from "@/lib/services-media-normalize"
+import {
+  uploadMedia,
+  uploadMediaMultiple,
+} from "@/services/mediaService"
+import type { MediaUploadResultDto } from "@/types/media"
 import type {
   ApiResponse,
   ServiceListResponse,
@@ -74,24 +79,16 @@ export async function getServiceTypes(): Promise<string[]> {
 }
 
 export async function createService(
-  formData: FormData,
+  payload: unknown,
 ): Promise<ServiceSingleResponse> {
-  const { data } = await api.post<ServiceSingleResponse>(
-    `${BASE}/with-files`,
-    formData,
-  )
-  return normalizedSingle(data)
+  return createServiceJson(payload)
 }
 
 export async function updateService(
   id: number,
-  formData: FormData,
+  payload: unknown,
 ): Promise<ServiceSingleResponse> {
-  const { data } = await api.put<ServiceSingleResponse>(
-    `${BASE}/${id}/with-files`,
-    formData,
-  )
-  return normalizedSingle(data)
+  return updateServiceJson(id, payload)
 }
 
 export async function createServiceJson(
@@ -137,28 +134,31 @@ export async function bulkDeleteServices(ids: number[]): Promise<void> {
   }
 }
 
+function toServiceUploadResponse(
+  results: MediaUploadResultDto[],
+): ServiceUploadResponse {
+  return {
+    success: true,
+    message: "",
+    data: results.map((r) => ({
+      fileUrl: r.fileUrl,
+      fileName: r.fileName,
+      fileSize: r.fileSize,
+      contentType: r.contentType,
+    })),
+  }
+}
+
 export async function uploadServiceFiles(
   files: File[],
 ): Promise<ServiceUploadResponse> {
-  const fd = new FormData()
-  for (const f of files) {
-    fd.append("files", f)
-  }
-  const { data } = await api.post<ServiceUploadResponse>(
-    `${BASE}/upload/multiple`,
-    fd,
-  )
-  return data
+  const results = await uploadMediaMultiple(files)
+  return toServiceUploadResponse(results)
 }
 
 export async function uploadServiceFile(
   file: File,
 ): Promise<ServiceUploadResponse> {
-  const fd = new FormData()
-  fd.append("file", file)
-  const { data } = await api.post<ServiceUploadResponse>(
-    `${BASE}/upload`,
-    fd,
-  )
-  return data
+  const result = await uploadMedia(file)
+  return toServiceUploadResponse([result])
 }

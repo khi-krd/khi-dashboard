@@ -1,4 +1,5 @@
 import api from "@/lib/axios"
+import type { NewsWritePayload } from "@/lib/news-form-data"
 import { normalizeNewsDto } from "@/lib/news-media-normalize"
 import type {
   ApiResponse,
@@ -55,23 +56,17 @@ export async function bulkDeleteNews(ids: number[]): Promise<void> {
 }
 
 export async function createNews(
-  formData: FormData,
+  payload: NewsWritePayload,
 ): Promise<NewsSingleResponse> {
-  const { data } = await api.post<NewsSingleResponse>(
-    `${BASE}/with-files`,
-    formData,
-  )
+  const { data } = await api.post<NewsSingleResponse>(BASE, payload)
   return normalizedSingle(data)
 }
 
 export async function updateNews(
   id: number,
-  formData: FormData,
+  payload: NewsWritePayload,
 ): Promise<NewsSingleResponse> {
-  const { data } = await api.put<NewsSingleResponse>(
-    `${BASE}/${id}/with-files`,
-    formData,
-  )
+  const { data } = await api.put<NewsSingleResponse>(`${BASE}/${id}`, payload)
   return normalizedSingle(data)
 }
 

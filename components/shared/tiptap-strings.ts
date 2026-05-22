@@ -1,0 +1,45 @@
+/** Shared strings for the rich-text editor toolbar and prompts. */
+export const TIPTAP_NS = {
+  toolbar: {
+    paragraph: "پەراگراف",
+    h1: "سەرناون H1",
+    h2: "سەرناون H2",
+    h3: "سەرناون H3",
+    bold: "قەڵەو",
+    italic: "لار",
+    underline: "ژێرەوە",
+    strike: "هێڵ بەسەر",
+    bulletList: "لیست",
+    orderedList: "لیستی ژمارەیی",
+    blockquote: "وتە",
+    code: "کۆد",
+    link: "لینک",
+    image: "وێنە",
+    horizontalRule: "هێڵ",
+    table: "خشتە",
+    alignStart: "ڕاست",
+    alignCenter: "ناوەند",
+    alignEnd: "چەپ",
+    undo: "گەڕانەوە",
+    redo: "دووبارەکردنەوە",
+    preview: "پێشبینین",
+    previewExit: "دەستکاری",
+  },
+  prompt: {
+    link: "ناونیشانی لینک بنووسە",
+    image: "ناونیشانی وێنە بنووسە",
+  },
+  hint: {
+    markdown: "ناوەرۆک وەک Markdown پاشەکەوت دەکرێت",
+  },
+  error: {
+    uploadFailed: "بارکردنی فایل سەرکەوتوو نەبوو",
+  },
+  cover: {
+    dropHint: "وێنە ڕاکێشە یان کلیک بکە بۆ بارکردن",
+    uploading: "بارکردن…",
+    upload: "بارکردنی وێنە",
+    remove: "لابردن",
+    urlLabel: "ناونیشانی URL",
+  },
+} as const

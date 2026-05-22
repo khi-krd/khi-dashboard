@@ -1,4 +1,5 @@
 import api from "@/lib/axios"
+import type { ProjectWritePayload } from "@/lib/projects-form-data"
 import { normalizeProjectDto } from "@/lib/projects-media-normalize"
 import type {
   ProjectListResponse,
@@ -70,22 +71,22 @@ export async function getProjectById(
 }
 
 export async function createProject(
-  formData: FormData,
+  payload: ProjectWritePayload,
 ): Promise<ProjectSingleResponse> {
   const { data } = await api.post<ProjectSingleResponse>(
-    `${BASE}/with-files`,
-    formData,
+    `${BASE}/create`,
+    payload,
   )
   return normalizedSingle(data)
 }
 
 export async function updateProject(
   id: number,
-  formData: FormData,
+  payload: ProjectWritePayload,
 ): Promise<ProjectSingleResponse> {
   const { data } = await api.put<ProjectSingleResponse>(
-    `${BASE}/update/${id}/with-files`,
-    formData,
+    `${BASE}/update/${id}`,
+    payload,
   )
   return normalizedSingle(data)
 }
