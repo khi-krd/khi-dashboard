@@ -1,9 +1,4 @@
-import type {
-  ServiceDto,
-  ServiceDisplayStatus,
-  ServiceMediaCollectionDto,
-  ServiceMediaType,
-} from "@/types/services"
+import type { ServiceDto, ServiceDisplayStatus } from "@/types/services"
 
 export type ServicesUiStatusFilter = "all" | "published" | "draft"
 
@@ -84,64 +79,10 @@ export function getServiceContent(
   return s.contents.find((c) => c.languageCode === lang) ?? null
 }
 
-export function getServiceCoverUrl(s: ServiceDto): string | null {
-  if (s.coverMediaUrl?.trim()) return s.coverMediaUrl.trim()
-  for (const col of s.mediaCollections ?? []) {
-    for (const f of col.files ?? []) {
-      if (f.thumbnailUrl?.trim()) return f.thumbnailUrl.trim()
-    }
-  }
-  for (const col of s.mediaCollections ?? []) {
-    if (col.mediaType === "IMAGE") {
-      for (const f of col.files ?? []) {
-        if (f.fileUrl?.trim()) return f.fileUrl.trim()
-      }
-    }
-  }
-  for (const col of s.mediaCollections ?? []) {
-    for (const f of col.files ?? []) {
-      if (f.fileUrl?.trim()) return f.fileUrl.trim()
-    }
-  }
-  return null
-}
-
-export function getDominantMediaType(
-  collections: ServiceMediaCollectionDto[] | undefined,
-): ServiceMediaType | null {
-  if (!collections?.length) return null
-  const counts: Record<ServiceMediaType, number> = {
-    IMAGE: 0,
-    VIDEO: 0,
-    AUDIO: 0,
-  }
-  for (const col of collections) {
-    const n = col.files?.length ?? 0
-    if (n > 0) counts[col.mediaType] += n
-  }
-  const entries = Object.entries(counts) as [ServiceMediaType, number][]
-  entries.sort((a, b) => b[1] - a[1])
-  if (entries[0][1] === 0) return null
-  return entries[0][0]
-}
-
-export function countServiceFiles(s: ServiceDto): number {
-  return (s.mediaCollections ?? []).reduce(
-    (acc, col) => acc + (col.files?.length ?? 0),
-    0,
-  )
-}
-
-export function countServiceCollections(s: ServiceDto): number {
-  return s.mediaCollections?.length ?? 0
-}
-
 export type ServiceAdminTableRow = ServiceDto & {
   titleCkb: string
   titleKmr: string
   sortPublishedAt: number
-  collectionCount: number
-  fileCount: number
 }
 
 export function toServiceAdminRow(dto: ServiceDto): ServiceAdminTableRow {
@@ -157,8 +98,6 @@ export function toServiceAdminRow(dto: ServiceDto): ServiceAdminTableRow {
     titleCkb,
     titleKmr,
     sortPublishedAt: Number.isFinite(t) ? t : 0,
-    collectionCount: countServiceCollections(dto),
-    fileCount: countServiceFiles(dto),
   }
 }
 

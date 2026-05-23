@@ -1,7 +1,6 @@
 "use client"
 
 import type { MouseEvent } from "react"
-import Image from "next/image"
 
 import { ServiceStatusPill } from "@/components/services/service-status-pill"
 import { NS, truncateTitle } from "@/components/services/services-strings"
@@ -18,14 +17,11 @@ import {
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { formatCkbDigits } from "@/lib/intl-ckb"
-import { getServiceCoverUrl } from "@/types/services-ui"
-
 type BulkTarget = {
   mode: "bulk"
   items: Array<
     Pick<ServiceDto, "id" | "active" | "publishedAt"> & {
       titleCkb?: string | null
-      coverUrl?: string | null
     }
   >
 }
@@ -34,7 +30,6 @@ type SingleTarget = {
   mode: "single"
   item: Pick<ServiceDto, "id" | "active" | "publishedAt"> & {
     titleCkb?: string | null
-    coverUrl?: string | null
   }
 }
 
@@ -57,7 +52,6 @@ export function ServiceDeleteDialog({
 
   const isBulk = target.mode === "bulk"
   const first = isBulk ? target.items[0] : target.item
-  const cover = first?.coverUrl
   const titleCkb = first?.titleCkb
 
   return (
@@ -80,17 +74,6 @@ export function ServiceDeleteDialog({
             </p>
             {!isBulk && first ? (
               <div className="border-border bg-card flex items-center gap-3 overflow-hidden rounded-md border p-2">
-                <div className="bg-muted relative size-12 shrink-0 overflow-hidden rounded-md">
-                  {cover ? (
-                    <Image
-                      src={cover}
-                      alt=""
-                      fill
-                      className="object-cover"
-                      unoptimized={cover.startsWith("http")}
-                    />
-                  ) : null}
-                </div>
                 <div className="min-w-0 flex-1 space-y-1">
                   <p className="truncate text-sm font-medium">
                     {truncateTitle(titleCkb ?? "", 120)}
@@ -152,6 +135,5 @@ export function serviceToDeleteTarget(
     active: row.active,
     publishedAt: row.publishedAt,
     titleCkb: row.titleCkb,
-    coverUrl: getServiceCoverUrl(row),
   }
 }

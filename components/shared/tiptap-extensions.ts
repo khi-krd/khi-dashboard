@@ -10,6 +10,13 @@ import TextAlign from "@tiptap/extension-text-align"
 import Underline from "@tiptap/extension-underline"
 import StarterKit from "@tiptap/starter-kit"
 
+import {
+  Audio,
+  FileLink,
+  Gallery,
+  Video,
+} from "@/components/shared/tiptap-media-nodes"
+
 export function createTiptapExtensions({
   editable,
   placeholder,
@@ -33,6 +40,10 @@ export function createTiptapExtensions({
       inline: false,
       allowBase64: true,
     }),
+    Gallery,
+    Video,
+    Audio,
+    FileLink,
     TextAlign.configure({
       types: ["heading", "paragraph"],
     }),

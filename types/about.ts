@@ -1,7 +1,5 @@
 export type Language = "CKB" | "KMR"
 
-export type AboutStatus = "DRAFT" | "ACTIVE" | "ARCHIVED"
-
 export type AboutContentDto = {
   title?: string | null
   subtitle?: string | null
@@ -9,22 +7,14 @@ export type AboutContentDto = {
   body?: string | null
 }
 
-export type StatItemDto = {
-  labelCkb?: string | null
-  labelKmr?: string | null
-  value: string
-}
-
 export type AboutDto = {
   id?: number
-  status: AboutStatus
+  active: boolean
   slugCkb?: string | null
   slugKmr?: string | null
-  heroImageUrl?: string | null
   ckbContent?: AboutContentDto | null
   kmrContent?: AboutContentDto | null
-  stats: StatItemDto[]
-  contentLanguages: Language[]
+  displayOrder?: number
   createdAt?: string
   updatedAt?: string
 }

@@ -1,5 +1,3 @@
-import type { AboutStatus, Language } from "@/types/about"
-
 import type { AboutFormValues } from "@/lib/validations/about"
 
 function trimOrUndef(s: string | null | undefined) {
@@ -8,11 +6,9 @@ function trimOrUndef(s: string | null | undefined) {
 }
 
 export type AboutWritePayload = {
-  status: AboutStatus
   slugCkb: string
   slugKmr?: string | null
-  heroImageUrl?: string | null
-  contentLanguages: Language[]
+  active: boolean
   ckbContent?: {
     title?: string
     subtitle?: string
@@ -25,27 +21,15 @@ export type AboutWritePayload = {
     metaDescription?: string
     body?: string
   }
-  stats: Array<{
-    labelCkb?: string
-    labelKmr?: string
-    value: string
-  }>
 }
 
 export function aboutFormValuesToPayload(
   values: AboutFormValues,
 ): AboutWritePayload {
-  const heroImageUrl =
-    trimOrUndef(values.heroImageUrl) ??
-    trimOrUndef(values.existingHeroImageUrl) ??
-    null
-
   return {
-    status: values.status,
     slugCkb: values.slugCkb.trim(),
     slugKmr: trimOrUndef(values.slugKmr) ?? null,
-    heroImageUrl,
-    contentLanguages: values.contentLanguages,
+    active: values.active,
     ckbContent: values.contentLanguages.includes("CKB")
       ? {
           title: trimOrUndef(values.titleCkb),
@@ -62,12 +46,5 @@ export function aboutFormValuesToPayload(
           body: values.bodyKmr ?? undefined,
         }
       : undefined,
-    stats: (values.stats ?? [])
-      .map((s) => ({
-        labelCkb: trimOrUndef(s.labelCkb),
-        labelKmr: trimOrUndef(s.labelKmr),
-        value: s.value?.trim() ?? "",
-      }))
-      .filter((s) => s.value.length > 0),
   }
 }

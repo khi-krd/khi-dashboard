@@ -3,9 +3,10 @@
 import { CheckIcon } from "@heroicons/react/24/outline"
 import { useFormContext } from "react-hook-form"
 
-import { STATUS_VARIANTS } from "@/components/about/about-status-pill"
+import { AboutStatusPill, aboutStatusHelper } from "@/components/about/about-status-pill"
 import { CompletionBar } from "@/components/about/completion-bar"
 import { NS } from "@/components/about/about-strings"
+import { ServiceActiveSwitch } from "@/components/services/service-active-switch"
 import {
   formatFullTimestampKu,
   formatRelativeTimeKu,
@@ -28,50 +29,29 @@ export function AboutFormSidebar({
   editDto?: AboutDto
 }) {
   const { watch, setValue } = useFormContext<AboutFormValues>()
-  const status = watch("status")
+  const active = watch("active")
   const contentLanguages = watch("contentLanguages")
   const values = watch()
 
   const ckbScore = computeAboutCompletion(values, "CKB")
   const kmrScore = computeAboutCompletion(values, "KMR")
-  const statusVariant = STATUS_VARIANTS[status]
 
   return (
     <aside className="border-border bg-card space-y-5 self-start rounded-xl border p-5 text-sm lg:sticky lg:top-20">
       <section>
         <h4 className="text-muted-foreground mb-2 text-[10px] font-medium tracking-wide uppercase">
-          {NS.sidebar.page_status}
+          {NS.sidebar.visibility}
         </h4>
-        <div className="bg-muted/40 grid grid-cols-3 gap-1 rounded-lg p-1">
-          {(["DRAFT", "ACTIVE", "ARCHIVED"] as const).map((s) => {
-            const variant = STATUS_VARIANTS[s]
-            const Icon = variant.icon
-            const isActive = status === s
-            return (
-              <button
-                key={s}
-                type="button"
-                onClick={() => setValue("status", s, { shouldDirty: true })}
-                className={cn(
-                  "flex items-center justify-center gap-1 rounded-md py-1.5 text-xs transition-all",
-                  isActive
-                    ? `${variant.className} font-medium shadow-sm`
-                    : "text-muted-foreground hover:bg-background/60",
-                )}
-              >
-                <Icon className="size-3" />
-                {variant.label}
-              </button>
-            )
-          })}
+        <div className="flex items-center justify-between gap-2">
+          <ServiceActiveSwitch
+            checked={active}
+            onCheckedChange={(v) => setValue("active", v, { shouldDirty: true })}
+            showLabel={false}
+          />
+          <AboutStatusPill active={active} />
         </div>
-        <p
-          className={cn(
-            "mt-2 text-xs",
-            status === "ACTIVE" ? "text-primary" : "text-muted-foreground",
-          )}
-        >
-          {statusVariant.helper}
+        <p className="text-muted-foreground mt-2 text-xs">
+          {aboutStatusHelper(active)}
         </p>
       </section>
 

@@ -16,7 +16,6 @@ import {
   searchServicesAdmin,
   toggleServiceActive,
   updateService,
-  uploadServiceFiles,
 } from "@/services/servicesService"
 import { servicesKeys } from "@/lib/services-query-keys"
 import type {
@@ -216,8 +215,3 @@ export function useToggleServiceActiveMutation() {
   })
 }
 
-export function useUploadServiceFilesMutation() {
-  return useMutation({
-    mutationFn: (files: File[]) => uploadServiceFiles(files),
-  })
-}

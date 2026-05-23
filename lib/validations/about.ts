@@ -4,31 +4,22 @@ import { NS } from "@/components/about/about-strings"
 import { isRichTextEmpty } from "@/lib/sanitize-news-html"
 import type { AboutDto } from "@/types/about"
 
-const statItemSchema = z.object({
-  labelCkb: z.string().max(200).optional().nullable(),
-  labelKmr: z.string().max(200).optional().nullable(),
-  value: z.string().max(50),
-})
-
 export const aboutFormSchema = z
   .object({
-    status: z.enum(["DRAFT", "ACTIVE", "ARCHIVED"]),
-    slugCkb: z.string().max(120),
-    slugKmr: z.string().max(120).optional().nullable(),
-    titleCkb: z.string().max(200).optional().nullable(),
-    titleKmr: z.string().max(200).optional().nullable(),
-    subtitleCkb: z.string().max(300).optional().nullable(),
-    subtitleKmr: z.string().max(300).optional().nullable(),
-    seoDescriptionCkb: z.string().max(160).optional().nullable(),
-    seoDescriptionKmr: z.string().max(160).optional().nullable(),
+    active: z.boolean().default(true),
+    slugCkb: z.string().max(200),
+    slugKmr: z.string().max(200).optional().nullable(),
+    titleCkb: z.string().max(300).optional().nullable(),
+    titleKmr: z.string().max(300).optional().nullable(),
+    subtitleCkb: z.string().max(500).optional().nullable(),
+    subtitleKmr: z.string().max(500).optional().nullable(),
+    seoDescriptionCkb: z.string().max(2500).optional().nullable(),
+    seoDescriptionKmr: z.string().max(2500).optional().nullable(),
     bodyCkb: z.string().optional().nullable(),
     bodyKmr: z.string().optional().nullable(),
-    heroImageUrl: z.string().optional().nullable(),
-    existingHeroImageUrl: z.string().optional().nullable(),
     contentLanguages: z
       .array(z.enum(["CKB", "KMR"]))
       .min(1, NS.validation.languageRequired),
-    stats: z.array(statItemSchema).default([]),
   })
   .superRefine((val, ctx) => {
     if (val.contentLanguages.includes("CKB") && !val.slugCkb?.trim()) {
@@ -57,7 +48,7 @@ export const aboutFormSchema = z
 export type AboutFormValues = z.infer<typeof aboutFormSchema>
 
 export const defaultAboutFormValues: AboutFormValues = {
-  status: "DRAFT",
+  active: true,
   slugCkb: "",
   slugKmr: "",
   titleCkb: "",
@@ -68,15 +59,16 @@ export const defaultAboutFormValues: AboutFormValues = {
   seoDescriptionKmr: "",
   bodyCkb: "",
   bodyKmr: "",
-  heroImageUrl: "",
-  existingHeroImageUrl: null,
   contentLanguages: ["CKB"],
-  stats: [],
 }
 
 export function aboutDtoToFormValues(dto: AboutDto): AboutFormValues {
+  const contentLanguages: ("CKB" | "KMR")[] = []
+  if (dto.ckbContent) contentLanguages.push("CKB")
+  if (dto.kmrContent) contentLanguages.push("KMR")
+
   return {
-    status: dto.status ?? "DRAFT",
+    active: dto.active ?? true,
     slugCkb: dto.slugCkb ?? "",
     slugKmr: dto.slugKmr ?? "",
     titleCkb: dto.ckbContent?.title ?? "",
@@ -87,16 +79,7 @@ export function aboutDtoToFormValues(dto: AboutDto): AboutFormValues {
     seoDescriptionKmr: dto.kmrContent?.metaDescription ?? "",
     bodyCkb: dto.ckbContent?.body ?? "",
     bodyKmr: dto.kmrContent?.body ?? "",
-    heroImageUrl: dto.heroImageUrl ?? "",
-    existingHeroImageUrl: dto.heroImageUrl ?? null,
-    contentLanguages: dto.contentLanguages?.length
-      ? dto.contentLanguages
-      : ["CKB"],
-    stats: (dto.stats ?? []).map((s) => ({
-      labelCkb: s.labelCkb ?? "",
-      labelKmr: s.labelKmr ?? "",
-      value: s.value ?? "",
-    })),
+    contentLanguages: contentLanguages.length ? contentLanguages : ["CKB"],
   }
 }
 

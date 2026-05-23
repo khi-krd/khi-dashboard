@@ -77,6 +77,7 @@ function sanitizeHtml(html: string): string {
       "title",
       "class",
       "controls",
+      "download",
     ],
     KEEP_CONTENT: false,
   })

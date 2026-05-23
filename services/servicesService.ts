@@ -1,16 +1,10 @@
 import api from "@/lib/axios"
 import { normalizeServiceDto } from "@/lib/services-media-normalize"
-import {
-  uploadMedia,
-  uploadMediaMultiple,
-} from "@/services/mediaService"
-import type { MediaUploadResultDto } from "@/types/media"
 import type {
   ApiResponse,
   ServiceListResponse,
   ServiceSingleResponse,
   ServiceTypesResponse,
-  ServiceUploadResponse,
 } from "@/types/services"
 
 const BASE = "/api/v1/services"
@@ -132,33 +126,4 @@ export async function bulkDeleteServices(ids: number[]): Promise<void> {
   } catch {
     await Promise.all(ids.map((id) => deleteService(id)))
   }
-}
-
-function toServiceUploadResponse(
-  results: MediaUploadResultDto[],
-): ServiceUploadResponse {
-  return {
-    success: true,
-    message: "",
-    data: results.map((r) => ({
-      fileUrl: r.fileUrl,
-      fileName: r.fileName,
-      fileSize: r.fileSize,
-      contentType: r.contentType,
-    })),
-  }
-}
-
-export async function uploadServiceFiles(
-  files: File[],
-): Promise<ServiceUploadResponse> {
-  const results = await uploadMediaMultiple(files)
-  return toServiceUploadResponse(results)
-}
-
-export async function uploadServiceFile(
-  file: File,
-): Promise<ServiceUploadResponse> {
-  const result = await uploadMedia(file)
-  return toServiceUploadResponse([result])
 }

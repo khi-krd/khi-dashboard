@@ -23,8 +23,6 @@ import {
   dashboardServicesCrumbHref,
 } from "@/components/services/service-breadcrumb"
 import { ServiceActiveSwitch } from "@/components/services/service-active-switch"
-import { ServiceCollectionsEditor } from "@/components/services/service-collections-editor"
-import { MediaCoverUpload } from "@/components/shared/media-cover-upload"
 import { ServiceFormPublishingSummary } from "@/components/services/service-form-publishing-summary"
 import { ServiceFormSectionCard } from "@/components/services/service-form-section-card"
 import { ServicePublishDateTime } from "@/components/services/service-publish-datetime"
@@ -86,7 +84,6 @@ export function ServiceForm({
   const updateMut = useUpdateService()
 
   const [canvasLang, setCanvasLang] = useState<Language>("CKB")
-  const [coverPreview, setCoverPreview] = useState<string | null>(null)
 
   const methods = useForm<ServiceFormValues>({
     resolver: zodResolver(serviceFormSchema) as Resolver<ServiceFormValues>,
@@ -108,23 +105,11 @@ export function ServiceForm({
   useEffect(() => {
     if (mode === "edit" && dto) {
       reset(serviceDtoToFormValues(dto))
-      const url =
-        dto.coverMediaUrl?.trim() ||
-        null
-      setCoverPreview(url)
     }
   }, [mode, dto, reset])
 
   const contentLanguages = watch("contentLanguages")
-  const coverMediaUrl = watch("coverMediaUrl")
-  const existingCover = watch("existingCoverMediaUrl")
   const serviceType = watch("serviceType")
-
-  useEffect(() => {
-    if (coverMediaUrl?.trim()) setCoverPreview(coverMediaUrl.trim())
-    else if (existingCover?.trim()) setCoverPreview(existingCover.trim())
-    else setCoverPreview(null)
-  }, [coverMediaUrl, existingCover])
 
   const typeOptions = useMemo(() => {
     const set = new Set(typesQuery.data ?? [])
@@ -147,12 +132,6 @@ export function ServiceForm({
   const errorCount = countFormErrors(errors)
   const pending = createMut.isPending || updateMut.isPending
   const submitDisabled = !isDirty || !isValid || pending
-
-  const hasCover = Boolean(
-    coverPreview?.trim() ||
-      coverMediaUrl?.trim() ||
-      existingCover?.trim(),
-  )
 
   const onSubmit = handleSubmit((values) => {
     const payload = serviceFormValuesToPayload(
@@ -251,25 +230,7 @@ export function ServiceForm({
           className="grid grid-cols-1 gap-6 px-4 py-6 lg:grid-cols-[340px_minmax(0,1fr)] lg:gap-8 lg:px-6"
         >
           <aside dir="rtl" className="space-y-4 lg:sticky lg:top-20 lg:self-start">
-            <MediaCoverUpload
-              label={NS.section.coverHero}
-              previewUrl={coverPreview}
-              urlValue={coverMediaUrl ?? ""}
-              onUrlChange={(s) => {
-                setValue("coverMediaUrl", s.length ? s : null, {
-                  shouldDirty: true,
-                })
-                if (s.trim()) {
-                  setValue("existingCoverMediaUrl", null, { shouldDirty: true })
-                } else if (mode === "edit" && dto?.coverMediaUrl) {
-                  setValue("existingCoverMediaUrl", dto.coverMediaUrl, {
-                    shouldDirty: true,
-                  })
-                }
-              }}
-            />
-
-            <ServiceFormPublishingSummary hasCover={hasCover} />
+            <ServiceFormPublishingSummary />
 
             <ServiceFormSectionCard title={NS.section.visibility}>
               <Controller
@@ -516,7 +477,6 @@ export function ServiceForm({
               </div>
             </ServiceFormSectionCard>
 
-            <ServiceCollectionsEditor />
           </div>
 
         </div>

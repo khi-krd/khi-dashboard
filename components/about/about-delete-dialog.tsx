@@ -1,7 +1,5 @@
 "use client"
 
-import Image from "next/image"
-
 import { AboutStatusPill } from "@/components/about/about-status-pill"
 import { NS, truncateTitle } from "@/components/about/about-strings"
 import type { AboutDto } from "@/types/about"
@@ -26,13 +24,12 @@ export function AboutDeleteDialog({
 }: {
   open: boolean
   onOpenChange: (v: boolean) => void
-  target: Pick<AboutDto, "id" | "status" | "heroImageUrl" | "ckbContent"> | null
+  target: Pick<AboutDto, "id" | "active" | "ckbContent"> | null
   onConfirm: () => void
   isPending?: boolean
 }) {
   if (!target) return null
   const title = target.ckbContent?.title?.trim() || `#${target.id}`
-  const hero = target.heroImageUrl?.trim()
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
@@ -47,14 +44,9 @@ export function AboutDeleteDialog({
           <AlertDialogDescription className="text-muted-foreground space-y-3 text-start text-sm leading-relaxed">
             <p>{NS.delete.description(truncateTitle(title, 64))}</p>
             <div className="border-border flex items-center gap-3 overflow-hidden rounded-md border bg-card p-2">
-              <div className="bg-muted relative aspect-[3/2] h-12 shrink-0 overflow-hidden rounded-md">
-                {hero ? (
-                  <Image src={hero} alt="" fill className="object-cover" />
-                ) : null}
-              </div>
               <div className="min-w-0 flex-1">
                 <p className="truncate font-medium">{title}</p>
-                <AboutStatusPill status={target.status} className="mt-1" />
+                <AboutStatusPill active={target.active} className="mt-1" />
               </div>
             </div>
           </AlertDialogDescription>

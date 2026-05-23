@@ -8,13 +8,8 @@ import {
   EyeIcon,
   MapPinIcon,
   PencilSquareIcon,
-  PhotoIcon,
-  SpeakerWaveIcon,
-  Squares2X2Icon,
   TrashIcon,
-  VideoCameraIcon,
 } from "@heroicons/react/24/outline"
-import Image from "next/image"
 import { useMemo } from "react"
 import {
   ColumnDef,
@@ -57,13 +52,8 @@ import {
 } from "@/components/ui/tooltip"
 import { formatCkbDigits, formatNewsDateShort } from "@/lib/intl-ckb"
 import { cn } from "@/lib/utils"
-import type { ServiceMediaType } from "@/types/services"
 import type { ServiceAdminTableRow } from "@/types/services-ui"
-import {
-  getDominantMediaType,
-  getServiceCoverUrl,
-  serviceDisplayStatus,
-} from "@/types/services-ui"
+import { serviceDisplayStatus } from "@/types/services-ui"
 
 function TableSortLabel({
   label,
@@ -82,14 +72,6 @@ function TableSortLabel({
       ) : null}
     </span>
   )
-}
-
-function CoverFallbackIcon({ type }: { type: ServiceMediaType | null }) {
-  const cls = "text-muted-foreground/50 size-4"
-  if (type === "VIDEO") return <VideoCameraIcon className={cls} />
-  if (type === "AUDIO") return <SpeakerWaveIcon className={cls} />
-  if (type === "IMAGE") return <PhotoIcon className={cls} />
-  return <Squares2X2Icon className={cls} />
 }
 
 function StackedBilingualCell({
@@ -254,35 +236,6 @@ export function ServicesDataGrid({
         ),
       },
       {
-        id: "cover",
-        enableSorting: false,
-        size: 56,
-        meta: {
-          headerTitle: NS.col.cover,
-          cellClassName: "w-14 min-w-14 max-w-14",
-          skeleton: <Skeleton className="size-10 shrink-0 rounded-md" />,
-        },
-        header: NS.col.cover,
-        cell: ({ row }) => {
-          const cover = getServiceCoverUrl(row.original)
-          const dominant = getDominantMediaType(row.original.mediaCollections)
-          return cover ? (
-            <Image
-              src={cover}
-              alt=""
-              width={40}
-              height={40}
-              className="size-10 rounded-md object-cover"
-              unoptimized={cover.startsWith("http")}
-            />
-          ) : (
-            <div className="bg-muted flex size-10 items-center justify-center rounded-md">
-              <CoverFallbackIcon type={dominant} />
-            </div>
-          )
-        },
-      },
-      {
         id: "titleCkb",
         accessorKey: "titleCkb",
         sortingFn: "alphanumeric",
@@ -407,39 +360,6 @@ export function ServicesDataGrid({
               : NS.dash}
           </span>
         ),
-      },
-      {
-        id: "media",
-        enableSorting: false,
-        size: 80,
-        meta: {
-          headerTitle: NS.col.media,
-          cellClassName: "w-20",
-          skeleton: (
-            <div className="flex flex-col gap-1">
-              <Skeleton className="h-3.5 w-12" />
-              <Skeleton className="h-3 w-10" />
-            </div>
-          ),
-        },
-        header: NS.col.media,
-        cell: ({ row }) => {
-          const cc = row.original.collectionCount
-          const fc = row.original.fileCount
-          if (cc === 0 && fc === 0) {
-            return <span className="text-muted-foreground/60 text-sm">{NS.dash}</span>
-          }
-          return (
-            <div className="flex flex-col leading-tight">
-              <span className="text-sm">
-                {NS.list.collectionCount(formatCkbDigits(cc))}
-              </span>
-              <span className="text-muted-foreground text-xs">
-                {NS.list.fileCount(formatCkbDigits(fc))}
-              </span>
-            </div>
-          )
-        },
       },
       {
         id: "actions",

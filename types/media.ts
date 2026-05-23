@@ -1,4 +1,9 @@
-export type MediaUploadType = "image" | "video" | "audio" | "document"
+export type MediaUploadType =
+  | "image"
+  | "video"
+  | "audio"
+  | "document"
+  | "gallery"
 
 export type MediaUploadResultDto = {
   fileUrl: string

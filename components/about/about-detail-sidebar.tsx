@@ -1,10 +1,6 @@
 "use client"
 
-import {
-  ArchiveBoxIcon,
-  DocumentDuplicateIcon,
-  LinkIcon,
-} from "@heroicons/react/24/outline"
+import { LinkIcon } from "@heroicons/react/24/outline"
 import { toast } from "sonner"
 
 import { AboutStatusPill } from "@/components/about/about-status-pill"
@@ -16,13 +12,14 @@ import { Button } from "@/components/ui/button"
 import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard"
 import { computeAboutCompletion } from "@/lib/validations/about"
 import { aboutPublicUrl } from "@/lib/about-url-helpers"
-import { formatCkbDigits } from "@/lib/intl-ckb"
+import { aboutContentLanguages } from "@/types/about-ui"
 import type { AboutDto } from "@/types/about"
 
 const divider = "border-border/60 -mx-5 border-t"
 
 export function AboutDetailSidebar({ about }: { about: AboutDto }) {
   const { copyToClipboard } = useCopyToClipboard()
+  const langs = aboutContentLanguages(about)
   const formLike = {
     titleCkb: about.ckbContent?.title,
     titleKmr: about.kmrContent?.title,
@@ -41,18 +38,18 @@ export function AboutDetailSidebar({ about }: { about: AboutDto }) {
     <aside className="border-border bg-card space-y-5 rounded-xl border p-5 text-sm lg:sticky lg:top-20 lg:self-start">
       <section>
         <h4 className="text-muted-foreground mb-2 text-[10px] font-medium tracking-wide uppercase">
-          {NS.sidebar.page_status}
+          {NS.sidebar.visibility}
         </h4>
         <AboutStatusPill
-          status={about.status}
+          active={about.active}
           className="w-full justify-center py-1.5"
           size="large"
         />
         <div className="mt-4 space-y-3">
-          {about.contentLanguages.includes("CKB") ? (
+          {langs.includes("CKB") ? (
             <CompletionBar lang="ckb" score={ckbScore} />
           ) : null}
-          {about.contentLanguages.includes("KMR") ? (
+          {langs.includes("KMR") ? (
             <CompletionBar lang="kmr" score={kmrScore} />
           ) : null}
         </div>
@@ -84,7 +81,7 @@ export function AboutDetailSidebar({ about }: { about: AboutDto }) {
             <dd>
               <SeoCountChip
                 value={about.ckbContent?.title?.length ?? 0}
-                max={60}
+                max={300}
                 titleMax
               />
             </dd>
@@ -96,7 +93,7 @@ export function AboutDetailSidebar({ about }: { about: AboutDto }) {
             <dd>
               <SeoCountChip
                 value={about.ckbContent?.metaDescription?.length ?? 0}
-                max={160}
+                max={2500}
               />
             </dd>
           </div>
@@ -107,58 +104,23 @@ export function AboutDetailSidebar({ about }: { about: AboutDto }) {
 
       <section>
         <h4 className="text-muted-foreground mb-2 text-[10px] font-medium tracking-wide uppercase">
-          {NS.sidebar.stats}
-        </h4>
-        <p className="font-mono text-xs">
-          {formatCkbDigits(about.stats?.length ?? 0)}
-        </p>
-      </section>
-
-      <div className={divider} />
-
-      <section>
-        <h4 className="text-muted-foreground mb-2 text-[10px] font-medium tracking-wide uppercase">
           {NS.sidebar.actions}
         </h4>
-        <div className="space-y-1">
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="h-8 w-full justify-start"
-            disabled={!slug}
-            onClick={() => {
-              if (!slug) return
-              copyToClipboard(aboutPublicUrl(slug))
-              toast(NS.toast.copied)
-            }}
-          >
-            <LinkIcon className="me-2 size-3.5" />
-            {NS.action.copy_url}
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="h-8 w-full justify-start"
-            disabled
-          >
-            <DocumentDuplicateIcon className="me-2 size-3.5" />
-            {NS.action.copy_page}
-          </Button>
-          {about.status === "ACTIVE" ? (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="h-8 w-full justify-start"
-              disabled
-            >
-              <ArchiveBoxIcon className="me-2 size-3.5" />
-              {NS.action.archive}
-            </Button>
-          ) : null}
-        </div>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="h-8 w-full justify-start"
+          disabled={!slug}
+          onClick={() => {
+            if (!slug) return
+            copyToClipboard(aboutPublicUrl(slug))
+            toast(NS.toast.copied)
+          }}
+        >
+          <LinkIcon className="me-2 size-3.5" />
+          {NS.action.copy_url}
+        </Button>
       </section>
     </aside>
   )

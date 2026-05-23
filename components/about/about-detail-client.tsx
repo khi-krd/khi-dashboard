@@ -8,10 +8,8 @@ import {
   MagnifyingGlassIcon,
   PencilIcon,
   PencilSquareIcon,
-  PhotoIcon,
   TrashIcon,
 } from "@heroicons/react/24/outline"
-import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
@@ -42,6 +40,7 @@ import {
   sanitizeNewsBodyHtml,
 } from "@/lib/sanitize-news-html"
 import { cn } from "@/lib/utils"
+import { aboutContentLanguages } from "@/types/about-ui"
 import type { AboutDto, Language } from "@/types/about"
 
 export function AboutDetailClient({ aboutId }: { aboutId: number }) {
@@ -68,9 +67,8 @@ export function AboutDetailClient({ aboutId }: { aboutId: number }) {
     )
   }
 
-  const bothLangs =
-    about.contentLanguages.includes("CKB") &&
-    about.contentLanguages.includes("KMR")
+  const langs = aboutContentLanguages(about)
+  const bothLangs = langs.includes("CKB") && langs.includes("KMR")
   const titleCkb = about.ckbContent?.title
   const titleKmr = about.kmrContent?.title
   const subtitle =
@@ -145,29 +143,9 @@ export function AboutDetailClient({ aboutId }: { aboutId: number }) {
         <AboutDetailSidebar about={about} />
 
         <article className="min-w-0">
-          {about.heroImageUrl?.trim() ? (
-            <figure className="bg-muted -mx-2 aspect-[8/3] overflow-hidden rounded-2xl shadow-sm md:-mx-6">
-              <Image
-                src={about.heroImageUrl}
-                alt=""
-                width={1600}
-                height={600}
-                className="h-full w-full object-cover"
-                priority
-              />
-            </figure>
-          ) : (
-            <div className="border-border bg-muted/40 -mx-2 flex aspect-[8/3] flex-col items-center justify-center gap-2 rounded-2xl border border-dashed md:-mx-6">
-              <PhotoIcon className="text-muted-foreground/30 size-10" />
-              <span className="text-muted-foreground/60 text-xs">
-                {NS.detail.no_hero}
-              </span>
-            </div>
-          )}
-
-          <div className="mt-6">
+          <div>
             <div className="text-muted-foreground flex flex-wrap items-center gap-2 text-xs">
-              <AboutStatusPill status={about.status} />
+              <AboutStatusPill active={about.active} />
               <span>·</span>
               <span className="font-mono">#{formatCkbDigits(about.id)}</span>
               {about.createdAt ? (
@@ -256,36 +234,6 @@ export function AboutDetailClient({ aboutId }: { aboutId: number }) {
                     __html: sanitizeNewsBodyHtml(body ?? ""),
                   }}
                 />
-              </section>
-            ) : null}
-
-            {(about.stats?.length ?? 0) > 0 ? (
-              <section className="border-border/60 mt-12 border-t pt-8">
-                <header className="mb-6 flex items-baseline justify-between">
-                  <h3 className="text-base font-semibold">{NS.detail.stats}</h3>
-                  <span className="text-muted-foreground font-mono text-xs">
-                    {NS.detail.stat_count(
-                      formatCkbDigits(about.stats.length),
-                    )}
-                  </span>
-                </header>
-                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-                  {about.stats.map((stat, i) => (
-                    <div
-                      key={i}
-                      className="border-border bg-muted/20 rounded-xl border p-4 text-center"
-                    >
-                      <div className="text-3xl font-bold tabular-nums">
-                        {stat.value}
-                      </div>
-                      <div className="text-muted-foreground mt-1 text-sm">
-                        {activeLang === "CKB"
-                          ? stat.labelCkb || stat.labelKmr
-                          : stat.labelKmr || stat.labelCkb}
-                      </div>
-                    </div>
-                  ))}
-                </div>
               </section>
             ) : null}
           </div>

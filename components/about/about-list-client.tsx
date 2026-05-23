@@ -31,11 +31,14 @@ import { formatCkbDigits } from "@/lib/intl-ckb"
 import { cn } from "@/lib/utils"
 import { toastError } from "@/lib/toast"
 import { toast } from "sonner"
-import type { AboutUiLanguageFilter, AboutUiStatusFilter } from "@/types/about-ui"
+import type {
+  AboutUiActiveFilter,
+  AboutUiLanguageFilter,
+} from "@/types/about-ui"
 import {
+  matchesAboutActiveFilter,
   matchesAboutClientSearchFilter,
   matchesAboutLanguageFilter,
-  matchesAboutStatusFilter,
   toAboutAdminRow,
 } from "@/types/about-ui"
 import type { AboutAdminTableRow } from "@/types/about-ui"
@@ -62,7 +65,7 @@ export function AboutListClient() {
 function AboutListClientInner() {
   const [searchRaw, setSearchRaw] = useState("")
   const debouncedKw = useDebouncedValue(searchRaw.trim(), 300)
-  const [status, setStatus] = useState<AboutUiStatusFilter>("all")
+  const [activeFilter, setActiveFilter] = useState<AboutUiActiveFilter>("all")
   const [language, setLanguage] = useState<AboutUiLanguageFilter>("all")
   const [pageIndex, setPageIndex] = useState(0)
   const pageSize = 20
@@ -77,18 +80,18 @@ function AboutListClientInner() {
     const rows = (listQ.data?.content ?? []).map(toAboutAdminRow)
     return rows.filter(
       (r) =>
-        matchesAboutStatusFilter(r, status) &&
+        matchesAboutActiveFilter(r, activeFilter) &&
         matchesAboutLanguageFilter(r, language) &&
         matchesAboutClientSearchFilter(r, debouncedKw),
     )
-  }, [listQ.data?.content, status, language, debouncedKw])
+  }, [listQ.data?.content, activeFilter, language, debouncedKw])
 
   const anyFilterActive =
-    status !== "all" || language !== "all" || debouncedKw.length > 0
+    activeFilter !== "all" || language !== "all" || debouncedKw.length > 0
 
   function resetFilters() {
     setSearchRaw("")
-    setStatus("all")
+    setActiveFilter("all")
     setLanguage("all")
     setPageIndex(0)
   }
@@ -131,9 +134,9 @@ function AboutListClientInner() {
           />
         </div>
         <Select
-          value={status}
+          value={activeFilter}
           onValueChange={(v) => {
-            setStatus(v as AboutUiStatusFilter)
+            setActiveFilter(v as AboutUiActiveFilter)
             setPageIndex(0)
           }}
         >
@@ -142,9 +145,8 @@ function AboutListClientInner() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">{NS.filter.status_all}</SelectItem>
-            <SelectItem value="DRAFT">{NS.status.draft}</SelectItem>
-            <SelectItem value="ACTIVE">{NS.status.active}</SelectItem>
-            <SelectItem value="ARCHIVED">{NS.status.archived}</SelectItem>
+            <SelectItem value="active">{NS.filter.active}</SelectItem>
+            <SelectItem value="inactive">{NS.filter.inactive}</SelectItem>
           </SelectContent>
         </Select>
         <Select

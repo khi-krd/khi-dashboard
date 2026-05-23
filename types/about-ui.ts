@@ -1,6 +1,7 @@
-import type { AboutDto, AboutStatus, Language } from "@/types/about"
+import type { AboutDto, Language } from "@/types/about"
 
-export type AboutUiStatusFilter = "all" | AboutStatus
+export type AboutUiActiveFilter = "all" | "active" | "inactive"
+
 export type AboutUiLanguageFilter = "all" | Language
 
 export type AboutAdminTableRow = AboutDto & {
@@ -19,12 +20,14 @@ export function toAboutAdminRow(dto: AboutDto): AboutAdminTableRow {
   }
 }
 
-export function matchesAboutStatusFilter(
+export function matchesAboutActiveFilter(
   row: AboutDto,
-  filter: AboutUiStatusFilter,
+  filter: AboutUiActiveFilter,
 ): boolean {
   if (filter === "all") return true
-  return row.status === filter
+  if (filter === "active") return row.active === true
+  if (filter === "inactive") return row.active === false
+  return true
 }
 
 export function matchesAboutLanguageFilter(
@@ -32,7 +35,7 @@ export function matchesAboutLanguageFilter(
   filter: AboutUiLanguageFilter,
 ): boolean {
   if (filter === "all") return true
-  return row.contentLanguages?.includes(filter) ?? false
+  return aboutContentLanguages(row).includes(filter)
 }
 
 export function matchesAboutClientSearchFilter(
@@ -56,10 +59,20 @@ export function matchesAboutClientSearchFilter(
 }
 
 export function aboutContentLanguages(row: AboutDto): Language[] {
-  const langs = row.contentLanguages ?? []
-  if (langs.length) return langs
   const out: Language[] = []
-  if (row.ckbContent?.title?.trim() || row.slugCkb?.trim()) out.push("CKB")
-  if (row.kmrContent?.title?.trim() || row.slugKmr?.trim()) out.push("KMR")
+  if (
+    row.ckbContent?.title?.trim() ||
+    row.slugCkb?.trim() ||
+    row.ckbContent?.body?.trim()
+  ) {
+    out.push("CKB")
+  }
+  if (
+    row.kmrContent?.title?.trim() ||
+    row.slugKmr?.trim() ||
+    row.kmrContent?.body?.trim()
+  ) {
+    out.push("KMR")
+  }
   return out.length ? out : ["CKB"]
 }

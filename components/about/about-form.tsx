@@ -6,7 +6,6 @@ import {
   CheckIcon,
   LinkIcon,
   MagnifyingGlassIcon,
-  PhotoIcon,
 } from "@heroicons/react/24/outline"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -24,9 +23,7 @@ import {
 } from "@/components/about/about-breadcrumb"
 import { AboutErrorState } from "@/components/about/about-error-state"
 import { AboutFormSidebar } from "@/components/about/about-form-sidebar"
-import { AboutStatsEditor } from "@/components/about/about-stats-editor"
 import { NS } from "@/components/about/about-strings"
-import { MediaCoverUpload } from "@/components/shared/media-cover-upload"
 import { TiptapEditor } from "@/components/shared/tiptap-editor"
 import { SeoCountChip } from "@/components/about/seo-count-chip"
 import { aboutSiteBaseUrl } from "@/lib/about-url-helpers"
@@ -143,11 +140,6 @@ export function AboutForm({
   const subtitleCkb = watch("subtitleCkb")
   const subtitleKmr = watch("subtitleKmr")
   const seoDescriptionCkb = watch("seoDescriptionCkb")
-  const heroImageUrl = watch("heroImageUrl")
-  const existingHero = watch("existingHeroImageUrl")
-
-  const heroPreview =
-    heroImageUrl?.trim() || existingHero?.trim() || null
 
   useEffect(() => {
     if (!contentLanguages.includes(activeLang) && contentLanguages[0]) {
@@ -279,37 +271,6 @@ export function AboutForm({
             </div>
 
             <section>
-              <h3 className="mb-3 flex items-center gap-2 text-sm font-medium">
-                <PhotoIcon className="text-muted-foreground size-4" />
-                {NS.form.hero}
-                <span className="text-muted-foreground text-xs font-normal">
-                  {NS.form.hero_shared}
-                </span>
-              </h3>
-              <MediaCoverUpload
-                label={NS.form.hero}
-                previewUrl={heroPreview}
-                urlValue={heroImageUrl ?? ""}
-                onUrlChange={(url) => {
-                  setValue("heroImageUrl", url.length ? url : null, {
-                    shouldDirty: true,
-                  })
-                  if (url.trim()) {
-                    setValue("existingHeroImageUrl", null, { shouldDirty: true })
-                  } else if (mode === "edit" && editDto?.heroImageUrl) {
-                    setValue("existingHeroImageUrl", editDto.heroImageUrl, {
-                      shouldDirty: true,
-                    })
-                  }
-                }}
-              />
-              <p className="text-muted-foreground mt-2 text-xs">
-                {NS.form.hero_hint}{" "}
-                <span className="font-mono">1600×600px</span>
-              </p>
-            </section>
-
-            <section className="border-border/60 mt-10 border-t pt-6">
               <h3 className="mb-3 text-sm font-medium">{NS.form.slugs}</h3>
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 <SlugInput
@@ -337,12 +298,12 @@ export function AboutForm({
                     {NS.form.title}
                   </span>
                   <span className="text-muted-foreground/60 font-mono text-[10px]">
-                    {formatCkbDigits(titleLen)}/200
+                    {formatCkbDigits(titleLen)}/300
                   </span>
                 </div>
                 <input
                   type="text"
-                  maxLength={200}
+                  maxLength={300}
                   placeholder="دەربارەی ئێمە…"
                   className="placeholder:text-muted-foreground/40 w-full border-0 bg-transparent px-0 text-3xl leading-tight font-bold focus:ring-0 focus-visible:ring-0 md:text-4xl"
                   {...register(titleField)}
@@ -373,11 +334,11 @@ export function AboutForm({
                     <MagnifyingGlassIcon className="text-muted-foreground size-3.5" />
                     <span className="text-xs font-medium">{NS.form.seo}</span>
                   </div>
-                  <SeoCountChip value={seoLen} max={160} />
+                  <SeoCountChip value={seoLen} max={2500} />
                 </div>
                 <Textarea
                   rows={3}
-                  maxLength={160}
+                  maxLength={2500}
                   placeholder="وەسفی کورت بۆ سێرچ ئەنجین…"
                   className="resize-none"
                   {...register(seoField)}
@@ -427,7 +388,6 @@ export function AboutForm({
               )}
             </section>
 
-            <AboutStatsEditor activeLang={activeLang} />
           </article>
         </div>
 

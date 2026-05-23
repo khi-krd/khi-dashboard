@@ -178,3 +178,77 @@
     cursor: pointer;
   }
 }
+
+/* --- Embedded rich-text media --- */
+
+/* Public render (`dangerouslySetInnerHTML`): gallery shows as a responsive grid. */
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+.gallery img {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  margin: 0;
+}
+video {
+  max-width: 100%;
+  border-radius: var(--radius-md);
+}
+audio {
+  width: 100%;
+}
+
+/* Downloadable document / "other file" link, rendered as a chip. */
+.file {
+  margin: 1rem 0;
+}
+.file-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  max-width: 100%;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--muted);
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  word-break: break-word;
+}
+.file-link::before {
+  content: "📄";
+}
+.file-link:hover {
+  text-decoration: underline;
+}
+
+/* In-editor sizing: keep standalone images/videos from dominating the editor. */
+.ProseMirror img,
+.ProseMirror video {
+  max-height: 24rem;
+  width: auto;
+  max-width: 100%;
+  margin-inline: auto;
+}
+.ProseMirror video {
+  display: block;
+}
+
+/* In-editor gallery carousel (NodeView): uniform, fixed-height slides. */
+.tiptap-gallery {
+  margin: 1rem 0;
+}
+.ProseMirror .tiptap-gallery img {
+  width: 100%;
+  height: 18rem;
+  max-height: none;
+  object-fit: cover;
+  margin: 0;
+}

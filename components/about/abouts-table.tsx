@@ -5,11 +5,8 @@ import {
   ChevronRightIcon,
   EyeIcon,
   PencilSquareIcon,
-  PhotoIcon,
-  Squares2X2Icon,
   TrashIcon,
 } from "@heroicons/react/24/outline"
-import Image from "next/image"
 import { useRouter } from "next/navigation"
 
 import { AboutLanguageChipRow } from "@/components/about/about-language-chip"
@@ -52,11 +49,9 @@ export function AboutsTable({
         <table className="w-full text-sm">
           <thead>
             <tr className="border-border text-muted-foreground/80 border-b text-xs font-medium">
-              <th className="w-16 px-3 py-2.5 text-start" />
               <th className="w-14 py-2.5 text-start">{NS.table.id}</th>
               <th className="w-44 py-2.5 text-start">{NS.table.slugs}</th>
               <th className="py-2.5 text-start">{NS.table.title}</th>
-              <th className="w-20 py-2.5 text-start">{NS.table.stats}</th>
               <th className="w-24 py-2.5 text-start">{NS.table.language}</th>
               <th className="w-24 py-2.5 text-start">{NS.table.status}</th>
               <th className="w-28 py-2.5 text-start">{NS.table.date}</th>
@@ -73,23 +68,6 @@ export function AboutsTable({
                   className="group hover:bg-muted/40 cursor-pointer transition-colors"
                   onClick={() => router.push(`/dashboard/about/${id}`)}
                 >
-                  <td className="px-3 py-3">
-                    {about.heroImageUrl ? (
-                      <div className="bg-muted relative h-8 w-12 shrink-0 overflow-hidden rounded-md">
-                        <Image
-                          src={about.heroImageUrl}
-                          alt=""
-                          fill
-                          className="object-cover"
-                          sizes="48px"
-                        />
-                      </div>
-                    ) : (
-                      <div className="bg-muted flex h-8 w-12 shrink-0 items-center justify-center rounded-md">
-                        <PhotoIcon className="text-muted-foreground/40 size-4" />
-                      </div>
-                    )}
-                  </td>
                   <td className="text-muted-foreground py-3 font-mono text-xs">
                     #{formatCkbDigits(id)}
                   </td>
@@ -113,19 +91,11 @@ export function AboutsTable({
                       </div>
                     ) : null}
                   </td>
-                  <td className="text-muted-foreground py-3 text-xs">
-                    <span className="inline-flex items-center gap-1">
-                      <Squares2X2Icon className="size-3.5" />
-                      <span className="font-mono">
-                        {formatCkbDigits(about.stats?.length ?? 0)}
-                      </span>
-                    </span>
-                  </td>
                   <td className="py-3">
                     <AboutLanguageChipRow langs={langs} />
                   </td>
                   <td className="py-3">
-                    <AboutStatusPill status={about.status} />
+                    <AboutStatusPill active={about.active} />
                   </td>
                   <td className="text-muted-foreground py-3 font-mono text-xs">
                     {about.updatedAt

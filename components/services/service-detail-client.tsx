@@ -7,11 +7,9 @@ import {
   LinkIcon,
   MapPinIcon,
   PencilSquareIcon,
-  PhotoIcon,
   ShareIcon,
   TrashIcon,
 } from "@heroicons/react/24/outline"
-import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useMemo, useState } from "react"
@@ -22,7 +20,6 @@ import {
   dashboardServicesCrumbHref,
 } from "@/components/services/service-breadcrumb"
 import { ServiceActiveSwitch } from "@/components/services/service-active-switch"
-import { ServiceCollectionCard } from "@/components/services/service-collection-card"
 import { ServiceDeleteDialog } from "@/components/services/service-delete-dialog"
 import { ServiceDetailSkeleton } from "@/components/services/service-detail-skeleton"
 import { ServiceLanguageChipRow } from "@/components/services/service-language-chip"
@@ -57,7 +54,7 @@ import {
 import { formatNewsDateLong, formatNewsDateShort } from "@/lib/intl-ckb"
 import { cn } from "@/lib/utils"
 import type { Language, ServiceDto } from "@/types/services"
-import { getServiceContent, getServiceCoverUrl } from "@/types/services-ui"
+import { getServiceContent } from "@/types/services-ui"
 
 const sectionDivider =
   "mt-6 border-t border-border/60 pt-6 [&:first-child]:mt-0 [&:first-child]:border-t-0 [&:first-child]:pt-0"
@@ -143,8 +140,6 @@ export function ServiceDetailClient({ serviceId }: { serviceId: number }) {
 
   const titleCkb = dto ? getServiceContent(dto, "CKB")?.title ?? "" : ""
   const titleKmr = dto ? getServiceContent(dto, "KMR")?.title ?? "" : ""
-  const coverUrl = dto ? getServiceCoverUrl(dto) : null
-
   const publicUrl = useMemo(() => {
     if (!dto?.id) return null
     return `${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/services/${dto.id}`
@@ -182,10 +177,6 @@ export function ServiceDetailClient({ serviceId }: { serviceId: number }) {
       },
     )
   }
-
-  const collections = [...(dto.mediaCollections ?? [])].sort(
-    (a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0),
-  )
 
   return (
     <TooltipProvider delay={250}>
@@ -459,25 +450,7 @@ export function ServiceDetailClient({ serviceId }: { serviceId: number }) {
                 ) : null}
               </div>
 
-              <div className="relative mt-6 aspect-[21/9] overflow-hidden rounded-xl">
-                {coverUrl ? (
-                  <Image
-                    src={coverUrl}
-                    alt=""
-                    fill
-                    className="object-cover"
-                    unoptimized={coverUrl.startsWith("http")}
-                    priority
-                  />
-                ) : (
-                  <div className="bg-muted text-muted-foreground flex h-full flex-col items-center justify-center gap-2">
-                    <PhotoIcon className="size-10 opacity-40" />
-                    <span className="text-sm">{NS.empty.no_cover}</span>
-                  </div>
-                )}
-              </div>
-
-              <div className="mt-8">
+              <div className="mt-6">
                 <h1 className="text-4xl font-bold leading-tight">
                   {titleCkb || NS.dash}
                 </h1>
@@ -489,22 +462,6 @@ export function ServiceDetailClient({ serviceId }: { serviceId: number }) {
               </div>
 
               <ArticleBodyTabs dto={dto} />
-
-              {collections.length > 0 ? (
-                <section className={cn("mt-12", sectionDivider)}>
-                  <h3 className="mb-6 text-sm font-semibold">
-                    {NS.section.collectionsDetail} ({collections.length})
-                  </h3>
-                  <div className="space-y-10">
-                    {collections.map((col) => (
-                      <ServiceCollectionCard
-                        key={col.id ?? col.collectionName}
-                        collection={col}
-                      />
-                    ))}
-                  </div>
-                </section>
-              ) : null}
             </div>
           </main>
         </div>
@@ -519,7 +476,6 @@ export function ServiceDetailClient({ serviceId }: { serviceId: number }) {
               active: dto.active,
               publishedAt: dto.publishedAt,
               titleCkb,
-              coverUrl,
             },
           }}
           isPending={deleteMut.isPending}

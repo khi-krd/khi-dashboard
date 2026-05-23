@@ -1,47 +1,38 @@
 "use client"
 
 import {
-  ArchiveBoxIcon,
   CheckCircleIcon,
-  DocumentTextIcon,
+  NoSymbolIcon,
 } from "@heroicons/react/24/outline"
 
 import { NS } from "@/components/about/about-strings"
 import { cn } from "@/lib/utils"
-import type { AboutStatus } from "@/types/about"
 
-export const STATUS_VARIANTS = {
-  DRAFT: {
-    label: NS.status.draft,
-    icon: DocumentTextIcon,
-    className: "bg-muted text-muted-foreground border-border",
-    helper: NS.status.draft_helper,
-  },
-  ACTIVE: {
+const VARIANTS = {
+  active: {
     label: NS.status.active,
     icon: CheckCircleIcon,
     className: "bg-primary/10 text-primary border-primary/20",
     helper: NS.status.active_helper,
   },
-  ARCHIVED: {
-    label: NS.status.archived,
-    icon: ArchiveBoxIcon,
-    className:
-      "bg-slate-500/10 text-slate-700 dark:text-slate-400 border-slate-500/20",
-    helper: NS.status.archived_helper,
+  inactive: {
+    label: NS.status.inactive,
+    icon: NoSymbolIcon,
+    className: "bg-muted text-muted-foreground border-border",
+    helper: NS.status.inactive_helper,
   },
 } as const
 
 export function AboutStatusPill({
-  status,
+  active,
   className,
   size = "default",
 }: {
-  status: AboutStatus
+  active: boolean
   className?: string
   size?: "default" | "large"
 }) {
-  const variant = STATUS_VARIANTS[status] ?? STATUS_VARIANTS.DRAFT
+  const variant = active ? VARIANTS.active : VARIANTS.inactive
   const Icon = variant.icon
   return (
     <span
@@ -56,4 +47,8 @@ export function AboutStatusPill({
       {variant.label}
     </span>
   )
+}
+
+export function aboutStatusHelper(active: boolean): string {
+  return active ? VARIANTS.active.helper : VARIANTS.inactive.helper
 }

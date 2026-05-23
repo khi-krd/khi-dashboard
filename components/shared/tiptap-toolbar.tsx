@@ -17,16 +17,27 @@ import {
   LinkIcon,
   ListBulletIcon,
   MinusIcon,
+  MusicalNoteIcon,
   NumberedListIcon,
+  PaperClipIcon,
   PhotoIcon,
+  RectangleGroupIcon,
   StrikethroughIcon,
   TableCellsIcon,
   UnderlineIcon,
+  VideoCameraIcon,
 } from "@heroicons/react/24/outline"
 
 import { TIPTAP_NS } from "@/components/shared/tiptap-strings"
-import { insertUploadedMedia, mediaTypeFromFile } from "@/lib/tiptap-media"
-import { uploadMedia } from "@/services/mediaService"
+import {
+  insertUploadedAudio,
+  insertUploadedFile,
+  insertUploadedGallery,
+  insertUploadedImage,
+  insertUploadedVideo,
+} from "@/lib/tiptap-media"
+import { uploadMedia, uploadMediaMultiple } from "@/services/mediaService"
+import type { MediaUploadResultDto, MediaUploadType } from "@/types/media"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import {
@@ -97,29 +108,35 @@ function promptLink(editor: Editor) {
   editor.chain().focus().extendMarkRange("link").setLink({ href: next }).run()
 }
 
-function MediaUploadInput({
+function MediaUploadButton({
   editor,
   accept,
+  type,
+  multiple = false,
   label,
+  onInsert,
   children,
-  onClick,
 }: {
   editor: Editor
   accept: string
+  type: MediaUploadType
+  multiple?: boolean
   label: string
+  onInsert: (editor: Editor, results: MediaUploadResultDto[]) => void
   children: ReactNode
-  onClick?: () => void
 }) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
 
   async function handleFiles(files: FileList | null) {
     if (!files?.length) return
-    const file = files[0]
+    const list = Array.from(files)
     setUploading(true)
     try {
-      const result = await uploadMedia(file, mediaTypeFromFile(file))
-      insertUploadedMedia(editor, result.fileUrl, file.type)
+      const results = multiple
+        ? await uploadMediaMultiple(list, type)
+        : [await uploadMedia(list[0], type)]
+      onInsert(editor, results)
     } catch {
       toast.error(TIPTAP_NS.error.uploadFailed)
     } finally {
@@ -134,6 +151,7 @@ function MediaUploadInput({
         ref={inputRef}
         type="file"
         accept={accept}
+        multiple={multiple}
         className="sr-only"
         tabIndex={-1}
         onChange={(e) => void handleFiles(e.target.files)}
@@ -141,10 +159,7 @@ function MediaUploadInput({
       <ToolbarBtn
         label={label}
         disabled={uploading}
-        onClick={() => {
-          onClick?.()
-          inputRef.current?.click()
-        }}
+        onClick={() => inputRef.current?.click()}
       >
         {children}
       </ToolbarBtn>
@@ -328,13 +343,65 @@ export function TiptapToolbar({
         >
           <LinkIcon className="size-4 rtl:rotate-180" />
         </ToolbarBtn>
-        <MediaUploadInput
+        <MediaUploadButton
           editor={editor}
-          accept="image/*,video/*,audio/*"
+          type="image"
+          accept="image/*"
           label={TIPTAP_NS.toolbar.image}
+          onInsert={(ed, results) =>
+            insertUploadedImage(ed, results[0].fileUrl)
+          }
         >
           <PhotoIcon className="size-4" />
-        </MediaUploadInput>
+        </MediaUploadButton>
+        <MediaUploadButton
+          editor={editor}
+          type="image"
+          accept="image/*"
+          multiple
+          label={TIPTAP_NS.toolbar.gallery}
+          onInsert={(ed, results) =>
+            insertUploadedGallery(
+              ed,
+              results.map((r) => ({ src: r.fileUrl })),
+            )
+          }
+        >
+          <RectangleGroupIcon className="size-4" />
+        </MediaUploadButton>
+        <MediaUploadButton
+          editor={editor}
+          type="video"
+          accept="video/*"
+          label={TIPTAP_NS.toolbar.video}
+          onInsert={(ed, results) =>
+            insertUploadedVideo(ed, results[0].fileUrl)
+          }
+        >
+          <VideoCameraIcon className="size-4" />
+        </MediaUploadButton>
+        <MediaUploadButton
+          editor={editor}
+          type="audio"
+          accept="audio/*"
+          label={TIPTAP_NS.toolbar.audio}
+          onInsert={(ed, results) =>
+            insertUploadedAudio(ed, results[0].fileUrl)
+          }
+        >
+          <MusicalNoteIcon className="size-4" />
+        </MediaUploadButton>
+        <MediaUploadButton
+          editor={editor}
+          type="document"
+          accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.7z,.txt,.csv,.json"
+          label={TIPTAP_NS.toolbar.file}
+          onInsert={(ed, results) =>
+            insertUploadedFile(ed, results[0].fileUrl, results[0].fileName)
+          }
+        >
+          <PaperClipIcon className="size-4" />
+        </MediaUploadButton>
         <ToolbarBtn
           label={TIPTAP_NS.toolbar.horizontalRule}
           onClick={() => editor.chain().focus().setHorizontalRule().run()}
