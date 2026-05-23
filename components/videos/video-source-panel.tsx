@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { FieldError } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { useFileUpload } from "@/hooks/use-file-upload"
+import { applyVideoFileMeta } from "@/lib/video-file-utils"
 import { watchToEmbedUrl } from "@/lib/video-url-helpers"
 import { cn } from "@/lib/utils"
 import type { VideoFormValues } from "@/lib/validations/videos"
@@ -63,7 +64,14 @@ export function VideoSourcePanel() {
     onFilesAdded: (added) => {
       const entry = added[0]
       if (!entry?.file || !(entry.file instanceof File)) return
-      setValue("stagedVideoFile", entry.file, { shouldDirty: true })
+      const file = entry.file
+      void applyVideoFileMeta(file).then((meta) => {
+        setValue("stagedVideoFile", file, { shouldDirty: true })
+        setValue("durationSeconds", meta.durationSeconds, { shouldDirty: true })
+        setValue("fileSizeMb", meta.fileSizeMb, { shouldDirty: true })
+        setValue("fileFormat", meta.fileFormat, { shouldDirty: true })
+        setValue("resolution", meta.resolution, { shouldDirty: true })
+      })
       queueMicrotask(() => removeFile(entry.id))
     },
   })

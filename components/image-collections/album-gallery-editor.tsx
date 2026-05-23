@@ -24,7 +24,7 @@ import {
   PlusIcon,
   TrashIcon,
 } from "@heroicons/react/24/outline"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { useFieldArray, useFormContext } from "react-hook-form"
 
 import { AlbumItemSheet } from "@/components/image-collections/album-item-sheet"
@@ -49,17 +49,17 @@ function albumItemHasSource(item: ImageItemFormValues): boolean {
 }
 
 function useItemPreview(item: ImageItemFormValues) {
-  const [blob, setBlob] = useState<string | null>(null)
-  useEffect(() => {
-    if (!item.stagedBinary) {
-      setBlob(null)
-      return
-    }
-    const u = URL.createObjectURL(item.stagedBinary)
-    setBlob(u)
-    return () => URL.revokeObjectURL(u)
+  const stagedUrl = useMemo(() => {
+    if (!item.stagedBinary) return null
+    return URL.createObjectURL(item.stagedBinary)
   }, [item.stagedBinary])
-  return blob ?? albumItemSrc(item) ?? null
+
+  useEffect(() => {
+    if (!stagedUrl) return
+    return () => URL.revokeObjectURL(stagedUrl)
+  }, [stagedUrl])
+
+  return stagedUrl ?? albumItemSrc(item) ?? null
 }
 
 function SortableGalleryTile({

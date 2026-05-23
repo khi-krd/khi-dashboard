@@ -30,6 +30,12 @@ function buildAlbumPayload(values: CollectionFormValues) {
     descriptionCkb: item.descriptionCkb?.trim() || undefined,
     descriptionKmr: item.descriptionKmr?.trim() || undefined,
     sortOrder: item.sortOrder ?? i,
+    fileSizeBytes: item.fileSizeBytes ?? undefined,
+    widthPx: item.widthPx ?? undefined,
+    heightPx: item.heightPx ?? undefined,
+    mimeType: trimOrUndef(item.mimeType),
+    aspectRatio: item.aspectRatio ?? undefined,
+    humanReadableSize: trimOrUndef(item.humanReadableSize),
   }))
 
   if (values.collectionType === "SINGLE" && album.length > 1) {

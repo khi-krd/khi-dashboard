@@ -1,12 +1,19 @@
 "use client"
 
 import { CloudArrowUpIcon } from "@heroicons/react/24/outline"
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 
 import { NS } from "@/components/sounds/sounds-strings"
 import { FieldError } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { useFileUpload } from "@/hooks/use-file-upload"
+import {
+  applyAudioFileMeta,
+  audioFileMetaFromFile,
+  enrichMetaWithSampleRate,
+  mergeAudioMetaPatch,
+  metaPatchFromAudioElement,
+} from "@/lib/sound-audio-utils"
 import { cn } from "@/lib/utils"
 import type { SoundFileFormValues } from "@/lib/validations/sounds"
 
@@ -23,7 +30,17 @@ export function SoundSourcePanel({
 }) {
   const [mode, setMode] = useState<SourceMode>("file")
   const [localPreview, setLocalPreview] = useState<string | null>(null)
+  const audioRef = useRef<HTMLAudioElement>(null)
+  const probeGenRef = useRef(0)
   const staged = file.stagedAudioFile
+
+  const applyMetaPatch = useCallback(
+    (patch: Partial<SoundFileFormValues>) => {
+      if (Object.keys(patch).length === 0) return
+      onChange(patch)
+    },
+    [onChange],
+  )
 
   useEffect(() => {
     if (!staged) {
@@ -34,6 +51,89 @@ export function SoundSourcePanel({
     setLocalPreview(u)
     return () => URL.revokeObjectURL(u)
   }, [staged])
+
+  useEffect(() => {
+    if (!staged) return
+    const gen = ++probeGenRef.current
+    applyMetaPatch(audioFileMetaFromFile(staged))
+    void applyAudioFileMeta(staged).then((meta) => {
+      if (probeGenRef.current !== gen) return
+      const { title: id3Title, ...rest } = meta
+      applyMetaPatch({
+        stagedAudioFile: staged,
+        fileUrl: "",
+        ...rest,
+        ...(id3Title && !file.title?.trim() ? { title: id3Title } : {}),
+      })
+    })
+  }, [staged, applyMetaPatch, file.title])
+
+  const syncFromAudioElement = useCallback(() => {
+    const el = audioRef.current
+    if (!el) return
+
+    const base = metaPatchFromAudioElement(el, {
+      stagedFile: staged,
+      sizeBytes: file.sizeBytes,
+      fileFormat: file.fileFormat ?? undefined,
+    })
+
+    if ((base.durationSeconds ?? 0) <= 0 && !base.sizeBytes && !base.bitRate) {
+      return
+    }
+
+    const apply = (patch: Partial<SoundFileFormValues>) => {
+      const merged = mergeAudioMetaPatch(
+        {
+          durationSeconds: file.durationSeconds ?? 0,
+          sizeBytes: file.sizeBytes ?? 0,
+          bitRate: file.bitRate ?? undefined,
+          sampleRate: file.sampleRate ?? undefined,
+          fileFormat: file.fileFormat ?? undefined,
+        },
+        {
+          durationSeconds: patch.durationSeconds,
+          sizeBytes: patch.sizeBytes,
+          bitRate: patch.bitRate ?? undefined,
+          sampleRate: patch.sampleRate ?? undefined,
+          fileFormat: patch.fileFormat ?? undefined,
+        },
+      )
+      applyMetaPatch(merged as Partial<SoundFileFormValues>)
+    }
+
+    if (staged) {
+      void enrichMetaWithSampleRate(base, staged).then(apply)
+    } else {
+      apply(base)
+    }
+  }, [
+    staged,
+    file.sizeBytes,
+    file.fileFormat,
+    file.durationSeconds,
+    file.bitRate,
+    file.sampleRate,
+    applyMetaPatch,
+  ])
+
+  useEffect(() => {
+    const el = audioRef.current
+    if (!el) return
+
+    const onMeta = () => syncFromAudioElement()
+    el.addEventListener("loadedmetadata", onMeta)
+    el.addEventListener("durationchange", onMeta)
+
+    if (el.readyState >= HTMLMediaElement.HAVE_METADATA) {
+      queueMicrotask(onMeta)
+    }
+
+    return () => {
+      el.removeEventListener("loadedmetadata", onMeta)
+      el.removeEventListener("durationchange", onMeta)
+    }
+  }, [localPreview, file.fileUrl, file.externalUrl, file.embedUrl, syncFromAudioElement])
 
   const [
     { isDragging, errors: uploadErrors },
@@ -55,7 +155,23 @@ export function SoundSourcePanel({
     onFilesAdded: (added) => {
       const entry = added[0]
       if (!entry?.file || !(entry.file instanceof File)) return
-      onChange({ stagedAudioFile: entry.file, fileUrl: "" })
+      const audioFile = entry.file
+      applyMetaPatch({
+        stagedAudioFile: audioFile,
+        fileUrl: "",
+        ...audioFileMetaFromFile(audioFile),
+      })
+      const gen = ++probeGenRef.current
+      void applyAudioFileMeta(audioFile).then((meta) => {
+        if (probeGenRef.current !== gen) return
+        const { title: id3Title, ...rest } = meta
+        applyMetaPatch({
+          stagedAudioFile: audioFile,
+          fileUrl: "",
+          ...rest,
+          ...(id3Title && !file.title?.trim() ? { title: id3Title } : {}),
+        })
+      })
       queueMicrotask(() => removeFile(entry.id))
     },
   })
@@ -107,7 +223,14 @@ export function SoundSourcePanel({
           >
             <input {...getInputProps()} className="sr-only" />
             {playbackSrc ? (
-              <audio src={playbackSrc} controls className="w-full" />
+              <audio
+                ref={audioRef}
+                key={playbackSrc}
+                src={playbackSrc}
+                controls
+                className="w-full"
+                preload="metadata"
+              />
             ) : (
               <button
                 type="button"
@@ -130,6 +253,7 @@ export function SoundSourcePanel({
                 className="text-destructive underline"
                 onClick={() => {
                   clearFiles()
+                  probeGenRef.current += 1
                   onChange({ stagedAudioFile: null, fileUrl: "" })
                 }}
               >
@@ -163,7 +287,14 @@ export function SoundSourcePanel({
       ) : null}
 
       {playbackSrc && mode !== "file" ? (
-        <audio src={playbackSrc} controls className="w-full" />
+        <audio
+          ref={audioRef}
+          key={playbackSrc}
+          src={playbackSrc}
+          controls
+          className="w-full"
+          preload="metadata"
+        />
       ) : null}
 
       <FieldError>{sourceError}</FieldError>

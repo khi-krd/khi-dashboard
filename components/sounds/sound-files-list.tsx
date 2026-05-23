@@ -25,7 +25,7 @@ import {
   createEmptyFileRow,
   type SoundFormValues,
 } from "@/lib/validations/sounds"
-import { guessFileFormatFromName } from "@/lib/sound-format"
+import { applyAudioFileMeta } from "@/lib/sound-audio-utils"
 
 export function SoundFilesList() {
   const { control, watch, setValue, formState: { errors } } =
@@ -57,19 +57,21 @@ export function SoundFilesList() {
     setSheetIdx(fields.length)
   }
 
-  function onBulkFiles(files: FileList | null) {
+  async function onBulkFiles(files: FileList | null) {
     if (!files?.length) return
     const start = fields.length
-    Array.from(files).forEach((file, i) => {
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i]!
+      const meta = await applyAudioFileMeta(file)
+      const baseTitle = file.name.replace(/\.[^.]+$/, "")
       append({
         ...createEmptyFileRow(),
-        title: file.name.replace(/\.[^.]+$/, ""),
+        title: meta.title?.trim() || baseTitle,
         stagedAudioFile: file,
-        fileFormat: guessFileFormatFromName(file.name),
-        sizeBytes: file.size,
+        ...meta,
       })
       if (i === 0) setSheetIdx(start)
-    })
+    }
   }
 
   return (
@@ -100,7 +102,7 @@ export function SoundFilesList() {
             multiple
             className="sr-only"
             onChange={(e) => {
-              onBulkFiles(e.target.files)
+              void onBulkFiles(e.target.files)
               e.target.value = ""
             }}
           />

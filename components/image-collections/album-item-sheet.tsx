@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 
+import { AlbumItemMetadataSection } from "@/components/image-collections/album-item-metadata-section"
 import { CollectionItemSourcePanel } from "@/components/image-collections/collection-item-source-panel"
 import { TiptapEditor } from "@/components/shared/tiptap-editor"
 import { NS } from "@/components/image-collections/collections-strings"
@@ -101,11 +102,7 @@ export function AlbumItemSheet({
             </div>
           ) : null}
 
-          {draft.widthPx != null ? (
-            <p className="text-muted-foreground font-mono text-xs">
-              {NS.meta.dimensions}: {draft.widthPx}×{draft.heightPx} · {draft.humanReadableSize}
-            </p>
-          ) : null}
+          <AlbumItemMetadataSection item={draft} />
         </div>
         <SheetFooter className="flex-row gap-2 border-t pt-4">
           <Button

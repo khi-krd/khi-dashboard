@@ -1,6 +1,7 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
+import { useFieldArray, useFormContext } from "react-hook-form"
 
 import { SoundFileBrochures } from "@/components/sounds/sound-file-brochures"
 import { SoundSourcePanel } from "@/components/sounds/sound-source-panel"
@@ -23,7 +24,10 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet"
 import { formatBytes, formatDuration } from "@/lib/sound-format"
-import type { SoundFileFormValues } from "@/lib/validations/sounds"
+import type {
+  SoundFileFormValues,
+  SoundFormValues,
+} from "@/lib/validations/sounds"
 
 export function SoundFileSheet({
   open,
@@ -40,16 +44,39 @@ export function SoundFileSheet({
   onSave: (file: SoundFileFormValues) => void
   onDelete: () => void
 }) {
+  const { control } = useFormContext<SoundFormValues>()
+  const { update } = useFieldArray({ control, name: "files" })
   const [draft, setDraft] = useState<SoundFileFormValues | null>(file)
+  const draftRef = useRef<SoundFileFormValues | null>(file)
+  const openedKeyRef = useRef<string | null>(null)
 
   useEffect(() => {
-    if (file) setDraft({ ...file })
-  }, [file, open])
+    draftRef.current = draft
+  }, [draft])
+
+  useEffect(() => {
+    if (!open) {
+      openedKeyRef.current = null
+      return
+    }
+    if (!file) return
+    const key = file.clientKey
+    if (openedKeyRef.current === key) return
+    openedKeyRef.current = key
+    const next = { ...file }
+    draftRef.current = next
+    setDraft(next)
+  }, [open, index, file, file?.clientKey])
 
   if (!draft) return null
 
   function patch(p: Partial<SoundFileFormValues>) {
-    setDraft((d) => (d ? { ...d, ...p } : d))
+    const current = draftRef.current
+    if (!current) return
+    const next = { ...current, ...p }
+    draftRef.current = next
+    setDraft(next)
+    update(index, next)
   }
 
   return (
