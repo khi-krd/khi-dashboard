@@ -133,48 +133,53 @@ export function ServiceForm({
   const pending = createMut.isPending || updateMut.isPending
   const submitDisabled = !isDirty || !isValid || pending
 
-  const onSubmit = handleSubmit((values) => {
-    const payload = serviceFormValuesToPayload(
-      mode,
-      serviceId,
-      values,
-    )
-    const onSuccess = (res: { success?: boolean; data?: { id?: number } }) => {
-      if (!res.success) {
-        toastError(NS.error.generic)
-        return
+  const onSubmit = handleSubmit(
+    (values) => {
+      const payload = serviceFormValuesToPayload(
+        mode,
+        serviceId,
+        values,
+      )
+      const onSuccess = (res: { success?: boolean; data?: { id?: number } }) => {
+        if (!res.success) {
+          toastError(NS.error.generic)
+          return
+        }
+        toast(NS.toast.saved, {
+          action: res.data?.id
+            ? {
+                label: NS.toast.viewAction,
+                onClick: () =>
+                  router.push(`/dashboard/services/${res.data!.id}`),
+              }
+            : undefined,
+        })
+        if (mode === "create" && res.data?.id) {
+          router.push(`/dashboard/services/${res.data.id}`)
+        } else if (mode === "edit") {
+          router.push(`/dashboard/services/${serviceId}`)
+        }
       }
-      toast(NS.toast.saved, {
-        action: res.data?.id
-          ? {
-              label: NS.toast.viewAction,
-              onClick: () =>
-                router.push(`/dashboard/services/${res.data!.id}`),
-            }
-          : undefined,
-      })
-      if (mode === "create" && res.data?.id) {
-        router.push(`/dashboard/services/${res.data.id}`)
-      } else if (mode === "edit") {
-        router.push(`/dashboard/services/${serviceId}`)
-      }
-    }
 
-    if (mode === "create") {
-      createMut.mutate(payload, {
-        onSuccess,
-        onError: () => toastError(NS.error.generic),
-      })
-    } else if (serviceId) {
-      updateMut.mutate(
-        { id: serviceId, payload },
-        {
+      if (mode === "create") {
+        createMut.mutate(payload, {
           onSuccess,
           onError: () => toastError(NS.error.generic),
-        },
-      )
-    }
-  })
+        })
+      } else if (serviceId) {
+        updateMut.mutate(
+          { id: serviceId, payload },
+          {
+            onSuccess,
+            onError: () => toastError(NS.error.generic),
+          },
+        )
+      }
+    },
+    () => {
+      toastError(NS.error.validation)
+    },
+  )
 
   if (mode === "edit" && detailQuery.isLoading) {
     return (

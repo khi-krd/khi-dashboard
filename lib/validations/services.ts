@@ -4,7 +4,7 @@ import { NS } from "@/components/services/services-strings"
 
 const contentRowSchema = z.object({
   languageCode: z.enum(["CKB", "KMR"]),
-  title: z.string().min(1, NS.validation.titleRequired).max(300),
+  title: z.string().max(300).optional().or(z.literal("")),
   description: z.string().optional(),
 })
 
