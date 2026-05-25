@@ -1,3 +1,5 @@
+import { formatStandardDateTime } from "@/lib/intl-ckb"
+
 /** Sorani-/Arab-script friendly relative timestamps for system dl rows */
 
 function relativeTimeFormatter(): Intl.RelativeTimeFormat {
@@ -103,12 +105,5 @@ export function formatRelativeTimeKu(dateIso: string): string {
 export function formatFullTimestampKu(dateIso: string): string {
   const d = new Date(dateIso)
   if (!Number.isFinite(d.getTime())) return "—"
-  try {
-    return new Intl.DateTimeFormat("ckb-IQ", {
-      dateStyle: "medium",
-      timeStyle: "short",
-    }).format(d)
-  } catch {
-    return d.toLocaleString()
-  }
+  return formatStandardDateTime(d)
 }

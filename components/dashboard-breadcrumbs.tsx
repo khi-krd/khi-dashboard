@@ -33,6 +33,7 @@ const SEGMENT_LABELS: Record<string, string> = {
   service: "خزمەتگوزاری",
   contact: "پەیوەندی",
   profile: "پرۆفایل",
+  users: "بەکارهێنەران",
 }
 
 function labelForSegment(segment: string): string {

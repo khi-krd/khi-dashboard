@@ -25,6 +25,7 @@ import {
   FolderKanbanIcon,
   InformationCircleIcon,
   News01Icon,
+  UserMultipleIcon,
 } from "@hugeicons/core-free-icons"
 import { useCurrentUserQuery } from "@/hooks/use-current-user"
 import { resolveAvatarSrc } from "@/lib/profile-image"
@@ -87,6 +88,11 @@ const navMainItems = [
 ]
 
 const navSecondaryItems = [
+  {
+    title: "بەکارهێنەران",
+    url: "/dashboard/users",
+    icon: <HugeiconsIcon icon={UserMultipleIcon} strokeWidth={2} />,
+  },
   {
     title: "دەربارە",
     url: "/dashboard/about",

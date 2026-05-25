@@ -1,7 +1,26 @@
 const NUMBER_LOCALE = "ckb-IQ"
 const NUMBER_FALLBACK = "ar-IQ"
-const DATE_LOCALE = "ckb-IQ"
-const DATE_FALLBACK = "ar-IQ"
+
+function parseIsoDate(iso: string | null | undefined): Date | null {
+  if (!iso) return null
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return null
+  return d
+}
+
+function pad2(n: number): string {
+  return String(n).padStart(2, "0")
+}
+
+/** Standard display date: DD/MM/YYYY */
+export function formatStandardDate(d: Date): string {
+  return `${pad2(d.getDate())}/${pad2(d.getMonth() + 1)}/${d.getFullYear()}`
+}
+
+/** Standard display datetime: DD/MM/YYYY HH:MM */
+export function formatStandardDateTime(d: Date): string {
+  return `${formatStandardDate(d)} ${pad2(d.getHours())}:${pad2(d.getMinutes())}`
+}
 
 export function formatCkbDigits(n: number): string {
   try {
@@ -18,41 +37,17 @@ export function formatCkbDigits(n: number): string {
 export function formatNewsDateShort(
   iso: string | null | undefined,
 ): string {
-  if (!iso) return "—"
-  const d = new Date(iso)
-  if (Number.isNaN(d.getTime())) return "—"
-  try {
-    return new Intl.DateTimeFormat(DATE_LOCALE, {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    }).format(d)
-  } catch {
-    return new Intl.DateTimeFormat(DATE_FALLBACK, {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    }).format(d)
-  }
+  const d = parseIsoDate(iso)
+  if (!d) return "—"
+  return formatStandardDate(d)
 }
 
 export function formatNewsDateLong(
   iso: string | null | undefined,
 ): string {
-  if (!iso) return "—"
-  const d = new Date(iso)
-  if (Number.isNaN(d.getTime())) return "—"
-  try {
-    return new Intl.DateTimeFormat(DATE_LOCALE, {
-      dateStyle: "medium",
-      timeStyle: "short",
-    }).format(d)
-  } catch {
-    return new Intl.DateTimeFormat(DATE_FALLBACK, {
-      dateStyle: "medium",
-      timeStyle: "short",
-    }).format(d)
-  }
+  const d = parseIsoDate(iso)
+  if (!d) return "—"
+  return formatStandardDateTime(d)
 }
 
 export function compareDateDesc(a: string | null | undefined, b: string | null | undefined) {
