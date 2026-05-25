@@ -13,7 +13,7 @@ export function serviceFormValuesToPayload(
     const row = values.contents.find((c) => c.languageCode === lang)!
     return {
       languageCode: lang,
-      title: row.title.trim(),
+      title: row.title?.trim() ?? "",
       description: row.description ?? "",
     }
   })
