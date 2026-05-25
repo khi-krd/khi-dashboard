@@ -8,6 +8,7 @@ import { DashboardSoundPlayer } from "@/components/sounds/dashboard-sound-player
 import { DashboardBreadcrumbs } from "@/components/dashboard-breadcrumbs"
 import { ThemeToggleButton } from "@/components/examples/c-button-43"
 import { FullscreenToggleButton } from "@/components/fullscreen-toggle-button"
+import { WebsiteLinkButton } from "@/components/website-link-button"
 import { Separator } from "@/components/ui/separator"
 import {
   SidebarInset,
@@ -40,6 +41,7 @@ export default async function DashboardLayout({
             </div>
             <div className="flex shrink-0 items-center gap-2">
               <ThemeToggleButton />
+              <WebsiteLinkButton />
               <FullscreenToggleButton />
             </div>
           </header>

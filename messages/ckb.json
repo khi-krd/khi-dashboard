@@ -93,7 +93,8 @@
       "themeSwitchToDark": "گۆڕین بۆ دۆخی تاریک",
       "themeSwitchToLight": "گۆڕین بۆ دۆخی ڕووناک",
       "fullscreenEnter": "کردنەوەی دۆخی تەواوی شاشە",
-      "fullscreenExit": "دەرچوون لە دۆخی تەواوی شاشە"
+      "fullscreenExit": "دەرچوون لە دۆخی تەواوی شاشە",
+      "openWebsite": "کردنەوەی ماڵپەڕ لە تابێکی نوێ"
     },
     "user": {
       "upgradePro": "بەرزکردنەوە بۆ ڤێژنی پڕۆ",
