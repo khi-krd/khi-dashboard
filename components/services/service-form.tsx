@@ -26,7 +26,7 @@ import { ServiceActiveSwitch } from "@/components/services/service-active-switch
 import { ServiceFormPublishingSummary } from "@/components/services/service-form-publishing-summary"
 import { ServiceFormSectionCard } from "@/components/services/service-form-section-card"
 import { ServicePublishDateTime } from "@/components/services/service-publish-datetime"
-import { TiptapEditor } from "@/components/shared/tiptap-editor"
+import { TiptapEditor } from "@/components/shared/tiptap-editor-lazy"
 import { ServiceTypeCombobox } from "@/components/services/service-type-combobox"
 import { ServicesErrorState } from "@/components/services/services-error-state"
 import { NS } from "@/components/services/services-strings"

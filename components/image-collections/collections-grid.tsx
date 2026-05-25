@@ -6,10 +6,11 @@ import {
   PhotoIcon,
   TrashIcon,
 } from "@heroicons/react/24/outline"
-import { useState } from "react"
+import { memo, useCallback } from "react"
 
 import { CollectionTypePill } from "@/components/image-collections/collection-type-pill"
 import { NS } from "@/components/image-collections/collections-strings"
+import { HoverImage } from "@/components/shared/hover-image"
 import { Button } from "@/components/ui/button"
 import { formatNewsDateShort } from "@/lib/intl-ckb"
 import { formatCkbDigits } from "@/lib/intl-ckb"
@@ -17,47 +18,42 @@ import { cn } from "@/lib/utils"
 import { getCollectionCoverUrl } from "@/types/image-collections-ui"
 import type { CollectionAdminTableRow } from "@/types/image-collections-ui"
 
-function CollectionGridCard({
+const CollectionGridCard = memo(function CollectionGridCard({
   row,
   onView,
   onEdit,
   onDelete,
 }: {
   row: CollectionAdminTableRow
-  onView: () => void
-  onEdit: () => void
-  onDelete: () => void
+  onView: (row: CollectionAdminTableRow) => void
+  onEdit: (row: CollectionAdminTableRow) => void
+  onDelete: (row: CollectionAdminTableRow) => void
 }) {
-  const [hovered, setHovered] = useState(false)
   const cover = getCollectionCoverUrl(row) ?? row.ckbCoverUrl?.trim()
   const hover = row.hoverCoverUrl?.trim()
-  const displaySrc = hovered && hover ? hover : cover
   const count = row.imageAlbum?.length ?? 0
 
+  const handleView = useCallback(() => onView(row), [onView, row])
+  const handleEdit = useCallback(() => onEdit(row), [onEdit, row])
+  const handleDelete = useCallback(() => onDelete(row), [onDelete, row])
+
   return (
-    <article
-      className="group border-border bg-card relative overflow-hidden rounded-lg border"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >
+    <article className="group border-border bg-card relative overflow-hidden rounded-lg border">
       <button
         type="button"
         className="block w-full text-start"
-        onClick={onView}
+        onClick={handleView}
       >
         <div className="bg-muted relative aspect-[4/3] w-full overflow-hidden">
-          {displaySrc ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={displaySrc}
-              alt=""
-              className="absolute inset-0 h-full w-full object-cover transition-opacity duration-300"
-            />
-          ) : (
-            <div className="text-muted-foreground/40 flex h-full items-center justify-center">
-              <PhotoIcon className="size-10" aria-hidden />
-            </div>
-          )}
+          <HoverImage
+            src={cover}
+            hoverSrc={hover}
+            fallback={
+              <div className="text-muted-foreground/40 flex h-full items-center justify-center">
+                <PhotoIcon className="size-10" aria-hidden />
+              </div>
+            }
+          />
           <div className="absolute start-2 top-2">
             <CollectionTypePill collectionType={row.collectionType} compact />
           </div>
@@ -101,7 +97,7 @@ function CollectionGridCard({
           className="size-8"
           onClick={(e) => {
             e.stopPropagation()
-            onView()
+            handleView()
           }}
         >
           <EyeIcon className="size-4" />
@@ -113,7 +109,7 @@ function CollectionGridCard({
           className="size-8"
           onClick={(e) => {
             e.stopPropagation()
-            onEdit()
+            handleEdit()
           }}
         >
           <PencilSquareIcon className="size-4" />
@@ -125,7 +121,7 @@ function CollectionGridCard({
           className="text-destructive size-8"
           onClick={(e) => {
             e.stopPropagation()
-            onDelete()
+            handleDelete()
           }}
         >
           <TrashIcon className="size-4" />
@@ -133,7 +129,7 @@ function CollectionGridCard({
       </div>
     </article>
   )
-}
+})
 
 export function CollectionsGrid({
   rows,
@@ -152,9 +148,9 @@ export function CollectionsGrid({
         <CollectionGridCard
           key={row.id ?? row.sortTitleCkb}
           row={row}
-          onView={() => onView(row)}
-          onEdit={() => onEdit(row)}
-          onDelete={() => onDelete(row)}
+          onView={onView}
+          onEdit={onEdit}
+          onDelete={onDelete}
         />
       ))}
     </div>

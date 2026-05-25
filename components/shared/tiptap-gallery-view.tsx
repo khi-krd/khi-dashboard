@@ -74,6 +74,8 @@ export function GalleryNodeView({ node, selected }: NodeViewProps) {
                   <img
                     src={img.src}
                     alt={img.alt ?? ""}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full rounded-md object-cover"
                   />
                 </CarouselItem>

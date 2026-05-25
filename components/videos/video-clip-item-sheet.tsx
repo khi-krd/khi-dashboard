@@ -5,7 +5,7 @@ import { useEffect, useState } from "react"
 
 import { VideoMetadataGrid } from "@/components/videos/video-metadata-grid"
 import { VideoPlayerBlock } from "@/components/videos/video-player-block"
-import { TiptapEditor } from "@/components/shared/tiptap-editor"
+import { TiptapEditor } from "@/components/shared/tiptap-editor-lazy"
 import { NS } from "@/components/videos/videos-strings"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"

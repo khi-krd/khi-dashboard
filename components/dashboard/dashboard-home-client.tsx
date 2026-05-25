@@ -7,7 +7,7 @@ import {
   SparklesIcon,
 } from "@heroicons/react/24/outline"
 
-import { DashboardDistributionChart } from "@/components/dashboard/dashboard-distribution-chart"
+import { DashboardDistributionChart } from "@/components/dashboard/dashboard-distribution-chart-lazy"
 import { DashboardKpiCards } from "@/components/dashboard/dashboard-kpi-cards"
 import { DashboardQuickActions } from "@/components/dashboard/dashboard-quick-actions"
 import { DashboardRecentActivity } from "@/components/dashboard/dashboard-recent-activity"

@@ -2,6 +2,7 @@
 
 import {
   useMutation,
+  keepPreviousData,
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query"
@@ -40,6 +41,7 @@ export function useCollectionsListQuery(params: CollectionsListQueryKeyParts) {
     queryKey: collectionKeys.list(params),
     queryFn: () => fetchCollectionsPage(params),
     staleTime: 1000 * 60 * 2,
+    placeholderData: keepPreviousData,
   })
 }
 

@@ -1,7 +1,7 @@
 "use client"
 
 import Image from "next/image"
-import { useState } from "react"
+import { memo, useCallback, useState } from "react"
 
 import { CollectionLightbox } from "@/components/image-collections/collection-lightbox"
 import { NS } from "@/components/image-collections/collections-strings"
@@ -19,17 +19,17 @@ export function CollectionDetailGallery({
   const [lightboxIndex, setLightboxIndex] = useState(0)
   const items = sortAlbumItems(collection.imageAlbum ?? [])
 
+  const openAt = useCallback((index: number) => {
+    setLightboxIndex(index)
+    setLightboxOpen(true)
+  }, [])
+
   if (items.length === 0) {
     return (
       <p className="text-muted-foreground py-12 text-center text-sm italic">
         {NS.gallery.empty}
       </p>
     )
-  }
-
-  function openAt(index: number) {
-    setLightboxIndex(index)
-    setLightboxOpen(true)
   }
 
   return (
@@ -44,7 +44,7 @@ export function CollectionDetailGallery({
             item={item}
             index={index}
             activeLang={activeLang}
-            onOpen={() => openAt(index)}
+            onOpen={openAt}
           />
         ))}
       </div>
@@ -58,15 +58,16 @@ export function CollectionDetailGallery({
   )
 }
 
-function GalleryTile({
+const GalleryTile = memo(function GalleryTile({
   item,
+  index,
   activeLang,
   onOpen,
 }: {
   item: ImageAlbumItemDto
   index: number
   activeLang: Language
-  onOpen: () => void
+  onOpen: (index: number) => void
 }) {
   const src = albumItemSrc(item)
   const caption =
@@ -77,7 +78,7 @@ function GalleryTile({
   return (
     <button
       type="button"
-      onClick={onOpen}
+      onClick={() => onOpen(index)}
       className="mb-4 block w-full break-inside-avoid overflow-hidden rounded-lg text-start focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
     >
       {src ? (
@@ -101,4 +102,4 @@ function GalleryTile({
       ) : null}
     </button>
   )
-}
+})

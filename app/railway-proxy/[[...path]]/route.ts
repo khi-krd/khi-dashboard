@@ -13,6 +13,26 @@ function getTargetBase(): string | null {
   return raw || null
 }
 
+/** Prefer the httpOnly session cookie over the client Authorization header. */
+function buildUpstreamHeaders(req: NextRequest): Headers {
+  const headers = new Headers()
+  for (const name of FORWARD_REQUEST_HEADERS) {
+    if (name === "authorization") continue
+    const value = req.headers.get(name)
+    if (value) headers.set(name, value)
+  }
+
+  const cookieToken = req.cookies.get("auth_token")?.value?.trim()
+  if (cookieToken) {
+    headers.set("authorization", `Bearer ${cookieToken}`)
+  } else {
+    const auth = req.headers.get("authorization")
+    if (auth) headers.set("authorization", auth)
+  }
+
+  return headers
+}
+
 function buildProxyResponse(upstream: Response): NextResponse {
   const res = new NextResponse(upstream.body, {
     status: upstream.status,
@@ -57,11 +77,7 @@ async function proxy(req: NextRequest, pathSegments: string[]) {
   const subPath = pathSegments.join("/")
   const dest = `${targetBase}/${subPath}${new URL(req.url).search}`
 
-  const headers = new Headers()
-  for (const name of FORWARD_REQUEST_HEADERS) {
-    const value = req.headers.get(name)
-    if (value) headers.set(name, value)
-  }
+  const headers = buildUpstreamHeaders(req)
 
   const init: RequestInit = {
     method: req.method,
@@ -73,8 +89,30 @@ async function proxy(req: NextRequest, pathSegments: string[]) {
     init.body = await req.arrayBuffer()
   }
 
-  const upstream = await fetch(dest, init)
-  return buildProxyResponse(upstream)
+  // Measure how long the upstream backend takes to respond (time-to-first-byte
+  // from the proxy's perspective). This isolates real backend latency from the
+  // extra proxy hop / client network.
+  const start = performance.now()
+  let upstream: Response
+  try {
+    upstream = await fetch(dest, init)
+  } catch (err) {
+    const ms = Math.round(performance.now() - start)
+    console.error(
+      `[railway-proxy] ${req.method} /${subPath} FAILED after ${ms}ms`,
+      err,
+    )
+    throw err
+  }
+  const ms = Math.round(performance.now() - start)
+  console.log(
+    `[railway-proxy] ${req.method} /${subPath} -> ${upstream.status} in ${ms}ms`,
+  )
+
+  const res = buildProxyResponse(upstream)
+  // Surfaces in DevTools → Network → Timing ("Server Timing" section).
+  res.headers.set("Server-Timing", `upstream;desc="backend";dur=${ms}`)
+  return res
 }
 
 type RouteCtx = { params: Promise<{ path?: string[] }> }

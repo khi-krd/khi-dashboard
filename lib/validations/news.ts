@@ -1,7 +1,7 @@
 import { z } from "zod"
 
 import { NS } from "@/components/news/news-strings"
-import { isRichTextEmpty } from "@/lib/sanitize-news-html"
+import { isRichTextEmpty } from "@/lib/rich-text-empty"
 
 export const newsFormSchema = z
   .object({

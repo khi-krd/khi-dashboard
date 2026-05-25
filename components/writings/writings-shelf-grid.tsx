@@ -7,7 +7,7 @@ import {
   TrashIcon,
 } from "@heroicons/react/24/outline"
 import Image from "next/image"
-import { useState } from "react"
+import { memo, useCallback } from "react"
 
 import { WritingGenrePill } from "@/components/writings/writing-genre-pill"
 import { WritingListLangChips } from "@/components/writings/writing-language-chip"
@@ -17,53 +17,68 @@ import { formatCkbDigits } from "@/lib/intl-ckb"
 import { cn } from "@/lib/utils"
 import type { WritingAdminTableRow } from "@/types/writings-ui"
 
-function WritingShelfCard({
+const WritingShelfCard = memo(function WritingShelfCard({
   row,
   onView,
   onEdit,
   onDelete,
 }: {
   row: WritingAdminTableRow
-  onView: () => void
-  onEdit: () => void
-  onDelete: () => void
+  onView: (row: WritingAdminTableRow) => void
+  onEdit: (row: WritingAdminTableRow) => void
+  onDelete: (row: WritingAdminTableRow) => void
 }) {
-  const [hovered, setHovered] = useState(false)
   const base =
     row.ckbCoverUrl?.trim() ||
     row.kmrCoverUrl?.trim() ||
     null
   const hover = row.hoverCoverUrl?.trim()
-  const displaySrc = hovered && hover ? hover : base || hover
+  const restingSrc = base || hover || null
+  // Crossfade only when a distinct hover image exists on top of the resting one.
+  const overlaySrc = hover && restingSrc && hover !== restingSrc ? hover : null
   const genres = row.bookGenres ?? []
   const seriesOrder = row.seriesOrder ?? row.seriesInfo?.seriesOrder
   const writer = row.writerCkb?.trim() || row.writerKmr?.trim()
 
+  const handleView = useCallback(() => onView(row), [onView, row])
+  const handleEdit = useCallback(() => onEdit(row), [onEdit, row])
+  const handleDelete = useCallback(() => onDelete(row), [onDelete, row])
+
   return (
-    <article
-      className="group border-border bg-card relative overflow-hidden rounded-lg border"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >
+    <article className="group border-border bg-card relative overflow-hidden rounded-lg border">
       <button
         type="button"
         className="block w-full text-start"
-        onClick={onView}
+        onClick={handleView}
       >
         <div className="bg-muted relative aspect-[2/3] w-full overflow-hidden">
-          {displaySrc ? (
+          {restingSrc ? (
             <Image
-              src={displaySrc}
+              src={restingSrc}
               alt=""
               fill
-              className="object-cover transition-opacity duration-300"
-              unoptimized={displaySrc.startsWith("http")}
+              className={cn(
+                "object-cover",
+                overlaySrc &&
+                  "transition-opacity duration-300 group-hover:opacity-0",
+              )}
+              unoptimized={restingSrc.startsWith("http")}
             />
           ) : (
             <div className="text-muted-foreground/40 flex h-full items-center justify-center">
               <BookOpenIcon className="size-10" aria-hidden />
             </div>
           )}
+          {overlaySrc ? (
+            <Image
+              src={overlaySrc}
+              alt=""
+              aria-hidden
+              fill
+              className="object-cover opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+              unoptimized={overlaySrc.startsWith("http")}
+            />
+          ) : null}
           {row.publishedByInstitute ? (
             <span className="bg-primary/90 text-primary-foreground absolute start-2 top-2 rounded-md px-1.5 py-0.5 text-[10px] font-medium">
               {NS.institute.badge}
@@ -115,7 +130,7 @@ function WritingShelfCard({
           className="size-8"
           onClick={(e) => {
             e.stopPropagation()
-            onView()
+            handleView()
           }}
         >
           <EyeIcon className="size-4" />
@@ -127,7 +142,7 @@ function WritingShelfCard({
           className="size-8"
           onClick={(e) => {
             e.stopPropagation()
-            onEdit()
+            handleEdit()
           }}
         >
           <PencilSquareIcon className="size-4" />
@@ -139,7 +154,7 @@ function WritingShelfCard({
           className="text-destructive size-8"
           onClick={(e) => {
             e.stopPropagation()
-            onDelete()
+            handleDelete()
           }}
         >
           <TrashIcon className="size-4" />
@@ -147,7 +162,7 @@ function WritingShelfCard({
       </div>
     </article>
   )
-}
+})
 
 export function WritingsShelfGrid({
   rows,
@@ -166,9 +181,9 @@ export function WritingsShelfGrid({
         <WritingShelfCard
           key={row.id ?? row.sortTitleCkb}
           row={row}
-          onView={() => onView(row)}
-          onEdit={() => onEdit(row)}
-          onDelete={() => onDelete(row)}
+          onView={onView}
+          onEdit={onEdit}
+          onDelete={onDelete}
         />
       ))}
     </div>

@@ -24,7 +24,7 @@ import {
 import { AboutErrorState } from "@/components/about/about-error-state"
 import { AboutFormSidebar } from "@/components/about/about-form-sidebar"
 import { NS } from "@/components/about/about-strings"
-import { TiptapEditor } from "@/components/shared/tiptap-editor"
+import { TiptapEditor } from "@/components/shared/tiptap-editor-lazy"
 import { SeoCountChip } from "@/components/about/seo-count-chip"
 import { aboutSiteBaseUrl } from "@/lib/about-url-helpers"
 import { Button, buttonVariants } from "@/components/ui/button"

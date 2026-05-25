@@ -30,7 +30,7 @@ import { WritingInstituteSwitch } from "@/components/writings/writing-institute-
 import { WritingLanguageToggleChip } from "@/components/writings/writing-language-chip"
 import { WritingSeriesSection } from "@/components/writings/writing-series-section"
 import { WritingTagInput } from "@/components/writings/writing-tag-input"
-import { TiptapEditor } from "@/components/shared/tiptap-editor"
+import { TiptapEditor } from "@/components/shared/tiptap-editor-lazy"
 import { WritingTopicCombobox } from "@/components/writings/writing-topic-combobox"
 import { NS } from "@/components/writings/writings-strings"
 import { Button, buttonVariants } from "@/components/ui/button"

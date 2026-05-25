@@ -2,6 +2,7 @@
 
 import {
   useMutation,
+  keepPreviousData,
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query"
@@ -62,6 +63,7 @@ export function useSoundsListQuery(params: SoundsListQueryKeyParts) {
     queryKey: soundKeys.list(params),
     queryFn: () => fetchSoundsPage(params),
     staleTime: 1000 * 60 * 2,
+    placeholderData: keepPreviousData,
   })
 }
 

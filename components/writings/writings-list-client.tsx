@@ -238,17 +238,23 @@ function WritingsListClientInner() {
     [queryClient],
   )
 
-  const onView = (row: WritingAdminTableRow) => {
-    if (row.id == null) return
-    seedDetailCache(row)
-    router.push(`/dashboard/writings/${row.id}`)
-  }
+  const onView = useCallback(
+    (row: WritingAdminTableRow) => {
+      if (row.id == null) return
+      seedDetailCache(row)
+      router.push(`/dashboard/writings/${row.id}`)
+    },
+    [seedDetailCache, router],
+  )
 
-  const onEdit = (row: WritingAdminTableRow) => {
-    if (row.id == null) return
-    seedDetailCache(row)
-    router.push(`/dashboard/writings/${row.id}/edit`)
-  }
+  const onEdit = useCallback(
+    (row: WritingAdminTableRow) => {
+      if (row.id == null) return
+      seedDetailCache(row)
+      router.push(`/dashboard/writings/${row.id}/edit`)
+    },
+    [seedDetailCache, router],
+  )
 
   const isLoading = listQuery.isLoading || listQuery.isFetching
 

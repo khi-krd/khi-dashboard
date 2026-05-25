@@ -2,6 +2,16 @@ import createNextIntlPlugin from "next-intl/plugin"
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  experimental: {
+    optimizePackageImports: [
+      "@heroicons/react",
+      "@hugeicons/react",
+      "@hugeicons/core-free-icons",
+      "recharts",
+      "@tanstack/react-table",
+      "lucide-react",
+    ],
+  },
   images: {
     remotePatterns: [
       {

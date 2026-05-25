@@ -16,8 +16,6 @@ export const userKeys = {
  * repopulates the sidebar after a page refresh). Disabled when logged out.
  */
 export function useCurrentUserQuery() {
-  const token = useAuthStore((s) => s.token)
-
   return useQuery({
     queryKey: userKeys.me,
     queryFn: async () => {
@@ -25,7 +23,8 @@ export function useCurrentUserQuery() {
       useAuthStore.getState().setUser(user)
       return user
     },
-    enabled: !!token,
+    // Dashboard routes are gated by middleware (`auth_token` cookie). The proxy
+    // forwards that cookie as Bearer, so this works even when localStorage is empty.
     staleTime: 1000 * 60,
   })
 }

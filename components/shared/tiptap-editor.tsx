@@ -146,16 +146,18 @@ export function TiptapEditor({
   return <div className={className}>{editorChrome}</div>
 }
 
-export function TiptapViewer({
-  html: content,
-  lang,
-  contentMinHeightClass,
-}: {
+export type TiptapViewerProps = {
   /** Stored Markdown (or legacy HTML). */
   html: string | null | undefined
   lang?: "CKB" | "KMR"
   contentMinHeightClass?: string
-}) {
+}
+
+export function TiptapViewer({
+  html: content,
+  lang,
+  contentMinHeightClass,
+}: TiptapViewerProps) {
   return (
     <TiptapEditor
       editable={false}

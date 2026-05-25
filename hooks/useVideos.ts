@@ -2,6 +2,7 @@
 
 import {
   useMutation,
+  keepPreviousData,
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query"
@@ -50,6 +51,7 @@ export function useVideosListQuery(params: VideosListQueryKeyParts) {
     queryKey: videoKeys.list(params),
     queryFn: () => fetchVideosPage(params),
     staleTime: 1000 * 60 * 2,
+    placeholderData: keepPreviousData,
   })
 }
 

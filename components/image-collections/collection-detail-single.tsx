@@ -53,6 +53,8 @@ export function CollectionDetailSingle({
           <img
             src={src}
             alt={caption ?? ""}
+            loading="lazy"
+            decoding="async"
             className={cn(
               "mx-auto w-full rounded-xl object-contain transition-transform group-hover:scale-[1.01]",
               item.heightPx != null &&

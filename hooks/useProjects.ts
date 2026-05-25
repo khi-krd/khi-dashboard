@@ -2,6 +2,7 @@
 
 import {
   useMutation,
+  keepPreviousData,
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query"
@@ -49,6 +50,7 @@ export function useProjectsListQuery(params: ProjectsListQueryKeyParts) {
     queryKey: projectKeys.list(params),
     queryFn: () => fetchProjectsPage(params),
     staleTime: 1000 * 60 * 2,
+    placeholderData: keepPreviousData,
   })
 }
 

@@ -27,7 +27,7 @@ import { CollectionCoverTrio } from "@/components/image-collections/collection-c
 import { CollectionCreditsInlineRow } from "@/components/image-collections/collection-credits-editor"
 import { CollectionErrorState } from "@/components/image-collections/collection-error-state"
 import { CollectionLanguageToggleChip } from "@/components/image-collections/collection-language-chip"
-import { TiptapEditor } from "@/components/shared/tiptap-editor"
+import { TiptapEditor } from "@/components/shared/tiptap-editor-lazy"
 import { CollectionTopicCombobox } from "@/components/image-collections/collection-topic-combobox"
 import { CollectionTypeToggle } from "@/components/image-collections/collection-type-toggle"
 import { CollectionTagInput } from "@/components/image-collections/collection-tag-input"

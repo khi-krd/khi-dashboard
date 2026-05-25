@@ -2,6 +2,7 @@
 
 import {
   useMutation,
+  keepPreviousData,
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query"
@@ -23,6 +24,7 @@ export function useAboutListQuery(params: AboutListQueryKeyParts) {
     queryKey: aboutKeys.list(params),
     queryFn: () => getAboutList(params.page, params.size),
     staleTime: 1000 * 60 * 2,
+    placeholderData: keepPreviousData,
   })
 }
 

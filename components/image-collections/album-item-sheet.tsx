@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 
 import { AlbumItemMetadataSection } from "@/components/image-collections/album-item-metadata-section"
 import { CollectionItemSourcePanel } from "@/components/image-collections/collection-item-source-panel"
-import { TiptapEditor } from "@/components/shared/tiptap-editor"
+import { TiptapEditor } from "@/components/shared/tiptap-editor-lazy"
 import { NS } from "@/components/image-collections/collections-strings"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"

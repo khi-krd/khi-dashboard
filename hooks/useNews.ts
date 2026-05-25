@@ -2,6 +2,7 @@
 
 import {
   useMutation,
+  keepPreviousData,
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query"
@@ -32,6 +33,7 @@ export function useNewsListQuery(params: NewsListQueryKeyParts) {
     queryKey: newsKeys.list(params),
     queryFn: () => fetchNewsPage(params),
     staleTime: 1000 * 60 * 2,
+    placeholderData: keepPreviousData,
   })
 }
 

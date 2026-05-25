@@ -185,17 +185,23 @@ function CollectionsListClientInner() {
     [queryClient],
   )
 
-  const onView = (row: CollectionAdminTableRow) => {
-    if (row.id == null) return
-    seedDetailCache(row)
-    router.push(`/dashboard/image-collections/${row.id}`)
-  }
+  const onView = useCallback(
+    (row: CollectionAdminTableRow) => {
+      if (row.id == null) return
+      seedDetailCache(row)
+      router.push(`/dashboard/image-collections/${row.id}`)
+    },
+    [seedDetailCache, router],
+  )
 
-  const onEdit = (row: CollectionAdminTableRow) => {
-    if (row.id == null) return
-    seedDetailCache(row)
-    router.push(`/dashboard/image-collections/${row.id}/edit`)
-  }
+  const onEdit = useCallback(
+    (row: CollectionAdminTableRow) => {
+      if (row.id == null) return
+      seedDetailCache(row)
+      router.push(`/dashboard/image-collections/${row.id}/edit`)
+    },
+    [seedDetailCache, router],
+  )
 
   const isLoading = listQuery.isLoading || listQuery.isFetching
 

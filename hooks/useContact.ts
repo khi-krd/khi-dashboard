@@ -2,6 +2,7 @@
 
 import {
   useMutation,
+  keepPreviousData,
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query"
@@ -22,6 +23,7 @@ export function useContactListQuery(params: ContactListQueryKeyParts) {
     queryKey: contactKeys.list(params),
     queryFn: () => getContactListAdmin(params.page, params.size),
     staleTime: 1000 * 60 * 2,
+    placeholderData: keepPreviousData,
   })
 }
 

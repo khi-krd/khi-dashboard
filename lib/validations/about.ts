@@ -1,7 +1,7 @@
 import { z } from "zod"
 
 import { NS } from "@/components/about/about-strings"
-import { isRichTextEmpty } from "@/lib/sanitize-news-html"
+import { isRichTextEmpty } from "@/lib/rich-text-empty"
 import type { AboutDto } from "@/types/about"
 
 export const aboutFormSchema = z

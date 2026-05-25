@@ -2,6 +2,7 @@
 
 import {
   useMutation,
+  keepPreviousData,
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query"
@@ -62,6 +63,7 @@ export function useWritingsListQuery(params: WritingsListQueryKeyParts) {
     queryKey: writingsKeys.list(params),
     queryFn: () => fetchWritingsPage(params),
     staleTime: 1000 * 60 * 2,
+    placeholderData: keepPreviousData,
   })
 }
 
