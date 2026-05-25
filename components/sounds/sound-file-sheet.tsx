@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { useFieldArray, useFormContext } from "react-hook-form"
 
 import { SoundFileBrochures } from "@/components/sounds/sound-file-brochures"
@@ -68,16 +68,25 @@ export function SoundFileSheet({
     setDraft(next)
   }, [open, index, file, file?.clientKey])
 
-  if (!draft) return null
+  const patch = useCallback(
+    (p: Partial<SoundFileFormValues>) => {
+      const current = draftRef.current
+      if (!current) return
 
-  function patch(p: Partial<SoundFileFormValues>) {
-    const current = draftRef.current
-    if (!current) return
-    const next = { ...current, ...p }
-    draftRef.current = next
-    setDraft(next)
-    update(index, next)
-  }
+      const changed = (Object.keys(p) as (keyof SoundFileFormValues)[]).some(
+        (key) => current[key] !== p[key],
+      )
+      if (!changed) return
+
+      const next = { ...current, ...p }
+      draftRef.current = next
+      setDraft(next)
+      update(index, next)
+    },
+    [index, update],
+  )
+
+  if (!draft) return null
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>

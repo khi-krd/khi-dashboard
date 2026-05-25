@@ -106,5 +106,13 @@ export function videoFormValuesToMultipart(
     fd.append("videoFile", values.stagedVideoFile)
   }
 
+  if (values.videoType === "VIDEO_CLIP") {
+    for (const clip of values.videoClipItems) {
+      if (clip.stagedVideoFile) {
+        fd.append("clipFiles", clip.stagedVideoFile)
+      }
+    }
+  }
+
   return fd
 }

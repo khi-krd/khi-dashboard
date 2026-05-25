@@ -58,6 +58,7 @@ export function VideoClipList() {
       titleKmr: "",
       descriptionCkb: "",
       descriptionKmr: "",
+      stagedVideoFile: null,
     })
     setSheetIdx(fields.length)
   }

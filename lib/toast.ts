@@ -54,4 +54,9 @@ export const systemToast = {
   uploadError: () => toastError("بارنەکرا", "تکایە دووبارە هەوڵبدەرەوە"),
   logoutSuccess: () => toastSuccess("چووتە دەرەوە", "بە سەرکەوتوویی دەرچوویت"),
   sessionExpired: () => toastWarning("کاتی دانیشتن تەواو بوو", "تکایە دووبارە بچووژووەوە"),
+  sessionExpiringSoon: () =>
+    toastWarning(
+      "کاتی دانیشتن بەم زووانە تەواو دەبێت",
+      "بەم نزیکانە دەردەچیت، تکایە کارەکانت پاشەکەوت بکە",
+    ),
 } as const

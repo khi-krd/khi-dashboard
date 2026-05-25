@@ -19,6 +19,24 @@ import type { SoundFileFormValues } from "@/lib/validations/sounds"
 
 type SourceMode = "file" | "external" | "embed"
 
+const META_KEYS = [
+  "durationSeconds",
+  "sizeBytes",
+  "bitRate",
+  "sampleRate",
+  "fileFormat",
+] as const satisfies readonly (keyof SoundFileFormValues)[]
+
+function metaPatchChanged(
+  current: SoundFileFormValues,
+  patch: Partial<SoundFileFormValues>,
+): boolean {
+  return META_KEYS.some((key) => {
+    if (!(key in patch)) return false
+    return current[key] !== patch[key]
+  })
+}
+
 export function SoundSourcePanel({
   file,
   onChange,
@@ -32,15 +50,18 @@ export function SoundSourcePanel({
   const [localPreview, setLocalPreview] = useState<string | null>(null)
   const audioRef = useRef<HTMLAudioElement>(null)
   const probeGenRef = useRef(0)
+  const onChangeRef = useRef(onChange)
+  const fileRef = useRef(file)
+  const syncFromAudioElementRef = useRef<() => void>(() => {})
   const staged = file.stagedAudioFile
 
-  const applyMetaPatch = useCallback(
-    (patch: Partial<SoundFileFormValues>) => {
-      if (Object.keys(patch).length === 0) return
-      onChange(patch)
-    },
-    [onChange],
-  )
+  onChangeRef.current = onChange
+  fileRef.current = file
+
+  const applyMetaPatch = useCallback((patch: Partial<SoundFileFormValues>) => {
+    if (Object.keys(patch).length === 0) return
+    onChangeRef.current(patch)
+  }, [])
 
   useEffect(() => {
     if (!staged) {
@@ -72,10 +93,11 @@ export function SoundSourcePanel({
     const el = audioRef.current
     if (!el) return
 
+    const current = fileRef.current
     const base = metaPatchFromAudioElement(el, {
       stagedFile: staged,
-      sizeBytes: file.sizeBytes,
-      fileFormat: file.fileFormat ?? undefined,
+      sizeBytes: current.sizeBytes,
+      fileFormat: current.fileFormat ?? undefined,
     })
 
     if ((base.durationSeconds ?? 0) <= 0 && !base.sizeBytes && !base.bitRate) {
@@ -85,11 +107,11 @@ export function SoundSourcePanel({
     const apply = (patch: Partial<SoundFileFormValues>) => {
       const merged = mergeAudioMetaPatch(
         {
-          durationSeconds: file.durationSeconds ?? 0,
-          sizeBytes: file.sizeBytes ?? 0,
-          bitRate: file.bitRate ?? undefined,
-          sampleRate: file.sampleRate ?? undefined,
-          fileFormat: file.fileFormat ?? undefined,
+          durationSeconds: current.durationSeconds ?? 0,
+          sizeBytes: current.sizeBytes ?? 0,
+          bitRate: current.bitRate ?? undefined,
+          sampleRate: current.sampleRate ?? undefined,
+          fileFormat: current.fileFormat ?? undefined,
         },
         {
           durationSeconds: patch.durationSeconds,
@@ -99,7 +121,9 @@ export function SoundSourcePanel({
           fileFormat: patch.fileFormat ?? undefined,
         },
       )
-      applyMetaPatch(merged as Partial<SoundFileFormValues>)
+      const next = merged as Partial<SoundFileFormValues>
+      if (!metaPatchChanged(current, next)) return
+      applyMetaPatch(next)
     }
 
     if (staged) {
@@ -107,21 +131,15 @@ export function SoundSourcePanel({
     } else {
       apply(base)
     }
-  }, [
-    staged,
-    file.sizeBytes,
-    file.fileFormat,
-    file.durationSeconds,
-    file.bitRate,
-    file.sampleRate,
-    applyMetaPatch,
-  ])
+  }, [staged, applyMetaPatch])
+
+  syncFromAudioElementRef.current = syncFromAudioElement
 
   useEffect(() => {
     const el = audioRef.current
     if (!el) return
 
-    const onMeta = () => syncFromAudioElement()
+    const onMeta = () => syncFromAudioElementRef.current()
     el.addEventListener("loadedmetadata", onMeta)
     el.addEventListener("durationchange", onMeta)
 
@@ -133,7 +151,7 @@ export function SoundSourcePanel({
       el.removeEventListener("loadedmetadata", onMeta)
       el.removeEventListener("durationchange", onMeta)
     }
-  }, [localPreview, file.fileUrl, file.externalUrl, file.embedUrl, syncFromAudioElement])
+  }, [localPreview, file.fileUrl, file.externalUrl, file.embedUrl])
 
   const [
     { isDragging, errors: uploadErrors },

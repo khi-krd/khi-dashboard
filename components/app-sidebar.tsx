@@ -50,7 +50,7 @@ const navMainItems = [
     icon: <HugeiconsIcon icon={Briefcase01Icon} strokeWidth={2} />,
   },
   {
-    title: "بڵاوکراوەکان",
+    title: "بڵاوکردنەوە",
     url: "#",
     icon: (
       <HugeiconsIcon icon={CollectionsBookmarkIcon} strokeWidth={2} />
@@ -71,6 +71,14 @@ const navMainItems = [
       {
         title: "نووسراوەکان",
         url: "/dashboard/writings",
+      },
+      {
+        title: "ئەرشیف",
+        url: "/dashboard/archive",
+      },
+      {
+        title: "کتێبخانە",
+        url: "/dashboard/library",
       },
     ],
   },

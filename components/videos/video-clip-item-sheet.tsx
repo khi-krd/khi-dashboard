@@ -1,5 +1,6 @@
 "use client"
 
+import { CloudArrowUpIcon } from "@heroicons/react/24/outline"
 import { useEffect, useState } from "react"
 
 import { VideoMetadataGrid } from "@/components/videos/video-metadata-grid"
@@ -8,7 +9,6 @@ import { TiptapEditor } from "@/components/shared/tiptap-editor"
 import { NS } from "@/components/videos/videos-strings"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import {
   Sheet,
   SheetContent,
@@ -16,9 +16,13 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet"
+import { useFileUpload } from "@/hooks/use-file-upload"
+import { applyVideoFileMeta } from "@/lib/video-file-utils"
 import { watchToEmbedUrl } from "@/lib/video-url-helpers"
 import { cn } from "@/lib/utils"
 import type { VideoFormValues } from "@/lib/validations/videos"
+
+const MAX_VIDEO_FILE_BYTES = 500 * 1024 * 1024
 
 type Clip = VideoFormValues["videoClipItems"][number]
 type SourceMode = "file" | "external" | "embed"
@@ -39,16 +43,70 @@ export function VideoClipItemSheet({
   const [draft, setDraft] = useState<Clip | null>(clip)
   const [mode, setMode] = useState<SourceMode>("file")
   const [tab, setTab] = useState<"CKB" | "KMR">("CKB")
+  const [localPreview, setLocalPreview] = useState<string | null>(null)
 
   useEffect(() => {
     if (clip) setDraft({ ...clip })
   }, [clip, open])
+
+  useEffect(() => {
+    const staged = draft?.stagedVideoFile
+    if (!staged) {
+      setLocalPreview(null)
+      return
+    }
+    const u = URL.createObjectURL(staged)
+    setLocalPreview(u)
+    return () => URL.revokeObjectURL(u)
+  }, [draft?.stagedVideoFile])
+
+  const [
+    { isDragging, errors: uploadErrors },
+    {
+      handleDragEnter,
+      handleDragLeave,
+      handleDragOver,
+      handleDrop,
+      openFileDialog,
+      getInputProps,
+      clearFiles,
+      removeFile,
+    },
+  ] = useFileUpload({
+    maxFiles: 1,
+    maxSize: MAX_VIDEO_FILE_BYTES,
+    accept: "video/*",
+    multiple: false,
+    onFilesAdded: (added) => {
+      const entry = added[0]
+      if (!entry?.file || !(entry.file instanceof File)) return
+      const file = entry.file
+      patch({ stagedVideoFile: file })
+      void applyVideoFileMeta(file).then((meta) => {
+        patch({
+          stagedVideoFile: file,
+          durationSeconds: meta.durationSeconds,
+          fileSizeMb: meta.fileSizeMb,
+          fileFormat: meta.fileFormat,
+          resolution: meta.resolution,
+        })
+      })
+      queueMicrotask(() => removeFile(entry.id))
+    },
+  })
 
   if (!draft) return null
 
   function patch(p: Partial<Clip>) {
     setDraft((d) => (d ? { ...d, ...p } : d))
   }
+
+  function clearStagedFile() {
+    clearFiles()
+    patch({ stagedVideoFile: null })
+  }
+
+  const playbackUrl = localPreview || draft.url?.trim() || undefined
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -81,11 +139,69 @@ export function VideoClipItemSheet({
             ))}
           </div>
           {mode === "file" ? (
-            <Input
-              value={draft.url ?? ""}
-              onChange={(e) => patch({ url: e.target.value })}
-              placeholder="https://"
-            />
+            <div className="space-y-3">
+              <div
+                className={cn(
+                  "relative flex aspect-video flex-col items-center justify-center rounded-xl border border-dashed transition-colors",
+                  isDragging && "border-primary bg-primary/5",
+                )}
+                onDragEnter={handleDragEnter}
+                onDragLeave={handleDragLeave}
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
+              >
+                <input {...getInputProps()} className="sr-only" />
+                {playbackUrl ? (
+                  <video
+                    src={playbackUrl}
+                    controls
+                    className="size-full rounded-xl object-contain"
+                  />
+                ) : (
+                  <button
+                    type="button"
+                    onClick={openFileDialog}
+                    className="text-muted-foreground flex flex-col items-center gap-2 p-6 text-sm"
+                  >
+                    <CloudArrowUpIcon className="size-10 opacity-50" />
+                    {NS.source.file_drop}
+                  </button>
+                )}
+              </div>
+              {draft.stagedVideoFile ? (
+                <div className="flex gap-3 text-xs">
+                  <span>{draft.stagedVideoFile.name}</span>
+                  <button
+                    type="button"
+                    className="underline"
+                    onClick={openFileDialog}
+                  >
+                    {NS.action.change}
+                  </button>
+                  <button
+                    type="button"
+                    className="text-destructive underline"
+                    onClick={clearStagedFile}
+                  >
+                    {NS.action.remove_cover}
+                  </button>
+                </div>
+              ) : null}
+              <p className="text-muted-foreground text-xs">
+                {NS.source.file_helper}
+              </p>
+              <div className="space-y-1">
+                <p className="text-muted-foreground text-xs">{NS.source.s3_helper}</p>
+                <Input
+                  value={draft.url ?? ""}
+                  onChange={(e) => patch({ url: e.target.value })}
+                  placeholder="https://"
+                />
+              </div>
+              {uploadErrors[0] ? (
+                <p className="text-destructive text-xs">{uploadErrors[0]}</p>
+              ) : null}
+            </div>
           ) : null}
           {mode === "external" ? (
             <Input
@@ -101,17 +217,19 @@ export function VideoClipItemSheet({
               placeholder={NS.field.embed_placeholder}
             />
           ) : null}
-          <VideoPlayerBlock
-            source={{
-              url: draft.url,
-              externalUrl: draft.externalUrl,
-              embedUrl:
-                draft.embedUrl ||
-                watchToEmbedUrl(draft.externalUrl ?? "") ||
-                undefined,
-              fileFormat: draft.fileFormat,
-            }}
-          />
+          {mode !== "file" ? (
+            <VideoPlayerBlock
+              source={{
+                url: draft.url,
+                externalUrl: draft.externalUrl,
+                embedUrl:
+                  draft.embedUrl ||
+                  watchToEmbedUrl(draft.externalUrl ?? "") ||
+                  undefined,
+                fileFormat: draft.fileFormat,
+              }}
+            />
+          ) : null}
           <div className="flex gap-4 border-b border-border/60">
             {(["CKB", "KMR"] as const).map((code) => (
               <button

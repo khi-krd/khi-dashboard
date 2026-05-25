@@ -123,7 +123,7 @@ export function TiptapEditor({
           sticky={pinToolbar}
         />
       ) : null}
-      <div className="bg-background min-h-0">
+      <div className="bg-background min-h-0 max-h-[480px] overflow-y-auto">
         <EditorContent editor={editor} dir={dir} />
       </div>
     </div>

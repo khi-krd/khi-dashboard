@@ -41,24 +41,14 @@ export type DashboardRecentItem = {
   date: string | null
 }
 
-export type DashboardOverviewData = {
-  cards: DashboardModuleCard[]
-  quickActions: DashboardQuickAction[]
-  recentItems: DashboardRecentItem[]
-  totalCount: number
-  healthyCount: number
-  failedModules: DashboardModuleKey[]
-  generatedAt: string
-}
-
-type ModuleMeta = {
+export type ModuleMeta = {
   key: DashboardModuleKey
   label: string
   href: string
   createHref: string
 }
 
-type ModuleSummary = {
+export type ModuleSummary = {
   count: number
   recentItems: DashboardRecentItem[]
   isHealthy: boolean
@@ -153,7 +143,7 @@ function mapRecentItems<T extends { id?: number }>(
   })
 }
 
-function aboutSummary(moduleMeta: ModuleMeta, page: AboutPage): ModuleSummary {
+export function aboutSummary(moduleMeta: ModuleMeta, page: AboutPage): ModuleSummary {
   return {
     count: page.totalElements ?? 0,
     recentItems: mapRecentItems(moduleMeta, page.content ?? [], (item: AboutDto) => ({
@@ -167,7 +157,7 @@ function aboutSummary(moduleMeta: ModuleMeta, page: AboutPage): ModuleSummary {
   }
 }
 
-function newsSummary(
+export function newsSummary(
   moduleMeta: ModuleMeta,
   response: NewsListResponse,
 ): ModuleSummary {
@@ -185,7 +175,7 @@ function newsSummary(
   }
 }
 
-function projectsSummary(
+export function projectsSummary(
   moduleMeta: ModuleMeta,
   response: ProjectListResponse,
 ): ModuleSummary {
@@ -203,7 +193,7 @@ function projectsSummary(
   }
 }
 
-function servicesSummary(
+export function servicesSummary(
   moduleMeta: ModuleMeta,
   response: ServiceListResponse,
 ): ModuleSummary {
@@ -221,7 +211,7 @@ function servicesSummary(
   }
 }
 
-function videosSummary(moduleMeta: ModuleMeta, page: VideoPage): ModuleSummary {
+export function videosSummary(moduleMeta: ModuleMeta, page: VideoPage): ModuleSummary {
   return {
     count: page.totalElements ?? 0,
     recentItems: mapRecentItems(moduleMeta, page.content ?? [], (item: VideoDto) => ({
@@ -235,7 +225,7 @@ function videosSummary(moduleMeta: ModuleMeta, page: VideoPage): ModuleSummary {
   }
 }
 
-function soundsSummary(moduleMeta: ModuleMeta, page: SoundPage): ModuleSummary {
+export function soundsSummary(moduleMeta: ModuleMeta, page: SoundPage): ModuleSummary {
   return {
     count: page.totalElements ?? 0,
     recentItems: mapRecentItems(moduleMeta, page.content ?? [], (item: SoundDto) => ({
@@ -249,7 +239,7 @@ function soundsSummary(moduleMeta: ModuleMeta, page: SoundPage): ModuleSummary {
   }
 }
 
-function collectionsSummary(
+export function collectionsSummary(
   moduleMeta: ModuleMeta,
   page: CollectionPage,
 ): ModuleSummary {
@@ -270,7 +260,7 @@ function collectionsSummary(
   }
 }
 
-function writingsSummary(moduleMeta: ModuleMeta, page: WritingPage): ModuleSummary {
+export function writingsSummary(moduleMeta: ModuleMeta, page: WritingPage): ModuleSummary {
   return {
     count: page.totalElements ?? 0,
     recentItems: mapRecentItems(moduleMeta, page.content ?? [], (item: WritingDto) => ({
@@ -281,65 +271,5 @@ function writingsSummary(moduleMeta: ModuleMeta, page: WritingPage): ModuleSumma
       date: item.updatedAt ?? item.createdAt ?? null,
     })),
     isHealthy: true,
-  }
-}
-
-export function buildDashboardOverviewData(input: {
-  about: AboutPage
-  news: NewsListResponse
-  projects: ProjectListResponse
-  services: ServiceListResponse
-  videos: VideoPage
-  sounds: SoundPage
-  collections: CollectionPage
-  writings: WritingPage
-  forceFailed?: DashboardModuleKey[]
-}): DashboardOverviewData {
-  const byKey = new Map(DASHBOARD_MODULE_META.map((item) => [item.key, item]))
-
-  const summaries = {
-    about: aboutSummary(byKey.get("about")!, input.about),
-    news: newsSummary(byKey.get("news")!, input.news),
-    projects: projectsSummary(byKey.get("projects")!, input.projects),
-    services: servicesSummary(byKey.get("services")!, input.services),
-    videos: videosSummary(byKey.get("videos")!, input.videos),
-    sounds: soundsSummary(byKey.get("sounds")!, input.sounds),
-    collections: collectionsSummary(byKey.get("collections")!, input.collections),
-    writings: writingsSummary(byKey.get("writings")!, input.writings),
-  } satisfies Record<DashboardModuleKey, ModuleSummary>
-
-  const forcedFailedSet = new Set(input.forceFailed ?? [])
-  const cards: DashboardModuleCard[] = DASHBOARD_MODULE_META.map((meta) => {
-    const baseHealthy = summaries[meta.key].isHealthy
-    return {
-      key: meta.key,
-      label: meta.label,
-      href: meta.href,
-      createHref: meta.createHref,
-      count: summaries[meta.key].count,
-      isHealthy: baseHealthy && !forcedFailedSet.has(meta.key),
-    }
-  })
-
-  const recentItems = DASHBOARD_MODULE_META.flatMap(
-    (meta) => summaries[meta.key].recentItems,
-  )
-    .sort((a, b) => (b.date ?? "").localeCompare(a.date ?? ""))
-    .slice(0, 12)
-
-  const totalCount = cards.reduce((sum, card) => sum + card.count, 0)
-  const healthyCount = cards.filter((card) => card.isHealthy).length
-  const failedModules = cards
-    .filter((card) => !card.isHealthy)
-    .map((card) => card.key)
-
-  return {
-    cards,
-    quickActions: [...DASHBOARD_QUICK_ACTIONS],
-    recentItems,
-    totalCount,
-    healthyCount,
-    failedModules,
-    generatedAt: new Date().toISOString(),
   }
 }

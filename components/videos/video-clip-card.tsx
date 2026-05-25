@@ -7,6 +7,7 @@ import {
 } from "@heroicons/react/24/outline"
 import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
+import { useEffect, useState } from "react"
 
 import { VideoPlayerBlock } from "@/components/videos/video-player-block"
 import { NS } from "@/components/videos/videos-strings"
@@ -32,6 +33,18 @@ export function VideoClipCard({
   const style = { transform: CSS.Transform.toString(transform), transition }
 
   const title = clip.titleCkb?.trim() || clip.titleKmr?.trim() || NS.clip.no_title
+  const [localPreview, setLocalPreview] = useState<string | null>(null)
+
+  useEffect(() => {
+    const staged = clip.stagedVideoFile
+    if (!staged) {
+      setLocalPreview(null)
+      return
+    }
+    const u = URL.createObjectURL(staged)
+    setLocalPreview(u)
+    return () => URL.revokeObjectURL(u)
+  }, [clip.stagedVideoFile])
 
   return (
     <div
@@ -43,7 +56,7 @@ export function VideoClipCard({
         <VideoPlayerBlock
           className="!aspect-video !rounded-md"
           source={{
-            url: clip.url,
+            url: localPreview || clip.url,
             externalUrl: clip.externalUrl,
             embedUrl: clip.embedUrl,
             fileFormat: clip.fileFormat,
