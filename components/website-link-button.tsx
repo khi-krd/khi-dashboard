@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl"
 import { buttonVariants } from "@/components/ui/button"
 import { aboutSiteBaseUrl, publicSiteLabel } from "@/lib/about-url-helpers"
 import { cn } from "@/lib/utils"
-import { GlobalIcon } from "@hugeicons/core-free-icons"
+import { LinkIcon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 
 export function WebsiteLinkButton() {
@@ -27,7 +27,7 @@ export function WebsiteLinkButton() {
       )}
     >
       <HugeiconsIcon
-        icon={GlobalIcon}
+        icon={LinkIcon}
         strokeWidth={2}
         aria-hidden="true"
         className="size-4"
