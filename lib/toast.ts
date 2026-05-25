@@ -54,9 +54,12 @@ export const systemToast = {
   uploadError: () => toastError("بارنەکرا", "تکایە دووبارە هەوڵبدەرەوە"),
   logoutSuccess: () => toastSuccess("چووتە دەرەوە", "بە سەرکەوتوویی دەرچوویت"),
   sessionExpired: () => toastWarning("کاتی دانیشتن تەواو بوو", "تکایە دووبارە بچووژووەوە"),
-  sessionExpiringSoon: () =>
-    toastWarning(
-      "کاتی دانیشتن بەم زووانە تەواو دەبێت",
-      "بەم نزیکانە دەردەچیت، تکایە کارەکانت پاشەکەوت بکە",
-    ),
+  sessionExpiringSoon: (onReLogin?: () => void) =>
+    sonnerToast.warning("کاتی دانیشتن بەم زووانە تەواو دەبێت", {
+      description: "بەم نزیکانە دەردەچیت، تکایە کارەکانت پاشەکەوت بکە",
+      duration: 60_000,
+      action: onReLogin
+        ? { label: "چوونەوە ژوورەوە", onClick: onReLogin }
+        : undefined,
+    }),
 } as const

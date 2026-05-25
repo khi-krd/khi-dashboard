@@ -83,3 +83,7 @@ export async function deleteProfileImage(): Promise<UserResponse> {
   const { data } = await api.delete<UserResponse>("/api/user/profile-image")
   return data
 }
+
+export async function deleteAccount(): Promise<void> {
+  await api.delete("/api/user/account")
+}

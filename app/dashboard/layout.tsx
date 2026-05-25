@@ -3,6 +3,7 @@ import { getLocale, getMessages } from "next-intl/server"
 import type { ReactNode } from "react"
 
 import { AppSidebar } from "@/components/app-sidebar"
+import { SessionGuard } from "@/components/session-guard"
 import { DashboardSoundPlayer } from "@/components/sounds/dashboard-sound-player"
 import { DashboardBreadcrumbs } from "@/components/dashboard-breadcrumbs"
 import { ThemeToggleButton } from "@/components/examples/c-button-43"
@@ -25,6 +26,7 @@ export default async function DashboardLayout({
   return (
     <NextIntlClientProvider locale={locale} messages={messages}>
       <SidebarProvider>
+        <SessionGuard />
         <AppSidebar />
         <SidebarInset>
           <header className="flex h-16 shrink-0 items-center gap-2 px-4">

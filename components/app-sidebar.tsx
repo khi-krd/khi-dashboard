@@ -26,6 +26,8 @@ import {
   InformationCircleIcon,
   News01Icon,
 } from "@hugeicons/core-free-icons"
+import { useCurrentUserQuery } from "@/hooks/use-current-user"
+import { resolveAvatarSrc } from "@/lib/profile-image"
 import { useAuthStore } from "@/store/auth.store"
 
 const navMainItems = [
@@ -99,10 +101,12 @@ const navSecondaryItems = [
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const t = useTranslations("Sidebar")
+  // Re-fetches /api/user/me when logged in; repopulates the store after a
+  // refresh (the user object isn't persisted) so the footer shows live data.
+  useCurrentUserQuery()
   const authUser = useAuthStore((s) => s.user)
 
-  const avatarSrc =
-    authUser?.imageUrl?.trim() || authUser?.profileImage?.trim() || ""
+  const avatarSrc = resolveAvatarSrc(authUser)
 
   const sidebarUser = {
     name:

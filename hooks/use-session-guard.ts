@@ -27,6 +27,13 @@ export function useSessionGuard(): void {
     let warned = false
     const timers: ReturnType<typeof setTimeout>[] = []
 
+    // No refresh endpoint exists, so "sign in again" must end the current
+    // session first — otherwise the middleware bounces an authenticated user
+    // back from /login to /dashboard.
+    const goToLogin = () => {
+      void endClientSession("manual")
+    }
+
     const clearTimers = () => {
       for (const t of timers) clearTimeout(t)
       timers.length = 0
@@ -51,7 +58,7 @@ export function useSessionGuard(): void {
       if (!warned) {
         if (warnIn <= 0) {
           warned = true
-          systemToast.sessionExpiringSoon()
+          systemToast.sessionExpiringSoon(goToLogin)
         } else {
           timers.push(
             setTimeout(() => {
