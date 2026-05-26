@@ -75,14 +75,6 @@ const navMainItems = [
         title: "نووسراوەکان",
         url: "/dashboard/writings",
       },
-      {
-        title: "ئەرشیف",
-        url: "/dashboard/archive",
-      },
-      {
-        title: "کتێبخانە",
-        url: "/dashboard/library",
-      },
     ],
   },
 ]
