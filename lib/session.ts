@@ -1,15 +1,26 @@
 import { systemToast } from "@/lib/toast"
 import { useAuthStore } from "@/store/auth.store"
 
-/** Best-effort removal of the server-side HttpOnly auth cookie. */
+/** Best-effort removal of the server-side HttpOnly auth cookie.
+ *
+ * - `keepalive: true` lets the request complete even if the page navigates
+ *   away (e.g. the `window.location.assign("/login")` immediately after).
+ * - An AbortController-backed timeout guarantees we never block the logout
+ *   redirect on a hung network call. */
 export async function destroyServerSession(): Promise<void> {
+  const ctrl = new AbortController()
+  const timer = setTimeout(() => ctrl.abort(), 3_000)
   try {
     await fetch("/api/auth/session", {
       method: "DELETE",
       credentials: "same-origin",
+      keepalive: true,
+      signal: ctrl.signal,
     })
   } catch {
     /* ignore — local state is cleared regardless */
+  } finally {
+    clearTimeout(timer)
   }
 }
 

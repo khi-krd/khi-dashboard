@@ -52,7 +52,14 @@ api.interceptors.response.use(
               duration: 2800,
             })
           })
-          void fetch("/api/auth/session", { method: "DELETE" }).catch(() => {
+          // `keepalive` lets the cookie-clearing DELETE survive the navigation
+          // below; without it the browser can cancel it mid-flight and
+          // `auth_token` lingers, so the middleware bounces the user back to
+          // /dashboard on the next load and a redirect loop forms.
+          void fetch("/api/auth/session", {
+            method: "DELETE",
+            keepalive: true,
+          }).catch(() => {
             /* ignore */
           })
           window.location.href = "/login"
