@@ -4,8 +4,11 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import {
   ArrowPathIcon,
   CheckIcon,
+  PencilIcon,
+  TrashIcon,
   LinkIcon,
   MagnifyingGlassIcon,
+  PlusIcon,
 } from "@heroicons/react/24/outline"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -29,12 +32,28 @@ import { TiptapEditor } from "@/components/shared/tiptap-editor-lazy"
 import { SeoCountChip } from "@/components/about/seo-count-chip"
 import { aboutSiteBaseUrl } from "@/lib/about-url-helpers"
 import { Button, buttonVariants } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Spinner } from "@/components/ui/spinner"
 import {
+  useAboutPartnersQuery,
+  useAboutTeamMembersQuery,
+  useCreateAboutPartner,
+  useCreateAboutTeamMember,
+  useDeleteAboutPartner,
+  useDeleteAboutTeamMember,
   useAboutDetailQuery,
   useCreateAbout,
+  useUpdateAboutPartner,
+  useUpdateAboutTeamMember,
   useUpdateAbout,
 } from "@/hooks/useAbout"
 import { aboutFormValuesToPayload } from "@/lib/about-form-data"
@@ -47,6 +66,7 @@ import {
 import { formatCkbDigits } from "@/lib/intl-ckb"
 import { cn } from "@/lib/utils"
 import type { AboutDto, Language } from "@/types/about"
+import type { AboutPartnerDto, AboutTeamMemberDto } from "@/types/about"
 
 function SlugInput({
   lang,
@@ -78,7 +98,7 @@ function SlugInput({
         </span>
       </div>
       <div className="relative">
-        <LinkIcon className="text-muted-foreground/60 absolute end-3 top-1/2 size-4 -translate-y-1/2" />
+        <LinkIcon className="text-muted-foreground/60 absolute inset-e-3 top-1/2 size-4 -translate-y-1/2" />
         <Input
           value={value}
           onChange={(e) => onChange(e.target.value)}
@@ -91,6 +111,11 @@ function SlugInput({
       </p>
     </label>
   )
+}
+
+function clean(v?: string | null) {
+  const t = v?.trim()
+  return t ? t : null
 }
 
 export function AboutForm({
@@ -134,6 +159,30 @@ export function AboutForm({
   }, [editDto, reset])
 
   const [activeLang, setActiveLang] = useState<Language>("CKB")
+  const [teamDialogOpen, setTeamDialogOpen] = useState(false)
+  const [editingTeam, setEditingTeam] = useState<AboutTeamMemberDto | null>(null)
+  const [partnerDialogOpen, setPartnerDialogOpen] = useState(false)
+  const [editingPartner, setEditingPartner] = useState<AboutPartnerDto | null>(null)
+  const [teamForm, setTeamForm] = useState({
+    nameCkb: "",
+    nameKmr: "",
+    roleCkb: "",
+    roleKmr: "",
+    bioCkb: "",
+    bioKmr: "",
+    office: "",
+    imageUrl: "",
+    displayOrder: "0",
+  })
+  const [partnerForm, setPartnerForm] = useState({
+    nameCkb: "",
+    nameKmr: "",
+    descriptionCkb: "",
+    descriptionKmr: "",
+    logoUrl: "",
+    websiteUrl: "",
+    displayOrder: "0",
+  })
   const contentLanguages = watch("contentLanguages")
   const slugCkb = watch("slugCkb")
   const titleCkb = watch("titleCkb")
@@ -141,6 +190,17 @@ export function AboutForm({
   const subtitleCkb = watch("subtitleCkb")
   const subtitleKmr = watch("subtitleKmr")
   const seoDescriptionCkb = watch("seoDescriptionCkb")
+  const founderNameCkb = watch("founderNameCkb")
+  const founderNameKmr = watch("founderNameKmr")
+
+  const teamQ = useAboutTeamMembersQuery()
+  const partnersQ = useAboutPartnersQuery()
+  const createTeamMut = useCreateAboutTeamMember()
+  const updateTeamMut = useUpdateAboutTeamMember()
+  const deleteTeamMut = useDeleteAboutTeamMember()
+  const createPartnerMut = useCreateAboutPartner()
+  const updatePartnerMut = useUpdateAboutPartner()
+  const deletePartnerMut = useDeleteAboutPartner()
 
   useEffect(() => {
     if (!contentLanguages.includes(activeLang) && contentLanguages[0]) {
@@ -157,6 +217,106 @@ export function AboutForm({
   const titleLen = (watch(titleField)?.length ?? 0)
   const subtitleLen = (watch(subtitleField)?.length ?? 0)
   const seoLen = (watch(seoField)?.length ?? 0)
+
+  function openCreateTeamDialog() {
+    setEditingTeam(null)
+    setTeamForm({
+      nameCkb: "",
+      nameKmr: "",
+      roleCkb: "",
+      roleKmr: "",
+      bioCkb: "",
+      bioKmr: "",
+      office: "",
+      imageUrl: "",
+      displayOrder: String(teamQ.data?.length ?? 0),
+    })
+    setTeamDialogOpen(true)
+  }
+
+  function openEditTeamDialog(item: AboutTeamMemberDto) {
+    setEditingTeam(item)
+    setTeamForm({
+      nameCkb: item.nameCkb ?? "",
+      nameKmr: item.nameKmr ?? "",
+      roleCkb: item.roleCkb ?? "",
+      roleKmr: item.roleKmr ?? "",
+      bioCkb: item.bioCkb ?? "",
+      bioKmr: item.bioKmr ?? "",
+      office: item.office ?? "",
+      imageUrl: item.imageUrl ?? "",
+      displayOrder: String(item.displayOrder ?? 0),
+    })
+    setTeamDialogOpen(true)
+  }
+
+  async function saveTeamMember() {
+    const payload = {
+      nameCkb: clean(teamForm.nameCkb),
+      nameKmr: clean(teamForm.nameKmr),
+      roleCkb: clean(teamForm.roleCkb),
+      roleKmr: clean(teamForm.roleKmr),
+      bioCkb: clean(teamForm.bioCkb),
+      bioKmr: clean(teamForm.bioKmr),
+      office: clean(teamForm.office),
+      imageUrl: clean(teamForm.imageUrl),
+      displayOrder: Number(teamForm.displayOrder || "0"),
+      active: true,
+    }
+    if (editingTeam?.id) {
+      await updateTeamMut.mutateAsync({ id: editingTeam.id, payload })
+    } else {
+      await createTeamMut.mutateAsync(payload)
+    }
+    setTeamDialogOpen(false)
+  }
+
+  function openCreatePartnerDialog() {
+    setEditingPartner(null)
+    setPartnerForm({
+      nameCkb: "",
+      nameKmr: "",
+      descriptionCkb: "",
+      descriptionKmr: "",
+      logoUrl: "",
+      websiteUrl: "",
+      displayOrder: String(partnersQ.data?.length ?? 0),
+    })
+    setPartnerDialogOpen(true)
+  }
+
+  function openEditPartnerDialog(item: AboutPartnerDto) {
+    setEditingPartner(item)
+    setPartnerForm({
+      nameCkb: item.nameCkb ?? "",
+      nameKmr: item.nameKmr ?? "",
+      descriptionCkb: item.descriptionCkb ?? "",
+      descriptionKmr: item.descriptionKmr ?? "",
+      logoUrl: item.logoUrl ?? "",
+      websiteUrl: item.websiteUrl ?? "",
+      displayOrder: String(item.displayOrder ?? 0),
+    })
+    setPartnerDialogOpen(true)
+  }
+
+  async function savePartner() {
+    const payload = {
+      nameCkb: clean(partnerForm.nameCkb),
+      nameKmr: clean(partnerForm.nameKmr),
+      descriptionCkb: clean(partnerForm.descriptionCkb),
+      descriptionKmr: clean(partnerForm.descriptionKmr),
+      logoUrl: clean(partnerForm.logoUrl),
+      websiteUrl: clean(partnerForm.websiteUrl),
+      displayOrder: Number(partnerForm.displayOrder || "0"),
+      active: true,
+    }
+    if (editingPartner?.id) {
+      await updatePartnerMut.mutateAsync({ id: editingPartner.id, payload })
+    } else {
+      await createPartnerMut.mutateAsync(payload)
+    }
+    setPartnerDialogOpen(false)
+  }
 
   async function onSubmit(values: AboutFormValues) {
     const payload = aboutFormValuesToPayload(values)
@@ -389,7 +549,106 @@ export function AboutForm({
               )}
             </section>
 
+            <section className="border-border/60 mt-10 border-t pt-6">
+              <h3 className="mb-3 text-sm font-medium">Founder</h3>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <Input placeholder="Founder name (CKB)" {...register("founderNameCkb")} />
+                <Input placeholder="Founder name (KMR)" {...register("founderNameKmr")} />
+              </div>
+              <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+                <Textarea rows={4} placeholder="Founder bio (CKB)" {...register("founderBioCkb")} />
+                <Textarea rows={4} placeholder="Founder bio (KMR)" {...register("founderBioKmr")} />
+              </div>
+              <div className="mt-4">
+                <Input placeholder="Founder image URL" {...register("founderImageUrl")} />
+              </div>
+            </section>
+
+            <section className="border-border/60 mt-10 border-t pt-6">
+              <h3 className="mb-3 text-sm font-medium">Hero Media</h3>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <Input placeholder="Hero video URL" {...register("heroVideoUrl")} />
+                <Input placeholder="Hero poster URL" {...register("heroPosterUrl")} />
+              </div>
+            </section>
+
             <AboutStatsEditor />
+
+            <section className="border-border/60 mt-10 border-t pt-6">
+              <div className="mb-3 flex items-center justify-between">
+                <h3 className="text-sm font-medium">Team Members</h3>
+                <Button type="button" size="sm" variant="outline" onClick={openCreateTeamDialog}>
+                  <PlusIcon className="me-1 size-4" />
+                  Add Team
+                </Button>
+              </div>
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                {(teamQ.data ?? []).map((item) => (
+                  <Card key={item.id ?? `${item.nameCkb}-${item.displayOrder}`}>
+                    <CardHeader>
+                      <CardTitle className="text-sm">{item.nameCkb || item.nameKmr || "—"}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-2 text-xs">
+                      <p className="text-muted-foreground">{item.roleCkb || item.roleKmr || "—"}</p>
+                      <div className="flex items-center gap-2">
+                        <Button type="button" size="sm" variant="outline" onClick={() => openEditTeamDialog(item)}>
+                          <PencilIcon className="me-1 size-3.5" />
+                          Edit
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          className="text-destructive"
+                          onClick={() => item.id && void deleteTeamMut.mutateAsync(item.id)}
+                        >
+                          <TrashIcon className="me-1 size-3.5" />
+                          Delete
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </section>
+
+            <section className="border-border/60 mt-10 border-t pt-6">
+              <div className="mb-3 flex items-center justify-between">
+                <h3 className="text-sm font-medium">Partners</h3>
+                <Button type="button" size="sm" variant="outline" onClick={openCreatePartnerDialog}>
+                  <PlusIcon className="me-1 size-4" />
+                  Add Partner
+                </Button>
+              </div>
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                {(partnersQ.data ?? []).map((item) => (
+                  <Card key={item.id ?? `${item.nameCkb}-${item.displayOrder}`}>
+                    <CardHeader>
+                      <CardTitle className="text-sm">{item.nameCkb || item.nameKmr || "—"}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-2 text-xs">
+                      <p className="text-muted-foreground">{item.websiteUrl || item.descriptionCkb || "—"}</p>
+                      <div className="flex items-center gap-2">
+                        <Button type="button" size="sm" variant="outline" onClick={() => openEditPartnerDialog(item)}>
+                          <PencilIcon className="me-1 size-3.5" />
+                          Edit
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          className="text-destructive"
+                          onClick={() => item.id && void deletePartnerMut.mutateAsync(item.id)}
+                        >
+                          <TrashIcon className="me-1 size-3.5" />
+                          Delete
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </section>
 
           </article>
         </div>
@@ -448,6 +707,48 @@ export function AboutForm({
           </div>
         </div>
       </form>
+
+      <Dialog open={teamDialogOpen} onOpenChange={setTeamDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{editingTeam ? "Edit Team Member" : "Add Team Member"}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <Input placeholder="Name CKB" value={teamForm.nameCkb} onChange={(e) => setTeamForm((p) => ({ ...p, nameCkb: e.target.value }))} />
+            <Input placeholder="Name KMR" value={teamForm.nameKmr} onChange={(e) => setTeamForm((p) => ({ ...p, nameKmr: e.target.value }))} />
+            <Input placeholder="Role CKB" value={teamForm.roleCkb} onChange={(e) => setTeamForm((p) => ({ ...p, roleCkb: e.target.value }))} />
+            <Input placeholder="Role KMR" value={teamForm.roleKmr} onChange={(e) => setTeamForm((p) => ({ ...p, roleKmr: e.target.value }))} />
+            <Input placeholder="Office" value={teamForm.office} onChange={(e) => setTeamForm((p) => ({ ...p, office: e.target.value }))} />
+            <Input placeholder="Image URL" value={teamForm.imageUrl} onChange={(e) => setTeamForm((p) => ({ ...p, imageUrl: e.target.value }))} />
+            <Input placeholder="Display order" value={teamForm.displayOrder} onChange={(e) => setTeamForm((p) => ({ ...p, displayOrder: e.target.value }))} />
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setTeamDialogOpen(false)}>Cancel</Button>
+            <Button type="button" onClick={() => void saveTeamMember()}>Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={partnerDialogOpen} onOpenChange={setPartnerDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{editingPartner ? "Edit Partner" : "Add Partner"}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <Input placeholder="Name CKB" value={partnerForm.nameCkb} onChange={(e) => setPartnerForm((p) => ({ ...p, nameCkb: e.target.value }))} />
+            <Input placeholder="Name KMR" value={partnerForm.nameKmr} onChange={(e) => setPartnerForm((p) => ({ ...p, nameKmr: e.target.value }))} />
+            <Textarea rows={3} placeholder="Description CKB" value={partnerForm.descriptionCkb} onChange={(e) => setPartnerForm((p) => ({ ...p, descriptionCkb: e.target.value }))} />
+            <Textarea rows={3} placeholder="Description KMR" value={partnerForm.descriptionKmr} onChange={(e) => setPartnerForm((p) => ({ ...p, descriptionKmr: e.target.value }))} />
+            <Input placeholder="Logo URL" value={partnerForm.logoUrl} onChange={(e) => setPartnerForm((p) => ({ ...p, logoUrl: e.target.value }))} />
+            <Input placeholder="Website URL" value={partnerForm.websiteUrl} onChange={(e) => setPartnerForm((p) => ({ ...p, websiteUrl: e.target.value }))} />
+            <Input placeholder="Display order" value={partnerForm.displayOrder} onChange={(e) => setPartnerForm((p) => ({ ...p, displayOrder: e.target.value }))} />
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setPartnerDialogOpen(false)}>Cancel</Button>
+            <Button type="button" onClick={() => void savePartner()}>Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </FormProvider>
   )
 }

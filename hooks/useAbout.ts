@@ -10,10 +10,18 @@ import {
 import type { AboutWritePayload } from "@/lib/about-form-data"
 import { aboutKeys } from "@/lib/about-query-keys"
 import {
+  createAboutPartner,
+  createAboutTeamMember,
   createAbout,
+  deleteAboutPartner,
+  deleteAboutTeamMember,
   deleteAbout,
+  getAboutPartners,
+  getAboutTeamMembers,
   getAboutById,
   getAboutList,
+  updateAboutPartner,
+  updateAboutTeamMember,
   updateAbout,
 } from "@/services/aboutService"
 import type { AboutDto, AboutPage } from "@/types/about"
@@ -111,6 +119,84 @@ export function useDeleteAboutMutation() {
     onSuccess: (_data, id) => {
       void queryClient.invalidateQueries({ queryKey: aboutKeys.lists() })
       queryClient.removeQueries({ queryKey: aboutKeys.detail(id) })
+    },
+  })
+}
+
+export function useAboutTeamMembersQuery() {
+  return useQuery({
+    queryKey: aboutKeys.team(),
+    queryFn: getAboutTeamMembers,
+    staleTime: 1000 * 60 * 2,
+  })
+}
+
+export function useCreateAboutTeamMember() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: createAboutTeamMember,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: aboutKeys.team() })
+    },
+  })
+}
+
+export function useUpdateAboutTeamMember() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, payload }: { id: number; payload: Parameters<typeof updateAboutTeamMember>[1] }) =>
+      updateAboutTeamMember(id, payload),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: aboutKeys.team() })
+    },
+  })
+}
+
+export function useDeleteAboutTeamMember() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: deleteAboutTeamMember,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: aboutKeys.team() })
+    },
+  })
+}
+
+export function useAboutPartnersQuery() {
+  return useQuery({
+    queryKey: aboutKeys.partners(),
+    queryFn: getAboutPartners,
+    staleTime: 1000 * 60 * 2,
+  })
+}
+
+export function useCreateAboutPartner() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: createAboutPartner,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: aboutKeys.partners() })
+    },
+  })
+}
+
+export function useUpdateAboutPartner() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, payload }: { id: number; payload: Parameters<typeof updateAboutPartner>[1] }) =>
+      updateAboutPartner(id, payload),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: aboutKeys.partners() })
+    },
+  })
+}
+
+export function useDeleteAboutPartner() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: deleteAboutPartner,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: aboutKeys.partners() })
     },
   })
 }

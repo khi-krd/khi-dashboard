@@ -1,8 +1,10 @@
 import type {
   AboutContentDto,
   AboutDto,
+  AboutPartnerDto,
   AboutPage,
   AboutStatDto,
+  AboutTeamMemberDto,
 } from "@/types/about"
 
 function coerceStr(v: unknown): string | null {
@@ -104,12 +106,54 @@ export function normalizeAboutDto(raw: unknown): AboutDto {
     active,
     slugCkb: coerceStr(o.slugCkb) ?? coerceStr(o.slug_ckb),
     slugKmr: coerceStr(o.slugKmr) ?? coerceStr(o.slug_kmr),
+    founderNameCkb: coerceStr(o.founderNameCkb) ?? coerceStr(o.founder_name_ckb),
+    founderNameKmr: coerceStr(o.founderNameKmr) ?? coerceStr(o.founder_name_kmr),
+    founderBioCkb: coerceStr(o.founderBioCkb) ?? coerceStr(o.founder_bio_ckb),
+    founderBioKmr: coerceStr(o.founderBioKmr) ?? coerceStr(o.founder_bio_kmr),
+    founderImageUrl:
+      coerceStr(o.founderImageUrl) ?? coerceStr(o.founder_image_url),
+    heroVideoUrl: coerceStr(o.heroVideoUrl) ?? coerceStr(o.hero_video_url),
+    heroPosterUrl: coerceStr(o.heroPosterUrl) ?? coerceStr(o.hero_poster_url),
     ckbContent,
     kmrContent,
     stats: normalizeStats(o.stats),
     displayOrder: coerceNum(o.displayOrder) ?? coerceNum(o.display_order) ?? undefined,
     createdAt: coerceStr(o.createdAt) ?? coerceStr(o.created_at) ?? undefined,
     updatedAt: coerceStr(o.updatedAt) ?? coerceStr(o.updated_at) ?? undefined,
+  }
+}
+
+export function normalizeAboutTeamMember(raw: unknown): AboutTeamMemberDto {
+  const o = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>
+  return {
+    id: coerceNum(o.id) ?? undefined,
+    nameCkb: coerceStr(o.nameCkb) ?? coerceStr(o.name_ckb),
+    nameKmr: coerceStr(o.nameKmr) ?? coerceStr(o.name_kmr),
+    roleCkb: coerceStr(o.roleCkb) ?? coerceStr(o.role_ckb),
+    roleKmr: coerceStr(o.roleKmr) ?? coerceStr(o.role_kmr),
+    bioCkb: coerceStr(o.bioCkb) ?? coerceStr(o.bio_ckb),
+    bioKmr: coerceStr(o.bioKmr) ?? coerceStr(o.bio_kmr),
+    office: coerceStr(o.office),
+    imageUrl: coerceStr(o.imageUrl) ?? coerceStr(o.image_url),
+    displayOrder: coerceNum(o.displayOrder) ?? coerceNum(o.display_order) ?? undefined,
+    active: coerceBool(o.active, true),
+  }
+}
+
+export function normalizeAboutPartner(raw: unknown): AboutPartnerDto {
+  const o = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>
+  return {
+    id: coerceNum(o.id) ?? undefined,
+    nameCkb: coerceStr(o.nameCkb) ?? coerceStr(o.name_ckb),
+    nameKmr: coerceStr(o.nameKmr) ?? coerceStr(o.name_kmr),
+    descriptionCkb:
+      coerceStr(o.descriptionCkb) ?? coerceStr(o.description_ckb),
+    descriptionKmr:
+      coerceStr(o.descriptionKmr) ?? coerceStr(o.description_kmr),
+    logoUrl: coerceStr(o.logoUrl) ?? coerceStr(o.logo_url),
+    websiteUrl: coerceStr(o.websiteUrl) ?? coerceStr(o.website_url),
+    displayOrder: coerceNum(o.displayOrder) ?? coerceNum(o.display_order) ?? undefined,
+    active: coerceBool(o.active, true),
   }
 }
 

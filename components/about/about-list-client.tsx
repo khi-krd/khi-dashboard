@@ -1,7 +1,8 @@
 "use client"
 
-import { Suspense, useMemo, useState } from "react"
+import { Suspense, useEffect, useMemo, useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import {
   MagnifyingGlassIcon,
   PlusIcon,
@@ -63,6 +64,7 @@ export function AboutListClient() {
 }
 
 function AboutListClientInner() {
+  const router = useRouter()
   const [searchRaw, setSearchRaw] = useState("")
   const debouncedKw = useDebouncedValue(searchRaw.trim(), 300)
   const [activeFilter, setActiveFilter] = useState<AboutUiActiveFilter>("all")
@@ -97,6 +99,25 @@ function AboutListClientInner() {
   }
 
   const total = listQ.data?.totalElements ?? filtered.length
+  const hasAboutRecord = total > 0
+  const singleAboutId =
+    !listQ.isLoading &&
+    !listQ.isError &&
+    (listQ.data?.totalElements ?? 0) === 1 &&
+    (listQ.data?.content?.[0]?.id ?? 0) > 0
+      ? listQ.data?.content?.[0]?.id
+      : undefined
+
+  useEffect(() => {
+    if (
+      singleAboutId &&
+      !anyFilterActive &&
+      searchRaw.trim().length === 0 &&
+      pageIndex === 0
+    ) {
+      router.replace(`/dashboard/about/${singleAboutId}`)
+    }
+  }, [singleAboutId, anyFilterActive, searchRaw, pageIndex, router])
 
   return (
     <div dir="rtl" className="px-4 py-6 lg:px-6">
@@ -108,21 +129,39 @@ function AboutListClientInner() {
             {NS.count(formatCkbDigits(total))}
           </p>
         </div>
-        <Link
-          href="/dashboard/about/new"
-          className={cn(
-            buttonVariants({ variant: "default" }),
-            "bg-primary text-primary-foreground hover:bg-primary/90 shrink-0",
-          )}
-        >
-          <PlusIcon className="me-1 size-4" />
-          {NS.new}
-        </Link>
+        {!hasAboutRecord ? (
+          <Link
+            href="/dashboard/about/new"
+            className={cn(
+              buttonVariants({ variant: "default" }),
+              "bg-primary text-primary-foreground hover:bg-primary/90 shrink-0",
+            )}
+          >
+            <PlusIcon className="me-1 size-4" />
+            {NS.new}
+          </Link>
+        ) : null}
       </header>
+
+      {hasAboutRecord ? (
+        <div className="border-border bg-muted/20 mb-4 flex items-center justify-between rounded-lg border px-3 py-2 text-xs">
+          <span className="text-muted-foreground">
+            تەنها یەک پەڕەی دەربارە ڕێگەپێدراوە
+          </span>
+          {listQ.data?.content?.[0]?.id ? (
+            <Link
+              href={`/dashboard/about/${listQ.data.content[0].id}/edit`}
+              className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+            >
+              دەستکاری
+            </Link>
+          ) : null}
+        </div>
+      ) : null}
 
       <div className="mb-4 flex items-center gap-2">
         <div className="relative flex-1">
-          <MagnifyingGlassIcon className="text-muted-foreground absolute end-3 top-1/2 size-4 -translate-y-1/2" />
+          <MagnifyingGlassIcon className="text-muted-foreground absolute inset-e-3 top-1/2 size-4 -translate-y-1/2" />
           <Input
             value={searchRaw}
             onChange={(e) => {

@@ -27,8 +27,11 @@ import { AboutStatusPill } from "@/components/about/about-status-pill"
 import { NS, truncateTitle } from "@/components/about/about-strings"
 import { SlugChip } from "@/components/about/slug-chip"
 import { Button, buttonVariants } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   useAboutDetailQuery,
+  useAboutPartnersQuery,
+  useAboutTeamMembersQuery,
   useDeleteAboutMutation,
 } from "@/hooks/useAbout"
 import { aboutDisplayTitle } from "@/lib/about-normalize"
@@ -50,6 +53,8 @@ export function AboutDetailClient({ aboutId }: { aboutId: number }) {
   const deleteMut = useDeleteAboutMutation()
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [activeLang, setActiveLang] = useState<Language>("CKB")
+  const teamQ = useAboutTeamMembersQuery()
+  const partnersQ = useAboutPartnersQuery()
 
   if (isLoading) return <AboutDetailSkeleton />
   if (isError) return <AboutErrorState onRetry={() => void refetch()} />
@@ -266,6 +271,84 @@ export function AboutDetailClient({ aboutId }: { aboutId: number }) {
                 </dl>
               </section>
             ) : null}
+
+            <section className="border-border/60 mt-12 border-t pt-8">
+              <h3 className="text-muted-foreground mb-4 text-xs font-medium tracking-wide uppercase">
+                Founder
+              </h3>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="border-border bg-muted/20 rounded-lg border p-4">
+                  <p className="font-medium">
+                    {about.founderNameCkb || about.founderNameKmr || "—"}
+                  </p>
+                  <p className="text-muted-foreground mt-2 text-sm">
+                    {(activeLang === "CKB" ? about.founderBioCkb : about.founderBioKmr) || "—"}
+                  </p>
+                </div>
+                <div className="border-border bg-muted/20 rounded-lg border p-4">
+                  <p className="text-sm">Image URL</p>
+                  <p className="text-muted-foreground mt-1 break-all text-xs">
+                    {about.founderImageUrl || "—"}
+                  </p>
+                </div>
+              </div>
+            </section>
+
+            <section className="border-border/60 mt-12 border-t pt-8">
+              <h3 className="text-muted-foreground mb-4 text-xs font-medium tracking-wide uppercase">
+                Hero Media
+              </h3>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="border-border bg-muted/20 rounded-lg border p-4">
+                  <p className="text-sm">Video URL</p>
+                  <p className="text-muted-foreground mt-1 break-all text-xs">
+                    {about.heroVideoUrl || "—"}
+                  </p>
+                </div>
+                <div className="border-border bg-muted/20 rounded-lg border p-4">
+                  <p className="text-sm">Poster URL</p>
+                  <p className="text-muted-foreground mt-1 break-all text-xs">
+                    {about.heroPosterUrl || "—"}
+                  </p>
+                </div>
+              </div>
+            </section>
+
+            <section className="border-border/60 mt-12 border-t pt-8">
+              <h3 className="text-muted-foreground mb-4 text-xs font-medium tracking-wide uppercase">
+                Team Members
+              </h3>
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                {(teamQ.data ?? []).map((item) => (
+                  <Card key={item.id ?? `${item.nameCkb}-${item.displayOrder}`}>
+                    <CardHeader>
+                      <CardTitle className="text-sm">{item.nameCkb || item.nameKmr || "—"}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-xs">
+                      <p>{item.roleCkb || item.roleKmr || "—"}</p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </section>
+
+            <section className="border-border/60 mt-12 border-t pt-8">
+              <h3 className="text-muted-foreground mb-4 text-xs font-medium tracking-wide uppercase">
+                Partners
+              </h3>
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                {(partnersQ.data ?? []).map((item) => (
+                  <Card key={item.id ?? `${item.nameCkb}-${item.displayOrder}`}>
+                    <CardHeader>
+                      <CardTitle className="text-sm">{item.nameCkb || item.nameKmr || "—"}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-xs">
+                      <p className="break-all">{item.websiteUrl || item.descriptionCkb || "—"}</p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </section>
           </div>
         </article>
       </div>

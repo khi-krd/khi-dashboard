@@ -10,4 +10,6 @@ export const aboutKeys = {
     [...aboutKeys.lists(), params] as const,
   details: () => [...aboutKeys.all, "detail"] as const,
   detail: (id: number) => [...aboutKeys.details(), id] as const,
+  team: () => [...aboutKeys.all, "team"] as const,
+  partners: () => [...aboutKeys.all, "partners"] as const,
 }
