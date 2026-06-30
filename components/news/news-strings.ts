@@ -31,6 +31,12 @@ export const NS = {
     upload_media_file: "+ بارکردنی فایل",
     replace_media_file: "گۆڕینی فایل",
     edit_media_item: "دەستکاریی میدیا",
+    add_gallery_item: "زیادکردنی میدیا",
+  },
+  coverKind: {
+    IMAGE: "وێنە",
+    VIDEO: "ڤیدیۆ",
+    AUDIO: "دەنگ",
   },
   selection: {
     /** {count} is inserted as formatted digits */
@@ -80,6 +86,8 @@ export const NS = {
     classification: "پۆلبەندی",
     media: "میدیا",
     cover: "وێنەی ڕووکار",
+    cover_type: "جۆری ڕووکار",
+    media_gallery: "گالەری میدیا",
     publish: "بڵاوکردنەوە",
     system: "زانیاری سیستەم",
     /** Detail sidebar — short heading */
@@ -101,6 +109,7 @@ export const NS = {
     cover_drop: "وێنە و فایلەکانت دابنێ یان کلیک بکە بۆ هەڵبژاردن",
     cover_loading: "بارکردنی وێنە…",
     cover_required: "(پێویست)",
+    cover_thumbnail: "وێنەی بچووکی ڕووکار",
     /** Cover section helper under dropzone */
     cover_format_hint: "PNG، JPEG، یان WEBP · زۆرترین قەبارە ٥ MB",
     title_placeholder_ckb: "ناونیشانی هەواڵ بە سۆرانی…",
@@ -141,6 +150,7 @@ export const NS = {
     no_media: "هیچ میدیایەک نییە",
     no_body: "وەسف بۆ ئەم زمانە بەردەست نییە.",
     no_cover: "بێ وێنەی ڕووکار",
+    gallery: "هیچ میدیایەک زیاد نەکراوە",
   },
   toast: {
     copied: "لەبەرگیرایەوە",

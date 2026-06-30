@@ -21,6 +21,11 @@ export type AboutWritePayload = {
     metaDescription?: string
     body?: string
   }
+  stats?: Array<{
+    labelCkb?: string
+    labelKmr?: string
+    value?: string
+  }>
 }
 
 export function aboutFormValuesToPayload(
@@ -46,5 +51,12 @@ export function aboutFormValuesToPayload(
           body: values.bodyKmr ?? undefined,
         }
       : undefined,
+    stats: values.stats
+      .filter((s) => s.labelCkb?.trim() || s.labelKmr?.trim() || s.value?.trim())
+      .map((s) => ({
+        labelCkb: trimOrUndef(s.labelCkb),
+        labelKmr: trimOrUndef(s.labelKmr),
+        value: trimOrUndef(s.value),
+      })),
   }
 }

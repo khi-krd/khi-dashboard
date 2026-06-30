@@ -48,6 +48,33 @@ export const defaultContactFormValues: ContactFormValues = {
   longitude: null,
 }
 
+export type ContactCompletionInput = {
+  titleCkb?: string | null
+  titleKmr?: string | null
+  addressCkb?: string | null
+  addressKmr?: string | null
+  workingHoursCkb?: string | null
+  workingHoursKmr?: string | null
+  descriptionCkb?: string | null
+  descriptionKmr?: string | null
+}
+
+export function computeContactCompletion(
+  values: ContactCompletionInput,
+  lang: "CKB" | "KMR",
+): number {
+  let score = 0
+  const title = lang === "CKB" ? values.titleCkb : values.titleKmr
+  const address = lang === "CKB" ? values.addressCkb : values.addressKmr
+  const hours = lang === "CKB" ? values.workingHoursCkb : values.workingHoursKmr
+  const desc = lang === "CKB" ? values.descriptionCkb : values.descriptionKmr
+  if (title?.trim()) score += 1
+  if (address?.trim()) score += 1
+  if (hours?.trim()) score += 1
+  if (desc?.trim()) score += 1
+  return score
+}
+
 export function contactDtoToFormValues(
   dto: import("@/types/contact").ContactDto,
 ): ContactFormValues {

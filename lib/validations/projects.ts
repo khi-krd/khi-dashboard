@@ -2,9 +2,11 @@ import { z } from "zod"
 
 import { NS } from "@/components/projects/projects-strings"
 
+import { mediaGalleryFieldSchema } from "@/lib/validations/media-gallery"
+
 export const projectFormSchema = z
   .object({
-    status: z.enum(["ONGOING", "COMPLETED"]),
+    status: z.enum(["ACTIVE", "COMPLETED", "ARCHIVED"]),
     contentLanguages: z
       .array(z.enum(["CKB", "KMR"]))
       .min(1, NS.validation.languageRequired),
@@ -12,6 +14,10 @@ export const projectFormSchema = z
     projectTypeKmr: z.string().optional().nullable(),
     coverUrl: z.string().optional().nullable(),
     existingCoverUrl: z.string().optional().nullable(),
+    coverMediaType: z.enum(["IMAGE", "VIDEO", "AUDIO"]).default("IMAGE"),
+    coverThumbnailUrl: z.string().optional().nullable(),
+    existingCoverThumbnailUrl: z.string().optional().nullable(),
+    mediaGallery: mediaGalleryFieldSchema,
     projectDate: z.string().optional().nullable(),
     ckbContent: z
       .object({
@@ -114,12 +120,16 @@ export type ProjectFormValues = z.infer<typeof projectFormSchema>
 
 export function defaultProjectFormValues(): ProjectFormValues {
   return {
-    status: "ONGOING",
+    status: "ACTIVE",
     contentLanguages: ["CKB"],
     projectTypeCkb: "",
     projectTypeKmr: "",
     coverUrl: null,
     existingCoverUrl: null,
+    coverMediaType: "IMAGE",
+    coverThumbnailUrl: null,
+    existingCoverThumbnailUrl: null,
+    mediaGallery: [],
     projectDate: undefined,
     ckbContent: { title: "", description: "", location: "" },
     kmrContent: { title: "", description: "", location: "" },

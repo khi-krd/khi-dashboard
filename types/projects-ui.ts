@@ -1,6 +1,7 @@
 import type { Language, ProjectDto, ProjectStatus } from "@/types/projects"
+import { normalizeProjectStatus } from "@/types/projects"
 
-export type ProjectsUiStatusFilter = "all" | "ongoing" | "completed"
+export type ProjectsUiStatusFilter = "all" | "active" | "completed" | "archived"
 
 export type ProjectsUiLanguageFilter =
   | "all"
@@ -21,9 +22,10 @@ export function matchesProjectStatusFilter(
   filter: ProjectsUiStatusFilter,
 ): boolean {
   if (filter === "all") return true
-  const s = p.status ?? "ONGOING"
-  if (filter === "ongoing") return s === "ONGOING"
+  const s = normalizeProjectStatus(p.status)
+  if (filter === "active") return s === "ACTIVE"
   if (filter === "completed") return s === "COMPLETED"
+  if (filter === "archived") return s === "ARCHIVED"
   return true
 }
 
@@ -134,5 +136,5 @@ export function toProjectAdminRow(dto: ProjectDto): ProjectAdminTableRow {
 }
 
 export function projectStatusLabel(status: ProjectStatus | undefined): ProjectStatus {
-  return status === "COMPLETED" ? "COMPLETED" : "ONGOING"
+  return normalizeProjectStatus(status)
 }

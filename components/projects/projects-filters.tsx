@@ -36,10 +36,12 @@ function statusTriggerLabel(v: ProjectsUiStatusFilter): string {
   switch (v) {
     case "all":
       return NS.filter.all_statuses
-    case "ongoing":
-      return NS.status.ongoing
+    case "active":
+      return NS.status.active
     case "completed":
       return NS.status.completed
+    case "archived":
+      return NS.status.archived
     default:
       return NS.filter.all_statuses
   }
@@ -132,8 +134,9 @@ export function ProjectsFiltersToolbar({
             </SelectTrigger>
             <SelectContent dir="rtl">
               <SelectItem value="all">{NS.filter.all_statuses}</SelectItem>
-              <SelectItem value="ongoing">{NS.status.ongoing}</SelectItem>
+              <SelectItem value="active">{NS.status.active}</SelectItem>
               <SelectItem value="completed">{NS.status.completed}</SelectItem>
+              <SelectItem value="archived">{NS.status.archived}</SelectItem>
             </SelectContent>
           </Select>
         </div>

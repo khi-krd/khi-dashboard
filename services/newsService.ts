@@ -46,13 +46,13 @@ export async function searchNews(
   size: number,
 ): Promise<NewsListResponse> {
   const { data } = await api.get<NewsListResponse>(`${BASE}/search`, {
-    params: { keyword, page, size },
+    params: { q: keyword, keyword, page, size },
   })
   return normalizedList(data)
 }
 
 export async function bulkDeleteNews(ids: number[]): Promise<void> {
-  await Promise.all(ids.map((id) => deleteNews(id)))
+  await api.delete(`${BASE}/bulk`, { data: { ids } })
 }
 
 export async function createNews(

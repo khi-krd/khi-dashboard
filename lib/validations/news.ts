@@ -2,6 +2,7 @@ import { z } from "zod"
 
 import { NS } from "@/components/news/news-strings"
 import { isRichTextEmpty } from "@/lib/rich-text-empty"
+import { mediaGalleryFieldSchema } from "@/lib/validations/media-gallery"
 
 export const newsFormSchema = z
   .object({
@@ -17,8 +18,11 @@ export const newsFormSchema = z
       kmrName: z.string().min(1),
     }),
     coverUrl: z.string().optional().nullable(),
-    /** Preserved server cover URL in edit mode (counts as valid cover). */
     existingCoverUrl: z.string().optional().nullable(),
+    coverMediaType: z.enum(["IMAGE", "VIDEO", "AUDIO"]).default("IMAGE"),
+    coverThumbnailUrl: z.string().optional().nullable(),
+    existingCoverThumbnailUrl: z.string().optional().nullable(),
+    mediaGallery: mediaGalleryFieldSchema,
     datePublished: z.string().optional().nullable(),
     ckbContent: z
       .object({
@@ -117,6 +121,10 @@ export function defaultNewsFormValues(): NewsFormValues {
     subCategory: { ckbName: "", kmrName: "" },
     coverUrl: null,
     existingCoverUrl: null,
+    coverMediaType: "IMAGE",
+    coverThumbnailUrl: null,
+    existingCoverThumbnailUrl: null,
+    mediaGallery: [],
     datePublished: today,
     ckbContent: { title: "", description: "" },
     kmrContent: { title: "", description: "" },

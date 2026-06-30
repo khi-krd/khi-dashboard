@@ -23,6 +23,7 @@ import {
   dashboardProjectsCrumbHref,
 } from "@/components/projects/project-breadcrumb"
 import { ProjectStatusPill } from "@/components/projects/project-status-pill"
+import { MediaGalleryEditor } from "@/components/shared/media-gallery-editor"
 import { MediaCoverUpload } from "@/components/shared/media-cover-upload"
 import { ProjectTagInput } from "@/components/projects/project-tag-input"
 import { TiptapEditor } from "@/components/shared/tiptap-editor-lazy"
@@ -56,7 +57,9 @@ import {
 } from "@/lib/validations/projects"
 import { formatCkbDigits } from "@/lib/intl-ckb"
 import { cn } from "@/lib/utils"
-import type { Language, ProjectDto } from "@/types/projects"
+import type { Language, MediaKind, ProjectDto } from "@/types/projects"
+import { normalizeProjectStatus } from "@/types/projects"
+import { galleryDtoToFormValues } from "@/types/media-gallery"
 import { useQueryClient } from "@tanstack/react-query"
 import { HashtagIcon, TagIcon } from "@heroicons/react/24/outline"
 
@@ -88,7 +91,7 @@ function dtoToFormValues(d: ProjectDto): ProjectFormValues {
       ? d.projectDate.slice(0, 10)
       : ""
   return {
-    status: d.status ?? "ONGOING",
+    status: normalizeProjectStatus(d.status),
     contentLanguages:
       Array.isArray(d.contentLanguages) && d.contentLanguages.length
         ? d.contentLanguages
@@ -97,6 +100,10 @@ function dtoToFormValues(d: ProjectDto): ProjectFormValues {
     projectTypeKmr: d.projectTypeKmr ?? "",
     coverUrl: d.coverUrl ?? null,
     existingCoverUrl: d.coverUrl ?? null,
+    coverMediaType: d.coverMediaType ?? "IMAGE",
+    coverThumbnailUrl: d.coverThumbnailUrl ?? null,
+    existingCoverThumbnailUrl: d.coverThumbnailUrl ?? null,
+    mediaGallery: galleryDtoToFormValues(d.mediaGallery),
     projectDate: date || undefined,
     ckbContent: {
       title: d.ckbContent?.title ?? "",
@@ -172,6 +179,8 @@ export function ProjectForm({
   const contentLanguages = watch("contentLanguages")
   const coverUrl = watch("coverUrl")
   const existingCoverUrl = watch("existingCoverUrl")
+  const coverMediaType = watch("coverMediaType") as MediaKind
+  const existingCoverThumbnailUrl = watch("existingCoverThumbnailUrl")
   const status = watch("status")
 
   const coverPreviewUrl =
@@ -288,22 +297,28 @@ export function ProjectForm({
               <Label className="text-muted-foreground mb-2 block text-xs uppercase">
                 {NS.col.status}
               </Label>
-              <div className="grid grid-cols-2 gap-1 rounded-md border border-border p-1">
-                {(["ONGOING", "COMPLETED"] as const).map((s) => (
+              <div className="grid grid-cols-3 gap-1 rounded-md border border-border p-1">
+                {(["ACTIVE", "COMPLETED", "ARCHIVED"] as const).map((s) => (
                   <button
                     key={s}
                     type="button"
                     onClick={() => setValue("status", s, { shouldDirty: true })}
                     className={cn(
                       "rounded-md py-1.5 text-xs font-medium",
-                      status === s && s === "ONGOING" &&
+                      status === s && s === "ACTIVE" &&
                         "bg-amber-500/10 text-amber-700 dark:text-amber-400",
                       status === s && s === "COMPLETED" &&
                         "bg-primary/10 text-primary",
+                      status === s && s === "ARCHIVED" &&
+                        "bg-muted text-muted-foreground",
                       status !== s && "text-muted-foreground hover:bg-muted/50",
                     )}
                   >
-                    {s === "ONGOING" ? NS.status.ongoing : NS.status.completed}
+                    {s === "ACTIVE"
+                      ? NS.status.active
+                      : s === "COMPLETED"
+                        ? NS.status.completed
+                        : NS.status.archived}
                   </button>
                 ))}
               </div>
@@ -461,6 +476,71 @@ export function ProjectForm({
                   : undefined
               }
             />
+
+            <section className={cn("mt-6 space-y-3", sectionDivider)}>
+              <Label className="text-muted-foreground block text-xs uppercase">
+                {NS.section.cover_type}
+              </Label>
+              <Controller
+                name="coverMediaType"
+                control={control}
+                render={({ field }) => (
+                  <div className="flex flex-wrap gap-2">
+                    {(["IMAGE", "VIDEO", "AUDIO"] as const).map((kind) => (
+                      <button
+                        key={kind}
+                        type="button"
+                        onClick={() => field.onChange(kind)}
+                        className={cn(
+                          "rounded-md border px-3 py-1.5 text-xs font-medium transition-colors",
+                          field.value === kind
+                            ? "border-primary bg-primary/10 text-primary"
+                            : "border-border text-muted-foreground hover:bg-muted/50",
+                        )}
+                      >
+                        {NS.coverKind[kind]}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              />
+              {(coverMediaType === "VIDEO" || coverMediaType === "AUDIO") ? (
+                <Controller
+                  name="coverThumbnailUrl"
+                  control={control}
+                  render={({ field }) => (
+                    <MediaCoverUpload
+                      label={NS.field.cover_thumbnail}
+                      previewUrl={
+                        field.value?.trim() ||
+                        existingCoverThumbnailUrl?.trim() ||
+                        null
+                      }
+                      urlValue={field.value ?? ""}
+                      onUrlChange={(s) => {
+                        field.onChange(s.length ? s : null, {
+                          shouldDirty: true,
+                        })
+                        if (s.trim()) {
+                          setValue("existingCoverThumbnailUrl", null, {
+                            shouldDirty: true,
+                          })
+                        }
+                      }}
+                    />
+                  )}
+                />
+              ) : null}
+            </section>
+
+            <section className={cn("mt-6", sectionDivider)}>
+              <MediaGalleryEditor<ProjectFormValues>
+                name="mediaGallery"
+                title={NS.section.media_gallery}
+                addLabel={NS.field.caption_add}
+                emptyLabel={NS.empty.gallery ?? "هیچ میدیایەک زیاد نەکراوە"}
+              />
+            </section>
 
             {activeLang === "CKB" ? (
               <div className="mt-6 space-y-2">

@@ -26,10 +26,10 @@ function getLoginErrorMessage(status: number, data: unknown): string {
         : ""
     const lower = msg.toLowerCase()
     if (lower.includes("lock")) {
-      return "ئەژمێرەکەت کلێت کراوەتەوە، پاشان هەوڵبدەرەوە"
+      return "هەژمارەکەت کلێت کراوەتەوە، پاشان هەوڵبدەرەوە"
     }
     if (lower.includes("disabled") || lower.includes("activated")) {
-      return "ئەژمێرەکەت چالاک نییە"
+      return "هەژمارەکەت چالاک نییە"
     }
     if (lower.includes("expir")) {
       return "وشەی نهێنیەکەت بەسەرچووە، تکایە ریسێتی بکە"

@@ -2,6 +2,7 @@ import type {
   AboutContentDto,
   AboutDto,
   AboutPage,
+  AboutStatDto,
 } from "@/types/about"
 
 function coerceStr(v: unknown): string | null {
@@ -44,6 +45,21 @@ export function unwrapApiData<T>(raw: unknown): T {
     if (envelope.data != null) return envelope.data
   }
   return raw as T
+}
+
+function normalizeStat(raw: unknown): AboutStatDto | null {
+  if (!raw || typeof raw !== "object") return null
+  const o = raw as Record<string, unknown>
+  return {
+    labelCkb: coerceStr(o.labelCkb) ?? coerceStr(o.label_ckb),
+    labelKmr: coerceStr(o.labelKmr) ?? coerceStr(o.label_kmr),
+    value: coerceStr(o.value),
+  }
+}
+
+function normalizeStats(raw: unknown): AboutStatDto[] {
+  if (!Array.isArray(raw)) return []
+  return raw.map(normalizeStat).filter((s): s is AboutStatDto => s != null)
 }
 
 export function normalizeAboutDto(raw: unknown): AboutDto {
@@ -90,6 +106,7 @@ export function normalizeAboutDto(raw: unknown): AboutDto {
     slugKmr: coerceStr(o.slugKmr) ?? coerceStr(o.slug_kmr),
     ckbContent,
     kmrContent,
+    stats: normalizeStats(o.stats),
     displayOrder: coerceNum(o.displayOrder) ?? coerceNum(o.display_order) ?? undefined,
     createdAt: coerceStr(o.createdAt) ?? coerceStr(o.created_at) ?? undefined,
     updatedAt: coerceStr(o.updatedAt) ?? coerceStr(o.updated_at) ?? undefined,

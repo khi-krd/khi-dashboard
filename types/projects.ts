@@ -1,6 +1,20 @@
 export type Language = "CKB" | "KMR"
 
-export type ProjectStatus = "ONGOING" | "COMPLETED"
+export type ProjectStatus = "ACTIVE" | "COMPLETED" | "ARCHIVED"
+
+/** @deprecated legacy API value — mapped to ACTIVE on read */
+export type LegacyProjectStatus = "ONGOING"
+
+export type MediaKind = "IMAGE" | "VIDEO" | "AUDIO"
+
+export type MediaGalleryItemDto = {
+  url: string
+  kind?: MediaKind
+  thumbnailUrl?: string | null
+  captionCkb?: string | null
+  captionKmr?: string | null
+  sortOrder?: number
+}
 
 export type ProjectLanguageContentDto = {
   title: string
@@ -14,6 +28,9 @@ export type ProjectDto = {
   projectTypeCkb?: string | null
   projectTypeKmr?: string | null
   coverUrl?: string | null
+  coverMediaType?: MediaKind | null
+  coverThumbnailUrl?: string | null
+  mediaGallery?: MediaGalleryItemDto[]
   projectDate?: string | null
   createdAt?: string
   updatedAt?: string
@@ -26,6 +43,16 @@ export type ProjectDto = {
   tagsKmr?: string[]
   keywordsCkb?: string[]
   keywordsKmr?: string[]
+}
+
+export function normalizeProjectStatus(
+  status: string | undefined | null,
+): ProjectStatus {
+  const s = status?.toUpperCase()
+  if (s === "COMPLETED") return "COMPLETED"
+  if (s === "ARCHIVED") return "ARCHIVED"
+  if (s === "ACTIVE" || s === "ONGOING") return "ACTIVE"
+  return "ACTIVE"
 }
 
 export type ApiResponse<T> = {

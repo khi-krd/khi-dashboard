@@ -1,4 +1,5 @@
 import type { NewsDto } from "@/types/news"
+import { galleryFormValuesToDto } from "@/types/media-gallery"
 
 import type { NewsFormValues } from "@/lib/validations/news"
 
@@ -18,11 +19,19 @@ export function newsFormValuesToPayload(values: NewsFormValues): NewsWritePayloa
     values.existingCoverUrl?.trim() ||
     undefined
 
+  const coverThumbnailUrl =
+    values.coverThumbnailUrl?.trim() ||
+    values.existingCoverThumbnailUrl?.trim() ||
+    undefined
+
   return {
     contentLanguages: values.contentLanguages,
     category: values.category,
     subCategory: values.subCategory,
     coverUrl,
+    coverMediaType: values.coverMediaType,
+    coverThumbnailUrl,
+    mediaGallery: galleryFormValuesToDto(values.mediaGallery),
     datePublished: values.datePublished
       ? toIsoMiddayUtc(values.datePublished)
       : undefined,

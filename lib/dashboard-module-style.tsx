@@ -2,6 +2,7 @@ import {
   MusicalNoteIcon,
   NewspaperIcon,
   PencilSquareIcon,
+  PhoneIcon,
   PhotoIcon,
   Squares2X2Icon,
   UserCircleIcon,
@@ -30,6 +31,13 @@ export const DASHBOARD_MODULE_STYLE: Record<DashboardModuleKey, ModuleStyle> = {
     count: "text-sky-600 dark:text-sky-400",
     bar: "bg-sky-500/60",
     color: "#0ea5e9",
+  },
+  contact: {
+    Icon: PhoneIcon,
+    chip: "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400",
+    count: "text-cyan-600 dark:text-cyan-400",
+    bar: "bg-cyan-500/60",
+    color: "#06b6d4",
   },
   news: {
     Icon: NewspaperIcon,

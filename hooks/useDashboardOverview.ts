@@ -4,6 +4,7 @@ import { useMemo } from "react"
 import { useQueries, useQueryClient } from "@tanstack/react-query"
 
 import { getAboutList } from "@/services/aboutService"
+import { getContactListAdmin } from "@/services/contactService"
 import { getCollectionsList } from "@/services/imageCollectionsService"
 import { getNewsList } from "@/services/newsService"
 import { getProjectsList } from "@/services/projectsService"
@@ -16,6 +17,7 @@ import {
   DASHBOARD_MODULE_META,
   DASHBOARD_QUICK_ACTIONS,
   aboutSummary,
+  contactSummary,
   collectionsSummary,
   newsSummary,
   projectsSummary,
@@ -48,6 +50,7 @@ type ModuleQueryConfig = {
 
 const MODULE_QUERIES: ModuleQueryConfig[] = [
   { key: "about", queryFn: () => getAboutList(0, PAGE_SIZE), summarize: aboutSummary as never },
+  { key: "contact", queryFn: () => getContactListAdmin(0, PAGE_SIZE), summarize: contactSummary as never },
   { key: "news", queryFn: () => getNewsList(0, PAGE_SIZE), summarize: newsSummary as never },
   { key: "projects", queryFn: () => getProjectsList(0, PAGE_SIZE), summarize: projectsSummary as never },
   { key: "services", queryFn: () => getServicesList(0, PAGE_SIZE), summarize: servicesSummary as never },

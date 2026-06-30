@@ -1,9 +1,5 @@
+import { ContactListClient } from "@/components/contact/contact-list-client"
+
 export default function ContactPage() {
-  return (
-    <div className="flex min-h-[60vh] items-center justify-center">
-      <p className="text-sm text-muted-foreground">
-        پەیوەندی — بەزووی دێت
-      </p>
-    </div>
-  )
+  return <ContactListClient />
 }

@@ -49,8 +49,10 @@ export const NS = {
     lang_both: "هەردووکیان",
   },
   status: {
+    active: "چالاک",
     ongoing: "بەردەوام",
     completed: "تەواو",
+    archived: "ئەرشیف",
     draft_new: "ڕەشنووسی نوێ",
   },
   col: {
@@ -74,6 +76,8 @@ export const NS = {
     tags: "تاگەکان",
     keywords: "کلیلەوشەکان",
     media: "میدیا",
+    cover_type: "جۆری ڕووکار",
+    media_gallery: "گالەری میدیا",
     system: "زانیاری سیستەم",
     actions: "کردارەکان",
     dates: "بەروارەکان",
@@ -92,8 +96,14 @@ export const NS = {
     tag_helper: "Enter یان `,` بۆ زیادکردن",
     cover_drop: "وێنە و فایلەکانت دابنێ یان کلیک بکە بۆ هەڵبژاردن",
     cover_helper: "PNG، JPEG، WEBP · زۆرترین قەبارە ٥ MB",
+    cover_thumbnail: "وێنەی بچووکی ڕووکار",
     media_helper: "وێنە، ڤیدیۆ، دەنگ، PDF و بەڵگەنامە پشتگیریکراون",
     caption_add: "زیادکردنی نووسە…",
+  },
+  coverKind: {
+    IMAGE: "وێنە",
+    VIDEO: "ڤیدیۆ",
+    AUDIO: "دەنگ",
   },
   list: {
     totalCount: (count: string) => `کۆی ${count} پڕۆژە`,
@@ -119,6 +129,7 @@ export const NS = {
     no_cover: "بێ وێنەی ڕووکار",
     no_body: "وەسف بۆ ئەم زمانە بەردەست نییە.",
     no_media: "هیچ میدیایەک نییە",
+    gallery: "هیچ میدیایەک زیاد نەکراوە",
   },
   not_found: {
     title: "پڕۆژە نەدۆزرایەوە",

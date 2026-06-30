@@ -1,4 +1,5 @@
 import type { ProjectDto } from "@/types/projects"
+import { galleryFormValuesToDto } from "@/types/media-gallery"
 
 import type { ProjectFormValues } from "@/lib/validations/projects"
 
@@ -20,12 +21,20 @@ export function projectFormValuesToPayload(
     values.existingCoverUrl?.trim() ||
     undefined
 
+  const coverThumbnailUrl =
+    values.coverThumbnailUrl?.trim() ||
+    values.existingCoverThumbnailUrl?.trim() ||
+    undefined
+
   return {
     status: values.status,
     projectTypeCkb: values.projectTypeCkb?.trim() || undefined,
     projectTypeKmr: values.projectTypeKmr?.trim() || undefined,
     contentLanguages: values.contentLanguages,
     coverUrl,
+    coverMediaType: values.coverMediaType,
+    coverThumbnailUrl,
+    mediaGallery: galleryFormValuesToDto(values.mediaGallery),
     projectDate: values.projectDate
       ? toIsoMiddayUtc(values.projectDate)
       : undefined,

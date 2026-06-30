@@ -52,7 +52,7 @@ export function DangerZone() {
       await endClientSession("deleted")
     } catch {
       setBusy(null)
-      toastError("ئەژمێر نەسڕایەوە", "تکایە دووبارە هەوڵبدەرەوە")
+      toastError("هەژمار نەسڕایەوە", "تکایە دووبارە هەوڵبدەرەوە")
     }
   }
 
@@ -106,9 +106,9 @@ export function DangerZone() {
 
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="text-sm font-medium">سڕینەوەی ئەژمێر</p>
+            <p className="text-sm font-medium">سڕینەوەی هەژمار</p>
             <p className="text-muted-foreground text-xs">
-              ئەژمێرەکەت و هەموو زانیارییەکانت بە شێوەیەکی هەمیشەیی دەسڕێنەوە
+              هەژمارەکەت و هەموو زانیارییەکانت بە شێوەیەکی هەمیشەیی دەسڕێنەوە
             </p>
           </div>
           <AlertDialog>
@@ -120,15 +120,15 @@ export function DangerZone() {
                   ) : (
                     <TrashIcon className="size-4" />
                   )}
-                  سڕینەوەی ئەژمێر
+                  سڕینەوەی هەژمار
                 </Button>
               }
             />
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>سڕینەوەی ئەژمێر؟</AlertDialogTitle>
+                <AlertDialogTitle>سڕینەوەی هەژمار؟</AlertDialogTitle>
                 <AlertDialogDescription>
-                  ئەم کردارە گەڕانەوەی نییە. ئەژمێرەکەت، دانیشتنەکان و هەموو
+                  ئەم کردارە گەڕانەوەی نییە. هەژمارەکەت، دانیشتنەکان و هەموو
                   زانیارییەکانت بە تەواوی دەسڕێنەوە.
                 </AlertDialogDescription>
               </AlertDialogHeader>

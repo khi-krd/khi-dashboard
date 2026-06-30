@@ -20,9 +20,23 @@ export type SubCategoryDto = {
   kmrName: string
 }
 
+export type MediaKind = "IMAGE" | "VIDEO" | "AUDIO"
+
+export type MediaGalleryItemDto = {
+  url: string
+  kind?: MediaKind
+  thumbnailUrl?: string | null
+  captionCkb?: string | null
+  captionKmr?: string | null
+  sortOrder?: number
+}
+
 export type NewsDto = {
   id?: number
   coverUrl?: string | null
+  coverMediaType?: MediaKind | null
+  coverThumbnailUrl?: string | null
+  mediaGallery?: MediaGalleryItemDto[]
   datePublished?: string | null
   createdAt?: string
   updatedAt?: string

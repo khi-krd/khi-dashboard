@@ -57,6 +57,7 @@ import {
 import { formatCkbDigits, formatNewsDateLong, formatNewsDateShort } from "@/lib/intl-ckb"
 import { cn } from "@/lib/utils"
 import type { Language, ProjectDto } from "@/types/projects"
+import { normalizeProjectStatus } from "@/types/projects"
 import { useQueryClient } from "@tanstack/react-query"
 
 function escapeHtml(text: string) {
@@ -306,7 +307,11 @@ export function ProjectDetailClient({ projectId }: { projectId: number }) {
                 <ProjectStatusPillSidebar status={dto.status} />
                 {dto.projectDate ? (
                   <p className="text-muted-foreground text-center text-xs">
-                    {dto.status === "COMPLETED" ? NS.status.completed : NS.status.ongoing}{" "}
+                    {normalizeProjectStatus(dto.status) === "COMPLETED"
+                      ? NS.status.completed
+                      : normalizeProjectStatus(dto.status) === "ARCHIVED"
+                        ? NS.status.archived
+                        : NS.status.active}{" "}
                     لە {formatNewsDateLong(dto.projectDate)}
                   </p>
                 ) : null}
@@ -461,7 +466,11 @@ export function ProjectDetailClient({ projectId }: { projectId: number }) {
             <div className="mx-auto max-w-[860px] px-6 pb-12 pt-8">
               <div className="text-muted-foreground flex flex-wrap items-center text-xs">
                 <span className="text-foreground font-medium">
-                  {dto.status === "COMPLETED" ? NS.status.completed : NS.status.ongoing}
+                  {normalizeProjectStatus(dto.status) === "COMPLETED"
+                    ? NS.status.completed
+                    : normalizeProjectStatus(dto.status) === "ARCHIVED"
+                      ? NS.status.archived
+                      : NS.status.active}
                 </span>
                 {typeCkb ? (
                   <>
@@ -500,13 +509,22 @@ export function ProjectDetailClient({ projectId }: { projectId: number }) {
                 {dto.coverUrl ? (
                   <>
                     <Image
-                      src={dto.coverUrl}
+                      src={
+                        dto.coverMediaType === "VIDEO" || dto.coverMediaType === "AUDIO"
+                          ? dto.coverThumbnailUrl || dto.coverUrl
+                          : dto.coverUrl
+                      }
                       alt=""
                       fill
                       className="object-cover"
                       unoptimized={dto.coverUrl.startsWith("http")}
                       priority
                     />
+                    {dto.coverMediaType && dto.coverMediaType !== "IMAGE" ? (
+                      <span className="bg-background/80 absolute start-3 top-3 rounded-md px-2 py-1 text-xs font-medium">
+                        {NS.coverKind[dto.coverMediaType]}
+                      </span>
+                    ) : null}
                     <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background/40 to-transparent" />
                   </>
                 ) : (
@@ -563,6 +581,49 @@ export function ProjectDetailClient({ projectId }: { projectId: number }) {
                         variant="keywords"
                         href={`/dashboard/projects?keyword=${encodeURIComponent(item.v)}`}
                       />
+                    ))}
+                  </div>
+                </section>
+              ) : null}
+
+              {(dto.mediaGallery?.length ?? 0) > 0 ? (
+                <section className="mt-10 border-t border-border/60 pt-8">
+                  <h3 className="text-muted-foreground mb-4 text-xs font-medium uppercase tracking-wide">
+                    {NS.section.media_gallery}
+                  </h3>
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    {dto.mediaGallery!.map((item, i) => (
+                      <figure
+                        key={`${item.url}-${i}`}
+                        className="overflow-hidden rounded-lg border border-border bg-muted/20"
+                      >
+                        {item.kind === "VIDEO" ? (
+                          <video
+                            src={item.url}
+                            controls
+                            className="aspect-video w-full bg-black object-contain"
+                          />
+                        ) : item.kind === "AUDIO" ? (
+                          <div className="flex aspect-video items-center justify-center p-4">
+                            <audio src={item.url} controls className="w-full" />
+                          </div>
+                        ) : (
+                          <div className="relative aspect-video">
+                            <Image
+                              src={item.url}
+                              alt=""
+                              fill
+                              className="object-cover"
+                              unoptimized={item.url.startsWith("http")}
+                            />
+                          </div>
+                        )}
+                        {(item.captionCkb?.trim() || item.captionKmr?.trim()) ? (
+                          <figcaption className="text-muted-foreground p-2 text-xs">
+                            {item.captionCkb?.trim() || item.captionKmr?.trim()}
+                          </figcaption>
+                        ) : null}
+                      </figure>
                     ))}
                   </div>
                 </section>

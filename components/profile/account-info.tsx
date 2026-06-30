@@ -41,7 +41,7 @@ export function AccountInfo({ user }: { user: UserResponse }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>زانیاری ئەژمێر</CardTitle>
+        <CardTitle>زانیاری هەژمار</CardTitle>
       </CardHeader>
       <CardContent className="grid gap-0 divide-y">
         <Row label="ئیمەیڵ">
@@ -50,7 +50,7 @@ export function AccountInfo({ user }: { user: UserResponse }) {
         <Row label="ڕۆڵ">
           <Badge variant="secondary">{ROLE_LABELS[user.role]}</Badge>
         </Row>
-        <Row label="جۆری ئەژمێر">
+        <Row label="جۆری هەژمار">
           <span dir="ltr">{user.provider || "local"}</span>
         </Row>
         <Row label="دۆخ">

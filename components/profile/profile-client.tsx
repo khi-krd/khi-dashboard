@@ -68,7 +68,7 @@ export function ProfileClient() {
       <header>
         <h1 className="text-2xl font-semibold tracking-tight">پرۆفایلی من</h1>
         <p className="text-muted-foreground mt-1 text-sm">
-          بەڕێوەبردنی زانیاری ئەژمێر و ڕێکخستنەکانت
+          بەڕێوەبردنی زانیاری هەژمار و ڕێکخستنەکانت
         </p>
       </header>
 
@@ -78,7 +78,7 @@ export function ProfileClient() {
         <Card>
           <CardContent className="grid gap-2 py-12 text-center">
             <p className="text-sm font-medium">
-              داگرتنی زانیاری ئەژمێر سەرکەوتوو نەبوو
+              داگرتنی زانیاری هەژمار سەرکەوتوو نەبوو
             </p>
             <div>
               <Button
@@ -100,7 +100,7 @@ export function ProfileClient() {
             <TabsList>
               <TabsTrigger value="profile">پرۆفایل</TabsTrigger>
               <TabsTrigger value="password">وشەی نهێنی</TabsTrigger>
-              <TabsTrigger value="account">ئەژمێر</TabsTrigger>
+              <TabsTrigger value="account">هەژمار</TabsTrigger>
             </TabsList>
 
             <TabsContent value="profile" className="grid gap-4">

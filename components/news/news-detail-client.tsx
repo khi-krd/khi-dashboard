@@ -424,10 +424,19 @@ export function NewsDetailClient({ newsId }: { newsId: number }) {
                   <>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src={dto.coverUrl}
+                      src={
+                        dto.coverMediaType === "VIDEO" || dto.coverMediaType === "AUDIO"
+                          ? dto.coverThumbnailUrl || dto.coverUrl
+                          : dto.coverUrl
+                      }
                       alt=""
                       className="absolute inset-0 size-full object-cover"
                     />
+                    {dto.coverMediaType && dto.coverMediaType !== "IMAGE" ? (
+                      <span className="bg-background/80 absolute start-3 top-3 rounded-md px-2 py-1 text-xs font-medium">
+                        {NS.coverKind[dto.coverMediaType]}
+                      </span>
+                    ) : null}
                     <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/4 bg-linear-to-t from-background/45 to-transparent" />
                   </>
                 ) : (
@@ -467,6 +476,46 @@ export function NewsDetailClient({ newsId }: { newsId: number }) {
               </header>
 
               <ArticleBodyTabs key={dto.id} dto={dto} />
+
+              {(dto.mediaGallery?.length ?? 0) > 0 ? (
+                <section className="border-border/60 mt-10 border-t pt-8">
+                  <h2 className="text-muted-foreground mb-4 text-xs font-medium tracking-wide uppercase">
+                    {NS.section.media_gallery}
+                  </h2>
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    {dto.mediaGallery!.map((item, i) => (
+                      <figure
+                        key={`${item.url}-${i}`}
+                        className="border-border overflow-hidden rounded-lg border bg-muted/20"
+                      >
+                        {item.kind === "VIDEO" ? (
+                          <video
+                            src={item.url}
+                            controls
+                            className="aspect-video w-full bg-black object-contain"
+                          />
+                        ) : item.kind === "AUDIO" ? (
+                          <div className="flex aspect-video items-center justify-center p-4">
+                            <audio src={item.url} controls className="w-full" />
+                          </div>
+                        ) : (
+                          /* eslint-disable-next-line @next/next/no-img-element */
+                          <img
+                            src={item.url}
+                            alt=""
+                            className="aspect-video w-full object-cover"
+                          />
+                        )}
+                        {(item.captionCkb?.trim() || item.captionKmr?.trim()) ? (
+                          <figcaption className="text-muted-foreground p-2 text-xs">
+                            {item.captionCkb?.trim() || item.captionKmr?.trim()}
+                          </figcaption>
+                        ) : null}
+                      </figure>
+                    ))}
+                  </div>
+                </section>
+              ) : null}
 
               {tagItems.length > 0 || kwItems.length > 0 ? (
                 <Fragment>

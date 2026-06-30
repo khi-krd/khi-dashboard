@@ -26,6 +26,7 @@ import {
 import { NewsCategoryCombobox } from "@/components/news/news-category-combobox"
 import { NewsErrorState } from "@/components/news/news-error-state"
 import { NS } from "@/components/news/news-strings"
+import { MediaGalleryEditor } from "@/components/shared/media-gallery-editor"
 import { MediaCoverUpload } from "@/components/shared/media-cover-upload"
 import { NewsTagInput } from "@/components/news/news-tag-input"
 import { TiptapEditor } from "@/components/shared/tiptap-editor-lazy"
@@ -67,7 +68,8 @@ import {
 } from "@/lib/validations/news"
 import { formatCkbDigits } from "@/lib/intl-ckb"
 import { cn } from "@/lib/utils"
-import type { Language, NewsDto } from "@/types/news"
+import { galleryDtoToFormValues } from "@/types/media-gallery"
+import type { Language, MediaKind, NewsDto } from "@/types/news"
 import { useQueryClient } from "@tanstack/react-query"
 
 const sectionDivider =
@@ -87,6 +89,10 @@ function dtoToFormValues(d: NewsDto): NewsFormValues {
     subCategory: d.subCategory ?? { ckbName: "", kmrName: "" },
     coverUrl: d.coverUrl ?? null,
     existingCoverUrl: d.coverUrl ?? null,
+    coverMediaType: d.coverMediaType ?? "IMAGE",
+    coverThumbnailUrl: d.coverThumbnailUrl ?? null,
+    existingCoverThumbnailUrl: d.coverThumbnailUrl ?? null,
+    mediaGallery: galleryDtoToFormValues(d.mediaGallery),
     datePublished: date || undefined,
     ckbContent: {
       title: d.ckbContent?.title ?? "",
@@ -166,6 +172,9 @@ export function NewsForm({
   const category = watch("category")
   const coverUrl = watch("coverUrl")
   const existingCoverUrl = watch("existingCoverUrl")
+  const coverMediaType = watch("coverMediaType") as MediaKind
+  const coverThumbnailUrl = watch("coverThumbnailUrl")
+  const existingCoverThumbnailUrl = watch("existingCoverThumbnailUrl")
 
   const ckbTitleLen = watch("ckbContent.title")?.trim().length ?? 0
   const kmrTitleLen = watch("kmrContent.title")?.trim().length ?? 0
@@ -520,8 +529,70 @@ export function NewsForm({
 
               <section className={cn("space-y-3", sectionDivider)}>
                 <h2 className="text-sm font-semibold text-foreground">
-                  {NS.section.languages_content}
+                  {NS.section.cover_type}
                 </h2>
+                <Controller
+                  name="coverMediaType"
+                  control={control}
+                  render={({ field }) => (
+                    <div className="flex flex-wrap gap-2">
+                      {(["IMAGE", "VIDEO", "AUDIO"] as const).map((kind) => (
+                        <button
+                          key={kind}
+                          type="button"
+                          onClick={() => field.onChange(kind)}
+                          className={cn(
+                            "rounded-md border px-3 py-1.5 text-xs font-medium transition-colors",
+                            field.value === kind
+                              ? "border-primary bg-primary/10 text-primary"
+                              : "border-border text-muted-foreground hover:bg-muted/50",
+                          )}
+                        >
+                          {NS.coverKind[kind]}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                />
+                {(coverMediaType === "VIDEO" || coverMediaType === "AUDIO") ? (
+                  <Controller
+                    name="coverThumbnailUrl"
+                    control={control}
+                    render={({ field }) => (
+                      <MediaCoverUpload
+                        label={NS.field.cover_thumbnail}
+                        previewUrl={
+                          field.value?.trim() ||
+                          existingCoverThumbnailUrl?.trim() ||
+                          null
+                        }
+                        urlValue={field.value ?? ""}
+                        onUrlChange={(s) => {
+                          field.onChange(s.length ? s : null, {
+                            shouldDirty: true,
+                          })
+                          if (s.trim()) {
+                            setValue("existingCoverThumbnailUrl", null, {
+                              shouldDirty: true,
+                            })
+                          }
+                        }}
+                      />
+                    )}
+                  />
+                ) : null}
+              </section>
+
+              <section className={cn(sectionDivider)}>
+                <MediaGalleryEditor<NewsFormValues>
+                  name="mediaGallery"
+                  title={NS.section.media_gallery}
+                  addLabel={NS.action.add_gallery_item}
+                  emptyLabel={NS.empty.gallery}
+                />
+              </section>
+
+              <section className={cn("space-y-3", sectionDivider)}>
                 <Controller
                   name="contentLanguages"
                   control={control}

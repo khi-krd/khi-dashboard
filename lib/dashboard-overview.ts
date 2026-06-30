@@ -1,4 +1,6 @@
+import { contactDisplayTitle } from "@/lib/contact-normalize"
 import type { AboutDto, AboutPage } from "@/types/about"
+import type { ContactDto, ContactPage } from "@/types/contact"
 import type { CollectionDto, CollectionPage } from "@/types/image-collections"
 import type { NewsDto, NewsListResponse } from "@/types/news"
 import type { ProjectDto, ProjectListResponse } from "@/types/projects"
@@ -9,6 +11,7 @@ import type { WritingDto, WritingPage } from "@/types/writings"
 
 export type DashboardModuleKey =
   | "about"
+  | "contact"
   | "news"
   | "projects"
   | "services"
@@ -64,6 +67,12 @@ export const DASHBOARD_MODULE_META: readonly ModuleMeta[] = [
     createHref: "/dashboard/about/new",
   },
   {
+    key: "contact",
+    label: "پەیوەندی",
+    href: "/dashboard/contact",
+    createHref: "/dashboard/contact/new",
+  },
+  {
     key: "news",
     label: "هەواڵەکان",
     href: "/dashboard/news",
@@ -113,7 +122,6 @@ export const DASHBOARD_QUICK_ACTIONS: readonly DashboardQuickAction[] = [
     label: `زیادکردنی ${item.label}`,
     href: item.createHref,
   })),
-  { key: "contact", label: "پەڕەی پەیوەندی", href: "/dashboard/contact" },
 ] as const
 
 function pickTitle(values: Array<string | null | undefined>, fallback: string) {
@@ -150,6 +158,23 @@ export function aboutSummary(moduleMeta: ModuleMeta, page: AboutPage): ModuleSum
       title: pickTitle(
         [item.ckbContent?.title, item.kmrContent?.title, item.slugCkb, item.slugKmr],
         "دەربارە",
+      ),
+      date: item.updatedAt ?? item.createdAt ?? null,
+    })),
+    isHealthy: true,
+  }
+}
+
+export function contactSummary(
+  moduleMeta: ModuleMeta,
+  page: ContactPage,
+): ModuleSummary {
+  return {
+    count: page.totalElements ?? 0,
+    recentItems: mapRecentItems(moduleMeta, page.content ?? [], (item: ContactDto) => ({
+      title: pickTitle(
+        [contactDisplayTitle(item), item.slugCkb, item.slugKmr],
+        "پەیوەندی",
       ),
       date: item.updatedAt ?? item.createdAt ?? null,
     })),

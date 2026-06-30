@@ -4,6 +4,12 @@ import { NS } from "@/components/about/about-strings"
 import { isRichTextEmpty } from "@/lib/rich-text-empty"
 import type { AboutDto } from "@/types/about"
 
+export const aboutStatSchema = z.object({
+  labelCkb: z.string().max(200).optional().nullable(),
+  labelKmr: z.string().max(200).optional().nullable(),
+  value: z.string().max(100).optional().nullable(),
+})
+
 export const aboutFormSchema = z
   .object({
     active: z.boolean().default(true),
@@ -17,6 +23,7 @@ export const aboutFormSchema = z
     seoDescriptionKmr: z.string().max(2500).optional().nullable(),
     bodyCkb: z.string().optional().nullable(),
     bodyKmr: z.string().optional().nullable(),
+    stats: z.array(aboutStatSchema).default([]),
     contentLanguages: z
       .array(z.enum(["CKB", "KMR"]))
       .min(1, NS.validation.languageRequired),
@@ -59,6 +66,7 @@ export const defaultAboutFormValues: AboutFormValues = {
   seoDescriptionKmr: "",
   bodyCkb: "",
   bodyKmr: "",
+  stats: [],
   contentLanguages: ["CKB"],
 }
 
@@ -79,6 +87,11 @@ export function aboutDtoToFormValues(dto: AboutDto): AboutFormValues {
     seoDescriptionKmr: dto.kmrContent?.metaDescription ?? "",
     bodyCkb: dto.ckbContent?.body ?? "",
     bodyKmr: dto.kmrContent?.body ?? "",
+    stats: (dto.stats ?? []).map((s) => ({
+      labelCkb: s.labelCkb ?? "",
+      labelKmr: s.labelKmr ?? "",
+      value: s.value ?? "",
+    })),
     contentLanguages: contentLanguages.length ? contentLanguages : ["CKB"],
   }
 }

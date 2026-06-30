@@ -7,6 +7,12 @@ export type AboutContentDto = {
   body?: string | null
 }
 
+export type AboutStatDto = {
+  labelCkb?: string | null
+  labelKmr?: string | null
+  value?: string | null
+}
+
 export type AboutDto = {
   id?: number
   active: boolean
@@ -14,6 +20,7 @@ export type AboutDto = {
   slugKmr?: string | null
   ckbContent?: AboutContentDto | null
   kmrContent?: AboutContentDto | null
+  stats?: AboutStatDto[]
   displayOrder?: number
   createdAt?: string
   updatedAt?: string
