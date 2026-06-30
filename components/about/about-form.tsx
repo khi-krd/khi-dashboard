@@ -12,7 +12,7 @@ import {
 } from "@heroicons/react/24/outline"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useState } from "react"
 import {
   FormProvider,
   useForm,
@@ -28,6 +28,7 @@ import { AboutErrorState } from "@/components/about/about-error-state"
 import { AboutFormSidebar } from "@/components/about/about-form-sidebar"
 import { AboutStatsEditor } from "@/components/about/about-stats-editor"
 import { NS } from "@/components/about/about-strings"
+import { MediaCoverUpload } from "@/components/shared/media-cover-upload"
 import { TiptapEditor } from "@/components/shared/tiptap-editor-lazy"
 import { SeoCountChip } from "@/components/about/seo-count-chip"
 import { aboutSiteBaseUrl } from "@/lib/about-url-helpers"
@@ -41,6 +42,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Separator } from "@/components/ui/separator"
 import { Textarea } from "@/components/ui/textarea"
 import { Spinner } from "@/components/ui/spinner"
 import {
@@ -118,6 +121,21 @@ function clean(v?: string | null) {
   return t ? t : null
 }
 
+function BilingualSectionHeader({ lang }: { lang: "CKB" | "KMR" }) {
+  return (
+    <Label
+      className={cn(
+        "text-xs font-medium",
+        lang === "CKB"
+          ? "text-primary"
+          : "text-blue-700 dark:text-blue-400",
+      )}
+    >
+      {lang === "CKB" ? NS.form.section_ckb : NS.form.section_kmr}
+    </Label>
+  )
+}
+
 export function AboutForm({
   mode,
   aboutId,
@@ -151,7 +169,7 @@ export function AboutForm({
     watch,
     setValue,
     reset,
-    formState: { isDirty, isValid },
+    formState: { isDirty, isValid, errors },
   } = form
 
   useEffect(() => {
@@ -190,8 +208,9 @@ export function AboutForm({
   const subtitleCkb = watch("subtitleCkb")
   const subtitleKmr = watch("subtitleKmr")
   const seoDescriptionCkb = watch("seoDescriptionCkb")
-  const founderNameCkb = watch("founderNameCkb")
-  const founderNameKmr = watch("founderNameKmr")
+  const founderImageUrl = watch("founderImageUrl") ?? ""
+  const heroVideoUrl = watch("heroVideoUrl") ?? ""
+  const heroPosterUrl = watch("heroPosterUrl") ?? ""
 
   const teamQ = useAboutTeamMembersQuery()
   const partnersQ = useAboutPartnersQuery()
@@ -263,12 +282,17 @@ export function AboutForm({
       displayOrder: Number(teamForm.displayOrder || "0"),
       active: true,
     }
-    if (editingTeam?.id) {
-      await updateTeamMut.mutateAsync({ id: editingTeam.id, payload })
-    } else {
-      await createTeamMut.mutateAsync(payload)
+    try {
+      if (editingTeam?.id) {
+        await updateTeamMut.mutateAsync({ id: editingTeam.id, payload })
+      } else {
+        await createTeamMut.mutateAsync(payload)
+      }
+      toast.success(NS.toast.saved)
+      setTeamDialogOpen(false)
+    } catch {
+      toast.error(NS.error.validation)
     }
-    setTeamDialogOpen(false)
   }
 
   function openCreatePartnerDialog() {
@@ -310,12 +334,17 @@ export function AboutForm({
       displayOrder: Number(partnerForm.displayOrder || "0"),
       active: true,
     }
-    if (editingPartner?.id) {
-      await updatePartnerMut.mutateAsync({ id: editingPartner.id, payload })
-    } else {
-      await createPartnerMut.mutateAsync(payload)
+    try {
+      if (editingPartner?.id) {
+        await updatePartnerMut.mutateAsync({ id: editingPartner.id, payload })
+      } else {
+        await createPartnerMut.mutateAsync(payload)
+      }
+      toast.success(NS.toast.saved)
+      setPartnerDialogOpen(false)
+    } catch {
+      toast.error(NS.error.validation)
     }
-    setPartnerDialogOpen(false)
   }
 
   async function onSubmit(values: AboutFormValues) {
@@ -550,25 +579,90 @@ export function AboutForm({
             </section>
 
             <section className="border-border/60 mt-10 border-t pt-6">
-              <h3 className="mb-3 text-sm font-medium">Founder</h3>
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <Input placeholder="Founder name (CKB)" {...register("founderNameCkb")} />
-                <Input placeholder="Founder name (KMR)" {...register("founderNameKmr")} />
+              <h3 className="mb-4 text-sm font-medium">{NS.form.founder}</h3>
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <div className="space-y-3">
+                  <BilingualSectionHeader lang="CKB" />
+                  <Input
+                    placeholder={NS.form.founder_name_ckb}
+                    {...register("founderNameCkb")}
+                  />
+                  <Textarea
+                    rows={4}
+                    placeholder={NS.form.founder_bio_ckb}
+                    {...register("founderBioCkb")}
+                  />
+                </div>
+                <div className="space-y-3">
+                  <BilingualSectionHeader lang="KMR" />
+                  <Input
+                    placeholder={NS.form.founder_name_kmr}
+                    {...register("founderNameKmr")}
+                  />
+                  <Textarea
+                    rows={4}
+                    placeholder={NS.form.founder_bio_kmr}
+                    {...register("founderBioKmr")}
+                  />
+                </div>
               </div>
-              <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-                <Textarea rows={4} placeholder="Founder bio (CKB)" {...register("founderBioCkb")} />
-                <Textarea rows={4} placeholder="Founder bio (KMR)" {...register("founderBioKmr")} />
-              </div>
-              <div className="mt-4">
-                <Input placeholder="Founder image URL" {...register("founderImageUrl")} />
+              <div className="mt-6">
+                <MediaCoverUpload
+                  label={NS.form.founder_image}
+                  previewUrl={founderImageUrl.trim() || null}
+                  urlValue={founderImageUrl}
+                  aspectClass="aspect-square max-w-xs"
+                  onUrlChange={(v) =>
+                    setValue("founderImageUrl", v, {
+                      shouldDirty: true,
+                      shouldValidate: true,
+                    })
+                  }
+                  urlError={
+                    typeof errors.founderImageUrl?.message === "string"
+                      ? errors.founderImageUrl.message
+                      : undefined
+                  }
+                />
               </div>
             </section>
 
             <section className="border-border/60 mt-10 border-t pt-6">
-              <h3 className="mb-3 text-sm font-medium">Hero Media</h3>
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <Input placeholder="Hero video URL" {...register("heroVideoUrl")} />
-                <Input placeholder="Hero poster URL" {...register("heroPosterUrl")} />
+              <h3 className="mb-4 text-sm font-medium">{NS.form.hero}</h3>
+              <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                <MediaCoverUpload
+                  label={NS.form.hero_video}
+                  variant="video"
+                  previewUrl={heroVideoUrl.trim() || null}
+                  urlValue={heroVideoUrl}
+                  onUrlChange={(v) =>
+                    setValue("heroVideoUrl", v, {
+                      shouldDirty: true,
+                      shouldValidate: true,
+                    })
+                  }
+                  urlError={
+                    typeof errors.heroVideoUrl?.message === "string"
+                      ? errors.heroVideoUrl.message
+                      : undefined
+                  }
+                />
+                <MediaCoverUpload
+                  label={NS.form.hero_poster}
+                  previewUrl={heroPosterUrl.trim() || null}
+                  urlValue={heroPosterUrl}
+                  onUrlChange={(v) =>
+                    setValue("heroPosterUrl", v, {
+                      shouldDirty: true,
+                      shouldValidate: true,
+                    })
+                  }
+                  urlError={
+                    typeof errors.heroPosterUrl?.message === "string"
+                      ? errors.heroPosterUrl.message
+                      : undefined
+                  }
+                />
               </div>
             </section>
 
@@ -576,78 +670,114 @@ export function AboutForm({
 
             <section className="border-border/60 mt-10 border-t pt-6">
               <div className="mb-3 flex items-center justify-between">
-                <h3 className="text-sm font-medium">Team Members</h3>
+                <h3 className="text-sm font-medium">{NS.form.team}</h3>
                 <Button type="button" size="sm" variant="outline" onClick={openCreateTeamDialog}>
                   <PlusIcon className="me-1 size-4" />
-                  Add Team
+                  {NS.form.team_add}
                 </Button>
               </div>
-              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                {(teamQ.data ?? []).map((item) => (
-                  <Card key={item.id ?? `${item.nameCkb}-${item.displayOrder}`}>
-                    <CardHeader>
-                      <CardTitle className="text-sm">{item.nameCkb || item.nameKmr || "—"}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-2 text-xs">
-                      <p className="text-muted-foreground">{item.roleCkb || item.roleKmr || "—"}</p>
-                      <div className="flex items-center gap-2">
-                        <Button type="button" size="sm" variant="outline" onClick={() => openEditTeamDialog(item)}>
-                          <PencilIcon className="me-1 size-3.5" />
-                          Edit
-                        </Button>
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="ghost"
-                          className="text-destructive"
-                          onClick={() => item.id && void deleteTeamMut.mutateAsync(item.id)}
-                        >
-                          <TrashIcon className="me-1 size-3.5" />
-                          Delete
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+              {(teamQ.data ?? []).length === 0 ? (
+                <p className="text-muted-foreground text-sm">{NS.form.team_empty}</p>
+              ) : (
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                  {(teamQ.data ?? []).map((item) => (
+                    <Card key={item.id ?? `${item.nameCkb}-${item.displayOrder}`}>
+                      <CardHeader className="flex-row items-start gap-3 space-y-0">
+                        {item.imageUrl?.trim() ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={item.imageUrl}
+                            alt=""
+                            className="border-border size-14 shrink-0 rounded-lg border object-cover"
+                          />
+                        ) : null}
+                        <div className="min-w-0 flex-1">
+                          <CardTitle className="text-sm">
+                            {item.nameCkb || item.nameKmr || "—"}
+                          </CardTitle>
+                          <p className="text-muted-foreground mt-1 text-xs">
+                            {item.roleCkb || item.roleKmr || "—"}
+                          </p>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-2 text-xs">
+                        <div className="flex items-center gap-2">
+                          <Button type="button" size="sm" variant="outline" onClick={() => openEditTeamDialog(item)}>
+                            <PencilIcon className="me-1 size-3.5" />
+                            {NS.action.edit}
+                          </Button>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="ghost"
+                            className="text-destructive"
+                            onClick={() => item.id && void deleteTeamMut.mutateAsync(item.id)}
+                          >
+                            <TrashIcon className="me-1 size-3.5" />
+                            {NS.action.delete}
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
             </section>
 
             <section className="border-border/60 mt-10 border-t pt-6">
               <div className="mb-3 flex items-center justify-between">
-                <h3 className="text-sm font-medium">Partners</h3>
+                <h3 className="text-sm font-medium">{NS.form.partners}</h3>
                 <Button type="button" size="sm" variant="outline" onClick={openCreatePartnerDialog}>
                   <PlusIcon className="me-1 size-4" />
-                  Add Partner
+                  {NS.form.partner_add}
                 </Button>
               </div>
-              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                {(partnersQ.data ?? []).map((item) => (
-                  <Card key={item.id ?? `${item.nameCkb}-${item.displayOrder}`}>
-                    <CardHeader>
-                      <CardTitle className="text-sm">{item.nameCkb || item.nameKmr || "—"}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-2 text-xs">
-                      <p className="text-muted-foreground">{item.websiteUrl || item.descriptionCkb || "—"}</p>
-                      <div className="flex items-center gap-2">
-                        <Button type="button" size="sm" variant="outline" onClick={() => openEditPartnerDialog(item)}>
-                          <PencilIcon className="me-1 size-3.5" />
-                          Edit
-                        </Button>
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="ghost"
-                          className="text-destructive"
-                          onClick={() => item.id && void deletePartnerMut.mutateAsync(item.id)}
-                        >
-                          <TrashIcon className="me-1 size-3.5" />
-                          Delete
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+              {(partnersQ.data ?? []).length === 0 ? (
+                <p className="text-muted-foreground text-sm">{NS.form.partner_empty}</p>
+              ) : (
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                  {(partnersQ.data ?? []).map((item) => (
+                    <Card key={item.id ?? `${item.nameCkb}-${item.displayOrder}`}>
+                      <CardHeader className="flex-row items-start gap-3 space-y-0">
+                        {item.logoUrl?.trim() ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={item.logoUrl}
+                            alt=""
+                            className="border-border size-14 shrink-0 rounded-lg border object-contain bg-background p-1"
+                          />
+                        ) : null}
+                        <div className="min-w-0 flex-1">
+                          <CardTitle className="text-sm">
+                            {item.nameCkb || item.nameKmr || "—"}
+                          </CardTitle>
+                          <p className="text-muted-foreground mt-1 line-clamp-2 text-xs">
+                            {item.descriptionCkb || item.descriptionKmr || item.websiteUrl || "—"}
+                          </p>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-2 text-xs">
+                        <div className="flex items-center gap-2">
+                          <Button type="button" size="sm" variant="outline" onClick={() => openEditPartnerDialog(item)}>
+                            <PencilIcon className="me-1 size-3.5" />
+                            {NS.action.edit}
+                          </Button>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="ghost"
+                            className="text-destructive"
+                            onClick={() => item.id && void deletePartnerMut.mutateAsync(item.id)}
+                          >
+                            <TrashIcon className="me-1 size-3.5" />
+                            {NS.action.delete}
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
             </section>
 
           </article>
@@ -709,43 +839,168 @@ export function AboutForm({
       </form>
 
       <Dialog open={teamDialogOpen} onOpenChange={setTeamDialogOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
-            <DialogTitle>{editingTeam ? "Edit Team Member" : "Add Team Member"}</DialogTitle>
+            <DialogTitle>
+              {editingTeam ? NS.form.team_edit : NS.form.team_add}
+            </DialogTitle>
           </DialogHeader>
-          <div className="space-y-3">
-            <Input placeholder="Name CKB" value={teamForm.nameCkb} onChange={(e) => setTeamForm((p) => ({ ...p, nameCkb: e.target.value }))} />
-            <Input placeholder="Name KMR" value={teamForm.nameKmr} onChange={(e) => setTeamForm((p) => ({ ...p, nameKmr: e.target.value }))} />
-            <Input placeholder="Role CKB" value={teamForm.roleCkb} onChange={(e) => setTeamForm((p) => ({ ...p, roleCkb: e.target.value }))} />
-            <Input placeholder="Role KMR" value={teamForm.roleKmr} onChange={(e) => setTeamForm((p) => ({ ...p, roleKmr: e.target.value }))} />
-            <Input placeholder="Office" value={teamForm.office} onChange={(e) => setTeamForm((p) => ({ ...p, office: e.target.value }))} />
-            <Input placeholder="Image URL" value={teamForm.imageUrl} onChange={(e) => setTeamForm((p) => ({ ...p, imageUrl: e.target.value }))} />
-            <Input placeholder="Display order" value={teamForm.displayOrder} onChange={(e) => setTeamForm((p) => ({ ...p, displayOrder: e.target.value }))} />
+          <div className="max-h-[70vh] space-y-5 overflow-y-auto pe-1">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="space-y-3">
+                <BilingualSectionHeader lang="CKB" />
+                <Input
+                  placeholder={NS.form.name}
+                  value={teamForm.nameCkb}
+                  onChange={(e) => setTeamForm((p) => ({ ...p, nameCkb: e.target.value }))}
+                />
+                <Input
+                  placeholder={NS.form.role}
+                  value={teamForm.roleCkb}
+                  onChange={(e) => setTeamForm((p) => ({ ...p, roleCkb: e.target.value }))}
+                />
+                <Textarea
+                  rows={3}
+                  placeholder={NS.form.bio}
+                  value={teamForm.bioCkb}
+                  onChange={(e) => setTeamForm((p) => ({ ...p, bioCkb: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-3">
+                <BilingualSectionHeader lang="KMR" />
+                <Input
+                  placeholder={NS.form.name}
+                  value={teamForm.nameKmr}
+                  onChange={(e) => setTeamForm((p) => ({ ...p, nameKmr: e.target.value }))}
+                />
+                <Input
+                  placeholder={NS.form.role}
+                  value={teamForm.roleKmr}
+                  onChange={(e) => setTeamForm((p) => ({ ...p, roleKmr: e.target.value }))}
+                />
+                <Textarea
+                  rows={3}
+                  placeholder={NS.form.bio}
+                  value={teamForm.bioKmr}
+                  onChange={(e) => setTeamForm((p) => ({ ...p, bioKmr: e.target.value }))}
+                />
+              </div>
+            </div>
+            <Separator />
+            <MediaCoverUpload
+              label={NS.form.team_image}
+              previewUrl={teamForm.imageUrl.trim() || null}
+              urlValue={teamForm.imageUrl}
+              aspectClass="aspect-square max-w-xs"
+              onUrlChange={(v) => setTeamForm((p) => ({ ...p, imageUrl: v }))}
+            />
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+              <Input
+                placeholder={NS.form.team_office}
+                value={teamForm.office}
+                onChange={(e) => setTeamForm((p) => ({ ...p, office: e.target.value }))}
+              />
+              <Input
+                placeholder={NS.form.team_display_order}
+                value={teamForm.displayOrder}
+                onChange={(e) => setTeamForm((p) => ({ ...p, displayOrder: e.target.value }))}
+              />
+            </div>
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setTeamDialogOpen(false)}>Cancel</Button>
-            <Button type="button" onClick={() => void saveTeamMember()}>Save</Button>
+            <Button type="button" variant="outline" onClick={() => setTeamDialogOpen(false)}>
+              {NS.action.cancel}
+            </Button>
+            <Button
+              type="button"
+              disabled={createTeamMut.isPending || updateTeamMut.isPending}
+              onClick={() => void saveTeamMember()}
+            >
+              {NS.action.save}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       <Dialog open={partnerDialogOpen} onOpenChange={setPartnerDialogOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
-            <DialogTitle>{editingPartner ? "Edit Partner" : "Add Partner"}</DialogTitle>
+            <DialogTitle>
+              {editingPartner ? NS.form.partner_edit : NS.form.partner_add}
+            </DialogTitle>
           </DialogHeader>
-          <div className="space-y-3">
-            <Input placeholder="Name CKB" value={partnerForm.nameCkb} onChange={(e) => setPartnerForm((p) => ({ ...p, nameCkb: e.target.value }))} />
-            <Input placeholder="Name KMR" value={partnerForm.nameKmr} onChange={(e) => setPartnerForm((p) => ({ ...p, nameKmr: e.target.value }))} />
-            <Textarea rows={3} placeholder="Description CKB" value={partnerForm.descriptionCkb} onChange={(e) => setPartnerForm((p) => ({ ...p, descriptionCkb: e.target.value }))} />
-            <Textarea rows={3} placeholder="Description KMR" value={partnerForm.descriptionKmr} onChange={(e) => setPartnerForm((p) => ({ ...p, descriptionKmr: e.target.value }))} />
-            <Input placeholder="Logo URL" value={partnerForm.logoUrl} onChange={(e) => setPartnerForm((p) => ({ ...p, logoUrl: e.target.value }))} />
-            <Input placeholder="Website URL" value={partnerForm.websiteUrl} onChange={(e) => setPartnerForm((p) => ({ ...p, websiteUrl: e.target.value }))} />
-            <Input placeholder="Display order" value={partnerForm.displayOrder} onChange={(e) => setPartnerForm((p) => ({ ...p, displayOrder: e.target.value }))} />
+          <div className="max-h-[70vh] space-y-5 overflow-y-auto pe-1">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="space-y-3">
+                <BilingualSectionHeader lang="CKB" />
+                <Input
+                  placeholder={NS.form.name}
+                  value={partnerForm.nameCkb}
+                  onChange={(e) => setPartnerForm((p) => ({ ...p, nameCkb: e.target.value }))}
+                />
+                <Textarea
+                  rows={4}
+                  placeholder={NS.form.description}
+                  value={partnerForm.descriptionCkb}
+                  onChange={(e) =>
+                    setPartnerForm((p) => ({ ...p, descriptionCkb: e.target.value }))
+                  }
+                />
+              </div>
+              <div className="space-y-3">
+                <BilingualSectionHeader lang="KMR" />
+                <Input
+                  placeholder={NS.form.name}
+                  value={partnerForm.nameKmr}
+                  onChange={(e) => setPartnerForm((p) => ({ ...p, nameKmr: e.target.value }))}
+                />
+                <Textarea
+                  rows={4}
+                  placeholder={NS.form.description}
+                  value={partnerForm.descriptionKmr}
+                  onChange={(e) =>
+                    setPartnerForm((p) => ({ ...p, descriptionKmr: e.target.value }))
+                  }
+                />
+              </div>
+            </div>
+            <Separator />
+            <MediaCoverUpload
+              label={NS.form.partner_logo}
+              previewUrl={partnerForm.logoUrl.trim() || null}
+              urlValue={partnerForm.logoUrl}
+              aspectClass="aspect-square max-w-xs"
+              onUrlChange={(v) => setPartnerForm((p) => ({ ...p, logoUrl: v }))}
+            />
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+              <Input
+                dir="ltr"
+                placeholder={NS.form.partner_website}
+                value={partnerForm.websiteUrl}
+                onChange={(e) =>
+                  setPartnerForm((p) => ({ ...p, websiteUrl: e.target.value }))
+                }
+              />
+              <Input
+                placeholder={NS.form.team_display_order}
+                value={partnerForm.displayOrder}
+                onChange={(e) =>
+                  setPartnerForm((p) => ({ ...p, displayOrder: e.target.value }))
+                }
+              />
+            </div>
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setPartnerDialogOpen(false)}>Cancel</Button>
-            <Button type="button" onClick={() => void savePartner()}>Save</Button>
+            <Button type="button" variant="outline" onClick={() => setPartnerDialogOpen(false)}>
+              {NS.action.cancel}
+            </Button>
+            <Button
+              type="button"
+              disabled={createPartnerMut.isPending || updatePartnerMut.isPending}
+              onClick={() => void savePartner()}
+            >
+              {NS.action.save}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

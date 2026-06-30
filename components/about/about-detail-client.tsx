@@ -274,59 +274,105 @@ export function AboutDetailClient({ aboutId }: { aboutId: number }) {
 
             <section className="border-border/60 mt-12 border-t pt-8">
               <h3 className="text-muted-foreground mb-4 text-xs font-medium tracking-wide uppercase">
-                Founder
+                {NS.detail.founder}
               </h3>
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div className="border-border bg-muted/20 rounded-lg border p-4">
-                  <p className="font-medium">
-                    {about.founderNameCkb || about.founderNameKmr || "—"}
-                  </p>
-                  <p className="text-muted-foreground mt-2 text-sm">
-                    {(activeLang === "CKB" ? about.founderBioCkb : about.founderBioKmr) || "—"}
-                  </p>
+              <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_220px]">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <div className="border-border bg-muted/20 rounded-lg border p-4">
+                    <p className="text-muted-foreground mb-1 text-[10px] uppercase">
+                      {NS.form.section_ckb}
+                    </p>
+                    <p className="font-medium">{about.founderNameCkb || "—"}</p>
+                    <p className="text-muted-foreground mt-2 text-sm">
+                      {about.founderBioCkb || "—"}
+                    </p>
+                  </div>
+                  <div className="border-border bg-muted/20 rounded-lg border p-4">
+                    <p className="text-muted-foreground mb-1 text-[10px] uppercase">
+                      {NS.form.section_kmr}
+                    </p>
+                    <p className="font-medium">{about.founderNameKmr || "—"}</p>
+                    <p className="text-muted-foreground mt-2 text-sm">
+                      {about.founderBioKmr || "—"}
+                    </p>
+                  </div>
                 </div>
-                <div className="border-border bg-muted/20 rounded-lg border p-4">
-                  <p className="text-sm">Image URL</p>
-                  <p className="text-muted-foreground mt-1 break-all text-xs">
-                    {about.founderImageUrl || "—"}
-                  </p>
-                </div>
+                {about.founderImageUrl?.trim() ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={about.founderImageUrl}
+                    alt=""
+                    className="border-border aspect-square w-full max-w-[220px] rounded-lg border object-cover"
+                  />
+                ) : null}
               </div>
             </section>
 
             <section className="border-border/60 mt-12 border-t pt-8">
               <h3 className="text-muted-foreground mb-4 text-xs font-medium tracking-wide uppercase">
-                Hero Media
+                {NS.detail.hero}
               </h3>
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div className="border-border bg-muted/20 rounded-lg border p-4">
-                  <p className="text-sm">Video URL</p>
-                  <p className="text-muted-foreground mt-1 break-all text-xs">
-                    {about.heroVideoUrl || "—"}
-                  </p>
-                </div>
-                <div className="border-border bg-muted/20 rounded-lg border p-4">
-                  <p className="text-sm">Poster URL</p>
-                  <p className="text-muted-foreground mt-1 break-all text-xs">
-                    {about.heroPosterUrl || "—"}
-                  </p>
-                </div>
+              <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                {about.heroVideoUrl?.trim() ? (
+                  <div className="border-border overflow-hidden rounded-lg border">
+                    <video
+                      src={about.heroVideoUrl}
+                      controls
+                      playsInline
+                      poster={about.heroPosterUrl?.trim() || undefined}
+                      className="aspect-video w-full bg-black object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="border-border bg-muted/20 text-muted-foreground flex aspect-video items-center justify-center rounded-lg border text-sm">
+                    {NS.detail.hero_video}: —
+                  </div>
+                )}
+                {about.heroPosterUrl?.trim() ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={about.heroPosterUrl}
+                    alt=""
+                    className="border-border aspect-video w-full rounded-lg border object-cover"
+                  />
+                ) : (
+                  <div className="border-border bg-muted/20 text-muted-foreground flex aspect-video items-center justify-center rounded-lg border text-sm">
+                    {NS.detail.hero_poster}: —
+                  </div>
+                )}
               </div>
             </section>
 
             <section className="border-border/60 mt-12 border-t pt-8">
               <h3 className="text-muted-foreground mb-4 text-xs font-medium tracking-wide uppercase">
-                Team Members
+                {NS.detail.team}
               </h3>
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 {(teamQ.data ?? []).map((item) => (
                   <Card key={item.id ?? `${item.nameCkb}-${item.displayOrder}`}>
-                    <CardHeader>
-                      <CardTitle className="text-sm">{item.nameCkb || item.nameKmr || "—"}</CardTitle>
+                    <CardHeader className="flex-row items-start gap-3 space-y-0">
+                      {item.imageUrl?.trim() ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={item.imageUrl}
+                          alt=""
+                          className="border-border size-14 shrink-0 rounded-lg border object-cover"
+                        />
+                      ) : null}
+                      <div className="min-w-0">
+                        <CardTitle className="text-sm">
+                          {item.nameCkb || item.nameKmr || "—"}
+                        </CardTitle>
+                        <p className="text-muted-foreground mt-1 text-xs">
+                          {item.roleCkb || item.roleKmr || "—"}
+                        </p>
+                      </div>
                     </CardHeader>
-                    <CardContent className="text-xs">
-                      <p>{item.roleCkb || item.roleKmr || "—"}</p>
-                    </CardContent>
+                    {item.bioCkb?.trim() || item.bioKmr?.trim() ? (
+                      <CardContent className="text-muted-foreground text-xs">
+                        {item.bioCkb || item.bioKmr}
+                      </CardContent>
+                    ) : null}
                   </Card>
                 ))}
               </div>
@@ -334,17 +380,41 @@ export function AboutDetailClient({ aboutId }: { aboutId: number }) {
 
             <section className="border-border/60 mt-12 border-t pt-8">
               <h3 className="text-muted-foreground mb-4 text-xs font-medium tracking-wide uppercase">
-                Partners
+                {NS.detail.partners}
               </h3>
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 {(partnersQ.data ?? []).map((item) => (
                   <Card key={item.id ?? `${item.nameCkb}-${item.displayOrder}`}>
-                    <CardHeader>
-                      <CardTitle className="text-sm">{item.nameCkb || item.nameKmr || "—"}</CardTitle>
+                    <CardHeader className="flex-row items-start gap-3 space-y-0">
+                      {item.logoUrl?.trim() ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={item.logoUrl}
+                          alt=""
+                          className="border-border size-14 shrink-0 rounded-lg border bg-background object-contain p-1"
+                        />
+                      ) : null}
+                      <div className="min-w-0">
+                        <CardTitle className="text-sm">
+                          {item.nameCkb || item.nameKmr || "—"}
+                        </CardTitle>
+                        {item.websiteUrl?.trim() ? (
+                          <a
+                            href={item.websiteUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-primary mt-1 block truncate text-xs"
+                          >
+                            {item.websiteUrl}
+                          </a>
+                        ) : null}
+                      </div>
                     </CardHeader>
-                    <CardContent className="text-xs">
-                      <p className="break-all">{item.websiteUrl || item.descriptionCkb || "—"}</p>
-                    </CardContent>
+                    {item.descriptionCkb?.trim() || item.descriptionKmr?.trim() ? (
+                      <CardContent className="text-muted-foreground text-xs">
+                        {item.descriptionCkb || item.descriptionKmr}
+                      </CardContent>
+                    ) : null}
                   </Card>
                 ))}
               </div>

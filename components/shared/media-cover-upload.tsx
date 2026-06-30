@@ -1,6 +1,6 @@
 "use client"
 
-import { ArrowUpTrayIcon, PhotoIcon } from "@heroicons/react/24/outline"
+import { ArrowUpTrayIcon, PhotoIcon, VideoCameraIcon } from "@heroicons/react/24/outline"
 import { useState } from "react"
 import { toast } from "sonner"
 
@@ -14,8 +14,10 @@ import { mediaTypeFromFile } from "@/lib/tiptap-media"
 import { uploadMedia } from "@/services/mediaService"
 import { cn } from "@/lib/utils"
 
-const DEFAULT_ACCEPT = "image/jpeg,image/png,image/webp,image/gif"
-const DEFAULT_MAX = 20 * 1024 * 1024
+const DEFAULT_IMAGE_ACCEPT = "image/jpeg,image/png,image/webp,image/gif"
+const DEFAULT_VIDEO_ACCEPT = "video/mp4,video/webm,video/quicktime,video/*"
+const DEFAULT_IMAGE_MAX = 20 * 1024 * 1024
+const DEFAULT_VIDEO_MAX = 500 * 1024 * 1024
 
 export function MediaCoverUpload({
   label,
@@ -23,10 +25,11 @@ export function MediaCoverUpload({
   urlValue,
   onUrlChange,
   urlError,
-  accept = DEFAULT_ACCEPT,
-  maxSize = DEFAULT_MAX,
+  accept,
+  maxSize,
   aspectClass = "aspect-[21/9]",
   helperText,
+  variant = "image",
 }: {
   label?: string
   previewUrl: string | null
@@ -37,7 +40,12 @@ export function MediaCoverUpload({
   maxSize?: number
   aspectClass?: string
   helperText?: string
+  variant?: "image" | "video"
 }) {
+  const resolvedAccept =
+    accept ?? (variant === "video" ? DEFAULT_VIDEO_ACCEPT : DEFAULT_IMAGE_ACCEPT)
+  const resolvedMaxSize =
+    maxSize ?? (variant === "video" ? DEFAULT_VIDEO_MAX : DEFAULT_IMAGE_MAX)
   const [uploading, setUploading] = useState(false)
   const preview = previewUrl?.trim() || null
 
@@ -56,8 +64,8 @@ export function MediaCoverUpload({
     },
   ] = useFileUpload({
     maxFiles: 1,
-    maxSize,
-    accept,
+    maxSize: resolvedMaxSize,
+    accept: resolvedAccept,
     multiple: false,
     onFilesAdded: (added) => {
       const entry = added[0]
@@ -104,11 +112,24 @@ export function MediaCoverUpload({
       >
         <input {...getInputProps()} className="sr-only" />
         {preview ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={preview} alt="" className="size-full object-cover" />
+          variant === "video" ? (
+            <video
+              src={preview}
+              controls
+              className="size-full object-cover"
+              playsInline
+            />
+          ) : (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={preview} alt="" className="size-full object-cover" />
+          )
         ) : (
           <div className="text-muted-foreground flex size-full flex-col items-center justify-center gap-2 p-6 text-center text-sm">
-            <PhotoIcon className="size-10 opacity-40" />
+            {variant === "video" ? (
+              <VideoCameraIcon className="size-10 opacity-40" />
+            ) : (
+              <PhotoIcon className="size-10 opacity-40" />
+            )}
             <span>{helperText ?? TIPTAP_NS.cover.dropHint}</span>
           </div>
         )}
