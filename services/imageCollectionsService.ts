@@ -1,4 +1,5 @@
 import api from "@/lib/axios"
+import { normalizeFeaturedCollectionPage } from "@/lib/featured-overlay"
 import {
   normalizeCollectionDto,
   normalizeCollectionPage,
@@ -11,6 +12,7 @@ import type {
   NewTopicPayload,
   TopicDto,
 } from "@/types/image-collections"
+import type { FeaturedPayload } from "@/types/featured"
 
 const BASE = "/api/v1/image-collections"
 
@@ -74,6 +76,23 @@ export async function updateCollectionJson(
 
 export async function deleteCollection(id: number): Promise<void> {
   await api.delete(`${BASE}/${id}`)
+}
+
+export async function patchCollectionFeatured(
+  id: number,
+  payload: FeaturedPayload,
+): Promise<void> {
+  await api.patch(`${BASE}/${id}/featured`, payload)
+}
+
+export async function getFeaturedCollections(
+  page: number,
+  size: number,
+): Promise<CollectionPage> {
+  const { data } = await api.get<unknown>(`${BASE}/featured`, {
+    params: { page, size },
+  })
+  return normalizeFeaturedCollectionPage(data, page, size)
 }
 
 export async function getTopics(): Promise<TopicDto[]> {

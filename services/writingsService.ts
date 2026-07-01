@@ -5,6 +5,7 @@ import {
   normalizeWritingDto,
   normalizeWritingPage,
 } from "@/lib/writings-normalize"
+import { normalizeFeaturedWritingPage } from "@/lib/featured-overlay"
 import type {
   FeaturedPayload,
   LinkSeriesPayload,
@@ -91,6 +92,16 @@ export async function patchWritingFeatured(
   payload: FeaturedPayload,
 ): Promise<void> {
   await api.patch(`${BASE}/${id}/featured`, payload)
+}
+
+export async function getFeaturedWritings(
+  page: number,
+  size: number,
+): Promise<WritingPage> {
+  const { data } = await api.get<unknown>(`${BASE}/featured`, {
+    params: { page, size },
+  })
+  return normalizeFeaturedWritingPage(data, page, size)
 }
 
 export async function getTopics(): Promise<TopicDto[]> {

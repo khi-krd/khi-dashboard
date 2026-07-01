@@ -1,10 +1,12 @@
 import api from "@/lib/axios"
+import { normalizeFeaturedVideoPage } from "@/lib/featured-overlay"
 import {
   normalizeTopicDto,
   normalizeVideoDto,
   normalizeVideoPage,
 } from "@/lib/videos-normalize"
 import type { NewTopicPayload, TopicDto, VideoDto, VideoPage } from "@/types/videos"
+import type { FeaturedPayload } from "@/types/featured"
 
 const BASE = "/api/v1/videos"
 
@@ -64,6 +66,23 @@ export async function updateVideo(
 
 export async function deleteVideo(id: number): Promise<void> {
   await api.delete(`${BASE}/${id}`)
+}
+
+export async function patchVideoFeatured(
+  id: number,
+  payload: FeaturedPayload,
+): Promise<void> {
+  await api.patch(`${BASE}/${id}/featured`, payload)
+}
+
+export async function getFeaturedVideos(
+  page: number,
+  size: number,
+): Promise<VideoPage> {
+  const { data } = await api.get<unknown>(`${BASE}/featured`, {
+    params: { page, size },
+  })
+  return normalizeFeaturedVideoPage(data, page, size)
 }
 
 export async function getTopics(): Promise<TopicDto[]> {

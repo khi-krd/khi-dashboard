@@ -8,6 +8,7 @@ import {
 } from "@tanstack/react-query"
 
 import { writingsKeys } from "@/lib/writings-query-keys"
+import { syncFeaturedWritingsCache } from "@/lib/featured-cache-sync"
 import {
   createWriting,
   deleteWriting,
@@ -232,6 +233,8 @@ export function usePatchWritingFeaturedMutation() {
           ),
         })
       }
+      syncFeaturedWritingsCache(queryClient, id, featured, featuredOrder)
+      void queryClient.invalidateQueries({ queryKey: ["featured-catalog"] })
     },
   })
 }

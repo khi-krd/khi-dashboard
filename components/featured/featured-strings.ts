@@ -5,7 +5,17 @@ export const NS = {
     dashboard: "داشبۆرد",
     featured: "تایبەتەکان",
   },
+  views: {
+    featured: "تایبەتەکان",
+    all: "هەموو ناوەڕۆکەکان",
+  },
+  sections: {
+    sounds: "دەنگە تایبەتەکان",
+    writings: "نووسراوە تایبەتەکان",
+  },
   stats: {
+    total: "کۆی ناوەڕۆک",
+    featured: "تایبەت",
     sounds: "دەنگی تایبەت",
     writings: "نووسراوەی تایبەت",
   },
@@ -13,8 +23,22 @@ export const NS = {
     sounds: "دەنگەکان",
     writings: "نووسراوەکان",
   },
+  badges: {
+    featured: "تایبەت",
+  },
+  filters: {
+    search_placeholder: "گەڕان بە ناونیشان، بابەت یان جۆر…",
+    category_all: "هەموو جۆرەکان",
+    status_all: "هەموو دۆخەکان",
+    status_featured: "تایبەت",
+    status_not_featured: "ناتایبەت",
+    reset: "سڕینەوەی فلتەر",
+    no_results: "هیچ ناوەڕۆکێک نەدۆزرایەوە",
+    results: (count: string) => `${count} ئەنجام`,
+  },
   actions: {
     add: "زیادکردن",
+    browse: "گەڕان لە ناوەڕۆکەکان",
     remove: "لابردن",
     view: "بینین",
     edit: "دەستکاری",
@@ -22,18 +46,22 @@ export const NS = {
     manage_link: "بەڕێوەبردنی تایبەتەکان",
   },
   empty: {
+    title: "هیچ ناوەڕۆکی تایبەت نییە",
+    subtitle: "دوگمەی گەڕان لە ناوەڕۆکەکان بەکاربهێنە بۆ زیادکردن",
     sounds_title: "هیچ دەنگێکی تایبەت نییە",
     sounds_subtitle: "دەنگێک زیاد بکە بۆ پیشاندانی لە ماڵپەڕەکەدا",
     writings_title: "هیچ نووسراوەیەکی تایبەت نییە",
     writings_subtitle: "نووسراوەیەک زیاد بکە بۆ پیشاندانی لە ماڵپەڕەکەدا",
   },
-  dialog: {
-    sounds_title: "زیادکردنی دەنگی تایبەت",
-    writings_title: "زیادکردنی نووسراوەی تایبەت",
-    search_placeholder: "گەڕان بە ناونیشان…",
-    no_results: "هیچ ئەنجامێک نەدۆزرایەوە",
-    all_featured: "هەموو ناوەڕۆکەکان پێشتر تایبەت کراون",
-    cancel: "پاشگەزبوونەوە",
+  pagination: {
+    range: (from: string, to: string, total: string) =>
+      `${from}–${to} لە ${total}`,
+  },
+  sheet: {
+    title: "زیادکردنی ناوەڕۆکی تایبەت",
+    subtitle: "هەموو ناوەڕۆکەکانی ماڵپەڕ بگەڕێ و ئەوەی دەتەوێت تایبەت بکە",
+    close: "داخستن",
+    empty: "هیچ ناوەڕۆکێکی گونجاو نەدۆزرایەوە",
   },
   toast: {
     added: "بە سەرکەوتوویی زیادکرا",

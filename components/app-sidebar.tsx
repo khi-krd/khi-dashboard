@@ -4,7 +4,6 @@ import * as React from "react"
 import { useTranslations } from "next-intl"
 
 import { NavMain } from "@/components/nav-main"
-import { NavSecondary } from "@/components/nav-secondary"
 import { NavUser } from "@/components/nav-user"
 import {
   Sidebar,
@@ -25,81 +24,12 @@ import {
   FolderKanbanIcon,
   InformationCircleIcon,
   News01Icon,
+  SparklesIcon,
   UserMultipleIcon,
 } from "@hugeicons/core-free-icons"
 import { useCurrentUserQuery } from "@/hooks/use-current-user"
 import { resolveAvatarSrc } from "@/lib/profile-image"
 import { useAuthStore } from "@/store/auth.store"
-
-const navMainItems = [
-  {
-    title: "داشبۆرد",
-    url: "/dashboard",
-    icon: <HugeiconsIcon icon={DashboardSquare01Icon} strokeWidth={2} />,
-  },
-  {
-    title: "هەواڵەکان",
-    url: "/dashboard/news",
-    icon: <HugeiconsIcon icon={News01Icon} strokeWidth={2} />,
-  },
-  {
-    title: "پرۆژەکان",
-    url: "/dashboard/projects",
-    icon: <HugeiconsIcon icon={FolderKanbanIcon} strokeWidth={2} />,
-  },
-  {
-    title: "خزمەتگوزارییەکان",
-    url: "/dashboard/services",
-    icon: <HugeiconsIcon icon={Briefcase01Icon} strokeWidth={2} />,
-  },
-  {
-    title: "بڵاوکردنەوە",
-    url: "#",
-    icon: (
-      <HugeiconsIcon icon={CollectionsBookmarkIcon} strokeWidth={2} />
-    ),
-    items: [
-      {
-        title: "ڤیدیۆکان",
-        url: "/dashboard/videos",
-      },
-      {
-        title: "دەنگەکان",
-        url: "/dashboard/sounds",
-      },
-      {
-        title: "کۆمەڵە وێنەکان",
-        url: "/dashboard/image-collections",
-      },
-      {
-        title: "نووسراوەکان",
-        url: "/dashboard/writings",
-      },
-      {
-        title: "تایبەتەکان",
-        url: "/dashboard/featured",
-      },
-    ],
-  },
-]
-
-const navSecondaryItems = [
-  {
-    title: "بەکارهێنەران",
-    url: "/dashboard/users",
-    icon: <HugeiconsIcon icon={UserMultipleIcon} strokeWidth={2} />,
-  },
-  {
-    title: "دەربارە",
-    url: "/dashboard/about",
-    icon: <HugeiconsIcon icon={InformationCircleIcon} strokeWidth={2} />,
-  },
-  {
-    title: "پەیوەندی",
-    url: "/dashboard/contact",
-    icon: <HugeiconsIcon icon={Call02Icon} strokeWidth={2} />,
-  },
-]
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const t = useTranslations("Sidebar")
@@ -119,11 +49,96 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     avatar: avatarSrc,
   }
 
-  const data = {
-    user: sidebarUser,
-    navMain: navMainItems,
-    navSecondary: navSecondaryItems,
-  }
+  const navGroups = [
+    {
+      label: t("labels.overview"),
+      items: [
+        {
+          title: "داشبۆرد",
+          url: "/dashboard",
+          icon: <HugeiconsIcon icon={DashboardSquare01Icon} strokeWidth={2} />,
+        },
+        {
+          title: "هەواڵەکان",
+          url: "/dashboard/news",
+          icon: <HugeiconsIcon icon={News01Icon} strokeWidth={2} />,
+        },
+        {
+          title: "پرۆژەکان",
+          url: "/dashboard/projects",
+          icon: <HugeiconsIcon icon={FolderKanbanIcon} strokeWidth={2} />,
+        },
+        {
+          title: "تایبەتەکان",
+          url: "/dashboard/featured",
+          icon: <HugeiconsIcon icon={SparklesIcon} strokeWidth={2} />,
+        },
+      ],
+    },
+    {
+      label: t("labels.publishing"),
+      items: [
+        {
+          title: "بڵاوکردنەوە",
+          url: "#",
+          icon: (
+            <HugeiconsIcon icon={CollectionsBookmarkIcon} strokeWidth={2} />
+          ),
+          items: [
+            {
+              title: "ڤیدیۆکان",
+              url: "/dashboard/videos",
+            },
+            {
+              title: "دەنگەکان",
+              url: "/dashboard/sounds",
+            },
+            {
+              title: "کۆمەڵە وێنەکان",
+              url: "/dashboard/image-collections",
+            },
+            {
+              title: "نووسراوەکان",
+              url: "/dashboard/writings",
+            },
+          ],
+        },
+      ],
+    },
+    {
+      label: t("labels.site"),
+      items: [
+        {
+          title: "خزمەتگوزارییەکان",
+          url: "/dashboard/services",
+          icon: <HugeiconsIcon icon={Briefcase01Icon} strokeWidth={2} />,
+        },
+        {
+          title: "دەربارە",
+          url: "/dashboard/about",
+          icon: (
+            <HugeiconsIcon icon={InformationCircleIcon} strokeWidth={2} />
+          ),
+        },
+        {
+          title: "پەیوەندی",
+          url: "/dashboard/contact",
+          icon: <HugeiconsIcon icon={Call02Icon} strokeWidth={2} />,
+        },
+      ],
+    },
+    {
+      label: t("labels.admin"),
+      className: "mt-auto",
+      items: [
+        {
+          title: "بەکارهێنەران",
+          url: "/dashboard/users",
+          icon: <HugeiconsIcon icon={UserMultipleIcon} strokeWidth={2} />,
+        },
+      ],
+    },
+  ]
 
   return (
     <Sidebar variant="inset" {...props}>
@@ -143,11 +158,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        <NavMain groups={navGroups} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={sidebarUser} />
       </SidebarFooter>
     </Sidebar>
   )

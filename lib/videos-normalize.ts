@@ -6,6 +6,7 @@ import type {
   VideoDto,
   VideoPage,
 } from "@/types/videos"
+import { parseFeaturedFields } from "@/lib/featured-fields"
 
 function coerceStr(v: unknown): string | null {
   if (v == null) return null
@@ -138,6 +139,7 @@ export function normalizeVideoDto(raw: unknown): VideoDto {
     updatedAt: coerceStr(o.updatedAt) ?? coerceStr(o.updated_at) ?? undefined,
     createdBy: coerceStr(o.createdBy) ?? coerceStr(o.created_by),
     updatedBy: coerceStr(o.updatedBy) ?? coerceStr(o.updated_by),
+    ...parseFeaturedFields(o),
   }
 }
 

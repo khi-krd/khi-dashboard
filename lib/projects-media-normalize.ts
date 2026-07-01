@@ -1,4 +1,5 @@
 import type { MediaGalleryItemDto, MediaKind, ProjectDto } from "@/types/projects"
+import { parseFeaturedFields } from "@/lib/featured-fields"
 import { normalizeProjectStatus } from "@/types/projects"
 
 function coerceStr(v: unknown): string | null {
@@ -42,6 +43,7 @@ export function normalizeProjectDto(d: ProjectDto): ProjectDto {
 
   return {
     ...d,
+    ...parseFeaturedFields(raw),
     status: normalizeProjectStatus(d.status),
     coverMediaType:
       coerceKind(d.coverMediaType) ??

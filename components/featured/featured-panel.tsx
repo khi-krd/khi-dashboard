@@ -12,98 +12,74 @@ import {
   SortableContext,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable"
+import { SparklesIcon } from "@heroicons/react/24/outline"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { toast } from "sonner"
 
-import {
-  AddFeaturedDialog,
-  type AddFeaturedCandidate,
-} from "@/components/featured/add-featured-dialog"
+import { FeaturedCategoryIcon } from "@/components/featured/featured-category-icon"
+import { FeaturedListPagination } from "@/components/featured/featured-list-pagination"
 import { FeaturedSortableRow } from "@/components/featured/featured-sortable-row"
 import { NS } from "@/components/featured/featured-strings"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
-import {
-  nextFeaturedOrder,
-  orderPatches,
-  pickFeatured,
-  reorderFeaturedIds,
-} from "@/lib/featured-utils"
+import type { FeaturedCatalogItem } from "@/lib/featured-catalog"
+import { featuredOrderPatches, reorderFeaturedKeys } from "@/lib/featured-utils"
+import { formatCkbDigits } from "@/lib/intl-ckb"
 import { toastError } from "@/lib/toast"
 
-type FeaturedPanelProps<T extends { id?: number; featured?: boolean; featuredOrder?: number | null }> = {
-  items: T[]
+type FeaturedPanelProps = {
+  items: FeaturedCatalogItem[]
   isLoading?: boolean
   isError?: boolean
   onRetry?: () => void
-  emptyTitle: string
-  emptySubtitle: string
-  dialogTitle: string
-  addLabel: string
-  fallbackIcon: React.ReactNode
-  coverAspect?: "square" | "book"
-  getId: (item: T) => number
-  getTitle: (item: T) => string
-  getSubtitle: (item: T) => string | null | undefined
-  getCoverUrl: (item: T) => string | null | undefined
-  detailHref: (id: number) => string
-  editHref: (id: number) => string
   onPatch: (
-    id: number,
+    item: FeaturedCatalogItem,
     payload: { featured?: boolean; featuredOrder?: number },
   ) => Promise<void>
 }
 
-export function FeaturedPanel<
-  T extends { id?: number; featured?: boolean; featuredOrder?: number | null },
->({
+export function FeaturedPanel({
   items,
   isLoading,
   isError,
   onRetry,
-  emptyTitle,
-  emptySubtitle,
-  dialogTitle,
-  addLabel,
-  fallbackIcon,
-  coverAspect = "square",
-  getId,
-  getTitle,
-  getSubtitle,
-  getCoverUrl,
-  detailHref,
-  editHref,
   onPatch,
-}: FeaturedPanelProps<T>) {
-  const featured = useMemo(() => pickFeatured(items), [items])
-  const [orderedIds, setOrderedIds] = useState<number[]>([])
-  const [pendingId, setPendingId] = useState<number | null>(null)
-  const [addOpen, setAddOpen] = useState(false)
+}: FeaturedPanelProps) {
+  const [pageIndex, setPageIndex] = useState(0)
+  const [pageSize, setPageSize] = useState(10)
+  const [orderedKeys, setOrderedKeys] = useState<string[]>([])
+  const [pendingKey, setPendingKey] = useState<string | null>(null)
   const [isReordering, setIsReordering] = useState(false)
 
-  useEffect(() => {
-    setOrderedIds(featured.map((item) => getId(item)))
-  }, [featured, getId])
+  const featuredItems = useMemo(
+    () => items.filter((item) => item.featured),
+    [items],
+  )
 
-  const featuredById = useMemo(() => {
-    const map = new Map<number, T>()
-    for (const item of featured) {
-      map.set(getId(item), item)
+  const featuredByKey = useMemo(() => {
+    const map = new Map<string, FeaturedCatalogItem>()
+    for (const item of featuredItems) {
+      map.set(item.key, item)
     }
     return map
-  }, [featured, getId])
+  }, [featuredItems])
 
-  const candidates = useMemo<AddFeaturedCandidate[]>(() => {
-    return items
-      .filter((item) => item.id != null && !item.featured)
-      .map((item) => ({
-        id: getId(item),
-        title: getTitle(item),
-        subtitle: getSubtitle(item),
-        coverUrl: getCoverUrl(item),
-        fallbackIcon,
-      }))
-  }, [items, getId, getTitle, getSubtitle, getCoverUrl, fallbackIcon])
+  useEffect(() => {
+    setOrderedKeys(featuredItems.map((item) => item.key))
+    setPageIndex(0)
+  }, [featuredItems])
+
+  const pageCount = Math.max(1, Math.ceil(featuredItems.length / pageSize))
+  useEffect(() => {
+    if (pageIndex > pageCount - 1) {
+      setPageIndex(Math.max(0, pageCount - 1))
+    }
+  }, [pageIndex, pageCount])
+
+  const pageKeys = useMemo(() => {
+    const start = pageIndex * pageSize
+    return orderedKeys.slice(start, start + pageSize)
+  }, [orderedKeys, pageIndex, pageSize])
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -111,17 +87,17 @@ export function FeaturedPanel<
 
   const runPatch = useCallback(
     async (
-      id: number,
+      item: FeaturedCatalogItem,
       payload: { featured?: boolean; featuredOrder?: number },
     ) => {
-      setPendingId(id)
+      setPendingKey(item.key)
       try {
-        await onPatch(id, payload)
+        await onPatch(item, payload)
       } catch {
         toastError(NS.error.generic)
         throw new Error("patch failed")
       } finally {
-        setPendingId(null)
+        setPendingKey(null)
       }
     },
     [onPatch],
@@ -131,46 +107,45 @@ export function FeaturedPanel<
     const { active, over } = event
     if (!over || active.id === over.id) return
 
-    const activeId = Number(active.id)
-    const overId = Number(over.id)
-    const previousIds = orderedIds
-    const nextIds = reorderFeaturedIds(previousIds, activeId, overId)
-    if (nextIds === previousIds) return
+    const activeKey = String(active.id)
+    const overKey = String(over.id)
+    const previousKeys = orderedKeys
+    const nextKeys = reorderFeaturedKeys(previousKeys, activeKey, overKey)
+    if (nextKeys === previousKeys) return
 
-    setOrderedIds(nextIds)
-    const patches = orderPatches(previousIds, nextIds)
+    setOrderedKeys(nextKeys)
+    const patches = featuredOrderPatches(featuredByKey, nextKeys)
     if (patches.length === 0) return
 
     setIsReordering(true)
     try {
       await Promise.all(
-        patches.map((patch) =>
-          runPatch(patch.id, { featured: true, featuredOrder: patch.featuredOrder }),
-        ),
+        patches.map((patch) => {
+          const item = featuredByKey.get(patch.key)
+          if (!item) return Promise.resolve()
+          return runPatch(item, {
+            featured: true,
+            featuredOrder: patch.featuredOrder,
+          })
+        }),
       )
       toast.success(NS.toast.reordered)
     } catch {
-      setOrderedIds(previousIds)
+      setOrderedKeys(previousKeys)
     } finally {
       setIsReordering(false)
     }
   }
 
-  async function handleRemove(id: number) {
-    await runPatch(id, { featured: false })
+  async function handleRemove(item: FeaturedCatalogItem) {
+    await runPatch(item, { featured: false })
     toast.success(NS.toast.removed)
-  }
-
-  async function handleAdd(id: number) {
-    const order = nextFeaturedOrder(featured)
-    await runPatch(id, { featured: true, featuredOrder: order })
-    toast.success(NS.toast.added)
-    setAddOpen(false)
   }
 
   if (isLoading) {
     return (
       <div className="space-y-3">
+        <Skeleton className="h-6 w-40" />
         {Array.from({ length: 4 }).map((_, i) => (
           <Skeleton key={i} className="h-[4.5rem] w-full rounded-xl" />
         ))}
@@ -181,7 +156,7 @@ export function FeaturedPanel<
   if (isError) {
     return (
       <div className="border-border flex flex-col items-center justify-center rounded-xl border border-dashed py-16 text-center">
-        <p className="text-muted-foreground mb-4 text-sm">{NS.error.generic}</p>
+        <p className="text-muted-foreground mb-4 text-base">{NS.error.generic}</p>
         {onRetry ? (
           <Button type="button" variant="outline" size="sm" onClick={onRetry}>
             دووبارە هەوڵبدەرەوە
@@ -192,85 +167,79 @@ export function FeaturedPanel<
   }
 
   return (
-    <div className="space-y-4">
+    <section className="space-y-4">
       <div className="flex items-center justify-between gap-3">
-        <p className="text-muted-foreground text-xs">
-          {NS.actions.drag}
-        </p>
-        <Button
-          type="button"
-          size="sm"
-          onClick={() => setAddOpen(true)}
-          disabled={candidates.length === 0 && !isLoading}
-        >
-          {addLabel}
-        </Button>
+        <div>
+          <h2 className="text-lg font-semibold">{NS.views.featured}</h2>
+          <p className="text-muted-foreground text-sm">
+            {NS.actions.drag}
+            {featuredItems.length > 0
+              ? ` · ${formatCkbDigits(featuredItems.length)}`
+              : ""}
+          </p>
+        </div>
       </div>
 
-      {orderedIds.length === 0 ? (
+      {orderedKeys.length === 0 ? (
         <div className="border-border bg-muted/15 flex flex-col items-center justify-center rounded-2xl border border-dashed px-6 py-16 text-center">
           <div className="bg-primary/10 text-primary mb-4 flex size-14 items-center justify-center rounded-2xl">
-            {fallbackIcon}
+            <SparklesIcon className="size-6" aria-hidden />
           </div>
-          <h3 className="mb-1 text-base font-medium">{emptyTitle}</h3>
-          <p className="text-muted-foreground mb-5 max-w-sm text-sm">
-            {emptySubtitle}
-          </p>
-          <Button
-            type="button"
-            onClick={() => setAddOpen(true)}
-            disabled={candidates.length === 0}
-          >
-            {addLabel}
-          </Button>
+          <h3 className="mb-1 text-lg font-medium">{NS.empty.title}</h3>
+          <p className="text-muted-foreground max-w-sm text-base">{NS.empty.subtitle}</p>
         </div>
       ) : (
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragEnd={(e) => void handleDragEnd(e)}
-        >
-          <SortableContext
-            items={orderedIds.map(String)}
-            strategy={verticalListSortingStrategy}
+        <>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={(e) => void handleDragEnd(e)}
           >
-            <div className="space-y-2">
-              {orderedIds.map((id, index) => {
-                const item = featuredById.get(id)
-                if (!item) return null
-                return (
-                  <FeaturedSortableRow
-                    key={id}
-                    id={id}
-                    order={index}
-                    title={getTitle(item)}
-                    subtitle={getSubtitle(item)}
-                    coverUrl={getCoverUrl(item)}
-                    coverAspect={coverAspect}
-                    fallbackIcon={fallbackIcon}
-                    detailHref={detailHref(id)}
-                    editHref={editHref(id)}
-                    isPending={
-                      pendingId === id || isReordering
-                    }
-                    onRemove={() => void handleRemove(id)}
-                  />
-                )
-              })}
-            </div>
-          </SortableContext>
-        </DndContext>
-      )}
+            <SortableContext
+              items={pageKeys}
+              strategy={verticalListSortingStrategy}
+            >
+              <div className="space-y-2">
+                {pageKeys.map((key) => {
+                  const item = featuredByKey.get(key)
+                  if (!item) return null
+                  const globalOrder = orderedKeys.indexOf(key)
+                  return (
+                    <FeaturedSortableRow
+                      key={key}
+                      id={key}
+                      order={globalOrder}
+                      title={item.title}
+                      subtitle={item.subtitle}
+                      categoryLabel={item.categoryLabel}
+                      coverUrl={item.coverUrl}
+                      coverAspect={item.coverAspect}
+                      fallbackIcon={
+                        <FeaturedCategoryIcon category={item.category} />
+                      }
+                      detailHref={item.detailHref}
+                      editHref={item.editHref}
+                      isPending={pendingKey === key || isReordering}
+                      onRemove={() => void handleRemove(item)}
+                    />
+                  )
+                })}
+              </div>
+            </SortableContext>
+          </DndContext>
 
-      <AddFeaturedDialog
-        open={addOpen}
-        onOpenChange={setAddOpen}
-        title={dialogTitle}
-        candidates={candidates}
-        isLoading={isLoading}
-        isPending={pendingId != null}
-        onSelect={(id) => void handleAdd(id)}
-      />
-    </div>
+          <FeaturedListPagination
+            pageIndex={pageIndex}
+            pageSize={pageSize}
+            totalElements={featuredItems.length}
+            onPageChange={setPageIndex}
+            onPageSizeChange={(size) => {
+              setPageSize(size)
+              setPageIndex(0)
+            }}
+          />
+        </>
+      )}
+    </section>
   )
 }

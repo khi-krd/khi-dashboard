@@ -1,20 +1,25 @@
 "use client"
 
 import dynamic from "next/dynamic"
+import { ChartPieIcon } from "@heroicons/react/24/outline"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 
-/** Card-shaped placeholder matching the chart's own loading state — no layout shift. */
 function ChartSkeleton() {
   return (
-    <Card className="py-0">
-      <CardHeader className="border-b py-3">
-        <CardTitle className="text-sm">دابەشبوونی تۆمارەکان</CardTitle>
+    <Card className="overflow-hidden rounded-2xl py-0">
+      <CardHeader className="border-b px-5 py-4">
+        <div className="flex items-center gap-2">
+          <span className="bg-primary/10 text-primary flex size-8 items-center justify-center rounded-lg">
+            <ChartPieIcon className="size-4" />
+          </span>
+          <CardTitle className="text-sm">دابەشبوونی تۆمارەکان</CardTitle>
+        </div>
       </CardHeader>
-      <CardContent className="py-4">
+      <CardContent className="px-5 py-5">
         <div className="flex flex-col items-center gap-3">
-          <Skeleton className="size-40 rounded-full" />
+          <Skeleton className="size-44 rounded-full" />
           <Skeleton className="h-4 w-32" />
         </div>
       </CardContent>
@@ -22,10 +27,6 @@ function ChartSkeleton() {
   )
 }
 
-/**
- * Code-split distribution chart. Keeps `recharts` (~heavy) out of the dashboard
- * route's initial JS — fetched after first paint. Drop-in for the eager export.
- */
 export const DashboardDistributionChart = dynamic(
   () =>
     import("@/components/dashboard/dashboard-distribution-chart").then(

@@ -1,10 +1,12 @@
 import api from "@/lib/axios"
 import type { ProjectWritePayload } from "@/lib/projects-form-data"
+import { normalizeFeaturedProjectPage } from "@/lib/featured-overlay"
 import { normalizeProjectDto } from "@/lib/projects-media-normalize"
 import type {
   ProjectListResponse,
   ProjectSingleResponse,
 } from "@/types/projects"
+import type { FeaturedPayload } from "@/types/featured"
 
 const BASE = "/api/v1/projects"
 
@@ -94,4 +96,21 @@ export async function updateProject(
 export async function deleteProject(id: number) {
   const { data } = await api.delete(`${BASE}/delete/${id}`)
   return data
+}
+
+export async function patchProjectFeatured(
+  id: number,
+  payload: FeaturedPayload,
+): Promise<void> {
+  await api.patch(`${BASE}/${id}/featured`, payload)
+}
+
+export async function getFeaturedProjects(
+  page: number,
+  size: number,
+): Promise<NonNullable<ProjectListResponse["data"]>> {
+  const { data } = await api.get<unknown>(`${BASE}/featured`, {
+    params: { page, size },
+  })
+  return normalizeFeaturedProjectPage(data, page, size)
 }

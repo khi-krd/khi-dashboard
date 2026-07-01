@@ -12,6 +12,7 @@ import Image from "next/image"
 import Link from "next/link"
 
 import { NS } from "@/components/featured/featured-strings"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { formatCkbDigits } from "@/lib/intl-ckb"
 import { cn } from "@/lib/utils"
@@ -21,6 +22,7 @@ export function FeaturedSortableRow({
   order,
   title,
   subtitle,
+  categoryLabel,
   coverUrl,
   coverAspect = "square",
   fallbackIcon,
@@ -29,12 +31,13 @@ export function FeaturedSortableRow({
   isPending,
   onRemove,
 }: {
-  id: number
+  id: string
   order: number
   title: string
   subtitle?: string | null
+  categoryLabel?: string
   coverUrl?: string | null
-  coverAspect?: "square" | "book"
+  coverAspect?: "square" | "book" | "wide"
   fallbackIcon: React.ReactNode
   detailHref: string
   editHref: string
@@ -42,7 +45,7 @@ export function FeaturedSortableRow({
   onRemove: () => void
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id: String(id) })
+    useSortable({ id })
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -74,7 +77,11 @@ export function FeaturedSortableRow({
       <div
         className={cn(
           "bg-muted relative shrink-0 overflow-hidden rounded-lg",
-          coverAspect === "book" ? "h-16 w-11" : "size-14",
+          coverAspect === "book"
+            ? "h-16 w-11"
+            : coverAspect === "wide"
+              ? "h-11 w-16"
+              : "size-14",
         )}
       >
         {cover ? (
@@ -93,14 +100,22 @@ export function FeaturedSortableRow({
       </div>
 
       <div className="min-w-0 flex-1">
-        <div className="mb-0.5 flex items-center gap-2">
-          <span className="bg-primary/10 text-primary inline-flex size-6 shrink-0 items-center justify-center rounded-full font-mono text-[11px] font-semibold tabular-nums">
+        <div className="mb-1 flex flex-wrap items-center gap-2">
+          <span className="bg-primary/10 text-primary inline-flex size-7 shrink-0 items-center justify-center rounded-full font-mono text-xs font-semibold tabular-nums">
             {formatCkbDigits(order + 1)}
           </span>
-          <p className="line-clamp-1 font-medium">{title || "—"}</p>
+          {categoryLabel ? (
+            <Badge variant="secondary" className="font-normal">
+              {categoryLabel}
+            </Badge>
+          ) : null}
+          <Badge className="bg-primary/10 text-primary hover:bg-primary/10 font-normal">
+            {NS.badges.featured}
+          </Badge>
         </div>
+        <p className="line-clamp-1 text-base font-medium">{title || "—"}</p>
         {subtitle ? (
-          <p className="text-muted-foreground line-clamp-1 text-xs">{subtitle}</p>
+          <p className="text-muted-foreground line-clamp-1 text-sm">{subtitle}</p>
         ) : null}
       </div>
 

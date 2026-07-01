@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { Cell, Label, Pie, PieChart } from "recharts"
+import { ChartPieIcon } from "@heroicons/react/24/outline"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -13,7 +14,6 @@ import {
 } from "@/components/ui/chart"
 import { DASHBOARD_MODULE_STYLE } from "@/lib/dashboard-module-style"
 import { formatCkbDigits } from "@/lib/intl-ckb"
-import { cn } from "@/lib/utils"
 import type { DashboardModuleState } from "@/hooks/useDashboardOverview"
 
 type DashboardDistributionChartProps = {
@@ -29,6 +29,7 @@ export function DashboardDistributionChart({
     () =>
       modules
         .filter((m) => !m.isError && m.card.count > 0)
+        .sort((a, b) => b.card.count - a.card.count)
         .map((m) => ({
           key: m.card.key,
           label: m.card.label,
@@ -52,40 +53,49 @@ export function DashboardDistributionChart({
   }, [data])
 
   return (
-    <Card className="py-0">
-      <CardHeader className="border-b py-3">
-        <CardTitle className="text-sm">دابەشبوونی تۆمارەکان</CardTitle>
+    <Card className="overflow-hidden rounded-2xl py-0">
+      <CardHeader className="border-b px-5 py-4">
+        <div className="flex items-center gap-2">
+          <span className="bg-primary/10 text-primary flex size-8 items-center justify-center rounded-lg">
+            <ChartPieIcon className="size-4" />
+          </span>
+          <CardTitle className="text-sm">دابەشبوونی تۆمارەکان</CardTitle>
+        </div>
       </CardHeader>
-      <CardContent className="py-4">
+      <CardContent className="px-5 py-5">
         {isLoading ? (
           <div className="flex flex-col items-center gap-3">
-            <Skeleton className="size-40 rounded-full" />
+            <Skeleton className="size-44 rounded-full" />
             <Skeleton className="h-4 w-32" />
           </div>
         ) : data.length === 0 ? (
-          <p className="text-muted-foreground py-10 text-center text-sm">
-            هێشتا هیچ تۆمارێک نییە
-          </p>
+          <div className="flex flex-col items-center justify-center py-10 text-center">
+            <div className="bg-muted flex size-14 items-center justify-center rounded-2xl">
+              <ChartPieIcon className="text-muted-foreground size-6" />
+            </div>
+            <p className="text-muted-foreground mt-4 text-sm">
+              هێشتا هیچ تۆمارێک نییە
+            </p>
+          </div>
         ) : (
           <>
             <ChartContainer
               config={chartConfig}
-              className="mx-auto aspect-square max-h-[220px]"
+              className="mx-auto aspect-square max-h-[240px]"
             >
               <PieChart>
                 <ChartTooltip
                   cursor={false}
-                  content={
-                    <ChartTooltipContent nameKey="key" hideLabel />
-                  }
+                  content={<ChartTooltipContent nameKey="key" hideLabel />}
                 />
                 <Pie
                   data={data}
                   dataKey="count"
                   nameKey="key"
-                  innerRadius={60}
-                  strokeWidth={4}
-                  paddingAngle={2}
+                  innerRadius={68}
+                  outerRadius={100}
+                  strokeWidth={3}
+                  paddingAngle={3}
                 >
                   {data.map((item) => (
                     <Cell key={item.key} fill={item.color} />
@@ -122,20 +132,20 @@ export function DashboardDistributionChart({
               </PieChart>
             </ChartContainer>
 
-            <ul className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1.5">
+            <ul className="mt-4 space-y-2">
               {data.map((item) => (
                 <li
                   key={item.key}
                   className="flex items-center justify-between gap-2 text-xs"
                 >
-                  <span className="flex min-w-0 items-center gap-1.5">
+                  <span className="flex min-w-0 items-center gap-2">
                     <span
-                      className={cn("size-2.5 shrink-0 rounded-[3px]")}
+                      className="size-2.5 shrink-0 rounded-full"
                       style={{ backgroundColor: item.color }}
                     />
                     <span className="truncate">{item.label}</span>
                   </span>
-                  <span className="text-muted-foreground tabular-nums">
+                  <span className="text-muted-foreground shrink-0 tabular-nums">
                     {formatCkbDigits(item.count)}
                   </span>
                 </li>

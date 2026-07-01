@@ -8,6 +8,7 @@ import {
 } from "@tanstack/react-query"
 
 import { soundKeys } from "@/lib/sounds-query-keys"
+import { syncFeaturedSoundsCache } from "@/lib/featured-cache-sync"
 import {
   createSound,
   deleteSound,
@@ -193,6 +194,8 @@ export function usePatchSoundFeaturedMutation() {
           ),
         })
       }
+      syncFeaturedSoundsCache(queryClient, id, featured, featuredOrder)
+      void queryClient.invalidateQueries({ queryKey: ["featured-catalog"] })
     },
   })
 }

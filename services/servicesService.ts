@@ -1,4 +1,5 @@
 import api from "@/lib/axios"
+import { normalizeFeaturedServicePage } from "@/lib/featured-overlay"
 import { normalizeServiceDto } from "@/lib/services-media-normalize"
 import type {
   ApiResponse,
@@ -6,6 +7,7 @@ import type {
   ServiceSingleResponse,
   ServiceTypesResponse,
 } from "@/types/services"
+import type { FeaturedPayload } from "@/types/featured"
 
 const BASE = "/api/v1/services"
 
@@ -126,4 +128,21 @@ export async function bulkDeleteServices(ids: number[]): Promise<void> {
   } catch {
     await Promise.all(ids.map((id) => deleteService(id)))
   }
+}
+
+export async function patchServiceFeatured(
+  id: number,
+  payload: FeaturedPayload,
+): Promise<void> {
+  await api.patch(`${BASE}/${id}/featured`, payload)
+}
+
+export async function getFeaturedServices(
+  page: number,
+  size: number,
+): Promise<NonNullable<ServiceListResponse["data"]>> {
+  const { data } = await api.get<unknown>(`${BASE}/featured`, {
+    params: { page, size },
+  })
+  return normalizeFeaturedServicePage(data, page, size)
 }

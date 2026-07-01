@@ -10,6 +10,7 @@ import {
   BriefcaseIcon,
   MagnifyingGlassIcon,
   PlusIcon,
+  SparklesIcon,
 } from "@heroicons/react/24/outline"
 
 import {
@@ -24,6 +25,7 @@ import {
 } from "@/components/projects/projects-filters"
 import { ProjectsErrorState } from "@/components/projects/projects-error-state"
 import { NS } from "@/components/projects/projects-strings"
+import { NS as FEATURED_NS } from "@/components/featured/featured-strings"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useDebouncedValue } from "@/hooks/useDebouncedValue"
@@ -300,8 +302,16 @@ function ProjectsListClientInner() {
               {NS.list.totalCount(formatCkbDigits(recordCount))}
             </p>
           </div>
-          <Link
-            href="/dashboard/projects/new"
+          <div className="flex flex-wrap items-center gap-3">
+            <Link
+              href="/dashboard/featured"
+              className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 text-xs transition-colors"
+            >
+              <SparklesIcon className="size-4" aria-hidden />
+              {FEATURED_NS.actions.manage_link}
+            </Link>
+            <Link
+              href="/dashboard/projects/new"
             className={cn(
               buttonVariants({ variant: "default", size: "lg" }),
               "inline-flex items-center gap-1.5",
@@ -310,6 +320,7 @@ function ProjectsListClientInner() {
             <PlusIcon className="size-4 rtl:rotate-180" aria-hidden />
             {NS.action.new}
           </Link>
+          </div>
       </header>
 
       <ProjectsFiltersToolbar

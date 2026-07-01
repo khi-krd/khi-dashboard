@@ -1,4 +1,5 @@
 import type { ServiceContentDto, ServiceDto } from "@/types/services"
+import { parseFeaturedFields } from "@/lib/featured-fields"
 
 function coerceInt(v: unknown): number | undefined {
   if (typeof v === "number" && Number.isFinite(v)) return v
@@ -44,6 +45,7 @@ function normalizeContentsList(raw: unknown): ServiceContentDto[] {
 }
 
 export function normalizeServiceDto(d: ServiceDto): ServiceDto {
+  const raw = d as ServiceDto & Record<string, unknown>
   const contents =
     d.contents?.length > 0 ? normalizeContentsList(d.contents) : []
   const contentLanguages =
@@ -52,6 +54,7 @@ export function normalizeServiceDto(d: ServiceDto): ServiceDto {
 
   return {
     ...d,
+    ...parseFeaturedFields(raw),
     active: coerceBool(d.active, true),
     serviceType: d.serviceType?.trim() ?? "",
     location: d.location?.trim() || null,

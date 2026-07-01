@@ -36,6 +36,10 @@
     },
     "labels": {
       "platform": "پلاتفۆرم",
+      "overview": "سەرەکی",
+      "publishing": "بڵاوکردنەوە",
+      "site": "ناوەڕۆک",
+      "admin": "بەڕێوەبردن",
       "projects": "پڕۆژەکان"
     },
     "mainNav": {

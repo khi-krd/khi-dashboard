@@ -1,11 +1,13 @@
 import api from "@/lib/axios"
 import type { NewsWritePayload } from "@/lib/news-form-data"
+import { normalizeFeaturedNewsPage } from "@/lib/featured-overlay"
 import { normalizeNewsDto } from "@/lib/news-media-normalize"
 import type {
   ApiResponse,
   NewsListResponse,
   NewsSingleResponse,
 } from "@/types/news"
+import type { FeaturedPayload } from "@/types/featured"
 
 const BASE = "/api/v1/news"
 
@@ -73,4 +75,21 @@ export async function updateNews(
 export async function deleteNews(id: number): Promise<ApiResponse<null>> {
   const { data } = await api.delete<ApiResponse<null>>(`${BASE}/${id}`)
   return data
+}
+
+export async function patchNewsFeatured(
+  id: number,
+  payload: FeaturedPayload,
+): Promise<void> {
+  await api.patch(`${BASE}/${id}/featured`, payload)
+}
+
+export async function getFeaturedNews(
+  page: number,
+  size: number,
+): Promise<NonNullable<NewsListResponse["data"]>> {
+  const { data } = await api.get<unknown>(`${BASE}/featured`, {
+    params: { page, size },
+  })
+  return normalizeFeaturedNewsPage(data, page, size)
 }

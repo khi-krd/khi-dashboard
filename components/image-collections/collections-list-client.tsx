@@ -12,6 +12,7 @@ import {
   MagnifyingGlassIcon,
   PhotoIcon,
   PlusIcon,
+  SparklesIcon,
   Squares2X2Icon,
 } from "@heroicons/react/24/outline"
 
@@ -25,6 +26,7 @@ import { CollectionsFiltersToolbar } from "@/components/image-collections/collec
 import { CollectionsGrid } from "@/components/image-collections/collections-grid"
 import { CollectionErrorState } from "@/components/image-collections/collection-error-state"
 import { NS } from "@/components/image-collections/collections-strings"
+import { NS as FEATURED_NS } from "@/components/featured/featured-strings"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useDebouncedValue } from "@/hooks/useDebouncedValue"
@@ -239,6 +241,13 @@ function CollectionsListClientInner() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
+          <Link
+            href="/dashboard/featured"
+            className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 text-xs transition-colors"
+          >
+            <SparklesIcon className="size-4" aria-hidden />
+            {FEATURED_NS.actions.manage_link}
+          </Link>
           <Link
             href="/dashboard/image-collections/topics"
             className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 text-xs transition-colors"

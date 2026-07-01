@@ -43,6 +43,8 @@ export type ProjectDto = {
   tagsKmr?: string[]
   keywordsCkb?: string[]
   keywordsKmr?: string[]
+  featured?: boolean
+  featuredOrder?: number | null
 }
 
 export function normalizeProjectStatus(

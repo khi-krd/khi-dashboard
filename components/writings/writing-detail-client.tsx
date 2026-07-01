@@ -262,6 +262,18 @@ function WritingDetailLoaded({
             </div>
           </div>
 
+          {writing.featured ? (
+            <div className={sectionDivider}>
+              <h3 className="mb-2 font-medium">{NS.col.featured}</h3>
+              <p className="text-muted-foreground text-xs">
+                {NS.col.featured_order}:{" "}
+                {writing.featuredOrder != null
+                  ? formatCkbDigits(writing.featuredOrder)
+                  : NS.dash}
+              </p>
+            </div>
+          ) : null}
+
           {inSeries ? (
             <div className={sectionDivider}>
               <h3 className="mb-2 font-medium">{NS.section.series}</h3>

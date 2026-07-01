@@ -8,7 +8,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import type { PaginationState, SortingState } from "@tanstack/react-table"
 import { toast } from "sonner"
 
-import { MagnifyingGlassIcon, NewspaperIcon, PlusIcon } from "@heroicons/react/24/outline"
+import { MagnifyingGlassIcon, NewspaperIcon, PlusIcon, SparklesIcon } from "@heroicons/react/24/outline"
 
 import type { NewsCategoryFilterOption } from "@/components/news/news-filters"
 import { NewsFiltersToolbar } from "@/components/news/news-filters"
@@ -20,6 +20,7 @@ import { NewsDataGrid, type NewsAdminTableRow } from "@/components/news/news-dat
 import { NewsDeleteDialog } from "@/components/news/news-delete-dialog"
 import { NewsErrorState } from "@/components/news/news-error-state"
 import { NS } from "@/components/news/news-strings"
+import { NS as FEATURED_NS } from "@/components/featured/featured-strings"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useDebouncedValue } from "@/hooks/useDebouncedValue"
@@ -407,8 +408,16 @@ function NewsListClientInner() {
               {NS.page.subtitle}
             </p>
           </div>
-          <Link
-            href="/dashboard/news/new"
+          <div className="flex flex-wrap items-center gap-3">
+            <Link
+              href="/dashboard/featured"
+              className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 text-xs transition-colors"
+            >
+              <SparklesIcon className="size-4" aria-hidden />
+              {FEATURED_NS.actions.manage_link}
+            </Link>
+            <Link
+              href="/dashboard/news/new"
             className={cn(
               buttonVariants({ variant: "default", size: "lg" }),
               "inline-flex items-center gap-1.5",
@@ -417,6 +426,7 @@ function NewsListClientInner() {
             <PlusIcon className="size-4 rtl:rotate-180" aria-hidden />
             {NS.action.new}
           </Link>
+          </div>
         </header>
         <p className="text-muted-foreground mt-4 text-xs">
           {NS.list.totalCount(formatCkbDigits(recordCount))}

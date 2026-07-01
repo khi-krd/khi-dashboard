@@ -1,4 +1,5 @@
 import type { MediaGalleryItemDto, MediaKind, NewsDto } from "@/types/news"
+import { parseFeaturedFields } from "@/lib/featured-fields"
 import { galleryDtoToFormValues } from "@/types/media-gallery"
 
 function coerceStr(v: unknown): string | null {
@@ -42,6 +43,7 @@ export function normalizeNewsDto(d: NewsDto): NewsDto {
 
   return {
     ...d,
+    ...parseFeaturedFields(raw),
     coverMediaType:
       coerceKind(d.coverMediaType) ??
       coerceKind(raw.cover_media_type) ??

@@ -4,6 +4,7 @@ import {
   normalizeSoundPage,
   normalizeTopicList,
 } from "@/lib/sounds-normalize"
+import { normalizeFeaturedSoundPage } from "@/lib/featured-overlay"
 import type {
   FeaturedPayload,
   SoundDto,
@@ -131,6 +132,16 @@ export async function patchSoundFeatured(
   payload: FeaturedPayload,
 ): Promise<void> {
   await api.patch(`${BASE}/${id}/featured`, payload)
+}
+
+export async function getFeaturedSounds(
+  page: number,
+  size: number,
+): Promise<SoundPage> {
+  const { data } = await api.get<unknown>(`${BASE}/featured`, {
+    params: { page, size },
+  })
+  return normalizeFeaturedSoundPage(data, page, size)
 }
 
 export async function getTopics(): Promise<TopicDto[]> {

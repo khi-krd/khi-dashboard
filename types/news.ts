@@ -47,6 +47,8 @@ export type NewsDto = {
   kmrContent?: LanguageContentDto | null
   tags?: BilingualSet
   keywords?: BilingualSet
+  featured?: boolean
+  featuredOrder?: number | null
 }
 
 export type ApiResponse<T> = {

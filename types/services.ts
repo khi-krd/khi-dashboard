@@ -25,6 +25,8 @@ export type ServiceDto = {
   updatedAt?: string
   createdBy?: string | null
   updatedBy?: string | null
+  featured?: boolean
+  featuredOrder?: number | null
 }
 
 export type ApiResponse<T> = {

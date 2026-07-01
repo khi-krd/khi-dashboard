@@ -9,6 +9,7 @@ import { toast } from "sonner"
 import {
   MagnifyingGlassIcon,
   PlusIcon,
+  SparklesIcon,
   Squares2X2Icon,
 } from "@heroicons/react/24/outline"
 
@@ -24,6 +25,7 @@ import { ServicesDataGrid } from "@/components/services/services-data-grid"
 import { ServicesFiltersToolbar } from "@/components/services/services-filters"
 import { ServicesErrorState } from "@/components/services/services-error-state"
 import { NS } from "@/components/services/services-strings"
+import { NS as FEATURED_NS } from "@/components/featured/featured-strings"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useDebouncedValue } from "@/hooks/useDebouncedValue"
@@ -316,8 +318,16 @@ function ServicesListClientInner() {
             </Button>
           </div>
         ) : (
-          <Link
-            href="/dashboard/services/new"
+          <div className="flex flex-wrap items-center gap-3">
+            <Link
+              href="/dashboard/featured"
+              className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 text-xs transition-colors"
+            >
+              <SparklesIcon className="size-4" aria-hidden />
+              {FEATURED_NS.actions.manage_link}
+            </Link>
+            <Link
+              href="/dashboard/services/new"
             className={cn(
               buttonVariants({ variant: "default", size: "lg" }),
               "inline-flex items-center gap-1.5",
@@ -326,6 +336,7 @@ function ServicesListClientInner() {
             <PlusIcon className="size-4 rtl:rotate-180" aria-hidden />
             {NS.action.new}
           </Link>
+          </div>
         )}
       </header>
 

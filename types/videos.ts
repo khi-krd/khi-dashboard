@@ -64,6 +64,8 @@ export type VideoDto = {
   updatedAt?: string
   createdBy?: string | null
   updatedBy?: string | null
+  featured?: boolean
+  featuredOrder?: number | null
 }
 
 export type VideoPage = {

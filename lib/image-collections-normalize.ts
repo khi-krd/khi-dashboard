@@ -7,6 +7,7 @@ import type {
   Language,
   TopicDto,
 } from "@/types/image-collections"
+import { parseFeaturedFields } from "@/lib/featured-fields"
 
 function coerceStr(v: unknown): string | null {
   if (v == null) return null
@@ -167,6 +168,7 @@ export function normalizeCollectionDto(raw: unknown): CollectionDto {
     updatedAt: coerceStr(o.updatedAt) ?? coerceStr(o.updated_at) ?? undefined,
     createdBy: coerceStr(o.createdBy) ?? coerceStr(o.created_by),
     updatedBy: coerceStr(o.updatedBy) ?? coerceStr(o.updated_by),
+    ...parseFeaturedFields(o),
   }
 }
 
