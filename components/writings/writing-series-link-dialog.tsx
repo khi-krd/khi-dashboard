@@ -13,7 +13,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
   Select,
@@ -58,14 +57,12 @@ export function WritingSeriesLinkDialog({
 
   const [parentBookId, setParentBookId] = useState<number | null>(null)
   const [childBookId, setChildBookId] = useState<number | null>(null)
-  const [seriesOrder, setSeriesOrder] = useState(1)
 
   useEffect(() => {
     if (!open) return
     setParentBookId(null)
     setChildBookId(null)
-    setSeriesOrder((writing.seriesOrder ?? 0) + 1)
-  }, [open, writing.seriesOrder])
+  }, [open])
 
   const parents = parentsQ.data ?? []
   const books = (listQ.data?.content ?? []).filter((b) => b.id !== writing.id)
@@ -78,14 +75,10 @@ export function WritingSeriesLinkDialog({
         ? {
             bookId: writing.id,
             parentBookId: parentBookId!,
-            seriesOrder,
-            seriesName: writing.seriesName ?? undefined,
           }
         : {
             bookId: childBookId!,
             parentBookId: writing.id,
-            seriesOrder,
-            seriesName: writing.seriesName ?? undefined,
           }
 
     if (mode === "fromBook" && !parentBookId) return
@@ -157,18 +150,6 @@ export function WritingSeriesLinkDialog({
             </div>
           )}
 
-          <div className="space-y-1">
-            <Label className="text-xs">{NS.field.series_order}</Label>
-            <Input
-              type="number"
-              min={1}
-              className="h-9"
-              value={seriesOrder}
-              onChange={(e) =>
-                setSeriesOrder(Math.max(1, Number(e.target.value) || 1))
-              }
-            />
-          </div>
         </div>
 
         <DialogFooter className="gap-2 sm:justify-between">

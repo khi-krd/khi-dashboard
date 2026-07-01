@@ -30,11 +30,7 @@ export function SoundDeleteDialog({
   onOpenChange: (v: boolean) => void
   target: Pick<
     SoundDto,
-    | "id"
-    | "trackState"
-    | "albumOfMemories"
-    | "ckbCoverUrl"
-    | "totalDurationSeconds"
+    "id" | "trackState" | "ckbCoverUrl" | "files"
   > & { titleCkb?: string | null } | null
   onConfirm: () => void
   isPending?: boolean
@@ -42,6 +38,10 @@ export function SoundDeleteDialog({
   if (!target) return null
 
   const cover = target.ckbCoverUrl?.trim()
+  const totalDuration = (target.files ?? []).reduce(
+    (acc, f) => acc + (f.durationSeconds ?? 0),
+    0,
+  )
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
@@ -71,11 +71,10 @@ export function SoundDeleteDialog({
                 <div className="flex flex-wrap items-center gap-2">
                   <SoundStatePill
                     trackState={target.trackState}
-                    albumOfMemories={target.albumOfMemories}
                     className="w-auto"
                   />
                   <span className="text-muted-foreground font-mono text-xs">
-                    {formatDuration(target.totalDurationSeconds)}
+                    {formatDuration(totalDuration)}
                   </span>
                 </div>
               </div>

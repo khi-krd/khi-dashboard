@@ -117,7 +117,7 @@ export function CollectionCoverSlot({
         <input {...getInputProps()} className="sr-only" disabled={inactive} />
         {preview ? (
           <>
-            // eslint-disable-next-line @next/next/no-img-element
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={preview} alt="" className="size-full object-cover" />
             <div className="absolute inset-x-0 top-0 flex justify-between gap-2 bg-gradient-to-b from-black/60 to-transparent p-2 opacity-0 transition-opacity hover:opacity-100">
               <button

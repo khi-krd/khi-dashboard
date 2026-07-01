@@ -9,9 +9,7 @@ import {
 
 import { writingsKeys } from "@/lib/writings-query-keys"
 import {
-  createTopic,
   createWriting,
-  deleteTopic,
   deleteWriting,
   getSeriesById,
   getSeriesParents,
@@ -19,14 +17,15 @@ import {
   getWritingById,
   getWritingsList,
   linkToSeries,
+  patchWritingFeatured,
   searchWritingsByKeyword,
   searchWritingsByTag,
   searchWritingsByWriter,
   updateWriting,
 } from "@/services/writingsService"
 import type {
+  FeaturedPayload,
   LinkSeriesPayload,
-  NewTopicPayload,
   WritingDto,
   WritingPage,
 } from "@/types/writings"
@@ -110,7 +109,7 @@ export function useWritingTopicsQuery() {
 export function useSeriesParentsQuery() {
   return useQuery({
     queryKey: writingsKeys.seriesParents(),
-    queryFn: getSeriesParents,
+    queryFn: () => getSeriesParents(0, 100),
     staleTime: 1000 * 60 * 2,
   })
 }
@@ -204,23 +203,35 @@ export function useLinkToSeriesMutation() {
   })
 }
 
-export function useCreateTopicMutation() {
+export function usePatchWritingFeaturedMutation() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (payload: NewTopicPayload) => createTopic(payload),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: writingsKeys.topics() })
-    },
-  })
-}
+    mutationFn: (variables: { id: number; payload: FeaturedPayload }) =>
+      patchWritingFeatured(variables.id, variables.payload),
+    onSuccess: (_, { id, payload }) => {
+      const featured = payload.featured !== false
+      const featuredOrder = featured ? (payload.featuredOrder ?? null) : null
 
-export function useDeleteTopicMutation() {
-  const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: (topicId: number) => deleteTopic(topicId),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: writingsKeys.topics() })
-      void queryClient.invalidateQueries({ queryKey: writingsKeys.lists() })
+      queryClient.setQueryData<WritingDto | undefined>(
+        writingsKeys.detail(id),
+        (prev) =>
+          prev
+            ? { ...prev, featured, featuredOrder }
+            : prev,
+      )
+
+      const listQueries = queryClient.getQueriesData<WritingPage>({
+        queryKey: writingsKeys.lists(),
+      })
+      for (const [key, data] of listQueries) {
+        if (!data?.content) continue
+        queryClient.setQueryData(key, {
+          ...data,
+          content: data.content.map((w) =>
+            w.id === id ? { ...w, featured, featuredOrder } : w,
+          ),
+        })
+      }
     },
   })
 }

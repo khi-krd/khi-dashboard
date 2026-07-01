@@ -49,11 +49,14 @@ export type SeriesInfoDto = {
   seriesTotalBooks?: number | null
   parentBookId?: number | null
   isPartOfSeries?: boolean
+  isParent?: boolean
   totalBooks?: number
 }
 
 export type WritingDto = {
   id?: number
+  featured?: boolean
+  featuredOrder?: number | null
   bookGenres: BookGenre[]
   topicId?: number | null
   topicNameCkb?: string | null
@@ -76,7 +79,6 @@ export type WritingDto = {
   seriesTotalBooks?: number | null
   parentBookId?: number | null
   seriesInfo?: SeriesInfoDto | null
-  publishmentYear?: number | null
   createdAt?: string
   updatedAt?: string
   createdBy?: string | null
@@ -94,9 +96,17 @@ export type WritingPage = {
   empty: boolean
 }
 
-export type NewTopicPayload = {
-  nameCkb?: string
-  nameKmr?: string
+export type FeaturedPayload = {
+  featured?: boolean
+  featuredOrder?: number
+}
+
+export type SeriesBookSummary = {
+  id: number
+  titleCkb?: string | null
+  titleKmr?: string | null
+  seriesOrder?: number | null
+  createdAt?: string
 }
 
 export type SeriesParentDto = WritingDto
@@ -104,13 +114,11 @@ export type SeriesParentDto = WritingDto
 export type SeriesDetailDto = {
   seriesId: string
   seriesName?: string | null
-  parentBook?: WritingDto | null
-  books: WritingDto[]
+  totalBooks?: number
+  books: SeriesBookSummary[]
 }
 
 export type LinkSeriesPayload = {
   bookId: number
   parentBookId: number
-  seriesOrder?: number
-  seriesName?: string
 }

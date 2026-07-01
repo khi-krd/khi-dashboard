@@ -1,3 +1,4 @@
+import { unwrapApiData } from "@/lib/api-unwrap"
 import type {
   AttachmentDto,
   AttachmentType,
@@ -63,13 +64,22 @@ function normalizeFile(raw: unknown): SoundFileDto {
     ? o.brochures.map(normalizeBrochure)
     : []
   const channel = coerceStr(o.audioChannel) ?? coerceStr(o.audio_channel)
+  const fileTypeRaw = coerceStr(o.fileType) ?? coerceStr(o.file_type) ?? "AUDIO"
+  const fileType = (
+    fileTypeRaw === "AUDIO" ||
+    fileTypeRaw === "VIDEO" ||
+    fileTypeRaw === "DOCUMENT" ||
+    fileTypeRaw === "OTHER"
+      ? fileTypeRaw
+      : "AUDIO"
+  ) as FileType
   return {
     id: coerceNum(o.id) ?? undefined,
     fileUrl: coerceStr(o.fileUrl) ?? coerceStr(o.file_url),
     externalUrl: coerceStr(o.externalUrl) ?? coerceStr(o.external_url),
     embedUrl: coerceStr(o.embedUrl) ?? coerceStr(o.embed_url),
     title: coerceStr(o.title),
-    fileType: (coerceStr(o.fileType) ?? coerceStr(o.file_type) ?? "AUDIO") as FileType,
+    fileType,
     publishmentYear:
       coerceNum(o.publishmentYear) ?? coerceNum(o.publishment_year),
     fileFormat: coerceStr(o.fileFormat) ?? coerceStr(o.file_format),
@@ -86,6 +96,12 @@ function normalizeFile(raw: unknown): SoundFileDto {
     genre: coerceStr(o.genre),
     recordingVenue:
       coerceStr(o.recordingVenue) ?? coerceStr(o.recording_venue),
+    sortOrder:
+      coerceNum(o.sortOrder) ??
+      coerceNum(o.sort_order) ??
+      coerceNum(o.fileOrder) ??
+      coerceNum(o.file_order) ??
+      undefined,
     brochures: brochures.sort(
       (a, b) => (a.brochureOrder ?? 0) - (b.brochureOrder ?? 0),
     ),
@@ -133,7 +149,11 @@ function normalizeTags(raw: unknown, ckbKey: string, kmrKey: string): {
 }
 
 export function normalizeSoundDto(raw: unknown): SoundDto {
-  const o = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>
+  const unwrapped = unwrapApiData<unknown>(raw)
+  const o = (unwrapped && typeof unwrapped === "object" ? unwrapped : {}) as Record<
+    string,
+    unknown
+  >
 
   const files = Array.isArray(o.files)
     ? o.files.map(normalizeFile)
@@ -150,9 +170,9 @@ export function normalizeSoundDto(raw: unknown): SoundDto {
 
   return {
     id: coerceNum(o.id) ?? undefined,
+    featured: coerceBool(o.featured),
+    featuredOrder: coerceNum(o.featuredOrder) ?? coerceNum(o.featured_order),
     trackState,
-    albumOfMemories:
-      coerceBool(o.albumOfMemories) || coerceBool(o.album_of_memories),
     soundType: coerceStr(o.soundType) ?? coerceStr(o.sound_type),
     topicId: coerceNum(o.topicId) ?? coerceNum(o.topic_id),
     topicNameCkb:
@@ -164,13 +184,6 @@ export function normalizeSoundDto(raw: unknown): SoundDto {
     hoverCoverUrl: coerceStr(o.hoverCoverUrl) ?? coerceStr(o.hover_cover_url),
     ckbContent: normalizeContent(o.ckbContent ?? o.ckb_content),
     kmrContent: normalizeContent(o.kmrContent ?? o.kmr_content),
-    reader: coerceStr(o.reader),
-    directors: coerceStringArray(o.directors),
-    locations: coerceStringArray(o.locations),
-    terms: coerceStr(o.terms),
-    thisProjectOfInstitute:
-      coerceBool(o.thisProjectOfInstitute) ||
-      coerceBool(o.this_project_of_institute),
     contentLanguages: normalizeLanguages(
       o.contentLanguages ?? o.content_languages,
     ),
@@ -190,19 +203,12 @@ export function normalizeSoundDto(raw: unknown): SoundDto {
       keywordsFromBilingual.tagsKmr.length > 0
         ? keywordsFromBilingual.tagsKmr
         : coerceStringArray(o.keywordsKmr ?? o.keywords_kmr),
-    files: files.sort((a, b) => (a.id ?? 0) - (b.id ?? 0)),
+    files: files.sort(
+      (a, b) => (a.sortOrder ?? a.id ?? 0) - (b.sortOrder ?? b.id ?? 0),
+    ),
     attachments: attachments.sort(
       (a, b) => (a.attachmentOrder ?? 0) - (b.attachmentOrder ?? 0),
     ),
-    albumName: coerceStr(o.albumName) ?? coerceStr(o.album_name),
-    publishmentYear:
-      coerceNum(o.publishmentYear) ?? coerceNum(o.publishment_year),
-    cdNumber: coerceNum(o.cdNumber) ?? coerceNum(o.cd_number),
-    totalTracks: coerceNum(o.totalTracks) ?? coerceNum(o.total_tracks),
-    totalDurationSeconds:
-      coerceNum(o.totalDurationSeconds) ?? coerceNum(o.total_duration_seconds),
-    totalSizeBytes:
-      coerceNum(o.totalSizeBytes) ?? coerceNum(o.total_size_bytes),
     createdAt: coerceStr(o.createdAt) ?? coerceStr(o.created_at) ?? undefined,
     updatedAt: coerceStr(o.updatedAt) ?? coerceStr(o.updated_at) ?? undefined,
     createdBy: coerceStr(o.createdBy) ?? coerceStr(o.created_by),
@@ -211,7 +217,11 @@ export function normalizeSoundDto(raw: unknown): SoundDto {
 }
 
 export function normalizeSoundPage(raw: unknown): SoundPage {
-  const o = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>
+  const unwrapped = unwrapApiData<unknown>(raw)
+  const o = (unwrapped && typeof unwrapped === "object" ? unwrapped : {}) as Record<
+    string,
+    unknown
+  >
   const content = Array.isArray(o.content)
     ? o.content.map(normalizeSoundDto)
     : []
@@ -237,4 +247,10 @@ export function normalizeTopicDto(raw: unknown): TopicDto {
     createdAt: coerceStr(o.createdAt) ?? coerceStr(o.created_at) ?? undefined,
     updatedAt: coerceStr(o.updatedAt) ?? coerceStr(o.updated_at) ?? undefined,
   }
+}
+
+export function normalizeTopicList(raw: unknown): TopicDto[] {
+  const unwrapped = unwrapApiData<unknown>(raw)
+  const list = Array.isArray(unwrapped) ? unwrapped : []
+  return list.map(normalizeTopicDto)
 }

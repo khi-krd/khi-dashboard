@@ -12,23 +12,23 @@ import type { TrackState } from "@/types/sounds"
 
 export function SoundStatePill({
   trackState,
-  albumOfMemories,
   className,
   size = "default",
+  albumOfMemoriesFilter = false,
 }: {
   trackState: TrackState
-  albumOfMemories?: boolean
   className?: string
   size?: "default" | "large"
+  /** When true, show album-of-memories label (server-filtered list rows). */
+  albumOfMemoriesFilter?: boolean
 }) {
-  const isAlbum = trackState === "MULTI" && !!albumOfMemories
-  const isMulti = trackState === "MULTI" && !albumOfMemories
+  const isMulti = trackState === "MULTI"
 
   let label: string = NS.state.single
   let Icon = MusicalNoteIcon
   let colors = "bg-primary/10 text-primary border-primary/20"
 
-  if (isAlbum) {
+  if (albumOfMemoriesFilter) {
     label = NS.state.album_of_memories
     Icon = HeartIcon
     colors =

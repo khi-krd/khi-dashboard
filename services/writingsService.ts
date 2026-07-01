@@ -1,13 +1,13 @@
 import api from "@/lib/axios"
 import {
   normalizeSeriesDetail,
-  normalizeTopicDto,
+  normalizeTopicList,
   normalizeWritingDto,
   normalizeWritingPage,
 } from "@/lib/writings-normalize"
 import type {
+  FeaturedPayload,
   LinkSeriesPayload,
-  NewTopicPayload,
   SeriesDetailDto,
   TopicDto,
   WritingDto,
@@ -39,9 +39,10 @@ export async function searchWritingsByWriter(
   name: string,
   page: number,
   size: number,
+  language?: string,
 ): Promise<WritingPage> {
   const { data } = await api.get<unknown>(`${BASE}/search/writer`, {
-    params: { name, page, size },
+    params: { name, page, size, ...(language ? { language } : {}) },
   })
   return normalizeWritingPage(data)
 }
@@ -85,25 +86,26 @@ export async function deleteWriting(id: number): Promise<void> {
   await api.delete(`${BASE}/${id}`)
 }
 
+export async function patchWritingFeatured(
+  id: number,
+  payload: FeaturedPayload,
+): Promise<void> {
+  await api.patch(`${BASE}/${id}/featured`, payload)
+}
+
 export async function getTopics(): Promise<TopicDto[]> {
   const { data } = await api.get<unknown>(`${BASE}/topics`)
-  const list = Array.isArray(data) ? data : []
-  return list.map(normalizeTopicDto)
+  return normalizeTopicList(data)
 }
 
-export async function createTopic(payload: NewTopicPayload): Promise<TopicDto> {
-  const { data } = await api.post<unknown>(`${BASE}/topics`, payload)
-  return normalizeTopicDto(data)
-}
-
-export async function deleteTopic(topicId: number): Promise<void> {
-  await api.delete(`${BASE}/topics/${topicId}`)
-}
-
-export async function getSeriesParents(): Promise<WritingDto[]> {
-  const { data } = await api.get<unknown>(`${BASE}/series/parents`)
-  const list = Array.isArray(data) ? data : []
-  return list.map(normalizeWritingDto)
+export async function getSeriesParents(
+  page = 0,
+  size = 100,
+): Promise<WritingDto[]> {
+  const { data } = await api.get<unknown>(`${BASE}/series/parents`, {
+    params: { page, size },
+  })
+  return normalizeWritingPage(data).content
 }
 
 export async function getSeriesById(

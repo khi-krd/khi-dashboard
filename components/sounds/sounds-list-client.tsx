@@ -27,6 +27,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { useDebouncedValue } from "@/hooks/useDebouncedValue"
 import {
   useDeleteSoundMutation,
+  usePatchSoundFeaturedMutation,
   useSoundTopicsQuery,
   useSoundsListQuery,
 } from "@/hooks/useSounds"
@@ -147,6 +148,26 @@ function SoundsListClientInner() {
   )
 
   const deleteMut = useDeleteSoundMutation()
+  const featuredMut = usePatchSoundFeaturedMutation()
+  const [featuredPendingId, setFeaturedPendingId] = useState<number | null>(null)
+
+  const onFeaturedPatch = useCallback(
+    (
+      row: SoundAdminTableRow,
+      payload: { featured?: boolean; featuredOrder?: number },
+    ) => {
+      if (!row.id) return
+      setFeaturedPendingId(row.id)
+      featuredMut.mutate(
+        { id: row.id, payload },
+        {
+          onSettled: () => setFeaturedPendingId(null),
+          onError: () => toastError(NS.error.generic),
+        },
+      )
+    },
+    [featuredMut],
+  )
 
   const showReset =
     searchRaw.trim().length > 0 ||
@@ -324,9 +345,12 @@ function SoundsListClientInner() {
           onSortingChange={setSorting}
           isLoading={isLoading}
           recordCount={recordCount}
+          stateFilter={stateFilter}
           onView={onView}
           onEdit={onEdit}
           onDeleteOne={(row) => setDeleteTarget(row)}
+          onFeaturedPatch={onFeaturedPatch}
+          featuredPendingId={featuredPendingId}
         />
       )}
 
@@ -340,9 +364,8 @@ function SoundsListClientInner() {
             ? {
                 id: deleteTarget.id,
                 trackState: deleteTarget.trackState,
-                albumOfMemories: deleteTarget.albumOfMemories,
                 ckbCoverUrl: deleteTarget.ckbCoverUrl,
-                totalDurationSeconds: deleteTarget.totalDurationSeconds,
+                files: deleteTarget.files,
                 titleCkb: deleteTarget.titleCkb,
               }
             : null

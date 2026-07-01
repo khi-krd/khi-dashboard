@@ -6,7 +6,7 @@ export type AudioChannel = "STEREO" | "MONO"
 
 export type AttachmentType = "PDF" | "VIDEO" | "IMAGE" | "AUDIO" | "OTHER"
 
-export type FileType = "AUDIO" | "VIDEO" | "OTHER"
+export type FileType = "AUDIO" | "VIDEO" | "DOCUMENT" | "OTHER"
 
 export type SoundContentDto = {
   title?: string | null
@@ -37,6 +37,7 @@ export type SoundFileDto = {
   form?: string | null
   genre?: string | null
   recordingVenue?: string | null
+  sortOrder?: number | null
   brochures?: BrochureDto[]
 }
 
@@ -60,8 +61,9 @@ export type TopicDto = {
 
 export type SoundDto = {
   id?: number
+  featured?: boolean
+  featuredOrder?: number | null
   trackState: TrackState
-  albumOfMemories?: boolean
   soundType?: string | null
   topicId?: number | null
   topicNameCkb?: string | null
@@ -71,11 +73,6 @@ export type SoundDto = {
   hoverCoverUrl?: string | null
   ckbContent?: SoundContentDto | null
   kmrContent?: SoundContentDto | null
-  reader?: string | null
-  directors?: string[]
-  locations?: string[]
-  terms?: string | null
-  thisProjectOfInstitute?: boolean
   contentLanguages: Language[]
   tagsCkb?: string[]
   tagsKmr?: string[]
@@ -83,12 +80,6 @@ export type SoundDto = {
   keywordsKmr?: string[]
   files?: SoundFileDto[]
   attachments?: AttachmentDto[]
-  albumName?: string | null
-  publishmentYear?: number | null
-  cdNumber?: number | null
-  totalTracks?: number | null
-  totalDurationSeconds?: number | null
-  totalSizeBytes?: number | null
   createdAt?: string
   updatedAt?: string
   createdBy?: string | null
@@ -106,7 +97,7 @@ export type SoundPage = {
   empty: boolean
 }
 
-export type NewTopicPayload = {
-  nameCkb?: string
-  nameKmr?: string
+export type FeaturedPayload = {
+  featured?: boolean
+  featuredOrder?: number
 }

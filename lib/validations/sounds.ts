@@ -25,7 +25,9 @@ export const SoundFileFormSchema = z
     externalUrl: z.string().optional().or(z.literal("")),
     embedUrl: z.string().optional().or(z.literal("")),
     title: z.string().max(300).optional(),
-    fileType: z.enum(["AUDIO", "VIDEO", "OTHER"]).default("AUDIO"),
+    fileType: z
+      .enum(["AUDIO", "VIDEO", "DOCUMENT", "OTHER"])
+      .default("AUDIO"),
     publishmentYear: z.number().int().min(1900).max(2100).optional().nullable(),
     fileFormat: z.string().max(50).optional().nullable(),
     sizeBytes: z.number().int().min(0).default(0),
@@ -70,7 +72,6 @@ export const AttachmentFormSchema = z.object({
 export const soundFormSchema = z
   .object({
     trackState: z.enum(["SINGLE", "MULTI"]),
-    albumOfMemories: z.boolean().default(false),
     soundType: z
       .string()
       .min(1, NS.validation.soundTypeRequired)
@@ -91,11 +92,6 @@ export const soundFormSchema = z
       .min(1, NS.validation.languageRequired),
     ckbContent: SoundContentSchema.optional(),
     kmrContent: SoundContentSchema.optional(),
-    reader: z.string().max(255).optional(),
-    directors: z.array(z.string().max(255)).default([]),
-    locations: z.array(z.string().max(255)).default([]),
-    terms: z.string().max(200).optional(),
-    thisProjectOfInstitute: z.boolean().default(false),
     tags: z.object({
       ckb: z.array(z.string().max(60)),
       kmr: z.array(z.string().max(60)),
@@ -105,10 +101,6 @@ export const soundFormSchema = z
       kmr: z.array(z.string().max(100)),
     }),
     files: z.array(SoundFileFormSchema).min(1, NS.validation.filesRequired),
-    albumName: z.string().max(300).optional(),
-    publishmentYear: z.number().int().min(1900).max(2100).optional().nullable(),
-    cdNumber: z.number().int().min(1).optional().nullable(),
-    totalTracks: z.number().int().min(1).optional().nullable(),
     attachments: z.array(AttachmentFormSchema).default([]),
     ckbCoverFile: z.instanceof(File).optional().nullable(),
     kmrCoverFile: z.instanceof(File).optional().nullable(),
@@ -135,13 +127,6 @@ export const soundFormSchema = z
         path: ["kmrContent", "title"],
       })
     }
-    if (val.albumOfMemories && val.trackState === "SINGLE") {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: NS.validation.albumMemoriesSingle,
-        path: ["albumOfMemories"],
-      })
-    }
   })
 
 export type SoundFormValues = z.infer<typeof soundFormSchema>
@@ -155,7 +140,6 @@ function newClientKey() {
 
 export const defaultSoundFormValues: SoundFormValues = {
   trackState: "SINGLE",
-  albumOfMemories: false,
   soundType: "",
   topicId: null,
   newTopic: undefined,
@@ -163,18 +147,9 @@ export const defaultSoundFormValues: SoundFormValues = {
   contentLanguages: ["CKB"],
   ckbContent: { title: "", description: "" },
   kmrContent: { title: "", description: "" },
-  reader: "",
-  directors: [],
-  locations: [],
-  terms: "",
-  thisProjectOfInstitute: false,
   tags: { ckb: [], kmr: [] },
   keywords: { ckb: [], kmr: [] },
   files: [],
-  albumName: "",
-  publishmentYear: null,
-  cdNumber: null,
-  totalTracks: null,
   attachments: [],
   ckbCoverFile: null,
   kmrCoverFile: null,
@@ -190,7 +165,6 @@ export const defaultSoundFormValues: SoundFormValues = {
 export function soundDtoToFormValues(dto: SoundDto): SoundFormValues {
   return {
     trackState: dto.trackState ?? "SINGLE",
-    albumOfMemories: dto.albumOfMemories ?? false,
     soundType: dto.soundType ?? "",
     topicId: dto.topicId ?? null,
     newTopic: undefined,
@@ -205,11 +179,6 @@ export function soundDtoToFormValues(dto: SoundDto): SoundFormValues {
       title: dto.kmrContent?.title ?? "",
       description: dto.kmrContent?.description ?? "",
     },
-    reader: dto.reader ?? "",
-    directors: dto.directors ?? [],
-    locations: dto.locations ?? [],
-    terms: dto.terms ?? "",
-    thisProjectOfInstitute: dto.thisProjectOfInstitute ?? false,
     tags: { ckb: dto.tagsCkb ?? [], kmr: dto.tagsKmr ?? [] },
     keywords: { ckb: dto.keywordsCkb ?? [], kmr: dto.keywordsKmr ?? [] },
     files: (dto.files ?? []).map((f) => ({
@@ -240,10 +209,6 @@ export function soundDtoToFormValues(dto: SoundDto): SoundFormValues {
       })),
       stagedAudioFile: null,
     })),
-    albumName: dto.albumName ?? "",
-    publishmentYear: dto.publishmentYear ?? null,
-    cdNumber: dto.cdNumber ?? null,
-    totalTracks: dto.totalTracks ?? null,
     attachments: (dto.attachments ?? []).map((a, i) => ({
       clientKey: newClientKey(),
       id: a.id,

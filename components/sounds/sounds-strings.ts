@@ -16,6 +16,8 @@ export const NS = {
     page: {
       title: "بابەتەکانی دەنگ",
       subtitle: "بەڕێوەبردنی بابەتە پۆلبەندییەکانی دەنگ",
+      readonly_note:
+        "بابەتی نوێ تەنها لە کاتی دروستکردن یان دەستکاریکردنی دەنگ دروست دەکرێت (newTopic لە فۆرمەکەدا).",
     },
     link: "بەڕێوەبردنی بابەتەکان",
     empty: {
@@ -95,11 +97,12 @@ export const NS = {
     title: "ناونیشان",
     type: "جۆر",
     state: "دۆخ",
-    reader: "خوێنەر",
     topic: "بابەت",
     duration: "ماوە",
     files: "پارچەکان",
     languages: "زمانەکان",
+    featured: "تایبەت",
+    featured_order: "ڕیزکردن",
     actions: "کردارەکان",
   },
   section: {

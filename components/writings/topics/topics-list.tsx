@@ -1,28 +1,19 @@
 "use client"
 
-import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline"
 import Link from "next/link"
-import { useMemo, useState } from "react"
-import { toast } from "sonner"
+import { useMemo } from "react"
 
-import { TopicCreateDialog } from "@/components/writings/topics/topic-create-dialog"
-import { TopicDeleteDialog } from "@/components/writings/topics/topic-delete-dialog"
 import {
   WritingBreadcrumbBar,
   dashboardWritingsCrumbHref,
 } from "@/components/writings/writing-breadcrumb"
 import { WritingErrorState } from "@/components/writings/writing-error-state"
 import { NS } from "@/components/writings/writings-strings"
-import { Button, buttonVariants } from "@/components/ui/button"
+import { buttonVariants } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
-import {
-  useDeleteTopicMutation,
-  useWritingTopicsQuery,
-  useWritingsListQuery,
-} from "@/hooks/useWritings"
+import { useWritingTopicsQuery, useWritingsListQuery } from "@/hooks/useWritings"
 import { formatCkbDigits } from "@/lib/intl-ckb"
 import { cn } from "@/lib/utils"
-import type { TopicDto } from "@/types/writings"
 import type { WritingsListQueryKeyParts } from "@/types/writings-ui"
 
 const listParams: WritingsListQueryKeyParts = {
@@ -48,10 +39,6 @@ export function TopicsList() {
   const topicsQ = useWritingTopicsQuery()
   const writingsQ = useWritingsListQuery(listParams)
 
-  const [createOpen, setCreateOpen] = useState(false)
-  const [deleteTarget, setDeleteTarget] = useState<TopicDto | null>(null)
-  const deleteMut = useDeleteTopicMutation()
-
   const usageByTopic = useMemo(() => {
     const map = new Map<number, number>()
     for (const w of writingsQ.data?.content ?? []) {
@@ -74,7 +61,7 @@ export function TopicsList() {
         ]}
       />
 
-      <header className="border-border/60 flex flex-col gap-4 border-b pb-6 sm:flex-row sm:items-start sm:justify-between">
+      <header className="border-border/60 flex flex-col gap-4 border-b pb-6">
         <div className="space-y-1.5">
           <h1 className="text-2xl font-semibold tracking-tight">
             {NS.topics.page.title}
@@ -82,11 +69,10 @@ export function TopicsList() {
           <p className="text-muted-foreground max-w-xl text-sm">
             {NS.topics.page.subtitle}
           </p>
+          <p className="text-muted-foreground max-w-xl text-xs">
+            {NS.topics.page.readonly_note}
+          </p>
         </div>
-        <Button type="button" onClick={() => setCreateOpen(true)} className="gap-1.5">
-          <PlusIcon className="size-4" />
-          {NS.action.new_topic}
-        </Button>
       </header>
 
       {topicsQ.isError ? (
@@ -101,9 +87,6 @@ export function TopicsList() {
           <p className="text-muted-foreground mb-4 max-w-md text-sm">
             {NS.topics.empty.subtitle}
           </p>
-          <Button type="button" onClick={() => setCreateOpen(true)}>
-            {NS.action.new_topic}
-          </Button>
         </div>
       ) : (
         <div className="border-border overflow-hidden rounded-lg border">
@@ -115,9 +98,6 @@ export function TopicsList() {
                 </th>
                 <th className="px-4 py-2 text-start font-medium">
                   {NS.topic.name_kmr}
-                </th>
-                <th className="px-4 py-2 text-start font-medium">
-                  {NS.col.actions}
                 </th>
               </tr>
             </thead>
@@ -140,18 +120,6 @@ export function TopicsList() {
                     <td className="text-muted-foreground px-4 py-3" dir="ltr">
                       {topic.nameKmr || NS.dash}
                     </td>
-                    <td className="px-4 py-3">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="text-destructive hover:bg-destructive/10"
-                        onClick={() => setDeleteTarget(topic)}
-                      >
-                        <TrashIcon className="size-4" />
-                        {NS.action.delete}
-                      </Button>
-                    </td>
                   </tr>
                 )
               })}
@@ -166,28 +134,6 @@ export function TopicsList() {
       >
         {NS.action.back}
       </Link>
-
-      <TopicCreateDialog open={createOpen} onOpenChange={setCreateOpen} />
-
-      <TopicDeleteDialog
-        open={deleteTarget != null}
-        onOpenChange={(o) => {
-          if (!o) setDeleteTarget(null)
-        }}
-        target={deleteTarget}
-        writingCount={deleteTarget ? (usageByTopic.get(deleteTarget.id) ?? 0) : 0}
-        isPending={deleteMut.isPending}
-        onConfirm={() => {
-          if (!deleteTarget) return
-          deleteMut.mutate(deleteTarget.id, {
-            onSuccess: () => {
-              toast.success(NS.toast.topic_deleted)
-              setDeleteTarget(null)
-            },
-            onError: () => toast.error(NS.error.generic),
-          })
-        }}
-      />
     </div>
   )
 }

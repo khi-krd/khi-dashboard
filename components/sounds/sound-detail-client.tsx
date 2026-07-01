@@ -147,17 +147,19 @@ function SoundDetailLoaded({
     [activeDesc],
   )
 
-  const firstLocation = sound.locations?.[0]
+  const totalDurationSeconds = (sound.files ?? []).reduce(
+    (acc, f) => acc + (f.durationSeconds ?? 0),
+    0,
+  )
+  const totalSizeBytes = (sound.files ?? []).reduce(
+    (acc, f) => acc + (f.sizeBytes ?? 0),
+    0,
+  )
+
   const statusParts = [
     sound.soundType,
-    sound.reader,
-    firstLocation,
-    sound.publishmentYear != null
-      ? String(sound.publishmentYear)
-      : null,
-    sound.totalDurationSeconds
-      ? formatDuration(sound.totalDurationSeconds)
-      : null,
+    totalDurationSeconds > 0 ? formatDuration(totalDurationSeconds) : null,
+    sound.featured ? NS.col.featured : null,
   ].filter(Boolean)
 
   return (
@@ -207,21 +209,13 @@ function SoundDetailLoaded({
           dir="rtl"
           className="border-border bg-card space-y-6 self-start rounded-xl border p-6 text-sm lg:sticky lg:top-20"
         >
-          <SoundStatePill
-            trackState={sound.trackState}
-            albumOfMemories={sound.albumOfMemories}
-            size="large"
-          />
+          <SoundStatePill trackState={sound.trackState} size="large" />
           <p className="text-muted-foreground text-xs">
             {sound.trackState === "SINGLE"
               ? NS.state.context.single
-              : sound.albumOfMemories
-                ? NS.state.context.album_of_memories(
-                    formatCkbDigits(sound.files?.length ?? 0),
-                  )
-                : NS.state.context.multi(
-                    formatCkbDigits(sound.files?.length ?? 0),
-                  )}
+              : NS.state.context.multi(
+                  formatCkbDigits(sound.files?.length ?? 0),
+                )}
           </p>
 
           <div className={sectionDivider}>
@@ -257,61 +251,15 @@ function SoundDetailLoaded({
             )}
           </div>
 
-          {sound.thisProjectOfInstitute ? (
+          {sound.featured ? (
             <div className={sectionDivider}>
-              <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400">
-                <BuildingOffice2Icon className="size-4" />
-                <span className="font-medium">{NS.institute.badge}</span>
-              </div>
-              <p className="text-muted-foreground mt-1 text-xs">
-                {NS.institute.detail_helper}
+              <h3 className="mb-2 font-medium">{NS.col.featured}</h3>
+              <p className="text-muted-foreground text-xs">
+                {NS.col.featured_order}:{" "}
+                {sound.featuredOrder != null
+                  ? formatCkbDigits(sound.featuredOrder)
+                  : NS.dash}
               </p>
-            </div>
-          ) : null}
-
-          <div className={sectionDivider}>
-            <h3 className="mb-3 font-medium">{NS.section.credits}</h3>
-            <dl className="space-y-2 text-xs">
-              <div>
-                <dt className="text-muted-foreground">{NS.credits.reader}</dt>
-                <dd>{sound.reader?.trim() || NS.dash}</dd>
-              </div>
-              <div>
-                <dt className="text-muted-foreground">{NS.credits.directors}</dt>
-                <dd>{sound.directors?.join("، ") || NS.dash}</dd>
-              </div>
-              <div>
-                <dt className="text-muted-foreground">{NS.credits.locations}</dt>
-                <dd>{sound.locations?.join("، ") || NS.dash}</dd>
-              </div>
-              <div>
-                <dt className="text-muted-foreground">{NS.credits.terms}</dt>
-                <dd>{sound.terms?.trim() || NS.dash}</dd>
-              </div>
-            </dl>
-          </div>
-
-          {sound.trackState === "MULTI" ? (
-            <div className={sectionDivider}>
-              <h3 className="mb-3 font-medium">{NS.section.album_info}</h3>
-              <dl className="space-y-2 text-xs">
-                <div>
-                  <dt className="text-muted-foreground">ناوی ئەلبووم</dt>
-                  <dd>{sound.albumName ?? NS.dash}</dd>
-                </div>
-                <div>
-                  <dt className="text-muted-foreground">{NS.field.publishment_year}</dt>
-                  <dd>{sound.publishmentYear ?? NS.dash}</dd>
-                </div>
-                <div>
-                  <dt className="text-muted-foreground">{NS.field.cd_number}</dt>
-                  <dd>{sound.cdNumber ?? NS.dash}</dd>
-                </div>
-                <div>
-                  <dt className="text-muted-foreground">{NS.field.total_tracks}</dt>
-                  <dd>{sound.totalTracks ?? NS.dash}</dd>
-                </div>
-              </dl>
             </div>
           ) : null}
 
@@ -320,11 +268,11 @@ function SoundDetailLoaded({
             <dl className="space-y-2 text-xs">
               <div>
                 <dt className="text-muted-foreground">{NS.total.duration}</dt>
-                <dd>{formatDuration(sound.totalDurationSeconds)}</dd>
+                <dd>{formatDuration(totalDurationSeconds)}</dd>
               </div>
               <div>
                 <dt className="text-muted-foreground">{NS.total.size}</dt>
-                <dd>{formatBytes(sound.totalSizeBytes)}</dd>
+                <dd>{formatBytes(totalSizeBytes)}</dd>
               </div>
               <div>
                 <dt className="text-muted-foreground">{NS.total.files}</dt>
@@ -403,16 +351,7 @@ function SoundDetailLoaded({
           className="mx-auto w-full max-w-[860px] px-6 pb-12 pt-8"
         >
           <div className="text-muted-foreground mb-6 flex flex-wrap items-center text-xs">
-            {sound.thisProjectOfInstitute ? (
-              <span className="me-2 inline-flex rounded-md border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-emerald-700 dark:text-emerald-400">
-                {NS.institute.badge}
-              </span>
-            ) : null}
-            <SoundStatePill
-              trackState={sound.trackState}
-              albumOfMemories={sound.albumOfMemories}
-              className="w-auto"
-            />
+            <SoundStatePill trackState={sound.trackState} className="w-auto" />
             {statusParts.map((p, i) => (
               <span key={i} className="inline-flex items-center">
                 <MetaDot />
@@ -444,31 +383,6 @@ function SoundDetailLoaded({
               {sound.kmrContent?.title?.trim() ? (
                 <p className="text-muted-foreground mt-2 text-xl font-medium leading-snug">
                   {sound.kmrContent.title}
-                </p>
-              ) : null}
-              <p className="text-muted-foreground mt-4 text-sm">
-                {[
-                  sound.reader && `🎤 ${sound.reader}`,
-                  sound.directors?.length &&
-                    `🎬 ${sound.directors.join("، ")}`,
-                  sound.locations?.length &&
-                    `🎙 ${sound.locations.join("، ")}`,
-                  sound.terms,
-                ]
-                  .filter(Boolean)
-                  .join(" · ")}
-              </p>
-              {sound.trackState === "MULTI" ? (
-                <p className="text-muted-foreground mt-3 text-xs">
-                  {[
-                    sound.albumName && `📚 ${sound.albumName}`,
-                    sound.publishmentYear && `📅 ${sound.publishmentYear}`,
-                    sound.cdNumber != null &&
-                      sound.totalTracks != null &&
-                      `💿 CD ${sound.cdNumber} / ${sound.totalTracks}`,
-                  ]
-                    .filter(Boolean)
-                    .join(" · ")}
                 </p>
               ) : null}
             </div>
@@ -624,9 +538,8 @@ function SoundDetailLoaded({
         target={{
           id: sound.id,
           trackState: sound.trackState,
-          albumOfMemories: sound.albumOfMemories,
           ckbCoverUrl: sound.ckbCoverUrl,
-          totalDurationSeconds: sound.totalDurationSeconds,
+          files: sound.files,
           titleCkb: sound.ckbContent?.title,
         }}
         isPending={deleteMut.isPending}

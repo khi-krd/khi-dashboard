@@ -6,7 +6,6 @@ import {
   ChevronRightIcon,
   ChevronUpIcon,
   EyeIcon,
-  MicrophoneIcon,
   PencilSquareIcon,
   RectangleStackIcon,
   TrashIcon,
@@ -23,6 +22,7 @@ import {
 } from "@tanstack/react-table"
 
 import { SoundCoverThumb } from "@/components/sounds/sound-cover-thumb"
+import { FeaturedGridCell } from "@/components/shared/featured-grid-cell"
 import { SoundListLangChips } from "@/components/sounds/sound-language-chip"
 import { SoundStatePill } from "@/components/sounds/sound-state-pill"
 import { NS } from "@/components/sounds/sounds-strings"
@@ -52,7 +52,7 @@ import { formatDuration } from "@/lib/sound-format"
 import { formatCkbDigits } from "@/lib/intl-ckb"
 import { cn } from "@/lib/utils"
 import { getFirstPlayableUrl } from "@/types/sounds-ui"
-import type { SoundAdminTableRow } from "@/types/sounds-ui"
+import type { SoundAdminTableRow, SoundsUiStateFilter } from "@/types/sounds-ui"
 
 function TableSortLabel({
   label,
@@ -191,9 +191,12 @@ export function SoundsDataGrid({
   onSortingChange,
   isLoading,
   recordCount,
+  stateFilter = "all",
   onView,
   onEdit,
   onDeleteOne,
+  onFeaturedPatch,
+  featuredPendingId,
 }: {
   rows: SoundAdminTableRow[]
   pagination: PaginationState
@@ -202,9 +205,15 @@ export function SoundsDataGrid({
   onSortingChange: OnChangeFn<SortingState>
   isLoading?: boolean
   recordCount: number
+  stateFilter?: SoundsUiStateFilter
   onView: (row: SoundAdminTableRow) => void
   onEdit: (row: SoundAdminTableRow) => void
   onDeleteOne: (row: SoundAdminTableRow) => void
+  onFeaturedPatch: (
+    row: SoundAdminTableRow,
+    payload: { featured?: boolean; featuredOrder?: number },
+  ) => void
+  featuredPendingId?: number | null
 }) {
   const columns = useMemo<ColumnDef<SoundAdminTableRow>[]>(
     () => [
@@ -253,11 +262,6 @@ export function SoundsDataGrid({
           <StackedBilingualCell
             primary={row.original.titleCkb}
             secondary={row.original.titleKmr}
-            tertiary={
-              row.original.trackState === "MULTI"
-                ? row.original.albumName
-                : null
-            }
           />
         ),
       },
@@ -288,30 +292,37 @@ export function SoundsDataGrid({
         cell: ({ row }) => (
           <SoundStatePill
             trackState={row.original.trackState}
-            albumOfMemories={row.original.albumOfMemories}
+            albumOfMemoriesFilter={stateFilter === "album_of_memories"}
             className="w-auto"
           />
         ),
       },
       {
-        id: "reader",
+        id: "featured",
         enableSorting: false,
-        size: 144,
+        size: 112,
         meta: {
-          headerTitle: NS.col.reader,
-          cellClassName: "w-36",
-          skeleton: <Skeleton className="h-3 w-24" />,
+          headerTitle: NS.col.featured,
+          cellClassName: "w-28",
+          skeleton: <Skeleton className="h-7 w-24" />,
         },
-        header: NS.col.reader,
+        header: NS.col.featured,
         cell: ({ row }) => {
-          const r = row.original.reader?.trim()
+          const id = row.original.id
+          if (!id) return null
           return (
-            <span className="text-muted-foreground flex items-center gap-1 text-sm">
-              <MicrophoneIcon className="size-3.5 shrink-0" aria-hidden />
-              {r || (
-                <span className="text-muted-foreground/60 text-xs">{NS.dash}</span>
-              )}
-            </span>
+            <FeaturedGridCell
+              id={id}
+              featured={row.original.featured}
+              featuredOrder={row.original.featuredOrder}
+              isPending={featuredPendingId === id}
+              onPatch={(payload) => onFeaturedPatch(row.original, payload)}
+              labels={{
+                featured: NS.col.featured,
+                order: NS.col.featured_order,
+                error: NS.error.generic,
+              }}
+            />
           )
         },
       },
@@ -355,7 +366,7 @@ export function SoundsDataGrid({
           </button>
         ),
         cell: ({ row }) => {
-          const d = row.original.totalDurationSeconds
+          const d = row.original.sortDuration
           const isSingleOne =
             row.original.trackState === "SINGLE" && row.original.fileCount === 1
           if (isSingleOne) {
@@ -477,7 +488,7 @@ export function SoundsDataGrid({
         ),
       },
     ],
-    [onDeleteOne, onEdit, onView],
+    [onDeleteOne, onEdit, onView, onFeaturedPatch, featuredPendingId, stateFilter],
   )
 
   const table = useReactTable({

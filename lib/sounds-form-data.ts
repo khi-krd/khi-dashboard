@@ -35,7 +35,7 @@ export function soundFormValuesToMultipart(
       caption: trimOrUndef(b.caption),
       brochureOrder: b.brochureOrder ?? bi,
     })),
-    fileOrder: i,
+    sortOrder: i,
   }))
 
   const attachmentsPayload = values.attachments.map((a, i) => ({
@@ -51,15 +51,11 @@ export function soundFormValuesToMultipart(
   const payload: Record<string, unknown> = {
     ...(mode === "edit" && typeof soundId === "number" ? { id: soundId } : {}),
     trackState: values.trackState,
-    albumOfMemories:
-      values.trackState === "MULTI" ? values.albumOfMemories : false,
     soundType: values.soundType.trim(),
     contentLanguages: values.contentLanguages,
-    reader: trimOrUndef(values.reader),
-    directors: values.directors,
-    locations: values.locations,
-    terms: trimOrUndef(values.terms),
-    thisProjectOfInstitute: values.thisProjectOfInstitute,
+    ckbCoverUrl: trimOrUndef(values.ckbCoverUrl),
+    kmrCoverUrl: trimOrUndef(values.kmrCoverUrl),
+    hoverCoverUrl: trimOrUndef(values.hoverCoverUrl),
     tags: { ckb: values.tags.ckb, kmr: values.tags.kmr },
     keywords: { ckb: values.keywords.ckb, kmr: values.keywords.kmr },
     ckbContent: values.contentLanguages.includes("CKB")
@@ -76,13 +72,6 @@ export function soundFormValuesToMultipart(
       : undefined,
     files: filesPayload,
     attachments: attachmentsPayload,
-  }
-
-  if (values.trackState === "MULTI") {
-    payload.albumName = trimOrUndef(values.albumName)
-    payload.publishmentYear = values.publishmentYear ?? undefined
-    payload.cdNumber = values.cdNumber ?? undefined
-    payload.totalTracks = values.totalTracks ?? undefined
   }
 
   if (values.clearTopic) {

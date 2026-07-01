@@ -39,6 +39,9 @@ export function writingFormValuesToMultipart(
     contentLanguages: values.contentLanguages,
     tags: { ckb: values.tags.ckb, kmr: values.tags.kmr },
     keywords: { ckb: values.keywords.ckb, kmr: values.keywords.kmr },
+    ckbCoverUrl: trimOrUndef(values.ckbCoverUrl),
+    kmrCoverUrl: trimOrUndef(values.kmrCoverUrl),
+    hoverCoverUrl: trimOrUndef(values.hoverCoverUrl),
     ckbContent: values.contentLanguages.includes("CKB")
       ? buildContent("CKB", values, values.ckbBookFile)
       : undefined,
@@ -47,27 +50,19 @@ export function writingFormValuesToMultipart(
       : undefined,
   }
 
-  if (mode === "create") {
-    payload.seriesId =
-      values.seriesId?.trim() || `series-${Date.now()}`
-  } else if (values.seriesId?.trim()) {
-    payload.seriesId = values.seriesId.trim()
-  }
-
   if (values.seriesMode === "series") {
+    if (values.seriesId?.trim()) {
+      payload.seriesId = values.seriesId.trim()
+    }
     payload.seriesName = trimOrUndef(values.seriesName)
     payload.seriesOrder = values.seriesOrder ?? 1
-    payload.seriesTotalBooks = values.seriesTotalBooks ?? undefined
     payload.parentBookId = values.parentBookId ?? null
   } else if (mode === "edit") {
     payload.parentBookId = null
     payload.seriesName = null
   }
 
-  if (values.clearTopic) {
-    payload.clearTopic = true
-    payload.topicId = null
-  } else if (
+  if (
     values.newTopic?.nameCkb?.trim() ||
     values.newTopic?.nameKmr?.trim()
   ) {

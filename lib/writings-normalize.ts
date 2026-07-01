@@ -1,8 +1,10 @@
+import { unwrapApiData } from "@/lib/api-unwrap"
 import type {
   BookFileFormat,
   BookGenre,
   Language,
   LinkSeriesPayload,
+  SeriesBookSummary,
   SeriesDetailDto,
   TopicDto,
   WritingContentDto,
@@ -136,6 +138,8 @@ function normalizeSeriesInfo(raw: unknown): WritingDto["seriesInfo"] {
   const isPartOfSeries =
     coerceBool(o.isPartOfSeries) ||
     coerceBool(o.is_part_of_series) ||
+    coerceBool(o.isParent) ||
+    coerceBool(o.is_parent) ||
     (totalBooks != null && totalBooks > 1)
   return {
     seriesId: coerceStr(o.seriesId) ?? coerceStr(o.series_id),
@@ -146,6 +150,7 @@ function normalizeSeriesInfo(raw: unknown): WritingDto["seriesInfo"] {
     parentBookId:
       coerceNum(o.parentBookId) ?? coerceNum(o.parent_book_id) ?? undefined,
     isPartOfSeries,
+    isParent: coerceBool(o.isParent) || coerceBool(o.is_parent),
     totalBooks: totalBooks ?? undefined,
   }
 }
@@ -161,15 +166,28 @@ export function normalizeTopicDto(raw: unknown): TopicDto {
   }
 }
 
+export function normalizeTopicList(raw: unknown): TopicDto[] {
+  const unwrapped = unwrapApiData<unknown>(raw)
+  const list = Array.isArray(unwrapped) ? unwrapped : []
+  return list.map(normalizeTopicDto)
+}
+
 export function normalizeWritingDto(raw: unknown): WritingDto {
-  const o = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>
+  const unwrapped = unwrapApiData<unknown>(raw)
+  const o = (unwrapped && typeof unwrapped === "object" ? unwrapped : {}) as Record<
+    string,
+    unknown
+  >
   const topic = normalizeTopicEmbed(o.topic)
   const tagData = normalizeTags(o)
-  const seriesInfo = normalizeSeriesInfo(o.seriesInfo ?? o.series_info)
+  const embeddedSeries = o.series ?? o.seriesInfo ?? o.series_info
+  const seriesInfo = normalizeSeriesInfo(embeddedSeries)
   const bookGenres = normalizeBookGenres(o.bookGenres ?? o.book_genres)
 
   return {
     id: coerceNum(o.id) ?? undefined,
+    featured: coerceBool(o.featured),
+    featuredOrder: coerceNum(o.featuredOrder) ?? coerceNum(o.featured_order),
     bookGenres,
     topicId:
       coerceNum(o.topicId) ??
@@ -200,18 +218,30 @@ export function normalizeWritingDto(raw: unknown): WritingDto {
     tagsKmr: tagData.tagsKmr,
     keywordsCkb: tagData.keywordsCkb,
     keywordsKmr: tagData.keywordsKmr,
-    seriesId: coerceStr(o.seriesId) ?? coerceStr(o.series_id),
-    seriesName: coerceStr(o.seriesName) ?? coerceStr(o.series_name),
-    seriesOrder: coerceNum(o.seriesOrder) ?? coerceNum(o.series_order) ?? undefined,
+    seriesId:
+      coerceStr(o.seriesId) ??
+      coerceStr(o.series_id) ??
+      seriesInfo?.seriesId,
+    seriesName:
+      coerceStr(o.seriesName) ??
+      coerceStr(o.series_name) ??
+      seriesInfo?.seriesName,
+    seriesOrder:
+      coerceNum(o.seriesOrder) ??
+      coerceNum(o.series_order) ??
+      seriesInfo?.seriesOrder ??
+      undefined,
     seriesTotalBooks:
       coerceNum(o.seriesTotalBooks) ??
       coerceNum(o.series_total_books) ??
+      seriesInfo?.totalBooks ??
       undefined,
     parentBookId:
-      coerceNum(o.parentBookId) ?? coerceNum(o.parent_book_id) ?? undefined,
+      coerceNum(o.parentBookId) ??
+      coerceNum(o.parent_book_id) ??
+      seriesInfo?.parentBookId ??
+      undefined,
     seriesInfo,
-    publishmentYear:
-      coerceNum(o.publishmentYear) ?? coerceNum(o.publishment_year) ?? undefined,
     createdAt: coerceStr(o.createdAt) ?? coerceStr(o.created_at) ?? undefined,
     updatedAt: coerceStr(o.updatedAt) ?? coerceStr(o.updated_at) ?? undefined,
     createdBy: coerceStr(o.createdBy) ?? coerceStr(o.created_by),
@@ -220,7 +250,11 @@ export function normalizeWritingDto(raw: unknown): WritingDto {
 }
 
 export function normalizeWritingPage(raw: unknown): WritingPage {
-  const o = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>
+  const unwrapped = unwrapApiData<unknown>(raw)
+  const o = (unwrapped && typeof unwrapped === "object" ? unwrapped : {}) as Record<
+    string,
+    unknown
+  >
   const content = Array.isArray(o.content)
     ? o.content.map(normalizeWritingDto)
     : []
@@ -236,23 +270,44 @@ export function normalizeWritingPage(raw: unknown): WritingPage {
   }
 }
 
-export function normalizeSeriesDetail(raw: unknown): SeriesDetailDto {
+function normalizeSeriesBookSummary(raw: unknown): SeriesBookSummary {
   const o = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>
+  const id = coerceNum(o.id) ?? 0
+  const titleCkb =
+    coerceStr(o.titleCkb) ??
+    coerceStr(o.title_ckb) ??
+    normalizeContent(o.ckbContent ?? o.ckb_content)?.title
+  const titleKmr =
+    coerceStr(o.titleKmr) ??
+    coerceStr(o.title_kmr) ??
+    normalizeContent(o.kmrContent ?? o.kmr_content)?.title
+  return {
+    id,
+    titleCkb,
+    titleKmr,
+    seriesOrder:
+      coerceNum(o.seriesOrder) ?? coerceNum(o.series_order) ?? undefined,
+    createdAt: coerceStr(o.createdAt) ?? coerceStr(o.created_at) ?? undefined,
+  }
+}
+
+export function normalizeSeriesDetail(raw: unknown): SeriesDetailDto {
+  const unwrapped = unwrapApiData<unknown>(raw)
+  const o = (unwrapped && typeof unwrapped === "object" ? unwrapped : {}) as Record<
+    string,
+    unknown
+  >
   const books = Array.isArray(o.books)
-    ? o.books.map(normalizeWritingDto)
+    ? o.books.map(normalizeSeriesBookSummary)
     : []
-  books.sort(
-    (a, b) => (a.seriesOrder ?? a.seriesInfo?.seriesOrder ?? 0) -
-      (b.seriesOrder ?? b.seriesInfo?.seriesOrder ?? 0),
-  )
+  books.sort((a, b) => (a.seriesOrder ?? 0) - (b.seriesOrder ?? 0))
   return {
     seriesId: coerceStr(o.seriesId) ?? coerceStr(o.series_id) ?? "",
     seriesName: coerceStr(o.seriesName) ?? coerceStr(o.series_name),
-    parentBook: o.parentBook
-      ? normalizeWritingDto(o.parentBook)
-      : o.parent_book
-        ? normalizeWritingDto(o.parent_book)
-        : null,
+    totalBooks:
+      coerceNum(o.totalBooks) ??
+      coerceNum(o.total_books) ??
+      books.length,
     books,
   }
 }
@@ -260,13 +315,14 @@ export function normalizeSeriesDetail(raw: unknown): SeriesDetailDto {
 export function normalizeLinkSeriesPayload(
   raw: unknown,
 ): LinkSeriesPayload {
-  const o = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>
+  const unwrapped = unwrapApiData<unknown>(raw)
+  const o = (unwrapped && typeof unwrapped === "object" ? unwrapped : {}) as Record<
+    string,
+    unknown
+  >
   return {
     bookId: coerceNum(o.bookId) ?? coerceNum(o.book_id) ?? 0,
     parentBookId:
       coerceNum(o.parentBookId) ?? coerceNum(o.parent_book_id) ?? 0,
-    seriesOrder:
-      coerceNum(o.seriesOrder) ?? coerceNum(o.series_order) ?? undefined,
-    seriesName: coerceStr(o.seriesName) ?? coerceStr(o.series_name) ?? undefined,
   }
 }

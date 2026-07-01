@@ -2,10 +2,10 @@ import api from "@/lib/axios"
 import {
   normalizeSoundDto,
   normalizeSoundPage,
-  normalizeTopicDto,
+  normalizeTopicList,
 } from "@/lib/sounds-normalize"
 import type {
-  NewTopicPayload,
+  FeaturedPayload,
   SoundDto,
   SoundPage,
   TopicDto,
@@ -66,12 +66,12 @@ export async function getAlbumOfMemories(
 }
 
 export async function getSoundsByType(
-  type: string,
+  soundType: string,
   page: number,
   size: number,
 ): Promise<SoundPage> {
   const { data } = await api.get<unknown>(`${BASE}/by-sound-type`, {
-    params: { type, page, size },
+    params: { soundType, page, size },
   })
   return normalizeSoundPage(data)
 }
@@ -88,23 +88,23 @@ export async function getSoundsByTopic(
 }
 
 export async function searchSoundsByTag(
-  value: string,
+  tag: string,
   page: number,
   size: number,
 ): Promise<SoundPage> {
   const { data } = await api.get<unknown>(`${BASE}/search/tag`, {
-    params: { value, page, size },
+    params: { tag, page, size },
   })
   return normalizeSoundPage(data)
 }
 
 export async function searchSoundsByKeyword(
-  value: string,
+  keyword: string,
   page: number,
   size: number,
 ): Promise<SoundPage> {
   const { data } = await api.get<unknown>(`${BASE}/search/keyword`, {
-    params: { value, page, size },
+    params: { keyword, page, size },
   })
   return normalizeSoundPage(data)
 }
@@ -126,17 +126,14 @@ export async function deleteSound(id: number): Promise<void> {
   await api.delete(`${BASE}/${id}`)
 }
 
+export async function patchSoundFeatured(
+  id: number,
+  payload: FeaturedPayload,
+): Promise<void> {
+  await api.patch(`${BASE}/${id}/featured`, payload)
+}
+
 export async function getTopics(): Promise<TopicDto[]> {
   const { data } = await api.get<unknown>(`${BASE}/topics`)
-  const list = Array.isArray(data) ? data : []
-  return list.map(normalizeTopicDto)
-}
-
-export async function createTopic(payload: NewTopicPayload): Promise<TopicDto> {
-  const { data } = await api.post<unknown>(`${BASE}/topics`, payload)
-  return normalizeTopicDto(data)
-}
-
-export async function deleteTopic(topicId: number): Promise<void> {
-  await api.delete(`${BASE}/topics/${topicId}`)
+  return normalizeTopicList(data)
 }

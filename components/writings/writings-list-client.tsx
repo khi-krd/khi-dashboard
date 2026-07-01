@@ -31,6 +31,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { useDebouncedValue } from "@/hooks/useDebouncedValue"
 import {
   useDeleteWritingMutation,
+  usePatchWritingFeaturedMutation,
   useWritingTopicsQuery,
   useWritingsListQuery,
 } from "@/hooks/useWritings"
@@ -186,6 +187,26 @@ function WritingsListClientInner() {
   )
 
   const deleteMut = useDeleteWritingMutation()
+  const featuredMut = usePatchWritingFeaturedMutation()
+  const [featuredPendingId, setFeaturedPendingId] = useState<number | null>(null)
+
+  const onFeaturedPatch = useCallback(
+    (
+      row: WritingAdminTableRow,
+      payload: { featured?: boolean; featuredOrder?: number },
+    ) => {
+      if (!row.id) return
+      setFeaturedPendingId(row.id)
+      featuredMut.mutate(
+        { id: row.id, payload },
+        {
+          onSettled: () => setFeaturedPendingId(null),
+          onError: () => toastError(NS.error.generic),
+        },
+      )
+    },
+    [featuredMut],
+  )
 
   const showReset =
     searchRaw.trim().length > 0 ||
@@ -445,6 +466,8 @@ function WritingsListClientInner() {
           onView={onView}
           onEdit={onEdit}
           onDeleteOne={setDeleteTarget}
+          onFeaturedPatch={onFeaturedPatch}
+          featuredPendingId={featuredPendingId}
         />
       )}
 

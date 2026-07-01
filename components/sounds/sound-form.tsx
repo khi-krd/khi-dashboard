@@ -22,10 +22,8 @@ import {
   SoundBreadcrumbBar,
   dashboardSoundsCrumbHref,
 } from "@/components/sounds/sound-breadcrumb"
-import { SoundAlbumMeta } from "@/components/sounds/sound-album-meta"
 import { SoundAttachmentsList } from "@/components/sounds/sound-attachments-list"
 import { SoundCoverTrio } from "@/components/sounds/sound-cover-trio"
-import { SoundCreditsEditor } from "@/components/sounds/sound-credits-editor"
 import { SoundsErrorState } from "@/components/sounds/sound-error-state"
 import { SoundFilesList } from "@/components/sounds/sound-files-list"
 import { SoundLanguageToggleChip } from "@/components/sounds/sound-language-chip"
@@ -132,14 +130,6 @@ export function SoundForm({
       setActiveLang(contentLanguages[0])
     }
   }, [contentLanguages, activeLang])
-
-  const albumOfMemories = watch("albumOfMemories")
-
-  useEffect(() => {
-    if (trackState === "SINGLE" && albumOfMemories) {
-      setValue("albumOfMemories", false, { shouldDirty: true })
-    }
-  }, [trackState, albumOfMemories, setValue])
 
   const pending = createMut.isPending || updateMut.isPending
   const submitDisabled = !isDirty || !isValid || pending
@@ -319,33 +309,6 @@ export function SoundForm({
               ) : null}
             </section>
 
-            <section className={sectionDivider}>
-              <SoundAlbumMeta
-                trackState={trackState}
-                albumOfMemories={watch("albumOfMemories")}
-                albumName={watch("albumName") ?? ""}
-                publishmentYear={watch("publishmentYear")}
-                cdNumber={watch("cdNumber")}
-                totalTracks={watch("totalTracks")}
-                onAlbumOfMemoriesChange={(v) =>
-                  setValue("albumOfMemories", v, { shouldDirty: true })
-                }
-                onAlbumNameChange={(s) =>
-                  setValue("albumName", s, { shouldDirty: true })
-                }
-                onPublishmentYearChange={(n) =>
-                  setValue("publishmentYear", n, { shouldDirty: true })
-                }
-                onCdNumberChange={(n) =>
-                  setValue("cdNumber", n, { shouldDirty: true })
-                }
-                onTotalTracksChange={(n) =>
-                  setValue("totalTracks", n, { shouldDirty: true })
-                }
-                albumOfMemoriesError={errors.albumOfMemories?.message}
-              />
-            </section>
-
             {mode === "edit" && editDto ? (
               <section className={cn(sectionDivider, "space-y-2 text-xs")}>
                 <Label className="text-muted-foreground uppercase">
@@ -386,9 +349,6 @@ export function SoundForm({
                 editMode={mode === "edit"}
                 onChange={(v) => {
                   setValue("trackState", v, { shouldDirty: true })
-                  if (v === "SINGLE") {
-                    setValue("albumOfMemories", false, { shouldDirty: true })
-                  }
                 }}
               />
             </div>
@@ -485,8 +445,6 @@ export function SoundForm({
                 />
               </div>
             )}
-
-            <SoundCreditsEditor />
 
             <section className={sectionDivider}>
               <Label className="mb-2 flex items-center gap-2 text-sm">

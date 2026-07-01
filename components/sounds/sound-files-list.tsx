@@ -19,7 +19,6 @@ import { NS } from "@/components/sounds/sounds-strings"
 import { Button } from "@/components/ui/button"
 import { FieldError } from "@/components/ui/field"
 import { Label } from "@/components/ui/label"
-import { Switch } from "@/components/ui/switch"
 import { formatCkbDigits } from "@/lib/intl-ckb"
 import {
   createEmptyFileRow,
@@ -35,7 +34,6 @@ export function SoundFilesList() {
     name: "files",
   })
   const trackState = watch("trackState")
-  const albumOfMemories = watch("albumOfMemories")
   const [sheetIdx, setSheetIdx] = useState<number | null>(null)
   const bulkInputRef = useRef<HTMLInputElement>(null)
 
@@ -81,20 +79,6 @@ export function SoundFilesList() {
           {NS.section.files} ({formatCkbDigits(fields.length)})
         </h2>
         <div className="flex flex-wrap items-center gap-2">
-          {trackState === "MULTI" ? (
-            <div className="flex items-center gap-2">
-              <Switch
-                id="files-album-memories"
-                checked={albumOfMemories}
-                onCheckedChange={(v) =>
-                  setValue("albumOfMemories", v, { shouldDirty: true })
-                }
-              />
-              <Label htmlFor="files-album-memories" className="text-xs font-normal">
-                {NS.state.album_of_memories}
-              </Label>
-            </div>
-          ) : null}
           <input
             ref={bulkInputRef}
             type="file"

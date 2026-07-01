@@ -31,6 +31,13 @@ export type SoundAdminTableRow = SoundDto & {
   sortCreated: number
 }
 
+function sumDurationSeconds(s: SoundDto): number {
+  return (s.files ?? []).reduce(
+    (acc, f) => acc + (f.durationSeconds ?? 0),
+    0,
+  )
+}
+
 export function toSoundAdminRow(s: SoundDto): SoundAdminTableRow {
   const titleCkb = s.ckbContent?.title ?? ""
   const titleKmr = s.kmrContent?.title ?? ""
@@ -41,7 +48,7 @@ export function toSoundAdminRow(s: SoundDto): SoundAdminTableRow {
     titleCkb,
     titleKmr,
     sortTitleCkb: titleCkb.trim().toLowerCase(),
-    sortDuration: s.totalDurationSeconds ?? 0,
+    sortDuration: sumDurationSeconds(s),
     sortCreated: Number.isFinite(created) ? created : 0,
   }
 }
@@ -50,14 +57,9 @@ export function matchesSoundStateFilter(
   s: SoundDto,
   filter: SoundsUiStateFilter,
 ): boolean {
-  if (filter === "all") return true
+  if (filter === "all" || filter === "album_of_memories") return true
   if (filter === "single") return s.trackState === "SINGLE"
-  if (filter === "multi") {
-    return s.trackState === "MULTI" && !s.albumOfMemories
-  }
-  if (filter === "album_of_memories") {
-    return s.trackState === "MULTI" && !!s.albumOfMemories
-  }
+  if (filter === "multi") return s.trackState === "MULTI"
   return true
 }
 
@@ -100,8 +102,7 @@ export function matchesSoundClientSearchFilter(
   const haystack = [
     s.ckbContent?.title,
     s.kmrContent?.title,
-    s.reader,
-    s.albumName,
+    s.soundType,
     ...(s.tagsCkb ?? []),
     ...(s.tagsKmr ?? []),
     ...(s.keywordsCkb ?? []),

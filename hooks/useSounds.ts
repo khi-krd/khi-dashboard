@@ -10,9 +10,7 @@ import {
 import { soundKeys } from "@/lib/sounds-query-keys"
 import {
   createSound,
-  createTopic,
   deleteSound,
-  deleteTopic,
   getAlbumOfMemories,
   getSoundById,
   getSoundsByState,
@@ -20,10 +18,11 @@ import {
   getSoundsByType,
   getSoundsList,
   getTopics,
+  patchSoundFeatured,
   searchSounds,
   updateSound,
 } from "@/services/soundsService"
-import type { NewTopicPayload, SoundDto, SoundPage } from "@/types/sounds"
+import type { FeaturedPayload, SoundDto, SoundPage } from "@/types/sounds"
 import type { SoundsListQueryKeyParts } from "@/types/sounds-ui"
 
 async function fetchSoundsPage(
@@ -165,23 +164,35 @@ export function useDeleteSoundMutation() {
   })
 }
 
-export function useCreateTopicMutation() {
+export function usePatchSoundFeaturedMutation() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (payload: NewTopicPayload) => createTopic(payload),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: soundKeys.topics() })
-    },
-  })
-}
+    mutationFn: (variables: { id: number; payload: FeaturedPayload }) =>
+      patchSoundFeatured(variables.id, variables.payload),
+    onSuccess: (_, { id, payload }) => {
+      const featured = payload.featured !== false
+      const featuredOrder = featured ? (payload.featuredOrder ?? null) : null
 
-export function useDeleteTopicMutation() {
-  const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: (topicId: number) => deleteTopic(topicId),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: soundKeys.topics() })
-      void queryClient.invalidateQueries({ queryKey: soundKeys.lists() })
+      queryClient.setQueryData<SoundDto | undefined>(
+        soundKeys.detail(id),
+        (prev) =>
+          prev
+            ? { ...prev, featured, featuredOrder }
+            : prev,
+      )
+
+      const listQueries = queryClient.getQueriesData<SoundPage>({
+        queryKey: soundKeys.lists(),
+      })
+      for (const [key, data] of listQueries) {
+        if (!data?.content) continue
+        queryClient.setQueryData(key, {
+          ...data,
+          content: data.content.map((s) =>
+            s.id === id ? { ...s, featured, featuredOrder } : s,
+          ),
+        })
+      }
     },
   })
 }
