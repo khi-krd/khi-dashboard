@@ -11,6 +11,7 @@ import {
   MagnifyingGlassIcon,
   MusicalNoteIcon,
   PlusIcon,
+  SparklesIcon,
 } from "@heroicons/react/24/outline"
 
 import {
@@ -22,12 +23,12 @@ import { SoundsDataGrid } from "@/components/sounds/sounds-data-grid"
 import { SoundsFiltersToolbar } from "@/components/sounds/sounds-filters"
 import { SoundsErrorState } from "@/components/sounds/sound-error-state"
 import { NS } from "@/components/sounds/sounds-strings"
+import { NS as FEATURED_NS } from "@/components/featured/featured-strings"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useDebouncedValue } from "@/hooks/useDebouncedValue"
 import {
   useDeleteSoundMutation,
-  usePatchSoundFeaturedMutation,
   useSoundTopicsQuery,
   useSoundsListQuery,
 } from "@/hooks/useSounds"
@@ -148,26 +149,6 @@ function SoundsListClientInner() {
   )
 
   const deleteMut = useDeleteSoundMutation()
-  const featuredMut = usePatchSoundFeaturedMutation()
-  const [featuredPendingId, setFeaturedPendingId] = useState<number | null>(null)
-
-  const onFeaturedPatch = useCallback(
-    (
-      row: SoundAdminTableRow,
-      payload: { featured?: boolean; featuredOrder?: number },
-    ) => {
-      if (!row.id) return
-      setFeaturedPendingId(row.id)
-      featuredMut.mutate(
-        { id: row.id, payload },
-        {
-          onSettled: () => setFeaturedPendingId(null),
-          onError: () => toastError(NS.error.generic),
-        },
-      )
-    },
-    [featuredMut],
-  )
 
   const showReset =
     searchRaw.trim().length > 0 ||
@@ -250,6 +231,13 @@ function SoundsListClientInner() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
+          <Link
+            href="/dashboard/featured"
+            className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 text-xs transition-colors"
+          >
+            <SparklesIcon className="size-4" aria-hidden />
+            {FEATURED_NS.actions.manage_link}
+          </Link>
           <Link
             href="/dashboard/sounds/topics"
             className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 text-xs transition-colors"
@@ -349,8 +337,6 @@ function SoundsListClientInner() {
           onView={onView}
           onEdit={onEdit}
           onDeleteOne={(row) => setDeleteTarget(row)}
-          onFeaturedPatch={onFeaturedPatch}
-          featuredPendingId={featuredPendingId}
         />
       )}
 

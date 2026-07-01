@@ -22,7 +22,6 @@ import {
 } from "@tanstack/react-table"
 
 import { WritingCoverThumb } from "@/components/writings/writing-cover-thumb"
-import { FeaturedGridCell } from "@/components/shared/featured-grid-cell"
 import { WritingFormatPill } from "@/components/writings/writing-format-pill"
 import { WritingGenrePill } from "@/components/writings/writing-genre-pill"
 import { WritingListLangChips } from "@/components/writings/writing-language-chip"
@@ -196,8 +195,6 @@ export function WritingsDataGrid({
   onView,
   onEdit,
   onDeleteOne,
-  onFeaturedPatch,
-  featuredPendingId,
 }: {
   rows: WritingAdminTableRow[]
   pagination: PaginationState
@@ -209,11 +206,6 @@ export function WritingsDataGrid({
   onView: (row: WritingAdminTableRow) => void
   onEdit: (row: WritingAdminTableRow) => void
   onDeleteOne: (row: WritingAdminTableRow) => void
-  onFeaturedPatch: (
-    row: WritingAdminTableRow,
-    payload: { featured?: boolean; featuredOrder?: number },
-  ) => void
-  featuredPendingId?: number | null
 }) {
   const columns = useMemo<ColumnDef<WritingAdminTableRow>[]>(
     () => [
@@ -423,35 +415,6 @@ export function WritingsDataGrid({
         },
       },
       {
-        id: "featured",
-        enableSorting: false,
-        size: 112,
-        meta: {
-          headerTitle: NS.col.featured,
-          cellClassName: "w-28",
-          skeleton: <Skeleton className="h-7 w-24" />,
-        },
-        header: NS.col.featured,
-        cell: ({ row }) => {
-          const id = row.original.id
-          if (!id) return null
-          return (
-            <FeaturedGridCell
-              id={id}
-              featured={row.original.featured}
-              featuredOrder={row.original.featuredOrder}
-              isPending={featuredPendingId === id}
-              onPatch={(payload) => onFeaturedPatch(row.original, payload)}
-              labels={{
-                featured: NS.col.featured,
-                order: NS.col.featured_order,
-                error: NS.error.generic,
-              }}
-            />
-          )
-        },
-      },
-      {
         id: "date",
         accessorKey: "sortCreated",
         sortingFn: "basic",
@@ -548,7 +511,7 @@ export function WritingsDataGrid({
         ),
       },
     ],
-    [onDeleteOne, onEdit, onView, onFeaturedPatch, featuredPendingId],
+    [onDeleteOne, onEdit, onView],
   )
 
   const table = useReactTable({

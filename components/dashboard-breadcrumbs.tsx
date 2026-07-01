@@ -34,6 +34,7 @@ const SEGMENT_LABELS: Record<string, string> = {
   contact: "پەیوەندی",
   profile: "پرۆفایل",
   users: "بەکارهێنەران",
+  featured: "تایبەتەکان",
 }
 
 function labelForSegment(segment: string): string {
@@ -74,6 +75,10 @@ export function DashboardBreadcrumbs() {
   }
 
   if (pathname.startsWith("/dashboard/about")) {
+    return null
+  }
+
+  if (pathname.startsWith("/dashboard/featured")) {
     return null
   }
 

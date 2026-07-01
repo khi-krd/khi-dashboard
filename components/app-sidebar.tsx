@@ -75,6 +75,10 @@ const navMainItems = [
         title: "نووسراوەکان",
         url: "/dashboard/writings",
       },
+      {
+        title: "تایبەتەکان",
+        url: "/dashboard/featured",
+      },
     ],
   },
 ]

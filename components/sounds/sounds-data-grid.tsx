@@ -22,7 +22,6 @@ import {
 } from "@tanstack/react-table"
 
 import { SoundCoverThumb } from "@/components/sounds/sound-cover-thumb"
-import { FeaturedGridCell } from "@/components/shared/featured-grid-cell"
 import { SoundListLangChips } from "@/components/sounds/sound-language-chip"
 import { SoundStatePill } from "@/components/sounds/sound-state-pill"
 import { NS } from "@/components/sounds/sounds-strings"
@@ -195,8 +194,6 @@ export function SoundsDataGrid({
   onView,
   onEdit,
   onDeleteOne,
-  onFeaturedPatch,
-  featuredPendingId,
 }: {
   rows: SoundAdminTableRow[]
   pagination: PaginationState
@@ -209,11 +206,6 @@ export function SoundsDataGrid({
   onView: (row: SoundAdminTableRow) => void
   onEdit: (row: SoundAdminTableRow) => void
   onDeleteOne: (row: SoundAdminTableRow) => void
-  onFeaturedPatch: (
-    row: SoundAdminTableRow,
-    payload: { featured?: boolean; featuredOrder?: number },
-  ) => void
-  featuredPendingId?: number | null
 }) {
   const columns = useMemo<ColumnDef<SoundAdminTableRow>[]>(
     () => [
@@ -296,35 +288,6 @@ export function SoundsDataGrid({
             className="w-auto"
           />
         ),
-      },
-      {
-        id: "featured",
-        enableSorting: false,
-        size: 112,
-        meta: {
-          headerTitle: NS.col.featured,
-          cellClassName: "w-28",
-          skeleton: <Skeleton className="h-7 w-24" />,
-        },
-        header: NS.col.featured,
-        cell: ({ row }) => {
-          const id = row.original.id
-          if (!id) return null
-          return (
-            <FeaturedGridCell
-              id={id}
-              featured={row.original.featured}
-              featuredOrder={row.original.featuredOrder}
-              isPending={featuredPendingId === id}
-              onPatch={(payload) => onFeaturedPatch(row.original, payload)}
-              labels={{
-                featured: NS.col.featured,
-                order: NS.col.featured_order,
-                error: NS.error.generic,
-              }}
-            />
-          )
-        },
       },
       {
         id: "topic",
@@ -488,7 +451,7 @@ export function SoundsDataGrid({
         ),
       },
     ],
-    [onDeleteOne, onEdit, onView, onFeaturedPatch, featuredPendingId, stateFilter],
+    [onDeleteOne, onEdit, onView, stateFilter],
   )
 
   const table = useReactTable({

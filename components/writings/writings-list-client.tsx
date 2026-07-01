@@ -13,6 +13,7 @@ import {
   MagnifyingGlassIcon,
   PlusIcon,
   RectangleStackIcon,
+  SparklesIcon,
   Squares2X2Icon,
 } from "@heroicons/react/24/outline"
 
@@ -26,12 +27,12 @@ import { WritingsDataGrid } from "@/components/writings/writings-data-grid"
 import { WritingsFiltersToolbar } from "@/components/writings/writings-filters"
 import { WritingsShelfGrid } from "@/components/writings/writings-shelf-grid"
 import { NS } from "@/components/writings/writings-strings"
+import { NS as FEATURED_NS } from "@/components/featured/featured-strings"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useDebouncedValue } from "@/hooks/useDebouncedValue"
 import {
   useDeleteWritingMutation,
-  usePatchWritingFeaturedMutation,
   useWritingTopicsQuery,
   useWritingsListQuery,
 } from "@/hooks/useWritings"
@@ -187,26 +188,6 @@ function WritingsListClientInner() {
   )
 
   const deleteMut = useDeleteWritingMutation()
-  const featuredMut = usePatchWritingFeaturedMutation()
-  const [featuredPendingId, setFeaturedPendingId] = useState<number | null>(null)
-
-  const onFeaturedPatch = useCallback(
-    (
-      row: WritingAdminTableRow,
-      payload: { featured?: boolean; featuredOrder?: number },
-    ) => {
-      if (!row.id) return
-      setFeaturedPendingId(row.id)
-      featuredMut.mutate(
-        { id: row.id, payload },
-        {
-          onSettled: () => setFeaturedPendingId(null),
-          onError: () => toastError(NS.error.generic),
-        },
-      )
-    },
-    [featuredMut],
-  )
 
   const showReset =
     searchRaw.trim().length > 0 ||
@@ -317,6 +298,13 @@ function WritingsListClientInner() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
+          <Link
+            href="/dashboard/featured"
+            className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 text-xs transition-colors"
+          >
+            <SparklesIcon className="size-4" aria-hidden />
+            {FEATURED_NS.actions.manage_link}
+          </Link>
           <Link
             href="/dashboard/writings/topics"
             className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 text-xs transition-colors"
@@ -466,8 +454,6 @@ function WritingsListClientInner() {
           onView={onView}
           onEdit={onEdit}
           onDeleteOne={setDeleteTarget}
-          onFeaturedPatch={onFeaturedPatch}
-          featuredPendingId={featuredPendingId}
         />
       )}
 
