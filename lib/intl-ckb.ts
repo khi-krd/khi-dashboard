@@ -34,6 +34,11 @@ export function formatCkbDigits(n: number): string {
   }
 }
 
+/** Western (0–9) digits for technical metadata: duration, size, dimensions, etc. */
+export function formatEnDigits(n: number): string {
+  return new Intl.NumberFormat("en-US", { numberingSystem: "latn" }).format(n)
+}
+
 export function formatNewsDateShort(
   iso: string | null | undefined,
 ): string {

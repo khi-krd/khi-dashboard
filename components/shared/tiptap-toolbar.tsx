@@ -184,9 +184,9 @@ export function TiptapToolbar({
   const canRedo = editor.can().chain().focus().redo().run()
 
   const barClass = cn(
-    "border-border bg-muted/30 flex flex-wrap items-center gap-0.5 border-b px-2 py-1.5",
+    "border-border bg-muted/30 flex shrink-0 flex-wrap items-center gap-0.5 border-b px-2 py-1.5",
     sticky &&
-      "supports-backdrop-filter:backdrop-blur bg-background/95 sticky top-14 z-10",
+      "supports-backdrop-filter:backdrop-blur bg-background/95 sticky top-0 z-10",
   )
 
   if (variant === "compact" && !preview) {

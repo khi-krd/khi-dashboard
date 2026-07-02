@@ -112,18 +112,18 @@ export function TiptapEditor({
 
   const editorChrome = (
     <div className={tiptapEditorShellClass(error)}>
-      {showToolbar ? (
-        <TiptapToolbar
-          editor={editor}
-          variant={toolbar}
-          preview={preview}
-          onPreviewToggle={
-            toolbar === "full" ? () => setPreview((p) => !p) : undefined
-          }
-          sticky={pinToolbar}
-        />
-      ) : null}
       <div className="bg-background min-h-0 max-h-[480px] overflow-y-auto">
+        {showToolbar ? (
+          <TiptapToolbar
+            editor={editor}
+            variant={toolbar}
+            preview={preview}
+            onPreviewToggle={
+              toolbar === "full" ? () => setPreview((p) => !p) : undefined
+            }
+            sticky={pinToolbar}
+          />
+        ) : null}
         <EditorContent editor={editor} dir={dir} />
       </div>
     </div>

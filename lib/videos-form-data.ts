@@ -7,6 +7,15 @@ function trimOrUndef(s: string | null | undefined) {
   return t || undefined
 }
 
+function clipHasSource(c: VideoFormValues["videoClipItems"][number]) {
+  return !!(
+    c.url?.trim() ||
+    c.externalUrl?.trim() ||
+    c.embedUrl?.trim() ||
+    c.stagedVideoFile
+  )
+}
+
 export function videoFormValuesToMultipart(
   mode: "create" | "edit",
   videoId: number | undefined,
@@ -16,7 +25,9 @@ export function videoFormValuesToMultipart(
 
   const clips =
     values.videoType === "VIDEO_CLIP"
-      ? values.videoClipItems.map((c, i) => ({
+      ? values.videoClipItems
+          .filter(clipHasSource)
+          .map((c, i) => ({
           ...(typeof c.id === "number" && c.id > 0 ? { id: c.id } : {}),
           url: trimOrUndef(c.url),
           externalUrl: trimOrUndef(c.externalUrl),
@@ -43,6 +54,9 @@ export function videoFormValuesToMultipart(
     albumOfMemories:
       values.videoType === "VIDEO_CLIP" ? values.albumOfMemories : false,
     contentLanguages: values.contentLanguages,
+    ckbCoverUrl: trimOrUndef(values.ckbCoverUrl),
+    kmrCoverUrl: trimOrUndef(values.kmrCoverUrl),
+    hoverCoverUrl: trimOrUndef(values.hoverCoverUrl),
     publishmentDate: values.publishmentDate?.trim() || null,
     tagsCkb: values.tags.ckb,
     tagsKmr: values.tags.kmr,
@@ -108,7 +122,7 @@ export function videoFormValuesToMultipart(
 
   if (values.videoType === "VIDEO_CLIP") {
     for (const clip of values.videoClipItems) {
-      if (clip.stagedVideoFile) {
+      if (clip.stagedVideoFile && clipHasSource(clip)) {
         fd.append("clipFiles", clip.stagedVideoFile)
       }
     }

@@ -30,7 +30,7 @@ import {
   humanReadableSize,
   urlBasename,
 } from "@/lib/writing-format"
-import { formatCkbDigits } from "@/lib/intl-ckb"
+import { formatEnDigits } from "@/lib/intl-ckb"
 import { cn } from "@/lib/utils"
 import type { BookFileFormat, Language } from "@/types/writings"
 
@@ -267,7 +267,7 @@ export function WritingBookFileUploader({
 
       {content.pageCount != null && content.pageCount > 0 ? (
         <p className="text-muted-foreground text-xs">
-          {formatCkbDigits(content.pageCount)} {NS.pages.suffix}
+          {formatEnDigits(content.pageCount)} {NS.pages.suffix}
         </p>
       ) : null}
     </div>

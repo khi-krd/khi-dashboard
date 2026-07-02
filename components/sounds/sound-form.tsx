@@ -122,6 +122,7 @@ export function SoundForm({
 
   const contentLanguages = watch("contentLanguages")
   const trackState = watch("trackState")
+  const attachments = watch("attachments")
   const topicId = watch("topicId")
   const newTopic = watch("newTopic")
 
@@ -130,6 +131,12 @@ export function SoundForm({
       setActiveLang(contentLanguages[0])
     }
   }, [contentLanguages, activeLang])
+
+  useEffect(() => {
+    if (trackState === "SINGLE" && attachments.length > 0) {
+      setValue("attachments", [], { shouldDirty: true })
+    }
+  }, [trackState, attachments.length, setValue])
 
   const pending = createMut.isPending || updateMut.isPending
   const submitDisabled = !isDirty || !isValid || pending
@@ -446,6 +453,8 @@ export function SoundForm({
               </div>
             )}
 
+            <SoundFilesList />
+
             <section className={sectionDivider}>
               <Label className="mb-2 flex items-center gap-2 text-sm">
                 <HashtagIcon className="size-4" />
@@ -482,8 +491,7 @@ export function SoundForm({
               />
             </section>
 
-            <SoundFilesList />
-            <SoundAttachmentsList />
+            {trackState === "MULTI" ? <SoundAttachmentsList /> : null}
           </div>
         </div>
 

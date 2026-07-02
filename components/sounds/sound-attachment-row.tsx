@@ -1,6 +1,7 @@
 "use client"
 
 import { TrashIcon } from "@heroicons/react/24/outline"
+import { useFormContext } from "react-hook-form"
 
 import { NS } from "@/components/sounds/sounds-strings"
 import { Input } from "@/components/ui/input"
@@ -14,7 +15,7 @@ import {
 } from "@/components/ui/select"
 import { useFileUpload } from "@/hooks/use-file-upload"
 import { guessAttachmentTypeFromMime } from "@/lib/sound-format"
-import type { AttachmentFormValues } from "@/lib/validations/sounds"
+import type { SoundFormValues } from "@/lib/validations/sounds"
 import type { AttachmentType } from "@/types/sounds"
 
 const ATTACHMENT_TYPES: AttachmentType[] = [
@@ -26,14 +27,16 @@ const ATTACHMENT_TYPES: AttachmentType[] = [
 ]
 
 export function SoundAttachmentRow({
-  attachment,
-  onChange,
+  index,
   onRemove,
 }: {
-  attachment: AttachmentFormValues
-  onChange: (patch: Partial<AttachmentFormValues>) => void
+  index: number
   onRemove: () => void
 }) {
+  const { register, setValue, watch } = useFormContext<SoundFormValues>()
+  const attachment = watch(`attachments.${index}`)
+  const base = `attachments.${index}` as const
+
   const [, { getInputProps, openFileDialog, removeFile }] = useFileUpload({
     maxFiles: 1,
     maxSize: 50 * 1024 * 1024,
@@ -41,13 +44,15 @@ export function SoundAttachmentRow({
     onFilesAdded: (added) => {
       const entry = added[0]
       if (!entry?.file || !(entry.file instanceof File)) return
-      onChange({
-        stagedAttachmentFile: entry.file,
-        fileUrl: "",
-        mimeType: entry.file.type,
-        sizeBytes: entry.file.size,
-        attachmentType: guessAttachmentTypeFromMime(entry.file.type),
-      })
+      setValue(`${base}.stagedAttachmentFile`, entry.file, { shouldDirty: true })
+      setValue(`${base}.fileUrl`, "", { shouldDirty: true })
+      setValue(`${base}.mimeType`, entry.file.type, { shouldDirty: true })
+      setValue(`${base}.sizeBytes`, entry.file.size, { shouldDirty: true })
+      setValue(
+        `${base}.attachmentType`,
+        guessAttachmentTypeFromMime(entry.file.type),
+        { shouldDirty: true },
+      )
       queueMicrotask(() => removeFile(entry.id))
     },
   })
@@ -63,8 +68,7 @@ export function SoundAttachmentRow({
         <div className="space-y-1">
           <Label className="text-xs">{NS.col.title}</Label>
           <Input
-            value={attachment.title ?? ""}
-            onChange={(e) => onChange({ title: e.target.value })}
+            {...register(`${base}.title`)}
             placeholder={NS.field.attachment_title_placeholder}
             className="h-9"
           />
@@ -81,10 +85,11 @@ export function SoundAttachmentRow({
           <span className="text-muted-foreground truncate text-xs">{fileLabel}</span>
         </div>
         <Input
-          value={attachment.fileUrl ?? ""}
-          onChange={(e) =>
-            onChange({ fileUrl: e.target.value, stagedAttachmentFile: null })
-          }
+          {...register(`${base}.fileUrl`, {
+            onChange: () => {
+              setValue(`${base}.stagedAttachmentFile`, null, { shouldDirty: true })
+            },
+          })}
           placeholder="https://"
           className="h-8 text-xs"
         />
@@ -94,7 +99,9 @@ export function SoundAttachmentRow({
         <Select
           value={attachment.attachmentType ?? "OTHER"}
           onValueChange={(v) =>
-            onChange({ attachmentType: (v as AttachmentType) ?? "OTHER" })
+            setValue(`${base}.attachmentType`, (v as AttachmentType) ?? "OTHER", {
+              shouldDirty: true,
+            })
           }
         >
           <SelectTrigger className="h-9 w-full min-w-[120px]">

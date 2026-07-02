@@ -11,7 +11,7 @@ import { useState } from "react"
 import { WritingFormatPill } from "@/components/writings/writing-format-pill"
 import { NS } from "@/components/writings/writings-strings"
 import { Button, buttonVariants } from "@/components/ui/button"
-import { formatCkbDigits } from "@/lib/intl-ckb"
+import { formatEnDigits } from "@/lib/intl-ckb"
 import { humanReadableSize, urlBasename } from "@/lib/writing-format"
 import { cn } from "@/lib/utils"
 import type { BookFileFormat, Language, WritingContentDto } from "@/types/writings"
@@ -57,7 +57,7 @@ export function WritingReaderCard({
             <WritingFormatPill format={format} />
             {content?.pageCount != null && content.pageCount > 0 ? (
               <span className="text-muted-foreground text-xs">
-                {formatCkbDigits(content.pageCount)} {NS.pages.suffix}
+                {formatEnDigits(content.pageCount)} {NS.pages.suffix}
               </span>
             ) : null}
             {content?.fileSizeBytes ? (

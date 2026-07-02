@@ -12,8 +12,8 @@ import {
 } from "@/lib/validations/sounds"
 
 export function SoundAttachmentsList() {
-  const { control, watch } = useFormContext<SoundFormValues>()
-  const { fields, append, remove, update } = useFieldArray({
+  const { control } = useFormContext<SoundFormValues>()
+  const { fields, append, remove } = useFieldArray({
     control,
     name: "attachments",
   })
@@ -42,8 +42,7 @@ export function SoundAttachmentsList() {
           {fields.map((field, index) => (
             <SoundAttachmentRow
               key={field.id}
-              attachment={watch(`attachments.${index}`)}
-              onChange={(patch) => update(index, { ...watch(`attachments.${index}`), ...patch })}
+              index={index}
               onRemove={() => remove(index)}
             />
           ))}

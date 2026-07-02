@@ -19,7 +19,7 @@ import { NS } from "@/components/sounds/sounds-strings"
 import { Button } from "@/components/ui/button"
 import { FieldError } from "@/components/ui/field"
 import { Label } from "@/components/ui/label"
-import { formatCkbDigits } from "@/lib/intl-ckb"
+import { formatEnDigits } from "@/lib/intl-ckb"
 import {
   createEmptyFileRow,
   type SoundFormValues,
@@ -76,7 +76,7 @@ export function SoundFilesList() {
     <section className="mt-12 space-y-4 border-t border-border/60 pt-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-sm font-medium">
-          {NS.section.files} ({formatCkbDigits(fields.length)})
+          {NS.section.files} ({formatEnDigits(fields.length)})
         </h2>
         <div className="flex flex-wrap items-center gap-2">
           <input

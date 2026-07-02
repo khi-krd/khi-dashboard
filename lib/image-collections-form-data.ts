@@ -20,23 +20,25 @@ export function hasAnyStagedBinary(values: CollectionFormValues): boolean {
 }
 
 function buildAlbumPayload(values: CollectionFormValues) {
-  let album = values.imageAlbum.map((item, i) => ({
-    ...(typeof item.id === "number" && item.id > 0 ? { id: item.id } : {}),
-    imageUrl: trimOrUndef(item.imageUrl),
-    externalUrl: trimOrUndef(item.externalUrl),
-    embedUrl: trimOrUndef(item.embedUrl),
-    captionCkb: trimOrUndef(item.captionCkb),
-    captionKmr: trimOrUndef(item.captionKmr),
-    descriptionCkb: item.descriptionCkb?.trim() || undefined,
-    descriptionKmr: item.descriptionKmr?.trim() || undefined,
-    sortOrder: item.sortOrder ?? i,
-    fileSizeBytes: item.fileSizeBytes ?? undefined,
-    widthPx: item.widthPx ?? undefined,
-    heightPx: item.heightPx ?? undefined,
-    mimeType: trimOrUndef(item.mimeType),
-    aspectRatio: item.aspectRatio ?? undefined,
-    humanReadableSize: trimOrUndef(item.humanReadableSize),
-  }))
+  let album = values.imageAlbum
+    .filter(
+      (item) =>
+        item.imageUrl?.trim() ||
+        item.externalUrl?.trim() ||
+        item.embedUrl?.trim() ||
+        item.stagedBinary,
+    )
+    .map((item, i) => ({
+      ...(typeof item.id === "number" && item.id > 0 ? { id: item.id } : {}),
+      imageUrl: trimOrUndef(item.imageUrl),
+      externalUrl: trimOrUndef(item.externalUrl),
+      embedUrl: trimOrUndef(item.embedUrl),
+      captionCkb: trimOrUndef(item.captionCkb),
+      captionKmr: trimOrUndef(item.captionKmr),
+      descriptionCkb: item.descriptionCkb?.trim() || undefined,
+      descriptionKmr: item.descriptionKmr?.trim() || undefined,
+      sortOrder: item.sortOrder ?? i,
+    }))
 
   if (values.collectionType === "SINGLE" && album.length > 1) {
     album = [album[0]!]
@@ -84,10 +86,13 @@ export function collectionFormValuesToPayload(
   if (values.clearTopic) {
     payload.clearTopic = true
     payload.topicId = null
-  } else if (values.newTopic?.nameCkb?.trim() && values.newTopic?.nameKmr?.trim()) {
+  } else if (
+    values.newTopic?.nameCkb?.trim() ||
+    values.newTopic?.nameKmr?.trim()
+  ) {
     payload.newTopic = {
-      nameCkb: values.newTopic.nameCkb.trim(),
-      nameKmr: values.newTopic.nameKmr.trim(),
+      nameCkb: trimOrUndef(values.newTopic.nameCkb),
+      nameKmr: trimOrUndef(values.newTopic.nameKmr),
     }
     payload.topicId = null
   } else if (values.topicId != null) {
@@ -118,7 +123,7 @@ export function collectionFormValuesToMultipart(
 
   for (const item of values.imageAlbum) {
     if (item.stagedBinary) {
-      fd.append("albumImages", item.stagedBinary)
+      fd.append("images", item.stagedBinary)
     }
   }
 

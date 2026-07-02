@@ -10,39 +10,34 @@ const ContentSchema = z.object({
   collectedBy: z.string().max(250).optional(),
 })
 
-export const ImageItemFormSchema = z
-  .object({
-    clientKey: z.string(),
-    id: z.number().optional(),
-    imageUrl: z.string().optional().or(z.literal("")),
-    externalUrl: z.string().optional().or(z.literal("")),
-    embedUrl: z.string().optional().or(z.literal("")),
-    captionCkb: z.string().max(500).optional(),
-    captionKmr: z.string().max(500).optional(),
-    descriptionCkb: z.string().optional(),
-    descriptionKmr: z.string().optional(),
-    sortOrder: z.number().int().min(0).optional(),
-    stagedBinary: z.instanceof(File).optional().nullable(),
-    fileSizeBytes: z.number().optional().nullable(),
-    widthPx: z.number().optional().nullable(),
-    heightPx: z.number().optional().nullable(),
-    mimeType: z.string().optional().nullable(),
-    aspectRatio: z.number().optional().nullable(),
-    humanReadableSize: z.string().optional().nullable(),
-  })
-  .refine(
-    (item) =>
-      !!(
-        item.imageUrl?.trim() ||
-        item.externalUrl?.trim() ||
-        item.embedUrl?.trim() ||
-        item.stagedBinary
-      ),
-    {
-      message: NS.validation.itemSourceRequired,
-      path: ["imageUrl"],
-    },
+export const ImageItemFormSchema = z.object({
+  clientKey: z.string(),
+  id: z.number().optional(),
+  imageUrl: z.string().optional().or(z.literal("")),
+  externalUrl: z.string().optional().or(z.literal("")),
+  embedUrl: z.string().optional().or(z.literal("")),
+  captionCkb: z.string().max(500).optional(),
+  captionKmr: z.string().max(500).optional(),
+  descriptionCkb: z.string().optional(),
+  descriptionKmr: z.string().optional(),
+  sortOrder: z.number().int().min(0).optional(),
+  stagedBinary: z.instanceof(File).optional().nullable(),
+  fileSizeBytes: z.number().optional().nullable(),
+  widthPx: z.number().optional().nullable(),
+  heightPx: z.number().optional().nullable(),
+  mimeType: z.string().optional().nullable(),
+  aspectRatio: z.number().optional().nullable(),
+  humanReadableSize: z.string().optional().nullable(),
+})
+
+function imageItemHasSource(item: z.infer<typeof ImageItemFormSchema>) {
+  return !!(
+    item.imageUrl?.trim() ||
+    item.externalUrl?.trim() ||
+    item.embedUrl?.trim() ||
+    item.stagedBinary
   )
+}
 
 export const collectionFormSchema = z
   .object({
@@ -50,10 +45,13 @@ export const collectionFormSchema = z
     topicId: z.number().int().nullable().optional(),
     newTopic: z
       .object({
-        nameCkb: z.string().min(1),
-        nameKmr: z.string().min(1),
+        nameCkb: z.string().optional(),
+        nameKmr: z.string().optional(),
       })
-      .optional(),
+      .optional()
+      .refine((t) => !t || t.nameCkb?.trim() || t.nameKmr?.trim(), {
+        message: NS.validation.topicNameRequired,
+      }),
     clearTopic: z.boolean().optional(),
     publishmentDate: z.string().optional().nullable(),
     contentLanguages: z
@@ -81,10 +79,42 @@ export const collectionFormSchema = z
     existingHoverCoverUrl: z.string().optional().nullable(),
   })
   .superRefine((val, ctx) => {
-    if (!val.imageAlbum.length) {
+    const readyItems = val.imageAlbum.filter(imageItemHasSource)
+    if (readyItems.length === 0) {
       ctx.addIssue({
         code: "custom",
         message: NS.validation.albumRequired,
+        path: ["imageAlbum"],
+      })
+    } else {
+      val.imageAlbum.forEach((item, index) => {
+        const started =
+          item.captionCkb?.trim() ||
+          item.captionKmr?.trim() ||
+          item.imageUrl?.trim() ||
+          item.externalUrl?.trim() ||
+          item.embedUrl?.trim() ||
+          item.stagedBinary
+        if (started && !imageItemHasSource(item)) {
+          ctx.addIssue({
+            code: "custom",
+            message: NS.validation.itemSourceRequired,
+            path: ["imageAlbum", index, "imageUrl"],
+          })
+        }
+      })
+    }
+    if (val.collectionType === "SINGLE" && readyItems.length > 1) {
+      ctx.addIssue({
+        code: "custom",
+        message: NS.validation.singleAlbumLimit,
+        path: ["imageAlbum"],
+      })
+    }
+    if (val.collectionType === "PHOTO_STORY" && readyItems.length < 2) {
+      ctx.addIssue({
+        code: "custom",
+        message: NS.validation.storyAlbumMinimum,
         path: ["imageAlbum"],
       })
     }

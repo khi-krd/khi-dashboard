@@ -5,6 +5,23 @@ function trimOrUndef(s: string | null | undefined) {
   return t || undefined
 }
 
+function fileHasSource(
+  f: SoundFormValues["files"][number],
+): boolean {
+  return !!(
+    f.fileUrl?.trim() ||
+    f.externalUrl?.trim() ||
+    f.embedUrl?.trim() ||
+    f.stagedAudioFile
+  )
+}
+
+function attachmentHasSource(
+  a: SoundFormValues["attachments"][number],
+): boolean {
+  return !!(a.fileUrl?.trim() || a.stagedAttachmentFile)
+}
+
 export function soundFormValuesToMultipart(
   mode: "create" | "edit",
   soundId: number | undefined,
@@ -12,7 +29,9 @@ export function soundFormValuesToMultipart(
 ): FormData {
   const fd = new FormData()
 
-  const filesPayload = values.files.map((f, i) => ({
+  const readyFiles = values.files.filter(fileHasSource)
+
+  const filesPayload = readyFiles.map((f, i) => ({
     ...(typeof f.id === "number" && f.id > 0 ? { id: f.id } : {}),
     fileUrl: trimOrUndef(f.fileUrl),
     externalUrl: trimOrUndef(f.externalUrl),
@@ -20,8 +39,6 @@ export function soundFormValuesToMultipart(
     title: trimOrUndef(f.title),
     fileType: f.fileType ?? "AUDIO",
     publishmentYear: f.publishmentYear ?? undefined,
-    fileFormat: trimOrUndef(f.fileFormat),
-    sizeBytes: f.sizeBytes ?? 0,
     durationSeconds: f.durationSeconds ?? 0,
     bitRate: trimOrUndef(f.bitRate),
     sampleRate: trimOrUndef(f.sampleRate),
@@ -38,13 +55,16 @@ export function soundFormValuesToMultipart(
     sortOrder: i,
   }))
 
-  const attachmentsPayload = values.attachments.map((a, i) => ({
+  const readyAttachments =
+    values.trackState === "MULTI"
+      ? values.attachments.filter(attachmentHasSource)
+      : []
+
+  const attachmentsPayload = readyAttachments.map((a, i) => ({
     ...(typeof a.id === "number" && a.id > 0 ? { id: a.id } : {}),
     fileUrl: trimOrUndef(a.fileUrl),
     title: trimOrUndef(a.title),
     attachmentType: a.attachmentType ?? "OTHER",
-    sizeBytes: a.sizeBytes ?? 0,
-    mimeType: trimOrUndef(a.mimeType),
     attachmentOrder: a.attachmentOrder ?? i,
   }))
 
@@ -101,13 +121,13 @@ export function soundFormValuesToMultipart(
   if (values.kmrCoverFile) fd.append("kmrCoverImage", values.kmrCoverFile)
   if (values.hoverCoverFile) fd.append("hoverCoverImage", values.hoverCoverFile)
 
-  for (const f of values.files) {
+  for (const f of readyFiles) {
     if (f.stagedAudioFile) {
       fd.append("audioFiles", f.stagedAudioFile)
     }
   }
 
-  for (const f of values.files) {
+  for (const f of readyFiles) {
     for (const b of f.brochures) {
       if (b.stagedImageFile) {
         fd.append("brochureFiles", b.stagedImageFile)
@@ -115,7 +135,7 @@ export function soundFormValuesToMultipart(
     }
   }
 
-  for (const a of values.attachments) {
+  for (const a of readyAttachments) {
     if (a.stagedAttachmentFile) {
       fd.append("attachmentFiles", a.stagedAttachmentFile)
     }

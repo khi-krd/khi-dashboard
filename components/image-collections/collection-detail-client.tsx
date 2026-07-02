@@ -42,7 +42,7 @@ import {
   useCollectionDetailQuery,
   useDeleteCollectionMutation,
 } from "@/hooks/useImageCollections"
-import { formatCkbDigits, formatNewsDateShort } from "@/lib/intl-ckb"
+import { formatEnDigits, formatNewsDateShort } from "@/lib/intl-ckb"
 import {
   formatFullTimestampKu,
   formatRelativeTimeKu,
@@ -71,7 +71,7 @@ function toProseHtml(raw: string) {
 }
 
 function typeContextLabel(c: CollectionDto) {
-  const n = formatCkbDigits(c.imageAlbum?.length ?? 0)
+  const n = formatEnDigits(c.imageAlbum?.length ?? 0)
   if (c.collectionType === "SINGLE") return NS.type.context.single
   if (c.collectionType === "PHOTO_STORY") return NS.type.context.story(n)
   return NS.type.context.gallery(n)
@@ -316,7 +316,7 @@ function CollectionDetailLoaded({
             <dl className="space-y-2 text-xs">
               <div>
                 <dt className="text-muted-foreground">{NS.summary.image_count}</dt>
-                <dd>{formatCkbDigits(collection.imageAlbum?.length ?? 0)}</dd>
+                <dd>{formatEnDigits(collection.imageAlbum?.length ?? 0)}</dd>
               </div>
               <div>
                 <dt className="text-muted-foreground">{NS.summary.total_size}</dt>
@@ -449,7 +449,7 @@ function CollectionDetailLoaded({
             {imageCount > 0 ? (
               <>
                 <MetaDot />
-                <span>{formatCkbDigits(imageCount)} وێنە</span>
+                <span>{formatEnDigits(imageCount)} وێنە</span>
               </>
             ) : null}
           </div>

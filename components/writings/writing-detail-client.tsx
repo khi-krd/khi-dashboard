@@ -45,7 +45,7 @@ import {
   sanitizeNewsBodyHtml,
 } from "@/lib/sanitize-news-html"
 import { humanReadableSize } from "@/lib/writing-format"
-import { formatCkbDigits } from "@/lib/intl-ckb"
+import { formatCkbDigits, formatEnDigits } from "@/lib/intl-ckb"
 import { cn } from "@/lib/utils"
 import { isPartOfMultiBookSeries } from "@/types/writings-ui"
 import type { Language, WritingDto } from "@/types/writings"
@@ -332,7 +332,7 @@ function WritingDetailLoaded({
                     </dt>
                     <dd>
                       {writing.ckbContent?.pageCount
-                        ? `${formatCkbDigits(writing.ckbContent.pageCount)} ${NS.pages.suffix}`
+                        ? `${formatEnDigits(writing.ckbContent.pageCount)} ${NS.pages.suffix}`
                         : NS.dash}
                     </dd>
                   </div>
@@ -362,7 +362,7 @@ function WritingDetailLoaded({
                     </dt>
                     <dd>
                       {writing.kmrContent?.pageCount
-                        ? `${formatCkbDigits(writing.kmrContent.pageCount)} ${NS.pages.suffix}`
+                        ? `${formatEnDigits(writing.kmrContent.pageCount)} ${NS.pages.suffix}`
                         : NS.dash}
                     </dd>
                   </div>

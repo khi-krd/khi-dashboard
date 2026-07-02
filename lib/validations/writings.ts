@@ -25,10 +25,13 @@ export const writingFormSchema = z
     topicId: z.number().int().nullable().optional(),
     newTopic: z
       .object({
-        nameCkb: z.string().min(1).max(300),
-        nameKmr: z.string().min(1).max(300),
+        nameCkb: z.string().optional(),
+        nameKmr: z.string().optional(),
       })
-      .optional(),
+      .optional()
+      .refine((t) => !t || t.nameCkb?.trim() || t.nameKmr?.trim(), {
+        message: NS.validation.topicNameRequired,
+      }),
     clearTopic: z.boolean().optional(),
     publishedByInstitute: z.boolean().default(false),
     contentLanguages: z

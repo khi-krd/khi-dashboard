@@ -42,7 +42,7 @@ import {
   sanitizeNewsBodyHtml,
 } from "@/lib/sanitize-news-html"
 import { formatBytes, formatDuration } from "@/lib/sound-format"
-import { formatCkbDigits } from "@/lib/intl-ckb"
+import { formatEnDigits } from "@/lib/intl-ckb"
 import { cn } from "@/lib/utils"
 import type { Language, SoundDto, SoundFileDto } from "@/types/sounds"
 
@@ -214,7 +214,7 @@ function SoundDetailLoaded({
             {sound.trackState === "SINGLE"
               ? NS.state.context.single
               : NS.state.context.multi(
-                  formatCkbDigits(sound.files?.length ?? 0),
+                  formatEnDigits(sound.files?.length ?? 0),
                 )}
           </p>
 
@@ -257,7 +257,7 @@ function SoundDetailLoaded({
               <p className="text-muted-foreground text-xs">
                 {NS.col.featured_order}:{" "}
                 {sound.featuredOrder != null
-                  ? formatCkbDigits(sound.featuredOrder)
+                  ? formatEnDigits(sound.featuredOrder)
                   : NS.dash}
               </p>
             </div>
@@ -276,7 +276,7 @@ function SoundDetailLoaded({
               </div>
               <div>
                 <dt className="text-muted-foreground">{NS.total.files}</dt>
-                <dd>{formatCkbDigits(sound.files?.length ?? 0)}</dd>
+                <dd>{formatEnDigits(sound.files?.length ?? 0)}</dd>
               </div>
             </dl>
           </div>

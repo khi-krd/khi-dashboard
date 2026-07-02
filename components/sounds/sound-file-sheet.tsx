@@ -181,14 +181,6 @@ export function SoundFileSheet({
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-1">
-                <Label className="text-xs">{NS.col.type}</Label>
-                <Input
-                  className="h-8 font-mono text-xs"
-                  value={draft.fileFormat ?? ""}
-                  onChange={(e) => patch({ fileFormat: e.target.value })}
-                />
-              </div>
             </div>
           </section>
 

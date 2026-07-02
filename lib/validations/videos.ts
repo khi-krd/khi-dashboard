@@ -10,28 +10,31 @@ const VideoContentSchema = z.object({
   producer: z.string().max(250).optional(),
 })
 
-export const VideoClipItemFormSchema = z
-  .object({
-    id: z.number().optional(),
-    url: z.string().optional().or(z.literal("")),
-    externalUrl: z.string().optional().or(z.literal("")),
-    embedUrl: z.string().optional().or(z.literal("")),
-    clipNumber: z.number().int().positive().optional(),
-    durationSeconds: z.number().int().min(0).optional().nullable(),
-    resolution: z.string().optional().nullable(),
-    fileFormat: z.string().optional().nullable(),
-    fileSizeMb: z.number().min(0).optional().nullable(),
-    titleCkb: z.string().max(300).optional(),
-    titleKmr: z.string().max(300).optional(),
-    descriptionCkb: z.string().optional(),
-    descriptionKmr: z.string().optional(),
-    stagedVideoFile: z.instanceof(File).optional().nullable(),
-  })
-  .refine(
-    (clip) =>
-      !!(clip.url?.trim() || clip.externalUrl?.trim() || clip.embedUrl?.trim() || clip.stagedVideoFile),
-    { message: NS.validation.clipSourceRequired, path: ["url"] },
+export const VideoClipItemFormSchema = z.object({
+  id: z.number().optional(),
+  url: z.string().optional().or(z.literal("")),
+  externalUrl: z.string().optional().or(z.literal("")),
+  embedUrl: z.string().optional().or(z.literal("")),
+  clipNumber: z.number().int().positive().optional(),
+  durationSeconds: z.number().int().min(0).optional().nullable(),
+  resolution: z.string().optional().nullable(),
+  fileFormat: z.string().optional().nullable(),
+  fileSizeMb: z.number().min(0).optional().nullable(),
+  titleCkb: z.string().max(300).optional(),
+  titleKmr: z.string().max(300).optional(),
+  descriptionCkb: z.string().optional(),
+  descriptionKmr: z.string().optional(),
+  stagedVideoFile: z.instanceof(File).optional().nullable(),
+})
+
+function clipHasSource(clip: z.infer<typeof VideoClipItemFormSchema>) {
+  return !!(
+    clip.url?.trim() ||
+    clip.externalUrl?.trim() ||
+    clip.embedUrl?.trim() ||
+    clip.stagedVideoFile
   )
+}
 
 export const videoFormSchema = z
   .object({
@@ -109,12 +112,32 @@ export const videoFormSchema = z
         })
       }
     }
-    if (val.videoType === "VIDEO_CLIP" && val.videoClipItems.length === 0) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: NS.validation.clipsRequired,
-        path: ["videoClipItems"],
-      })
+    if (val.videoType === "VIDEO_CLIP") {
+      const readyClips = val.videoClipItems.filter(clipHasSource)
+      if (readyClips.length === 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: NS.validation.clipsRequired,
+          path: ["videoClipItems"],
+        })
+      } else {
+        val.videoClipItems.forEach((clip, index) => {
+          const started =
+            clip.titleCkb?.trim() ||
+            clip.titleKmr?.trim() ||
+            clip.url?.trim() ||
+            clip.externalUrl?.trim() ||
+            clip.embedUrl?.trim() ||
+            clip.stagedVideoFile
+          if (started && !clipHasSource(clip)) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: NS.validation.clipSourceRequired,
+              path: ["videoClipItems", index, "url"],
+            })
+          }
+        })
+      }
     }
   })
 

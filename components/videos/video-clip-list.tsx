@@ -18,7 +18,7 @@ import { VideoClipCard } from "@/components/videos/video-clip-card"
 import { VideoClipItemSheet } from "@/components/videos/video-clip-item-sheet"
 import { NS } from "@/components/videos/videos-strings"
 import { Button } from "@/components/ui/button"
-import { formatCkbDigits } from "@/lib/intl-ckb"
+import { formatEnDigits } from "@/lib/intl-ckb"
 import type { VideoFormValues } from "@/lib/validations/videos"
 
 export function VideoClipList() {
@@ -67,7 +67,7 @@ export function VideoClipList() {
     <section className="mt-12 space-y-4 border-t border-border/60 pt-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-sm font-medium">
-          {NS.section.clips} ({formatCkbDigits(fields.length)})
+          {NS.section.clips} ({formatEnDigits(fields.length)})
         </h2>
         <div className="flex items-center gap-3">
           <VideoAlbumToggle

@@ -42,7 +42,7 @@ import {
   useCreateCollection,
   useUpdateCollection,
 } from "@/hooks/useImageCollections"
-import { formatCkbDigits } from "@/lib/intl-ckb"
+import { formatCkbDigits, formatEnDigits } from "@/lib/intl-ckb"
 import {
   formatFullTimestampKu,
   formatRelativeTimeKu,
@@ -322,7 +322,7 @@ export function CollectionForm({
               </Label>
               <div className="flex justify-between">
                 <span>{NS.summary.image_count}</span>
-                <span>{formatCkbDigits(imageAlbum.length)}</span>
+                <span>{formatEnDigits(imageAlbum.length)}</span>
               </div>
               <div className="flex justify-between">
                 <span>{NS.summary.total_size}</span>

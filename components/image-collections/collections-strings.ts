@@ -13,8 +13,11 @@ export const NS = {
     languageRequired: "زمانێک پێویستە",
     ckbTitleRequired: "ناونیشانی سۆرانی پێویستە",
     kmrTitleRequired: "ناونیشانی کورمانجی پێویستە",
-    typeRequired: "جۆری کۆکراوە پێویستە.",
-    topicNotFound: "بابەتی هەڵبژێردراو نەدۆزرایەوە.",
+    typeRequired: "جۆری کۆکراوە پێویستە",
+    topicNameRequired: "ناوی بابەت پێویستە",
+    topicNotFound: "بابەتی هەڵبژێردراو نەدۆزرایەوە",
+    singleAlbumLimit: "کۆکراوەی تاک وێنە تەنها یەک وێنەی هەیە",
+    storyAlbumMinimum: "چیرۆکی وێنەیی پێویستی بە لانیکەم دوو وێنەیە",
   },
   page: {
     title: "کۆکراوەی وێنەکان",
@@ -23,7 +26,7 @@ export const NS = {
   topics: {
     page: {
       title: "بابەتەکانی کۆکراوەی وێنە",
-      subtitle: "بەڕێوەبردنی بابەتە پۆلبەندییەکانی کۆکراوەی وێنە",
+      subtitle: "بەڕێوەبردنی بابەتەکانی پۆلێنکردنی کۆکراوەی وێنە",
     },
     link: "بەڕێوەبردنی بابەتەکان",
     empty: {
@@ -97,8 +100,8 @@ export const NS = {
     all_types: "هەموو جۆرەکان",
     all_topics: "هەموو بابەتەکان",
     all_languages: "هەموو زمانەکان",
-    lang_ckb_only: "تەنیا سۆرانی",
-    lang_kmr_only: "تەنیا کورمانجی",
+    lang_ckb_only: "تەنها سۆرانی",
+    lang_kmr_only: "تەنها کورمانجی",
     lang_both: "هەردووکیان",
   },
   col: {
@@ -135,8 +138,8 @@ export const NS = {
     kmr: "ڕووکاری کورمانجی",
     hover: "وێنەی هۆڤەر",
     hover_hint: "دەرکەوتە لە سەر هۆڤەر",
-    hover_long_hint: "ئەم وێنەیە تەنیا کاتێک ماوس دەچێتە سەر کارت دەردەکەوێت",
-    helper: "PNG، JPEG، WEBP · زۆرترین قەبارە ٥ MB",
+    hover_long_hint: "ئەم وێنەیە تەنها کاتێک ماوس دەچێتە سەر کارت دەردەکەوێت",
+    helper: "PNG، JPEG، WEBP · زۆرترین قەبارە 5 MB",
   },
   credits: {
     collected_by: "کۆکەرەوە",
@@ -170,7 +173,7 @@ export const NS = {
     story_lang_hint:
       "گۆڕینی زمان لە سەرەوە، چیرۆکەکە بەو زمانە دەنوێنرێت.",
     single_drop: "وێنە دابنێ یان کلیک بکە بۆ هەڵبژاردن",
-    single_helper: "PNG، JPEG، WEBP · زۆرترین قەبارە ٢٠ MB",
+    single_helper: "PNG، JPEG، WEBP · زۆرترین قەبارە 20 MB",
   },
   meta: {
     dimensions: "پاژەکی",

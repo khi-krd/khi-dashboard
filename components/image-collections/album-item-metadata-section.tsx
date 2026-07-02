@@ -1,7 +1,7 @@
 "use client"
 
 import { NS } from "@/components/image-collections/collections-strings"
-import { formatCkbDigits } from "@/lib/intl-ckb"
+import { formatEnDigits } from "@/lib/intl-ckb"
 import type { ImageItemFormValues } from "@/lib/validations/image-collections"
 
 function hasProbedMetadata(item: ImageItemFormValues): boolean {
@@ -20,7 +20,7 @@ export function AlbumItemMetadataSection({ item }: { item: ImageItemFormValues }
 
   const aspectLabel =
     item.aspectRatio != null
-      ? formatCkbDigits(Number(item.aspectRatio.toFixed(2)))
+      ? formatEnDigits(Number(item.aspectRatio.toFixed(2)))
       : null
 
   return (
@@ -33,7 +33,7 @@ export function AlbumItemMetadataSection({ item }: { item: ImageItemFormValues }
           <div>
             <dt className="text-muted-foreground">{NS.meta.dimensions}</dt>
             <dd className="font-mono">
-              {formatCkbDigits(item.widthPx)}×{formatCkbDigits(item.heightPx)}
+              {formatEnDigits(item.widthPx)}×{formatEnDigits(item.heightPx)}
             </dd>
           </div>
         ) : null}
@@ -42,7 +42,9 @@ export function AlbumItemMetadataSection({ item }: { item: ImageItemFormValues }
             <dt className="text-muted-foreground">{NS.meta.size}</dt>
             <dd className="font-mono">
               {item.humanReadableSize ??
-                (item.fileSizeBytes != null ? `${item.fileSizeBytes} B` : NS.dash)}
+                (item.fileSizeBytes != null
+                  ? `${formatEnDigits(item.fileSizeBytes)} B`
+                  : NS.dash)}
             </dd>
           </div>
         ) : null}

@@ -67,8 +67,8 @@ export function writingFormValuesToMultipart(
     values.newTopic?.nameKmr?.trim()
   ) {
     payload.newTopic = {
-      nameCkb: values.newTopic.nameCkb.trim(),
-      nameKmr: values.newTopic.nameKmr.trim(),
+      nameCkb: trimOrUndef(values.newTopic.nameCkb),
+      nameKmr: trimOrUndef(values.newTopic.nameKmr),
     }
     payload.topicId = null
   } else if (values.topicId != null) {

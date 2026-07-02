@@ -17,43 +17,36 @@ export const BrochureFormSchema = z.object({
   stagedImageFile: z.instanceof(File).optional().nullable(),
 })
 
-export const SoundFileFormSchema = z
-  .object({
-    clientKey: z.string(),
-    id: z.number().optional(),
-    fileUrl: z.string().optional().or(z.literal("")),
-    externalUrl: z.string().optional().or(z.literal("")),
-    embedUrl: z.string().optional().or(z.literal("")),
-    title: z.string().max(300).optional(),
-    fileType: z
-      .enum(["AUDIO", "VIDEO", "DOCUMENT", "OTHER"])
-      .default("AUDIO"),
-    publishmentYear: z.number().int().min(1900).max(2100).optional().nullable(),
-    fileFormat: z.string().max(50).optional().nullable(),
-    sizeBytes: z.number().int().min(0).default(0),
-    durationSeconds: z.number().int().min(0).default(0),
-    bitRate: z.string().max(50).optional().nullable(),
-    sampleRate: z.string().max(50).optional().nullable(),
-    audioChannel: z.enum(["STEREO", "MONO"]).optional().nullable(),
-    form: z.string().max(150).optional().nullable(),
-    genre: z.string().max(100).optional().nullable(),
-    recordingVenue: z.string().max(500).optional().nullable(),
-    brochures: z.array(BrochureFormSchema).default([]),
-    stagedAudioFile: z.instanceof(File).optional().nullable(),
-  })
-  .refine(
-    (file) =>
-      !!(
-        file.fileUrl?.trim() ||
-        file.externalUrl?.trim() ||
-        file.embedUrl?.trim() ||
-        file.stagedAudioFile
-      ),
-    {
-      message: NS.validation.fileSourceRequired,
-      path: ["fileUrl"],
-    },
+export const SoundFileFormSchema = z.object({
+  clientKey: z.string(),
+  id: z.number().optional(),
+  fileUrl: z.string().optional().or(z.literal("")),
+  externalUrl: z.string().optional().or(z.literal("")),
+  embedUrl: z.string().optional().or(z.literal("")),
+  title: z.string().max(300).optional(),
+  fileType: z.enum(["AUDIO", "VIDEO", "DOCUMENT", "OTHER"]).default("AUDIO"),
+  publishmentYear: z.number().int().min(1900).max(2100).optional().nullable(),
+  fileFormat: z.string().max(50).optional().nullable(),
+  sizeBytes: z.number().int().min(0).default(0),
+  durationSeconds: z.number().int().min(0).default(0),
+  bitRate: z.string().max(50).optional().nullable(),
+  sampleRate: z.string().max(50).optional().nullable(),
+  audioChannel: z.enum(["STEREO", "MONO"]).optional().nullable(),
+  form: z.string().max(150).optional().nullable(),
+  genre: z.string().max(100).optional().nullable(),
+  recordingVenue: z.string().max(500).optional().nullable(),
+  brochures: z.array(BrochureFormSchema).default([]),
+  stagedAudioFile: z.instanceof(File).optional().nullable(),
+})
+
+function soundFileHasSource(file: z.infer<typeof SoundFileFormSchema>) {
+  return !!(
+    file.fileUrl?.trim() ||
+    file.externalUrl?.trim() ||
+    file.embedUrl?.trim() ||
+    file.stagedAudioFile
   )
+}
 
 export const AttachmentFormSchema = z.object({
   clientKey: z.string(),
@@ -68,6 +61,10 @@ export const AttachmentFormSchema = z.object({
   attachmentOrder: z.number().int().optional(),
   stagedAttachmentFile: z.instanceof(File).optional().nullable(),
 })
+
+function attachmentHasSource(file: z.infer<typeof AttachmentFormSchema>) {
+  return !!(file.fileUrl?.trim() || file.stagedAttachmentFile)
+}
 
 export const soundFormSchema = z
   .object({
@@ -100,7 +97,7 @@ export const soundFormSchema = z
       ckb: z.array(z.string().max(100)),
       kmr: z.array(z.string().max(100)),
     }),
-    files: z.array(SoundFileFormSchema).min(1, NS.validation.filesRequired),
+    files: z.array(SoundFileFormSchema).default([]),
     attachments: z.array(AttachmentFormSchema).default([]),
     ckbCoverFile: z.instanceof(File).optional().nullable(),
     kmrCoverFile: z.instanceof(File).optional().nullable(),
@@ -125,6 +122,47 @@ export const soundFormSchema = z
         code: z.ZodIssueCode.custom,
         message: NS.validation.titleKmrRequired,
         path: ["kmrContent", "title"],
+      })
+    }
+
+    const readyFiles = val.files.filter(soundFileHasSource)
+    if (readyFiles.length === 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: NS.validation.filesRequired,
+        path: ["files"],
+      })
+    } else {
+      val.files.forEach((file, index) => {
+        const started =
+          file.title?.trim() ||
+          file.fileUrl?.trim() ||
+          file.externalUrl?.trim() ||
+          file.embedUrl?.trim() ||
+          file.stagedAudioFile
+        if (started && !soundFileHasSource(file)) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: NS.validation.fileSourceRequired,
+            path: ["files", index, "fileUrl"],
+          })
+        }
+      })
+    }
+
+    if (val.trackState === "MULTI") {
+      val.attachments.forEach((attachment, index) => {
+        const started =
+          attachment.title?.trim() ||
+          attachment.fileUrl?.trim() ||
+          attachment.stagedAttachmentFile
+        if (started && !attachmentHasSource(attachment)) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: NS.validation.attachmentSourceRequired,
+            path: ["attachments", index, "fileUrl"],
+          })
+        }
       })
     }
   })
