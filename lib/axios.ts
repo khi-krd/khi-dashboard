@@ -15,6 +15,11 @@ function normalizeApiBaseUrl(raw: string | undefined): string {
   return `https://${trimmed}`
 }
 
+/** Direct backend URL for multipart uploads (bypasses Vercel's ~4.5MB proxy limit). */
+const directUploadBaseUrl = normalizeApiBaseUrl(
+  process.env.NEXT_PUBLIC_DIRECT_API_URL,
+)
+
 const api = axios.create({
   baseURL: normalizeApiBaseUrl(process.env.NEXT_PUBLIC_API_URL),
   headers: {
@@ -32,6 +37,12 @@ api.interceptors.request.use(
     // Defaults set application/json — that breaks multipart: server never sees boundary.
     if (typeof FormData !== "undefined" && config.data instanceof FormData) {
       config.headers.delete("Content-Type")
+      // Vercel serverless rejects bodies > ~4.5MB (FUNCTION_PAYLOAD_TOO_LARGE).
+      // Send uploads straight to the API; auth is via Bearer, not cross-origin cookies.
+      if (directUploadBaseUrl) {
+        config.baseURL = directUploadBaseUrl
+        config.withCredentials = false
+      }
     }
     return config
   },
