@@ -105,7 +105,6 @@ export function SoundForm({
   })
 
   const {
-    register,
     control,
     handleSubmit,
     watch,
@@ -406,12 +405,18 @@ export function SoundForm({
             />
 
             {activeLang === "CKB" ? (
-              <div className="mt-6 space-y-3">
+              <div key="ckb" className="mt-6 space-y-3">
                 <Input
                   className={borderlessTitleClass}
                   placeholder={NS.field.title_ckb}
                   maxLength={200}
-                  {...register("ckbContent.title")}
+                  value={watch("ckbContent.title") ?? ""}
+                  onChange={(e) =>
+                    setValue("ckbContent.title", e.target.value, {
+                      shouldDirty: true,
+                      shouldValidate: true,
+                    })
+                  }
                 />
                 <p className="text-muted-foreground text-xs">
                   {formatCkbDigits(titleLen)}/200
@@ -430,13 +435,19 @@ export function SoundForm({
                 />
               </div>
             ) : (
-              <div className="mt-6 space-y-3">
+              <div key="kmr" className="mt-6 space-y-3">
                 <Input
                   dir="ltr"
                   className={borderlessTitleClass}
                   placeholder={NS.field.title_kmr}
                   maxLength={200}
-                  {...register("kmrContent.title")}
+                  value={watch("kmrContent.title") ?? ""}
+                  onChange={(e) =>
+                    setValue("kmrContent.title", e.target.value, {
+                      shouldDirty: true,
+                      shouldValidate: true,
+                    })
+                  }
                 />
                 {errors.kmrContent?.title ? (
                   <FieldError>{errors.kmrContent.title.message}</FieldError>

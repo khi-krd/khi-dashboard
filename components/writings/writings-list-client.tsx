@@ -122,7 +122,7 @@ function WritingsListClientInner() {
     pageSize: 20,
   })
   const [sorting, setSorting] = useState<SortingState>([
-    { id: "sortCreated", desc: true },
+    { id: "date", desc: true },
   ])
 
   const [writerFilter, setWriterFilter] = useState<string | null>(null)

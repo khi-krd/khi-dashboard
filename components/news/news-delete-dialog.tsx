@@ -40,13 +40,15 @@ function BulkRecap({
   const head = items.slice(0, 3)
   const rest = items.length - head.length
   return (
-    <ul className="text-foreground mt-2 list-none space-y-1.5 text-start text-sm font-medium">
+    <ul className="text-foreground w-full min-w-0 list-none space-y-1.5 text-start text-sm font-medium">
       {head.map((it) => (
         <li key={String(it.id)} className="flex items-start gap-2">
-          <span aria-hidden className="text-muted-foreground">
+          <span aria-hidden className="text-muted-foreground shrink-0">
             ·
           </span>
-          <span className="truncate">{truncateTitle(it.titleCkb ?? "", 160)}</span>
+          <span className="min-w-0 flex-1 truncate">
+            {truncateTitle(it.titleCkb ?? "", 160)}
+          </span>
         </li>
       ))}
       {rest > 0 ? (
@@ -81,13 +83,19 @@ export function NewsDeleteDialog({
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent size="default" className="max-w-md rounded-lg border border-border">
-        <AlertDialogHeader className="text-start">
+      <AlertDialogContent
+        size="default"
+        className="border-border max-w-md overflow-hidden rounded-lg border"
+      >
+        <AlertDialogHeader className="flex w-full min-w-0 flex-col items-stretch gap-3 text-start">
           <AlertDialogTitle className="text-start">
             {NS.dialog.delete.title}
           </AlertDialogTitle>
-          <AlertDialogDescription className="text-muted-foreground space-y-2 text-start text-sm leading-relaxed">
-            <p className="text-pretty">
+          <AlertDialogDescription
+            render={<div />}
+            className="text-muted-foreground w-full min-w-0 space-y-3 text-start text-sm leading-relaxed"
+          >
+            <p>
               {isBulk
                 ? NS.dialog.bulk_delete.body(
                     formatCkbDigits(target.items.length),
@@ -95,7 +103,7 @@ export function NewsDeleteDialog({
                 : NS.dialog.delete.body}
             </p>
             {isBulk ? <BulkRecap items={target.items} /> : null}
-            <div className="border-border text-foreground flex items-center gap-2 overflow-hidden rounded-md border bg-card p-2">
+            <div className="border-border bg-card flex w-full min-w-0 items-center gap-3 overflow-hidden rounded-md border p-2">
               <div className="bg-muted relative size-12 shrink-0 overflow-hidden rounded-md">
                 {cover ? (
                   <Image
@@ -107,13 +115,15 @@ export function NewsDeleteDialog({
                   />
                 ) : null}
               </div>
-              <p className="truncate text-sm font-medium">
-                {truncateTitle(titleCkb ?? "", 120)}
-              </p>
+              <div className="min-w-0 flex-1">
+                <p className="line-clamp-2 wrap-break-word text-sm font-medium">
+                  {truncateTitle(titleCkb ?? "", 100)}
+                </p>
+              </div>
             </div>
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter className="sm:justify-between">
+        <AlertDialogFooter className="gap-2 sm:justify-start">
           <AlertDialogCancel className="rounded-md">
             {NS.action.cancel}
           </AlertDialogCancel>

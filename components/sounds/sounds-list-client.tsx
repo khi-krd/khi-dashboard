@@ -95,7 +95,7 @@ function SoundsListClientInner() {
     pageSize: 20,
   })
   const [sorting, setSorting] = useState<SortingState>([
-    { id: "sortCreated", desc: true },
+    { id: "date", desc: true },
   ])
 
   const [stateFilter, setStateFilter] = useState<SoundsUiStateFilter>("all")

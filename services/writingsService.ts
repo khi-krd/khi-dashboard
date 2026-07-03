@@ -1,6 +1,7 @@
 import api from "@/lib/axios"
 import {
   normalizeSeriesDetail,
+  normalizeTopicDto,
   normalizeTopicList,
   normalizeWritingDto,
   normalizeWritingPage,
@@ -9,6 +10,7 @@ import { normalizeFeaturedWritingPage } from "@/lib/featured-overlay"
 import type {
   FeaturedPayload,
   LinkSeriesPayload,
+  NewTopicPayload,
   SeriesDetailDto,
   TopicDto,
   WritingDto,
@@ -107,6 +109,15 @@ export async function getFeaturedWritings(
 export async function getTopics(): Promise<TopicDto[]> {
   const { data } = await api.get<unknown>(`${BASE}/topics`)
   return normalizeTopicList(data)
+}
+
+export async function createTopic(payload: NewTopicPayload): Promise<TopicDto> {
+  const { data } = await api.post<unknown>(`${BASE}/topics`, payload)
+  return normalizeTopicDto(data)
+}
+
+export async function deleteTopic(topicId: number): Promise<void> {
+  await api.delete(`${BASE}/topics/${topicId}`)
 }
 
 export async function getSeriesParents(

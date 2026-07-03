@@ -1,19 +1,27 @@
 "use client"
 
+import { PlusIcon } from "@heroicons/react/24/outline"
 import Link from "next/link"
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
+import { toast } from "sonner"
 
 import {
   WritingBreadcrumbBar,
   dashboardWritingsCrumbHref,
 } from "@/components/writings/writing-breadcrumb"
 import { WritingErrorState } from "@/components/writings/writing-error-state"
+import { TopicCreateDialog } from "@/components/writings/topics/topic-create-dialog"
+import { TopicDeleteDialog } from "@/components/writings/topics/topic-delete-dialog"
+import { WritingsTopicsDataGrid } from "@/components/writings/topics/topics-data-grid"
 import { NS } from "@/components/writings/writings-strings"
-import { buttonVariants } from "@/components/ui/button"
-import { Skeleton } from "@/components/ui/skeleton"
-import { useWritingTopicsQuery, useWritingsListQuery } from "@/hooks/useWritings"
-import { formatCkbDigits } from "@/lib/intl-ckb"
+import { Button, buttonVariants } from "@/components/ui/button"
+import {
+  useDeleteTopicMutation,
+  useWritingTopicsQuery,
+  useWritingsListQuery,
+} from "@/hooks/useWritings"
 import { cn } from "@/lib/utils"
+import type { TopicDto } from "@/types/writings"
 import type { WritingsListQueryKeyParts } from "@/types/writings-ui"
 
 const listParams: WritingsListQueryKeyParts = {
@@ -25,19 +33,13 @@ const listParams: WritingsListQueryKeyParts = {
   languageFilter: "all",
 }
 
-function TopicsTableSkeleton() {
-  return (
-    <div className="space-y-2">
-      {Array.from({ length: 5 }).map((_, i) => (
-        <Skeleton key={i} className="h-12 w-full rounded-md" />
-      ))}
-    </div>
-  )
-}
-
 export function TopicsList() {
   const topicsQ = useWritingTopicsQuery()
   const writingsQ = useWritingsListQuery(listParams)
+
+  const [createOpen, setCreateOpen] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState<TopicDto | null>(null)
+  const deleteMut = useDeleteTopicMutation()
 
   const usageByTopic = useMemo(() => {
     const map = new Map<number, number>()
@@ -49,7 +51,7 @@ export function TopicsList() {
   }, [writingsQ.data?.content])
 
   const topics = topicsQ.data ?? []
-  const isLoading = topicsQ.isLoading
+  const isLoading = topicsQ.isLoading || topicsQ.isFetching
 
   return (
     <div dir="rtl" className="space-y-8 px-4 py-6 lg:px-6">
@@ -61,7 +63,7 @@ export function TopicsList() {
         ]}
       />
 
-      <header className="border-border/60 flex flex-col gap-4 border-b pb-6">
+      <header className="border-border/60 flex flex-col gap-4 border-b pb-6 sm:flex-row sm:items-start sm:justify-between">
         <div className="space-y-1.5">
           <h1 className="text-2xl font-semibold tracking-tight">
             {NS.topics.page.title}
@@ -69,63 +71,38 @@ export function TopicsList() {
           <p className="text-muted-foreground max-w-xl text-sm">
             {NS.topics.page.subtitle}
           </p>
-          <p className="text-muted-foreground max-w-xl text-xs">
-            {NS.topics.page.readonly_note}
-          </p>
         </div>
+        <Button type="button" onClick={() => setCreateOpen(true)} className="gap-1.5">
+          <PlusIcon className="size-4" />
+          {NS.action.new_topic}
+        </Button>
       </header>
 
       {topicsQ.isError ? (
         <WritingErrorState onRetry={() => void topicsQ.refetch()} />
-      ) : isLoading ? (
-        <TopicsTableSkeleton />
-      ) : topics.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-center">
-          <h2 className="text-foreground mb-2 text-base font-medium">
-            {NS.topics.empty.title}
-          </h2>
-          <p className="text-muted-foreground mb-4 max-w-md text-sm">
-            {NS.topics.empty.subtitle}
-          </p>
-        </div>
       ) : (
-        <div className="border-border overflow-hidden rounded-lg border">
-          <table className="w-full text-sm">
-            <thead className="bg-muted/40 text-muted-foreground text-xs">
-              <tr>
-                <th className="px-4 py-2 text-start font-medium">
-                  {NS.topic.name_ckb}
-                </th>
-                <th className="px-4 py-2 text-start font-medium">
-                  {NS.topic.name_kmr}
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border/60">
-              {topics.map((topic) => {
-                const count = usageByTopic.get(topic.id) ?? 0
-                return (
-                  <tr key={topic.id} className="hover:bg-muted/20">
-                    <td className="px-4 py-3">
-                      <Link
-                        href={`/dashboard/writings?topic=${topic.id}`}
-                        className="text-primary font-medium hover:underline"
-                      >
-                        {topic.nameCkb || NS.dash}
-                      </Link>
-                      <p className="text-muted-foreground mt-0.5 text-xs">
-                        {NS.topic.usage(formatCkbDigits(count))}
-                      </p>
-                    </td>
-                    <td className="text-muted-foreground px-4 py-3" dir="ltr">
-                      {topic.nameKmr || NS.dash}
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </div>
+        <>
+          {!isLoading && topics.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <h2 className="text-foreground mb-2 text-base font-medium">
+                {NS.topics.empty.title}
+              </h2>
+              <p className="text-muted-foreground mb-4 max-w-md text-sm">
+                {NS.topics.empty.subtitle}
+              </p>
+              <Button type="button" onClick={() => setCreateOpen(true)}>
+                {NS.action.new_topic}
+              </Button>
+            </div>
+          ) : (
+            <WritingsTopicsDataGrid
+              rows={topics}
+              usageByTopic={usageByTopic}
+              isLoading={isLoading}
+              onDelete={setDeleteTarget}
+            />
+          )}
+        </>
       )}
 
       <Link
@@ -134,6 +111,29 @@ export function TopicsList() {
       >
         {NS.action.back}
       </Link>
+
+      <TopicCreateDialog open={createOpen} onOpenChange={setCreateOpen} />
+
+      <TopicDeleteDialog
+        open={deleteTarget != null}
+        onOpenChange={(o) => {
+          if (!o) setDeleteTarget(null)
+        }}
+        target={deleteTarget}
+        writingCount={deleteTarget ? (usageByTopic.get(deleteTarget.id) ?? 0) : 0}
+        isPending={deleteMut.isPending}
+        onConfirm={() => {
+          if (!deleteTarget) return
+          const id = deleteTarget.id
+          deleteMut.mutate(id, {
+            onSuccess: () => {
+              toast.success(NS.toast.topic_deleted)
+              setDeleteTarget(null)
+            },
+            onError: () => toast.error(NS.error.generic),
+          })
+        }}
+      />
     </div>
   )
 }

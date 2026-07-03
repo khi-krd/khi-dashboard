@@ -11,7 +11,9 @@ import { soundKeys } from "@/lib/sounds-query-keys"
 import { syncFeaturedSoundsCache } from "@/lib/featured-cache-sync"
 import {
   createSound,
+  createTopic,
   deleteSound,
+  deleteTopic,
   getAlbumOfMemories,
   getSoundById,
   getSoundsByState,
@@ -23,7 +25,12 @@ import {
   searchSounds,
   updateSound,
 } from "@/services/soundsService"
-import type { FeaturedPayload, SoundDto, SoundPage } from "@/types/sounds"
+import type {
+  FeaturedPayload,
+  NewTopicPayload,
+  SoundDto,
+  SoundPage,
+} from "@/types/sounds"
 import type { SoundsListQueryKeyParts } from "@/types/sounds-ui"
 
 async function fetchSoundsPage(
@@ -104,6 +111,27 @@ export function useSoundTopicsQuery() {
     queryKey: soundKeys.topics(),
     queryFn: getTopics,
     staleTime: 1000 * 60 * 5,
+  })
+}
+
+export function useCreateTopicMutation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (payload: NewTopicPayload) => createTopic(payload),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: soundKeys.topics() })
+    },
+  })
+}
+
+export function useDeleteTopicMutation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (topicId: number) => deleteTopic(topicId),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: soundKeys.topics() })
+      void queryClient.invalidateQueries({ queryKey: soundKeys.lists() })
+    },
   })
 }
 

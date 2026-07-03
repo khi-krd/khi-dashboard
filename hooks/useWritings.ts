@@ -10,7 +10,9 @@ import {
 import { writingsKeys } from "@/lib/writings-query-keys"
 import { syncFeaturedWritingsCache } from "@/lib/featured-cache-sync"
 import {
+  createTopic,
   createWriting,
+  deleteTopic,
   deleteWriting,
   getSeriesById,
   getSeriesParents,
@@ -27,6 +29,7 @@ import {
 import type {
   FeaturedPayload,
   LinkSeriesPayload,
+  NewTopicPayload,
   WritingDto,
   WritingPage,
 } from "@/types/writings"
@@ -104,6 +107,27 @@ export function useWritingTopicsQuery() {
     queryKey: writingsKeys.topics(),
     queryFn: getTopics,
     staleTime: 1000 * 60 * 5,
+  })
+}
+
+export function useCreateTopicMutation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (payload: NewTopicPayload) => createTopic(payload),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: writingsKeys.topics() })
+    },
+  })
+}
+
+export function useDeleteTopicMutation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (topicId: number) => deleteTopic(topicId),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: writingsKeys.topics() })
+      void queryClient.invalidateQueries({ queryKey: writingsKeys.lists() })
+    },
   })
 }
 

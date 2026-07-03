@@ -59,6 +59,11 @@ export type TopicDto = {
   updatedAt?: string
 }
 
+export type NewTopicPayload = {
+  nameCkb?: string
+  nameKmr?: string
+}
+
 export type SoundDto = {
   id?: number
   featured?: boolean

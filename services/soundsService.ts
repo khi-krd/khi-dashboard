@@ -2,6 +2,7 @@ import api from "@/lib/axios"
 import {
   normalizeSoundDto,
   normalizeSoundPage,
+  normalizeTopicDto,
   normalizeTopicList,
 } from "@/lib/sounds-normalize"
 import { normalizeFeaturedSoundPage } from "@/lib/featured-overlay"
@@ -9,6 +10,7 @@ import type {
   FeaturedPayload,
   SoundDto,
   SoundPage,
+  NewTopicPayload,
   TopicDto,
   TrackState,
 } from "@/types/sounds"
@@ -147,4 +149,13 @@ export async function getFeaturedSounds(
 export async function getTopics(): Promise<TopicDto[]> {
   const { data } = await api.get<unknown>(`${BASE}/topics`)
   return normalizeTopicList(data)
+}
+
+export async function createTopic(payload: NewTopicPayload): Promise<TopicDto> {
+  const { data } = await api.post<unknown>(`${BASE}/topics`, payload)
+  return normalizeTopicDto(data)
+}
+
+export async function deleteTopic(topicId: number): Promise<void> {
+  await api.delete(`${BASE}/topics/${topicId}`)
 }

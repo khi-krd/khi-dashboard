@@ -25,6 +25,7 @@ import {
   InformationCircleIcon,
   News01Icon,
   SparklesIcon,
+  Tag01Icon,
   UserMultipleIcon,
 } from "@hugeicons/core-free-icons"
 import { useCurrentUserQuery } from "@/hooks/use-current-user"
@@ -102,6 +103,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               url: "/dashboard/writings",
             },
           ],
+        },
+        {
+          title: "بابەتەکان",
+          url: "/dashboard/topics",
+          icon: <HugeiconsIcon icon={Tag01Icon} strokeWidth={2} />,
         },
       ],
     },

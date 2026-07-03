@@ -48,7 +48,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { formatDuration } from "@/lib/sound-format"
-import { formatCkbDigits } from "@/lib/intl-ckb"
+import { formatCkbDigits, formatNewsDateShort } from "@/lib/intl-ckb"
 import { cn } from "@/lib/utils"
 import { getFirstPlayableUrl } from "@/types/sounds-ui"
 import type { SoundAdminTableRow, SoundsUiStateFilter } from "@/types/sounds-ui"
@@ -381,6 +381,37 @@ export function SoundsDataGrid({
         cell: ({ row }) => (
           <SoundListLangChips langs={row.original.contentLanguages ?? []} />
         ),
+      },
+      {
+        id: "date",
+        accessorKey: "sortCreated",
+        sortingFn: "basic",
+        size: 96,
+        meta: {
+          headerTitle: NS.system.created_at,
+          cellClassName: "w-24 hidden lg:table-cell",
+          skeleton: <Skeleton className="h-3.5 w-16" />,
+        },
+        header: ({ column }) => (
+          <button
+            type="button"
+            className="-ms-3 inline-flex w-full justify-start px-3 py-2 text-start"
+            onClick={() => column.toggleSorting()}
+          >
+            <TableSortLabel
+              label={NS.system.created_at}
+              sorted={column.getIsSorted()}
+            />
+          </button>
+        ),
+        cell: ({ row }) => {
+          const created = row.original.createdAt
+          return (
+            <span className="text-muted-foreground font-mono text-xs tabular-nums">
+              {created ? formatNewsDateShort(created) : NS.dash}
+            </span>
+          )
+        },
       },
       {
         id: "actions",
