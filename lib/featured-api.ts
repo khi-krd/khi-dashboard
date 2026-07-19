@@ -42,6 +42,13 @@ export async function patchFeaturedItem(
   }
 }
 
+/** Rows from GET /featured are featured by endpoint semantics. */
+function keepMapped(
+  items: Array<FeaturedCatalogItem | null>,
+): FeaturedCatalogItem[] {
+  return items.filter((item): item is FeaturedCatalogItem => item != null)
+}
+
 export async function fetchFeaturedCatalogItems(
   category: FeatureableCategory,
   page: number,
@@ -50,59 +57,59 @@ export async function fetchFeaturedCatalogItems(
   switch (category) {
     case "news": {
       const pageData = await getFeaturedNews(page, size)
-      return (pageData.content ?? [])
-        .map((item) =>
-          mapNewsToCatalogItem({ ...item, featured: item.featured ?? true }),
-        )
-        .filter((item): item is FeaturedCatalogItem => item != null && item.featured)
+      return keepMapped(
+        (pageData.content ?? []).map((item) =>
+          mapNewsToCatalogItem({ ...item, featured: true }),
+        ),
+      )
     }
     case "projects": {
       const pageData = await getFeaturedProjects(page, size)
-      return (pageData.content ?? [])
-        .map((item) =>
-          mapProjectToCatalogItem({ ...item, featured: item.featured ?? true }),
-        )
-        .filter((item): item is FeaturedCatalogItem => item != null && item.featured)
+      return keepMapped(
+        (pageData.content ?? []).map((item) =>
+          mapProjectToCatalogItem({ ...item, featured: true }),
+        ),
+      )
     }
     case "services": {
       const pageData = await getFeaturedServices(page, size)
-      return (pageData.content ?? [])
-        .map((item) =>
-          mapServiceToCatalogItem({ ...item, featured: item.featured ?? true }),
-        )
-        .filter((item): item is FeaturedCatalogItem => item != null && item.featured)
+      return keepMapped(
+        (pageData.content ?? []).map((item) =>
+          mapServiceToCatalogItem({ ...item, featured: true }),
+        ),
+      )
     }
     case "videos": {
       const pageData = await getFeaturedVideos(page, size)
-      return (pageData.content ?? [])
-        .map((item) =>
-          mapVideoToCatalogItem({ ...item, featured: item.featured ?? true }),
-        )
-        .filter((item): item is FeaturedCatalogItem => item != null && item.featured)
+      return keepMapped(
+        (pageData.content ?? []).map((item) =>
+          mapVideoToCatalogItem({ ...item, featured: true }),
+        ),
+      )
     }
     case "sounds": {
       const pageData = await getFeaturedSounds(page, size)
-      return (pageData.content ?? [])
-        .map((item) =>
-          mapSoundToCatalogItem({ ...item, featured: item.featured ?? true }),
-        )
-        .filter((item): item is FeaturedCatalogItem => item != null && item.featured)
+      return keepMapped(
+        (pageData.content ?? []).map((item) =>
+          mapSoundToCatalogItem({ ...item, featured: true }),
+        ),
+      )
     }
     case "collections": {
       const pageData = await getFeaturedCollections(page, size)
-      return (pageData.content ?? [])
-        .map((item) =>
-          mapCollectionToCatalogItem({ ...item, featured: item.featured ?? true }),
-        )
-        .filter((item): item is FeaturedCatalogItem => item != null && item.featured)
+      return keepMapped(
+        (pageData.content ?? []).map((item) =>
+          mapCollectionToCatalogItem({ ...item, featured: true }),
+        ),
+      )
     }
     case "writings": {
       const pageData = await getFeaturedWritings(page, size)
-      return (pageData.content ?? [])
-        .map((item) =>
-          mapWritingToCatalogItem({ ...item, featured: item.featured ?? true }),
-        )
-        .filter((item): item is FeaturedCatalogItem => item != null && item.featured)
+      return keepMapped(
+        (pageData.content ?? []).map((item) =>
+          mapWritingToCatalogItem({ ...item, featured: true }),
+        ),
+      )
     }
   }
 }

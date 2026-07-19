@@ -9,4 +9,5 @@ export const soundKeys = {
   topics: () => [...soundKeys.all, "topics"] as const,
   search: (q: string) => [...soundKeys.all, "search", q] as const,
   types: () => [...soundKeys.all, "types"] as const,
+  reklamVideo: () => [...soundKeys.all, "reklam-video"] as const,
 }

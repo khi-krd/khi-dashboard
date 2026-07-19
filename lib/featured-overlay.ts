@@ -1,11 +1,11 @@
 import { unwrapApiData } from "@/lib/api-unwrap"
-import { normalizeCollectionDto, normalizeCollectionPage } from "@/lib/image-collections-normalize"
+import { normalizeCollectionDto } from "@/lib/image-collections-normalize"
 import { normalizeNewsDto } from "@/lib/news-media-normalize"
 import { normalizeProjectDto } from "@/lib/projects-media-normalize"
 import { normalizeServiceDto } from "@/lib/services-media-normalize"
-import { normalizeSoundDto, normalizeSoundPage } from "@/lib/sounds-normalize"
-import { normalizeVideoDto, normalizeVideoPage } from "@/lib/videos-normalize"
-import { normalizeWritingDto, normalizeWritingPage } from "@/lib/writings-normalize"
+import { normalizeSoundDto } from "@/lib/sounds-normalize"
+import { normalizeVideoDto } from "@/lib/videos-normalize"
+import { normalizeWritingDto } from "@/lib/writings-normalize"
 import type { CollectionDto, CollectionPage } from "@/types/image-collections"
 import type { NewsDto, PageResponse } from "@/types/news"
 import type { ProjectDto, PageResponse as ProjectPageResponse } from "@/types/projects"
@@ -105,12 +105,7 @@ export function normalizeFeaturedVideoPage(
   page: number,
   size: number,
 ): VideoPage {
-  try {
-    return normalizeVideoPage(unwrapApiData(raw))
-  } catch {
-    const content = normalizeFeaturedArray(raw, normalizeVideoDto)
-    return fallbackPage(content, page, size)
-  }
+  return normalizeFeaturedWrappedPage(raw, page, size, normalizeVideoDto)
 }
 
 export function normalizeFeaturedCollectionPage(
@@ -118,12 +113,7 @@ export function normalizeFeaturedCollectionPage(
   page: number,
   size: number,
 ): CollectionPage {
-  try {
-    return normalizeCollectionPage(raw)
-  } catch {
-    const content = normalizeFeaturedArray(raw, normalizeCollectionDto)
-    return fallbackPage(content, page, size)
-  }
+  return normalizeFeaturedWrappedPage(raw, page, size, normalizeCollectionDto)
 }
 
 export function normalizeFeaturedSoundPage(
@@ -131,12 +121,7 @@ export function normalizeFeaturedSoundPage(
   page: number,
   size: number,
 ): SoundPage {
-  try {
-    return normalizeSoundPage(raw)
-  } catch {
-    const content = normalizeFeaturedArray(raw, normalizeSoundDto)
-    return fallbackPage(content, page, size)
-  }
+  return normalizeFeaturedWrappedPage(raw, page, size, normalizeSoundDto)
 }
 
 export function normalizeFeaturedWritingPage(
@@ -144,12 +129,7 @@ export function normalizeFeaturedWritingPage(
   page: number,
   size: number,
 ): WritingPage {
-  try {
-    return normalizeWritingPage(raw)
-  } catch {
-    const content = normalizeFeaturedArray(raw, normalizeWritingDto)
-    return fallbackPage(content, page, size)
-  }
+  return normalizeFeaturedWrappedPage(raw, page, size, normalizeWritingDto)
 }
 
 export type FeaturedOverlayEntry = {

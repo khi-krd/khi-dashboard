@@ -10,6 +10,7 @@ import type {
   SoundDto,
   SoundFileDto,
   SoundPage,
+  SoundReklamVideoDto,
   TopicDto,
   TrackState,
 } from "@/types/sounds"
@@ -253,4 +254,21 @@ export function normalizeTopicList(raw: unknown): TopicDto[] {
   const unwrapped = unwrapApiData<unknown>(raw)
   const list = Array.isArray(unwrapped) ? unwrapped : []
   return list.map(normalizeTopicDto)
+}
+
+export function normalizeSoundReklamVideoDto(raw: unknown): SoundReklamVideoDto {
+  const unwrapped = unwrapApiData<unknown>(raw)
+  const o = (unwrapped && typeof unwrapped === "object" ? unwrapped : {}) as Record<
+    string,
+    unknown
+  >
+  return {
+    id: coerceNum(o.id) ?? 0,
+    videoUrl:
+      coerceStr(o.videoUrl) ?? coerceStr(o.video_url) ?? "",
+    sizeBytes: coerceNum(o.sizeBytes) ?? coerceNum(o.size_bytes),
+    mimeType: coerceStr(o.mimeType) ?? coerceStr(o.mime_type),
+    createdAt: coerceStr(o.createdAt) ?? coerceStr(o.created_at),
+    updatedAt: coerceStr(o.updatedAt) ?? coerceStr(o.updated_at),
+  }
 }

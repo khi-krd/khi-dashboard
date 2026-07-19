@@ -20,6 +20,19 @@ const directUploadBaseUrl = normalizeApiBaseUrl(
   process.env.NEXT_PUBLIC_DIRECT_API_URL,
 )
 
+/**
+ * Use DIRECT_API_URL only when it helps (Vercel body limit) and CORS can succeed.
+ * On localhost, keep same-origin `/railway-proxy` — direct Railway calls fail CORS
+ * (OPTIONS 403, no Access-Control-Allow-Origin) and local Next has no 4.5MB cap.
+ */
+function shouldBypassProxyForUpload(): boolean {
+  if (!directUploadBaseUrl) return false
+  if (typeof window === "undefined") return true
+  const host = window.location.hostname
+  if (host === "localhost" || host === "127.0.0.1") return false
+  return true
+}
+
 const api = axios.create({
   baseURL: normalizeApiBaseUrl(process.env.NEXT_PUBLIC_API_URL),
   headers: {
@@ -39,7 +52,7 @@ api.interceptors.request.use(
       config.headers.delete("Content-Type")
       // Vercel serverless rejects bodies > ~4.5MB (FUNCTION_PAYLOAD_TOO_LARGE).
       // Send uploads straight to the API; auth is via Bearer, not cross-origin cookies.
-      if (directUploadBaseUrl) {
+      if (shouldBypassProxyForUpload()) {
         config.baseURL = directUploadBaseUrl
         config.withCredentials = false
       }

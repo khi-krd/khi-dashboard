@@ -8,6 +8,7 @@ import type { PaginationState, SortingState } from "@tanstack/react-table"
 import { toast } from "sonner"
 import {
   Cog6ToothIcon,
+  FilmIcon,
   MagnifyingGlassIcon,
   MusicalNoteIcon,
   PlusIcon,
@@ -244,6 +245,13 @@ function SoundsListClientInner() {
           >
             <Cog6ToothIcon className="size-4" aria-hidden />
             {NS.topics.link}
+          </Link>
+          <Link
+            href="/dashboard/sounds/reklam-video"
+            className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 text-xs transition-colors"
+          >
+            <FilmIcon className="size-4" aria-hidden />
+            {NS.reklam.link}
           </Link>
           <Link
             href="/dashboard/sounds/new"

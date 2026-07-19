@@ -37,9 +37,32 @@ export function useFeaturedAllQuery(page: number, size: number) {
         ),
       )
 
-      const items = results.flatMap((result) =>
-        result.status === "fulfilled" ? result.value : [],
-      )
+      const fulfilled: FeaturedCatalogItem[][] = []
+      const rejected: Array<{ category: string; reason: unknown }> = []
+
+      results.forEach((result, index) => {
+        if (result.status === "fulfilled") {
+          fulfilled.push(result.value)
+        } else {
+          rejected.push({
+            category: FEATUREABLE_CATEGORIES[index] ?? String(index),
+            reason: result.reason,
+          })
+        }
+      })
+
+      if (fulfilled.length === 0 && rejected.length > 0) {
+        const first = rejected[0].reason
+        throw first instanceof Error
+          ? first
+          : new Error("Failed to load featured content")
+      }
+
+      if (rejected.length > 0) {
+        console.warn("[featured] partial fetch failures", rejected)
+      }
+
+      const items = fulfilled.flat()
 
       return {
         items: sortFeaturedItems(items),
