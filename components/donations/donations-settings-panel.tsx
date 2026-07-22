@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { CheckIcon } from "@heroicons/react/24/outline"
-import { useEffect, useRef } from "react"
+import { useEffect, useMemo, useRef } from "react"
 import { Controller, useForm, type Resolver } from "react-hook-form"
 import { toast } from "sonner"
 
@@ -18,7 +18,6 @@ import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
 import {
   useDonationSettingsQuery,
-  useDonationTypesQuery,
   useUpdateDonationSettingsMutation,
 } from "@/hooks/useDonations"
 import { toastError } from "@/lib/toast"
@@ -29,11 +28,12 @@ import {
   settingsDtoToFormValues,
   type DonationSettingsFormValues,
 } from "@/lib/validations/donations"
-import type { DonationSettingsDto } from "@/types/donations"
+import type { DonationSettingsDto, DonationTypeCode } from "@/types/donations"
+
+const DERIVED_TYPE_CODES: DonationTypeCode[] = ["FINANCIAL", "ARCHIVE"]
 
 export function DonationsSettingsPanel() {
   const settingsQ = useDonationSettingsQuery()
-  const typesQ = useDonationTypesQuery()
   const updateMut = useUpdateDonationSettingsMutation()
 
   if (settingsQ.isError) {
@@ -44,8 +44,6 @@ export function DonationsSettingsPanel() {
     <DonationsSettingsForm
       settingsDto={settingsQ.data ?? undefined}
       isLoading={settingsQ.isLoading}
-      types={typesQ.data ?? []}
-      typesLoading={typesQ.isLoading}
       pending={updateMut.isPending}
       onSave={(payload) =>
         updateMut.mutate(payload, {
@@ -60,15 +58,11 @@ export function DonationsSettingsPanel() {
 function DonationsSettingsForm({
   settingsDto,
   isLoading,
-  types,
-  typesLoading,
   pending,
   onSave,
 }: {
   settingsDto?: DonationSettingsDto
   isLoading?: boolean
-  types: Array<{ code: string; titleCkb?: string | null; enabled: boolean }>
-  typesLoading?: boolean
   pending?: boolean
   onSave: (payload: DonationSettingsDto) => void
 }) {
@@ -101,7 +95,19 @@ function DonationsSettingsForm({
     }
   }, [settingsDto, isLoading, reset])
 
-  const heroImageUrl = watch("heroImageUrl")
+  const financialEnabled = watch("financialDonationsEnabled")
+  const archiveEnabled = watch("archiveDonationsEnabled")
+
+  const derivedTypes = useMemo(
+    () =>
+      DERIVED_TYPE_CODES.map((code) => ({
+        code,
+        enabled:
+          code === "FINANCIAL" ? financialEnabled : archiveEnabled,
+      })),
+    [financialEnabled, archiveEnabled],
+  )
+
   const canSave = isDirty && !pending
 
   const onSubmit = handleSubmit((values) => {
@@ -302,38 +308,27 @@ function DonationsSettingsForm({
             </div>
           )}
         />
-      </section>
 
-      {types.length > 0 ? (
-        <section className="border-border/60 space-y-3 rounded-xl border p-5">
+        <div className="space-y-3 pt-2">
           <div>
-            <h3 className="text-sm font-semibold">{NS.settings.typesTitle}</h3>
+            <h4 className="text-sm font-semibold">{NS.settings.typesTitle}</h4>
             <p className="text-muted-foreground text-xs">{NS.settings.typesSubtitle}</p>
           </div>
-          {typesLoading ? (
-            <p className="text-muted-foreground text-sm">بارکردن…</p>
-          ) : (
-            <ul className="space-y-2">
-              {types.map((t) => (
-                <li
-                  key={t.code}
-                  className="flex items-center justify-between gap-3 rounded-lg border px-4 py-3"
-                >
-                  <div>
-                    <p className="text-sm font-medium">{t.code}</p>
-                    {t.titleCkb?.trim() ? (
-                      <p className="text-muted-foreground text-xs">{t.titleCkb}</p>
-                    ) : null}
-                  </div>
-                  <Badge variant={t.enabled ? "secondary" : "outline"}>
-                    {t.enabled ? NS.status.APPROVED : NS.status.REJECTED}
-                  </Badge>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-      ) : null}
+          <ul className="space-y-2">
+            {derivedTypes.map((t) => (
+              <li
+                key={t.code}
+                className="flex items-center justify-between gap-3 rounded-lg border px-4 py-3"
+              >
+                <p className="text-sm font-medium">{t.code}</p>
+                <Badge variant={t.enabled ? "secondary" : "outline"}>
+                  {t.enabled ? NS.settings.typeEnabled : NS.settings.typeDisabled}
+                </Badge>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
 
       <div className="flex justify-end">
         <Button type="submit" disabled={!canSave || isLoading}>

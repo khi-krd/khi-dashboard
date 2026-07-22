@@ -1,13 +1,14 @@
 import { unwrapApiData } from "@/lib/about-normalize"
-import type {
-  ArchiveDonationDto,
-  ArchiveMaterialType,
-  DonationPage,
-  DonationSettingsDto,
-  DonationStatus,
-  DonationTypeCode,
-  DonationTypeDto,
-  FinancialDonationDto,
+import {
+  isDonationStatus,
+  type ArchiveDonationDto,
+  type ArchiveMaterialType,
+  type DonationPage,
+  type DonationSettingsDto,
+  type DonationStatus,
+  type DonationTypeCode,
+  type DonationTypeDto,
+  type FinancialDonationDto,
 } from "@/types/donations"
 
 function coerceStr(v: unknown): string | null {
@@ -38,8 +39,6 @@ const MATERIAL_TYPES = new Set<ArchiveMaterialType>([
   "OTHER",
 ])
 
-const STATUSES = new Set<DonationStatus>(["PENDING", "APPROVED", "REJECTED"])
-
 const TYPE_CODES = new Set<DonationTypeCode>(["FINANCIAL", "ARCHIVE"])
 
 function normalizeMaterialType(v: unknown): ArchiveMaterialType | null {
@@ -52,7 +51,7 @@ function normalizeMaterialType(v: unknown): ArchiveMaterialType | null {
 
 function normalizeStatus(v: unknown): DonationStatus {
   const s = coerceStr(v)?.toUpperCase()
-  if (s && STATUSES.has(s as DonationStatus)) return s as DonationStatus
+  if (s && isDonationStatus(s)) return s
   return "PENDING"
 }
 

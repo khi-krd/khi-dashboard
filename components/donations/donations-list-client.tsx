@@ -4,6 +4,7 @@ import { MagnifyingGlassIcon, XMarkIcon } from "@heroicons/react/24/outline"
 import { Suspense, useCallback, useMemo, useState } from "react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 
+import { DonationStatusFilterSelect } from "@/components/donations/donation-status-select"
 import {
   DonationsBreadcrumbBar,
   dashboardDonationsCrumbHref,
@@ -16,13 +17,6 @@ import { DonationsFinancialTable } from "@/components/donations/donations-financ
 import { DonationsSettingsPanel } from "@/components/donations/donations-settings-panel"
 import { NS } from "@/components/donations/donations-strings"
 import { Input } from "@/components/ui/input"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useDebouncedValue } from "@/hooks/useDebouncedValue"
@@ -188,23 +182,13 @@ function DonationsListInner() {
                 className="border-border bg-background h-9 pe-10 ps-3"
               />
             </div>
-            <Select
+            <DonationStatusFilterSelect
               value={statusFilter}
               onValueChange={(v) => {
-                setStatusFilter(v as DonationUiStatusFilter)
+                setStatusFilter(v)
                 setPageIndex(0)
               }}
-            >
-              <SelectTrigger className="bg-background h-9 w-36">
-                <SelectValue placeholder={NS.filter.status} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{NS.status.all}</SelectItem>
-                <SelectItem value="PENDING">{NS.status.PENDING}</SelectItem>
-                <SelectItem value="APPROVED">{NS.status.APPROVED}</SelectItem>
-                <SelectItem value="REJECTED">{NS.status.REJECTED}</SelectItem>
-              </SelectContent>
-            </Select>
+            />
             {anyFilterActive ? (
               <button
                 type="button"
@@ -212,7 +196,7 @@ function DonationsListInner() {
                 className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-xs"
               >
                 <XMarkIcon className="size-3.5" />
-                {NS.status.all}
+                {NS.filter.clear}
               </button>
             ) : null}
           </div>

@@ -35,12 +35,17 @@ export const NS = {
     paymentInstructionsCkb: "ڕێنمایی پارەدان (سورانی)",
     paymentInstructionsKmr: "ڕێنمایی پارەدان (کرمانجی)",
     toggles: "چالاککردنی فۆرمەکان",
-    financialEnabled: "بەخشینی دارایی",
-    financialEnabledHelper: "فۆrm و کارتی دارایی لە ماڵپەڕدا پیشان بدە.",
-    archiveEnabled: "بەخشینی ئەرشیف",
-    archiveEnabledHelper: "فۆrm و کارتەکانی ئەرشیف لە ماڵپەڕدا پیشان بدە.",
-    typesTitle: "جۆرەکانی بەخشین",
-    typesSubtitle: "دۆخی جۆرەکان لە API (تەنها خوێندنەوە).",
+    financialEnabled: "بەخشینی دارایی (FINANCIAL)",
+    financialEnabledHelper:
+      "فۆرم و کارتی دارایی لە ماڵپەڕدا پیشان بدە. کاتێک ناچالاک بێت، ناردنی مەبەست (POST /financial) ڕەتدەکرێتەوە.",
+    archiveEnabled: "بەخشینی ئەرشیف (ARCHIVE)",
+    archiveEnabledHelper:
+      "فۆرم و کارتەکانی ئەرشیف لە ماڵپەڕدا پیشان بدە. کاتێک ناچالاک بێت، ناردنی پێشکەش (POST /archive) ڕەتدەکرێتەوە.",
+    typesTitle: "جۆرەکانی بەخشین (لە API)",
+    typesSubtitle:
+      "GET /types لە ئاڵاگۆڕەکانی ڕێکخستنەوە دروست دەبێت — خشتەی جیاگانە نییە.",
+    typeEnabled: "چالاک",
+    typeDisabled: "ناچالاک",
     save: "پاشەکەوتکردن",
     saved: "ڕێکخستنەکان پاشەکەوت کران.",
   },
@@ -82,9 +87,13 @@ export const NS = {
   },
   status: {
     all: "هەموو",
+    NEW: "نوێ",
     PENDING: "چاوەڕوان",
+    IN_REVIEW: "لە پێداچوونەوەدا",
     APPROVED: "پەسەندکراو",
+    COMPLETED: "تەواو",
     REJECTED: "ڕەتکراو",
+    CLOSED: "داخراو",
   },
   paymentMethod: {
     BANK_TRANSFER: "گواستنەوەی بانکی",
@@ -104,6 +113,7 @@ export const NS = {
   },
   filter: {
     status: "دۆخ",
+    clear: "پاککردنەوە",
   },
   error: {
     generic: "هەڵەیەک ڕوویدا. دووبارە هەوڵ بدەرەوە.",

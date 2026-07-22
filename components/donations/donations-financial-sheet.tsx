@@ -4,16 +4,10 @@ import { useEffect, useState } from "react"
 import { toast } from "sonner"
 
 import { DonationStatusPill } from "@/components/donations/donation-status-pill"
+import { DonationStatusSelect } from "@/components/donations/donation-status-select"
 import { NS } from "@/components/donations/donations-strings"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import {
   Sheet,
   SheetContent,
@@ -28,8 +22,6 @@ import { formatFullTimestampKu } from "@/lib/news-relative-time"
 import { toastError } from "@/lib/toast"
 import type { FinancialDonationRow } from "@/types/donations-ui"
 import type { DonationStatus } from "@/types/donations"
-
-const STATUSES: DonationStatus[] = ["PENDING", "APPROVED", "REJECTED"]
 
 function DetailRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
@@ -142,21 +134,10 @@ export function DonationsFinancialSheet({
 
           <div className="border-border space-y-2 border-t pt-4">
             <Label>{NS.financial.changeStatus}</Label>
-            <Select
+            <DonationStatusSelect
               value={statusDraft}
-              onValueChange={(v) => setStatusDraft(v as DonationStatus)}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {STATUSES.map((s) => (
-                  <SelectItem key={s} value={s}>
-                    {NS.status[s]}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              onValueChange={setStatusDraft}
+            />
           </div>
         </div>
 

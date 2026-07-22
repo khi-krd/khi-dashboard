@@ -1,4 +1,14 @@
-export type DonationStatus = "PENDING" | "APPROVED" | "REJECTED"
+export const DONATION_STATUSES = [
+  "NEW",
+  "PENDING",
+  "IN_REVIEW",
+  "APPROVED",
+  "COMPLETED",
+  "REJECTED",
+  "CLOSED",
+] as const
+
+export type DonationStatus = (typeof DONATION_STATUSES)[number]
 
 export type DonationTypeCode = "FINANCIAL" | "ARCHIVE"
 
@@ -71,4 +81,8 @@ export type DonationPage<T> = {
   totalPages: number
   number: number
   size: number
+}
+
+export function isDonationStatus(value: string): value is DonationStatus {
+  return (DONATION_STATUSES as readonly string[]).includes(value)
 }
