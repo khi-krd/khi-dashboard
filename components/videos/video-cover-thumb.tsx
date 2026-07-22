@@ -11,11 +11,14 @@ export function VideoCoverThumb({
   video,
   className,
 }: {
-  video: Pick<VideoDto, "ckbCoverUrl" | "hoverCoverUrl" | "videoType">
+  video: Pick<
+    VideoDto,
+    "ckbCoverUrl" | "kmrCoverUrl" | "hoverCoverUrl" | "videoType"
+  >
   className?: string
 }) {
   const [hovered, setHovered] = useState(false)
-  const base = video.ckbCoverUrl?.trim()
+  const base = video.ckbCoverUrl?.trim() || video.kmrCoverUrl?.trim()
   const hover = video.hoverCoverUrl?.trim()
   const showHover = hovered && hover
 

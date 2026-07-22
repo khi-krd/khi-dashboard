@@ -43,7 +43,13 @@ async function fetchVideosPage(
     }
     return searchVideosByKeyword(kw, params.page, params.size)
   }
-  return getVideosList(params.page, params.size)
+  return getVideosList({
+    page: params.page,
+    size: params.size,
+    videoType: params.videoType,
+    memories: params.memories,
+    topicId: params.topicId,
+  })
 }
 
 export function useVideosListQuery(params: VideosListQueryKeyParts) {
@@ -73,7 +79,7 @@ async function resolveVideoDetail(
     if (hit) return hit
   }
 
-  const page = await getVideosList(0, 500)
+  const page = await getVideosList({ page: 0, size: 500 })
   return page.content.find((v) => v.id === id) ?? null
 }
 

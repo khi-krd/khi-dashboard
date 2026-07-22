@@ -27,7 +27,7 @@ import { VideoClipList } from "@/components/videos/video-clip-list"
 import { VideoCoverTrio } from "@/components/videos/video-cover-trio"
 import { VideoLanguageToggleChip } from "@/components/videos/video-language-chip"
 import { VideoMetadataGrid } from "@/components/videos/video-metadata-grid"
-import { VideoSourcePanel } from "@/components/videos/video-source-panel"
+import { VideoSourceList } from "@/components/videos/video-source-list"
 import { VideoTagInput } from "@/components/videos/video-tag-input"
 import { TiptapEditor } from "@/components/shared/tiptap-editor-lazy"
 import { VideoTopicCombobox } from "@/components/videos/video-topic-combobox"
@@ -577,7 +577,7 @@ export function VideoForm({
               />
             </section>
 
-            {videoType === "FILM" ? <VideoSourcePanel /> : <VideoClipList />}
+            {videoType === "FILM" ? <VideoSourceList /> : <VideoClipList />}
           </div>
         </div>
 

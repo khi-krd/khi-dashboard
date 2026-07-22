@@ -10,6 +10,15 @@ export type VideoContentDto = {
   producer?: string | null
 }
 
+export type VideoSourceDto = {
+  url?: string | null
+  externalUrl?: string | null
+  embedUrl?: string | null
+  main?: boolean
+  label?: string | null
+  durationSeconds?: number | null
+}
+
 export type VideoClipItemDto = {
   id?: number
   url?: string | null
@@ -49,6 +58,7 @@ export type VideoDto = {
   sourceUrl?: string | null
   sourceExternalUrl?: string | null
   sourceEmbedUrl?: string | null
+  videoSources?: VideoSourceDto[]
   videoClipItems?: VideoClipItemDto[]
   fileFormat?: string | null
   durationSeconds?: number | null

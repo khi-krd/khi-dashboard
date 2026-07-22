@@ -1,5 +1,5 @@
-import { ServiceForm } from "@/components/services/service-form"
+import { redirect } from "next/navigation"
 
 export default function NewServicePage() {
-  return <ServiceForm mode="create" />
+  redirect("/dashboard/services?section=new")
 }

@@ -64,7 +64,9 @@ export function matchesServicesClientSearchFilter(
   const haystack = [
     ...s.contents.map((c) => c.title),
     s.serviceType,
+    s.navAnchorId,
     s.location,
+    s.layoutType,
   ]
     .filter(Boolean)
     .join(" ")
@@ -83,6 +85,7 @@ export type ServiceAdminTableRow = ServiceDto & {
   titleCkb: string
   titleKmr: string
   sortPublishedAt: number
+  sortOrderValue: number
 }
 
 export function toServiceAdminRow(dto: ServiceDto): ServiceAdminTableRow {
@@ -98,6 +101,10 @@ export function toServiceAdminRow(dto: ServiceDto): ServiceAdminTableRow {
     titleCkb,
     titleKmr,
     sortPublishedAt: Number.isFinite(t) ? t : 0,
+    sortOrderValue:
+      typeof dto.sortOrder === "number" && Number.isFinite(dto.sortOrder)
+        ? dto.sortOrder
+        : Number.POSITIVE_INFINITY,
   }
 }
 

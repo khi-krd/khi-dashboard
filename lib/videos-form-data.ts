@@ -16,6 +16,15 @@ function clipHasSource(c: VideoFormValues["videoClipItems"][number]) {
   )
 }
 
+function sourceHasContent(s: VideoFormValues["videoSources"][number]) {
+  return !!(
+    s.url?.trim() ||
+    s.externalUrl?.trim() ||
+    s.embedUrl?.trim() ||
+    s.stagedVideoFile
+  )
+}
+
 export function videoFormValuesToMultipart(
   mode: "create" | "edit",
   videoId: number | undefined,
@@ -28,20 +37,20 @@ export function videoFormValuesToMultipart(
       ? values.videoClipItems
           .filter(clipHasSource)
           .map((c, i) => ({
-          ...(typeof c.id === "number" && c.id > 0 ? { id: c.id } : {}),
-          url: trimOrUndef(c.url),
-          externalUrl: trimOrUndef(c.externalUrl),
-          embedUrl: trimOrUndef(c.embedUrl),
-          clipNumber: c.clipNumber ?? i + 1,
-          durationSeconds: c.durationSeconds ?? undefined,
-          resolution: trimOrUndef(c.resolution),
-          fileFormat: trimOrUndef(c.fileFormat),
-          fileSizeMb: c.fileSizeMb ?? undefined,
-          titleCkb: trimOrUndef(c.titleCkb),
-          titleKmr: trimOrUndef(c.titleKmr),
-          descriptionCkb: c.descriptionCkb?.trim() || undefined,
-          descriptionKmr: c.descriptionKmr?.trim() || undefined,
-        }))
+            ...(typeof c.id === "number" && c.id > 0 ? { id: c.id } : {}),
+            url: trimOrUndef(c.url),
+            externalUrl: trimOrUndef(c.externalUrl),
+            embedUrl: trimOrUndef(c.embedUrl),
+            clipNumber: c.clipNumber ?? i + 1,
+            durationSeconds: c.durationSeconds ?? undefined,
+            resolution: trimOrUndef(c.resolution),
+            fileFormat: trimOrUndef(c.fileFormat),
+            fileSizeMb: c.fileSizeMb ?? undefined,
+            titleCkb: trimOrUndef(c.titleCkb),
+            titleKmr: trimOrUndef(c.titleKmr),
+            descriptionCkb: c.descriptionCkb?.trim() || undefined,
+            descriptionKmr: c.descriptionKmr?.trim() || undefined,
+          }))
       : []
 
   const payload: Partial<VideoDto> & {
@@ -84,13 +93,42 @@ export function videoFormValuesToMultipart(
   }
 
   if (values.videoType === "FILM") {
-    payload.sourceUrl = trimOrUndef(values.sourceUrl)
-    payload.sourceExternalUrl = trimOrUndef(values.sourceExternalUrl)
-    payload.sourceEmbedUrl = trimOrUndef(values.sourceEmbedUrl)
-    payload.fileFormat = trimOrUndef(values.fileFormat)
-    payload.durationSeconds = values.durationSeconds ?? undefined
-    payload.resolution = trimOrUndef(values.resolution)
-    payload.fileSizeMb = values.fileSizeMb ?? undefined
+    const shouldSendSources = mode === "create" || values.sourcesTouched
+
+    if (shouldSendSources) {
+      const sources = values.videoSources.filter(sourceHasContent)
+      const hasMain = sources.some((s) => s.main)
+      payload.videoSources = sources.map((s, i) => ({
+        url: trimOrUndef(s.url),
+        externalUrl: trimOrUndef(s.externalUrl),
+        embedUrl: trimOrUndef(s.embedUrl),
+        main: hasMain ? !!s.main : i === 0,
+        label: trimOrUndef(s.label),
+        durationSeconds: s.durationSeconds ?? undefined,
+      }))
+
+      const mainIdx = payload.videoSources.findIndex((s) => s.main)
+      const mainFormSource =
+        mainIdx >= 0 ? sources[mainIdx] : sources[0]
+
+      payload.fileFormat = trimOrUndef(
+        mainFormSource?.fileFormat ?? values.fileFormat,
+      )
+      payload.durationSeconds =
+        mainFormSource?.durationSeconds ??
+        values.durationSeconds ??
+        undefined
+      payload.resolution = trimOrUndef(
+        mainFormSource?.resolution ?? values.resolution,
+      )
+      payload.fileSizeMb =
+        mainFormSource?.fileSizeMb ?? values.fileSizeMb ?? undefined
+    } else {
+      payload.fileFormat = trimOrUndef(values.fileFormat)
+      payload.durationSeconds = values.durationSeconds ?? undefined
+      payload.resolution = trimOrUndef(values.resolution)
+      payload.fileSizeMb = values.fileSizeMb ?? undefined
+    }
   }
 
   if (values.clearTopic) {
@@ -116,8 +154,16 @@ export function videoFormValuesToMultipart(
   if (values.ckbCoverFile) fd.append("ckbCoverImage", values.ckbCoverFile)
   if (values.kmrCoverFile) fd.append("kmrCoverImage", values.kmrCoverFile)
   if (values.hoverCoverFile) fd.append("hoverImage", values.hoverCoverFile)
-  if (values.stagedVideoFile && values.videoType === "FILM") {
-    fd.append("videoFile", values.stagedVideoFile)
+
+  if (values.videoType === "FILM") {
+    const shouldSendSources = mode === "create" || values.sourcesTouched
+    if (shouldSendSources) {
+      for (const source of values.videoSources) {
+        if (source.stagedVideoFile) {
+          fd.append("videoFiles", source.stagedVideoFile)
+        }
+      }
+    }
   }
 
   if (values.videoType === "VIDEO_CLIP") {

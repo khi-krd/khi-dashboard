@@ -6,7 +6,6 @@ import {
   ChevronRightIcon,
   ChevronUpIcon,
   EyeIcon,
-  MapPinIcon,
   PencilSquareIcon,
   TrashIcon,
 } from "@heroicons/react/24/outline"
@@ -236,6 +235,72 @@ export function ServicesDataGrid({
         ),
       },
       {
+        id: "galleryPreview",
+        accessorFn: (row) => row.galleryMedia?.[0]?.url ?? "",
+        enableSorting: false,
+        size: 56,
+        meta: {
+          headerTitle: NS.col.cover,
+          cellClassName: "w-14",
+          skeleton: <Skeleton className="size-10 rounded-md" />,
+        },
+        header: () => (
+          <span className="px-3 py-2 text-start text-xs">{NS.col.cover}</span>
+        ),
+        cell: ({ row }) => {
+          const slot = row.original.galleryMedia?.[0]
+          const thumb =
+            slot?.type === "VIDEO"
+              ? slot.posterUrl?.trim() || slot.url?.trim()
+              : slot?.url?.trim()
+          return (
+            <div className="flex justify-center px-2">
+              {thumb ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={thumb}
+                  alt=""
+                  className="border-border size-10 rounded-md border object-cover"
+                />
+              ) : (
+                <span className="text-muted-foreground text-xs">{NS.dash}</span>
+              )}
+            </div>
+          )
+        },
+      },
+      {
+        id: "sortOrderValue",
+        accessorKey: "sortOrderValue",
+        sortingFn: "basic",
+        size: 72,
+        meta: {
+          headerTitle: NS.col.sortOrder,
+          cellClassName: "w-16",
+          skeleton: <Skeleton className="h-3.5 w-8" />,
+        },
+        header: ({ column }) => (
+          <button
+            type="button"
+            className="-ms-3 inline-flex w-full justify-start px-3 py-2 text-start"
+            onClick={() => column.toggleSorting()}
+          >
+            <TableSortLabel
+              label={NS.col.sortOrder}
+              sorted={column.getIsSorted()}
+            />
+          </button>
+        ),
+        cell: ({ row }) => (
+          <span className="text-muted-foreground font-mono text-xs">
+            {typeof row.original.sortOrder === "number" &&
+            Number.isFinite(row.original.sortOrder)
+              ? row.original.sortOrder
+              : NS.dash}
+          </span>
+        ),
+      },
+      {
         id: "titleCkb",
         accessorKey: "titleCkb",
         sortingFn: "alphanumeric",
@@ -266,12 +331,12 @@ export function ServicesDataGrid({
         ),
       },
       {
-        id: "serviceType",
-        accessorKey: "serviceType",
+        id: "navAnchorId",
+        accessorKey: "navAnchorId",
         sortingFn: "alphanumeric",
         size: 160,
         meta: {
-          headerTitle: NS.col.type,
+          headerTitle: NS.col.anchor,
           cellClassName: "w-40",
           skeleton: <Skeleton className="h-3.5 w-24" />,
         },
@@ -281,14 +346,56 @@ export function ServicesDataGrid({
             className="-ms-3 inline-flex w-full justify-start px-3 py-2 text-start"
             onClick={() => column.toggleSorting()}
           >
-            <TableSortLabel label={NS.col.type} sorted={column.getIsSorted()} />
+            <TableSortLabel
+              label={NS.col.anchor}
+              sorted={column.getIsSorted()}
+            />
           </button>
         ),
         cell: ({ row }) => (
-          <span className="text-foreground line-clamp-2 text-sm">
-            {row.original.serviceType?.trim() || NS.dash}
+          <span className="text-foreground line-clamp-1 font-mono text-xs">
+            {row.original.navAnchorId?.trim() || NS.dash}
           </span>
         ),
+      },
+      {
+        id: "layoutType",
+        accessorKey: "layoutType",
+        sortingFn: "alphanumeric",
+        size: 140,
+        meta: {
+          headerTitle: NS.col.layout,
+          cellClassName: "hidden md:table-cell w-36",
+          skeleton: <Skeleton className="h-3.5 w-20" />,
+        },
+        header: ({ column }) => (
+          <button
+            type="button"
+            className="-ms-3 inline-flex w-full justify-start px-3 py-2 text-start"
+            onClick={() => column.toggleSorting()}
+          >
+            <TableSortLabel
+              label={NS.col.layout}
+              sorted={column.getIsSorted()}
+            />
+          </button>
+        ),
+        cell: ({ row }) => {
+          const lt = row.original.layoutType
+          const label =
+            lt === "MEDIA_HERO"
+              ? NS.layout.MEDIA_HERO
+              : lt === "FEATURE_GRID"
+                ? NS.layout.FEATURE_GRID
+                : lt === "DEFAULT"
+                  ? NS.layout.DEFAULT
+                  : NS.dash
+          return (
+            <span className="text-muted-foreground line-clamp-2 text-xs">
+              {label}
+            </span>
+          )
+        },
       },
       {
         id: "status",
@@ -312,33 +419,14 @@ export function ServicesDataGrid({
         cell: ({ row }) => <ServiceStatusPill service={row.original} />,
       },
       {
-        id: "location",
-        enableSorting: false,
-        size: 144,
-        meta: {
-          headerTitle: NS.col.location,
-          cellClassName: "hidden lg:table-cell w-36",
-          skeleton: <Skeleton className="h-3 w-20" />,
-        },
-        header: NS.col.location,
-        cell: ({ row }) => {
-          const loc = row.original.location?.trim()
-          return (
-            <span className="text-muted-foreground inline-flex items-center gap-1 text-xs">
-              <MapPinIcon className="size-3.5 shrink-0 opacity-70" />
-              {loc || NS.dash}
-            </span>
-          )
-        },
-      },
-      {
-        accessorKey: "sortPublishedAt",
-        id: "publishedAt",
+        id: "updatedAt",
+        accessorFn: (row) =>
+          row.updatedAt ? new Date(row.updatedAt).getTime() : 0,
         sortingFn: "basic",
         size: 128,
         meta: {
-          headerTitle: NS.col.published,
-          cellClassName: "w-32",
+          headerTitle: NS.col.updated,
+          cellClassName: "hidden lg:table-cell w-32",
           skeleton: <Skeleton className="h-3.5 w-20" />,
         },
         header: ({ column }) => (
@@ -348,15 +436,15 @@ export function ServicesDataGrid({
             onClick={() => column.toggleSorting()}
           >
             <TableSortLabel
-              label={NS.col.published}
+              label={NS.col.updated}
               sorted={column.getIsSorted()}
             />
           </button>
         ),
         cell: ({ row }) => (
           <span className="font-mono text-xs tabular-nums">
-            {row.original.publishedAt
-              ? formatNewsDateShort(row.original.publishedAt)
+            {row.original.updatedAt
+              ? formatNewsDateShort(row.original.updatedAt)
               : NS.dash}
           </span>
         ),

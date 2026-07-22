@@ -25,15 +25,24 @@ import {
 import { ServiceActiveSwitch } from "@/components/services/service-active-switch"
 import { ServiceFormPublishingSummary } from "@/components/services/service-form-publishing-summary"
 import { ServiceFormSectionCard } from "@/components/services/service-form-section-card"
+import { ServiceGalleryList } from "@/components/services/service-gallery-list"
+import { ServicePartnersSelect } from "@/components/services/service-partners-select"
 import { ServicePublishDateTime } from "@/components/services/service-publish-datetime"
-import { TiptapEditor } from "@/components/shared/tiptap-editor-lazy"
 import { ServiceTypeCombobox } from "@/components/services/service-type-combobox"
 import { ServicesErrorState } from "@/components/services/services-error-state"
 import { NS } from "@/components/services/services-strings"
+import { TiptapEditor } from "@/components/shared/tiptap-editor-lazy"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { FieldError } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { Spinner } from "@/components/ui/spinner"
 import {
   useCreateService,
@@ -50,12 +59,28 @@ import {
   type ServiceFormValues,
 } from "@/lib/validations/services"
 import { formatCkbDigits } from "@/lib/intl-ckb"
-import { cn } from "@/lib/utils"
-import type { Language } from "@/types/services"
 import { toastError } from "@/lib/toast"
+import { cn } from "@/lib/utils"
+import {
+  SERVICE_LAYOUT_TYPES,
+  type Language,
+  type ServiceLayoutType,
+} from "@/types/services"
 
 const borderlessTitleClass =
   "w-full border-0 bg-transparent px-0 text-4xl leading-tight font-bold shadow-none placeholder:text-muted-foreground/50 focus:ring-0 focus-visible:ring-0"
+
+const LAYOUT_LABEL: Record<ServiceLayoutType, string> = {
+  MEDIA_HERO: NS.layout.MEDIA_HERO,
+  FEATURE_GRID: NS.layout.FEATURE_GRID,
+  DEFAULT: NS.layout.DEFAULT,
+}
+
+function layoutHint(layout: ServiceLayoutType | null | undefined): string {
+  if (layout === "MEDIA_HERO") return NS.layout.hintMediaHero
+  if (layout === "FEATURE_GRID") return NS.layout.hintFeatureGrid
+  return NS.layout.hintDefault
+}
 
 function countFormErrors(errors: FieldErrors): number {
   let n = 0
@@ -73,11 +98,20 @@ function countFormErrors(errors: FieldErrors): number {
 export function ServiceForm({
   mode,
   serviceId,
+  variant = "page",
+  initialSortOrder,
+  onSaved,
+  onCancel,
 }: {
   mode: "create" | "edit"
   serviceId?: number
+  variant?: "page" | "embedded"
+  initialSortOrder?: number
+  onSaved?: (id: number) => void
+  onCancel?: () => void
 }) {
   const router = useRouter()
+  const isEmbedded = variant === "embedded"
   const detailQuery = useServiceDetailQuery(serviceId ?? 0)
   const typesQuery = useServiceTypesQuery()
   const createMut = useCreateService()
@@ -108,8 +142,20 @@ export function ServiceForm({
     }
   }, [mode, dto, reset])
 
+  useEffect(() => {
+    if (mode === "create") {
+      reset({
+        ...defaultServiceFormValues(),
+        sortOrder:
+          typeof initialSortOrder === "number" ? initialSortOrder : null,
+      })
+    }
+  }, [mode, initialSortOrder, reset])
+
   const contentLanguages = watch("contentLanguages")
   const serviceType = watch("serviceType")
+  const layoutType = watch("layoutType")
+  const partnerIds = watch("partnerIds") ?? []
 
   const typeOptions = useMemo(() => {
     const set = new Set(typesQuery.data ?? [])
@@ -135,29 +181,33 @@ export function ServiceForm({
 
   const onSubmit = handleSubmit(
     (values) => {
-      const payload = serviceFormValuesToPayload(
-        mode,
-        serviceId,
-        values,
-      )
-      const onSuccess = (res: { success?: boolean; data?: { id?: number } }) => {
+      const payload = serviceFormValuesToPayload(mode, serviceId, values)
+      const onSuccess = (res: {
+        success?: boolean
+        data?: { id?: number }
+      }) => {
         if (!res.success) {
           toastError(NS.error.generic)
           return
         }
         toast(NS.toast.saved, {
-          action: res.data?.id
-            ? {
-                label: NS.toast.viewAction,
-                onClick: () =>
-                  router.push(`/dashboard/services/${res.data!.id}`),
-              }
-            : undefined,
+          action:
+            !isEmbedded && res.data?.id
+              ? {
+                  label: NS.toast.viewAction,
+                  onClick: () =>
+                    router.push(`/dashboard/services/${res.data!.id}`),
+                }
+              : undefined,
         })
-        if (mode === "create" && res.data?.id) {
-          router.push(`/dashboard/services/${res.data.id}`)
-        } else if (mode === "edit") {
-          router.push(`/dashboard/services/${serviceId}`)
+        if (res.data?.id) {
+          if (onSaved) {
+            onSaved(res.data.id)
+          } else if (mode === "create") {
+            router.push(`/dashboard/services/${res.data.id}`)
+          } else if (mode === "edit") {
+            router.push(`/dashboard/services/${serviceId}`)
+          }
         }
       }
 
@@ -181,6 +231,18 @@ export function ServiceForm({
     },
   )
 
+  function handleCancel() {
+    if (onCancel) {
+      onCancel()
+      return
+    }
+    router.push(
+      mode === "edit" && serviceId
+        ? `/dashboard/services/${serviceId}`
+        : "/dashboard/services",
+    )
+  }
+
   if (mode === "edit" && detailQuery.isLoading) {
     return (
       <div dir="rtl" className="px-6 py-12">
@@ -193,7 +255,10 @@ export function ServiceForm({
     return (
       <div dir="rtl" className="px-6 py-12">
         <ServicesErrorState onRetry={() => void detailQuery.refetch()} />
-        <Link href="/dashboard/services" className={buttonVariants({ className: "mt-4" })}>
+        <Link
+          href="/dashboard/services"
+          className={buttonVariants({ className: "mt-4" })}
+        >
           {NS.not_found.cta}
         </Link>
       </div>
@@ -202,39 +267,68 @@ export function ServiceForm({
 
   return (
     <FormProvider {...methods}>
-      <form onSubmit={onSubmit} className="pb-24" dir="rtl">
-        <header className="bg-background/95 supports-backdrop-filter:backdrop-blur border-border sticky top-0 z-30 border-b">
-          <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 lg:px-6">
-            <ServiceBreadcrumbBar
-              segments={[
-                { label: NS.breadcrumb.dashboard, href: dashboardServicesCrumbHref() },
-                { label: NS.breadcrumb.services, href: "/dashboard/services" },
-                {
-                  label:
-                    mode === "create"
-                      ? NS.breadcrumb.new
-                      : NS.breadcrumb.edit,
-                },
-              ]}
-            />
-            <Link
-              href={
-                mode === "edit" && serviceId
-                  ? `/dashboard/services/${serviceId}`
-                  : "/dashboard/services"
-              }
-              className={buttonVariants({ variant: "ghost", size: "sm" })}
-            >
-              {NS.action.back}
-            </Link>
+      <form
+        onSubmit={onSubmit}
+        className={cn(isEmbedded ? "pb-20" : "pb-24")}
+        dir="rtl"
+      >
+        {!isEmbedded ? (
+          <header className="bg-background/95 supports-backdrop-filter:backdrop-blur border-border sticky top-0 z-30 border-b">
+            <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 lg:px-6">
+              <ServiceBreadcrumbBar
+                segments={[
+                  {
+                    label: NS.breadcrumb.dashboard,
+                    href: dashboardServicesCrumbHref(),
+                  },
+                  {
+                    label: NS.breadcrumb.services,
+                    href: "/dashboard/services",
+                  },
+                  {
+                    label:
+                      mode === "create"
+                        ? NS.breadcrumb.new
+                        : NS.breadcrumb.edit,
+                  },
+                ]}
+              />
+              <Link
+                href={
+                  mode === "edit" && serviceId
+                    ? `/dashboard/services/${serviceId}`
+                    : "/dashboard/services"
+                }
+                className={buttonVariants({ variant: "ghost", size: "sm" })}
+              >
+                {NS.action.back}
+              </Link>
+            </div>
+          </header>
+        ) : (
+          <div className="border-border bg-muted/20 border-b px-4 py-3">
+            <h2 className="text-base font-semibold">
+              {mode === "create"
+                ? NS.page.panelTitleNew
+                : NS.page.panelTitleEdit}
+            </h2>
+            <p className="text-muted-foreground mt-0.5 text-xs">
+              {NS.help.formIntro}
+            </p>
           </div>
-        </header>
+        )}
 
         <div
           dir="ltr"
-          className="grid grid-cols-1 gap-6 px-4 py-6 lg:grid-cols-[340px_minmax(0,1fr)] lg:gap-8 lg:px-6"
+          className={cn(
+            "grid grid-cols-1 gap-6 px-4 py-6 lg:grid-cols-[340px_minmax(0,1fr)] lg:gap-8",
+            isEmbedded ? "px-0 py-4" : "lg:px-6",
+          )}
         >
-          <aside dir="rtl" className="space-y-4 lg:sticky lg:top-20 lg:self-start">
+          <aside
+            dir="rtl"
+            className="space-y-4 lg:sticky lg:top-20 lg:self-start"
+          >
             <ServiceFormPublishingSummary />
 
             <ServiceFormSectionCard title={NS.section.visibility}>
@@ -273,6 +367,34 @@ export function ServiceForm({
               <p className="text-muted-foreground text-xs">
                 {NS.field.publishHelper}
               </p>
+              <div className="mt-4 space-y-2">
+                <Label className="text-xs">{NS.field.sortOrderLabel}</Label>
+                <Controller
+                  name="sortOrder"
+                  control={control}
+                  render={({ field }) => (
+                    <Input
+                      type="number"
+                      min={0}
+                      dir="ltr"
+                      className="font-mono"
+                      placeholder="0"
+                      value={
+                        field.value === null || field.value === undefined
+                          ? ""
+                          : String(field.value)
+                      }
+                      onChange={(e) => {
+                        const raw = e.target.value.trim()
+                        field.onChange(raw === "" ? null : Number(raw))
+                      }}
+                    />
+                  )}
+                />
+                <p className="text-muted-foreground text-xs">
+                  {NS.field.sortOrderHelper}
+                </p>
+              </div>
             </ServiceFormSectionCard>
 
             {mode === "edit" && dto ? (
@@ -323,93 +445,57 @@ export function ServiceForm({
           </aside>
 
           <div dir="rtl" className="mx-auto min-w-0 max-w-[860px] space-y-6">
-            <ServiceFormSectionCard title={NS.section.general}>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label className="text-xs">{NS.section.type}</Label>
-                  <Controller
-                    name="serviceType"
-                    control={control}
-                    render={({ field }) => (
-                      <ServiceTypeCombobox
-                        items={typeOptions}
-                        value={field.value}
-                        onChange={field.onChange}
-                        error={errors.serviceType?.message as string}
-                      />
-                    )}
-                  />
-                  <p className="text-muted-foreground text-xs">
-                    {NS.field.typeHelper}
-                  </p>
-                </div>
+            {!isEmbedded ? (
+              <div className="border-border bg-muted/30 rounded-lg border px-4 py-3 text-sm">
+                <p className="text-muted-foreground leading-relaxed">
+                  {NS.help.formIntro}
+                </p>
+              </div>
+            ) : null}
 
+            <ServiceFormSectionCard title={NS.section.languageContent}>
+              <div className="mb-4 space-y-3">
+                <Label className="text-xs">{NS.section.languages}</Label>
                 <Controller
-                  name="location"
+                  name="contentLanguages"
                   control={control}
                   render={({ field }) => (
-                    <div className="space-y-2">
-                      <Label className="text-xs">{NS.section.location}</Label>
-                      <div className="flex items-start gap-2">
-                        <MapPinIcon className="text-muted-foreground mt-2 size-5 shrink-0" />
-                        <div className="min-w-0 flex-1">
-                          <Input
-                            {...field}
-                            placeholder={NS.field.location}
-                          />
-                          <span className="text-muted-foreground text-[10px]">
-                            {NS.field.locationHelper}
-                          </span>
-                        </div>
-                      </div>
+                    <div className="flex flex-wrap gap-2">
+                      {(["CKB", "KMR"] as const).map((code) => {
+                        const on = field.value.includes(code)
+                        return (
+                          <button
+                            key={code}
+                            type="button"
+                            className={cn(
+                              "rounded-full border px-3 py-1 text-xs font-medium",
+                              on
+                                ? "border-primary/30 bg-primary/10 text-primary"
+                                : "border-border border-dashed text-muted-foreground",
+                            )}
+                            onClick={() => {
+                              if (on && field.value.length <= 1) return
+                              field.onChange(
+                                on
+                                  ? field.value.filter((l) => l !== code)
+                                  : [...field.value, code],
+                              )
+                              if (!on) setCanvasLang(code)
+                            }}
+                          >
+                            {code === "CKB" ? NS.lang.ckb : NS.lang.kmr}
+                          </button>
+                        )
+                      })}
                     </div>
                   )}
                 />
-
-                <div className="space-y-2">
-                  <Label className="text-xs">{NS.section.languages}</Label>
-                  <Controller
-                    name="contentLanguages"
-                    control={control}
-                    render={({ field }) => (
-                      <div className="flex flex-wrap gap-2">
-                        {(["CKB", "KMR"] as const).map((code) => {
-                          const on = field.value.includes(code)
-                          return (
-                            <button
-                              key={code}
-                              type="button"
-                              className={cn(
-                                "rounded-full border px-3 py-1 text-xs font-medium",
-                                on
-                                  ? "border-primary/30 bg-primary/10 text-primary"
-                                  : "border-border border-dashed text-muted-foreground",
-                              )}
-                              onClick={() => {
-                                if (on && field.value.length <= 1) return
-                                field.onChange(
-                                  on
-                                    ? field.value.filter((l) => l !== code)
-                                    : [...field.value, code],
-                                )
-                              }}
-                            >
-                              {code === "CKB" ? NS.lang.ckb : NS.lang.kmr}
-                            </button>
-                          )
-                        })}
-                      </div>
-                    )}
-                  />
-                  {errors.contentLanguages ? (
-                    <FieldError>{errors.contentLanguages.message}</FieldError>
-                  ) : null}
-                </div>
+                {errors.contentLanguages ? (
+                  <FieldError>{errors.contentLanguages.message}</FieldError>
+                ) : null}
               </div>
-            </ServiceFormSectionCard>
 
-            <ServiceFormSectionCard title={NS.section.languageContent}>
-              <div className="mb-4 flex flex-wrap gap-2">
+              <div className="mb-4 flex flex-wrap gap-2 border-b pb-4">
                 {contentLanguages.map((code) => (
                   <button
                     key={code}
@@ -470,28 +556,157 @@ export function ServiceForm({
                     />
                   )}
                 />
-              </div>
-
-              <div className="text-muted-foreground mt-4 space-y-1 border-t pt-3 text-xs">
-                {contentLanguages.includes("CKB") ? (
-                  <p>{NS.help.langStatusCkb}</p>
-                ) : null}
-                {contentLanguages.includes("KMR") ? (
-                  <p>{NS.help.langStatusKmr}</p>
-                ) : null}
+                <p className="text-muted-foreground mt-2 text-xs">
+                  {NS.field.bodyHelper}
+                </p>
               </div>
             </ServiceFormSectionCard>
 
-          </div>
+            <ServiceFormSectionCard title={NS.section.media}>
+              <ServiceGalleryList />
+            </ServiceFormSectionCard>
 
+            <ServiceFormSectionCard title={NS.section.optionalSettings}>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label className="text-xs">{NS.section.layout}</Label>
+                  <Controller
+                    name="layoutType"
+                    control={control}
+                    render={({ field }) => (
+                      <Select
+                        value={field.value ?? "MEDIA_HERO"}
+                        onValueChange={(v) => {
+                          if (!v) return
+                          field.onChange(v as ServiceLayoutType)
+                        }}
+                      >
+                        <SelectTrigger dir="rtl" className="w-full">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent dir="rtl">
+                          {SERVICE_LAYOUT_TYPES.map((lt) => (
+                            <SelectItem key={lt} value={lt}>
+                              {LAYOUT_LABEL[lt]}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                  <p className="text-muted-foreground text-xs">
+                    {layoutHint(layoutType)}
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-xs">{NS.field.navAnchor}</Label>
+                  <Controller
+                    name="navAnchorId"
+                    control={control}
+                    render={({ field }) => (
+                      <>
+                        <Input
+                          {...field}
+                          dir="ltr"
+                          className="font-mono text-sm"
+                          placeholder={NS.field.navAnchorPlaceholder}
+                        />
+                        {errors.navAnchorId ? (
+                          <FieldError>
+                            {errors.navAnchorId.message as string}
+                          </FieldError>
+                        ) : null}
+                      </>
+                    )}
+                  />
+                  <p className="text-muted-foreground text-xs">
+                    {NS.field.navAnchorHelper}
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-xs">{NS.section.type}</Label>
+                  <Controller
+                    name="serviceType"
+                    control={control}
+                    render={({ field }) => (
+                      <ServiceTypeCombobox
+                        items={typeOptions}
+                        value={field.value ?? ""}
+                        onChange={field.onChange}
+                        error={errors.serviceType?.message as string}
+                      />
+                    )}
+                  />
+                  <p className="text-muted-foreground text-xs">
+                    {NS.field.typeHelper}
+                  </p>
+                </div>
+
+                <Controller
+                  name="location"
+                  control={control}
+                  render={({ field }) => (
+                    <div className="space-y-2">
+                      <Label className="text-xs">{NS.section.location}</Label>
+                      <div className="flex items-start gap-2">
+                        <MapPinIcon className="text-muted-foreground mt-2 size-5 shrink-0" />
+                        <div className="min-w-0 flex-1">
+                          <Input
+                            {...field}
+                            placeholder={NS.field.location}
+                          />
+                          <span className="text-muted-foreground text-[10px]">
+                            {NS.field.locationHelper}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                />
+
+                <div className="space-y-2 border-t pt-4">
+                  <Label className="text-xs">{NS.section.partners}</Label>
+                  <p className="text-muted-foreground text-xs">
+                    {NS.field.partnersHelper}
+                  </p>
+                  <ServicePartnersSelect
+                    value={partnerIds}
+                    onChange={(next) =>
+                      setValue("partnerIds", next, {
+                        shouldDirty: true,
+                        shouldValidate: true,
+                      })
+                    }
+                  />
+                </div>
+              </div>
+            </ServiceFormSectionCard>
+          </div>
         </div>
 
-        <div className="border-border bg-background/95 supports-backdrop-filter:backdrop-blur fixed inset-x-0 bottom-0 z-40 border-t pb-[max(0.75rem,env(safe-area-inset-bottom))]">
-          <div className="mx-auto flex min-h-14 max-w-full items-center justify-between gap-3 px-4 py-3 lg:px-6">
+        <div
+          className={cn(
+            "border-border bg-background/95 supports-backdrop-filter:backdrop-blur z-40 border-t pb-[max(0.75rem,env(safe-area-inset-bottom))]",
+            isEmbedded
+              ? "sticky bottom-0"
+              : "fixed inset-x-0 bottom-0",
+          )}
+        >
+          <div
+            className={cn(
+              "mx-auto flex min-h-14 max-w-full items-center justify-between gap-3 px-4 py-3",
+              !isEmbedded && "lg:px-6",
+            )}
+          >
             <div className="flex min-h-10 flex-1 flex-wrap items-center gap-x-4 gap-y-1 text-sm">
               {isDirty ? (
                 <span className="text-primary hidden items-center gap-2 lg:inline-flex">
-                  <span className="bg-primary inline-flex size-2 rounded-full" aria-hidden />
+                  <span
+                    className="bg-primary inline-flex size-2 rounded-full"
+                    aria-hidden
+                  />
                   {NS.unsaved.indicator}
                 </span>
               ) : null}
@@ -507,15 +722,9 @@ export function ServiceForm({
                 type="button"
                 variant="outline"
                 disabled={pending}
-                onClick={() =>
-                  router.push(
-                    mode === "edit" && serviceId
-                      ? `/dashboard/services/${serviceId}`
-                      : "/dashboard/services",
-                  )
-                }
+                onClick={handleCancel}
               >
-                {NS.action.cancel}
+                {isEmbedded ? NS.action.backToSections : NS.action.cancel}
               </Button>
               <Button type="submit" disabled={submitDisabled} className="gap-2">
                 {pending ? (

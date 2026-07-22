@@ -63,7 +63,7 @@ async function fetchBrowsePage(
     const data =
       kw.length >= 2
         ? await searchVideosByKeyword(kw, page, size)
-        : await getVideosList(page, size)
+        : await getVideosList({ page, size })
     const items = compact(data.content.map(mapVideoToCatalogItem))
     return { items, totalElements: data.totalElements ?? items.length }
   }
@@ -104,7 +104,7 @@ async function fetchBrowsePage(
     getNewsList(0, perModule),
     getProjectsList(0, perModule),
     getServicesList(0, perModule),
-    getVideosList(0, perModule),
+    getVideosList({ page: 0, size: perModule }),
     kw.length >= 1 ? searchSounds(kw, 0, perModule) : getSoundsList(0, perModule),
     getCollectionsList(0, perModule),
     kw.length >= 1

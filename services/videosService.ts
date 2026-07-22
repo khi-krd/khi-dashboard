@@ -6,15 +6,26 @@ import {
   normalizeVideoPage,
 } from "@/lib/videos-normalize"
 import type { NewTopicPayload, TopicDto, VideoDto, VideoPage } from "@/types/videos"
+import type { VideosListParams } from "@/types/videos-ui"
 import type { FeaturedPayload } from "@/types/featured"
 
 const BASE = "/api/v1/videos"
 
+export type { VideosListParams } from "@/types/videos-ui"
+
 export async function getVideosList(
-  page: number,
-  size: number,
+  params: VideosListParams,
 ): Promise<VideoPage> {
-  const { data } = await api.get<unknown>(BASE, { params: { page, size } })
+  const { page, size, videoType, memories, topicId } = params
+  const { data } = await api.get<unknown>(BASE, {
+    params: {
+      page,
+      size,
+      ...(videoType ? { videoType } : {}),
+      ...(memories != null ? { memories } : {}),
+      ...(topicId != null ? { topicId } : {}),
+    },
+  })
   return normalizeVideoPage(data)
 }
 

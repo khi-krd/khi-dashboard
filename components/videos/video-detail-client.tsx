@@ -60,7 +60,8 @@ import {
 import { formatDuration, formatFileSizeMb } from "@/lib/video-format"
 import { videoUrlPublic } from "@/lib/video-url-helpers"
 import { cn } from "@/lib/utils"
-import type { Language, VideoClipItemDto, VideoDto } from "@/types/videos"
+import type { Language, VideoClipItemDto, VideoDto, VideoSourceDto } from "@/types/videos"
+import { getMainFilmSource } from "@/types/videos-ui"
 
 const sectionDivider = "border-t border-border/60 pt-6"
 
@@ -226,6 +227,48 @@ function ArticleBodyTabs({
   )
 }
 
+function DetailSourceRow({
+  source,
+  index,
+}: {
+  source: VideoSourceDto
+  index: number
+}) {
+  const label = source.label?.trim() || NS.source.no_label
+  return (
+    <div className="border-border flex flex-col gap-3 rounded-lg border p-4 sm:flex-row">
+      <div className="w-full shrink-0 sm:w-56">
+        <VideoPlayerBlock
+          className="!aspect-video !rounded-md"
+          source={{
+            url: source.url,
+            externalUrl: source.externalUrl,
+            embedUrl: source.embedUrl,
+          }}
+        />
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-center gap-2">
+          <p className="text-primary font-mono text-xs">
+            #{formatCkbDigits(index + 1)}
+          </p>
+          {source.main ? (
+            <span className="bg-muted rounded px-1.5 py-0.5 text-[10px] font-medium">
+              {NS.source.main_badge}
+            </span>
+          ) : null}
+        </div>
+        <p className="font-medium">{label}</p>
+        {source.durationSeconds != null ? (
+          <p className="text-muted-foreground mt-2 font-mono text-[10px]">
+            {formatDuration(source.durationSeconds)}
+          </p>
+        ) : null}
+      </div>
+    </div>
+  )
+}
+
 function DetailClipRow({ clip }: { clip: VideoClipItemDto }) {
   const title =
     clip.titleCkb?.trim() || clip.titleKmr?.trim() || NS.clip.no_title
@@ -345,6 +388,8 @@ function VideoDetailLoaded({
   const titleKmr = dto.kmrContent?.title?.trim() ?? ""
   const publicUrl = videoUrlPublic(dto.id)
   const clips = dto.videoClipItems ?? []
+  const filmSources = dto.videoSources ?? []
+  const mainFilmSource = getMainFilmSource(dto)
   const isFilm = dto.videoType === "FILM"
   const poster = dto.ckbCoverUrl?.trim() || dto.kmrCoverUrl?.trim() || null
 
@@ -358,7 +403,9 @@ function VideoDetailLoaded({
   ]
 
   const typeLabel = isFilm
-    ? NS.type.context.film
+    ? filmSources.length > 1
+      ? NS.source.part_count(formatCkbDigits(filmSources.length))
+      : NS.type.context.film
     : dto.albumOfMemories
       ? NS.type.context.album(formatCkbDigits(clips.length))
       : NS.type.context.clip(formatCkbDigits(clips.length))
@@ -682,12 +729,18 @@ function VideoDetailLoaded({
 
               {isFilm ? (
                 <div className="mt-6">
+                  {filmSources.length > 1 ? (
+                    <p className="text-muted-foreground mb-3 text-sm">
+                      {NS.source.part_count(formatCkbDigits(filmSources.length))}
+                    </p>
+                  ) : null}
                   <VideoPlayerBlock
                     poster={poster}
                     source={{
-                      url: dto.sourceUrl,
-                      externalUrl: dto.sourceExternalUrl,
-                      embedUrl: dto.sourceEmbedUrl,
+                      url: mainFilmSource?.url ?? dto.sourceUrl,
+                      externalUrl:
+                        mainFilmSource?.externalUrl ?? dto.sourceExternalUrl,
+                      embedUrl: mainFilmSource?.embedUrl ?? dto.sourceEmbedUrl,
                       fileFormat: dto.fileFormat,
                     }}
                   />
@@ -740,6 +793,23 @@ function VideoDetailLoaded({
                   <div className="space-y-4">
                     {clips.map((clip) => (
                       <DetailClipRow key={clip.id ?? clip.clipNumber} clip={clip} />
+                    ))}
+                  </div>
+                </section>
+              ) : null}
+
+              {isFilm && filmSources.length > 1 ? (
+                <section className={cn("mt-12", sectionDivider)}>
+                  <h3 className="mb-4 text-sm font-semibold">
+                    {NS.section.source} ({formatCkbDigits(filmSources.length)})
+                  </h3>
+                  <div className="space-y-4">
+                    {filmSources.map((source, index) => (
+                      <DetailSourceRow
+                        key={`source-${index}-${source.label ?? ""}`}
+                        source={source}
+                        index={index}
+                      />
                     ))}
                   </div>
                 </section>

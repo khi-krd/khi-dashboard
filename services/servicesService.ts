@@ -32,9 +32,14 @@ function normalizedSingle(
 export async function getServicesList(
   page: number,
   size: number,
+  type?: string,
 ): Promise<ServiceListResponse> {
-  const { data } = await api.get<ServiceListResponse>(`${BASE}/all`, {
-    params: { page, size },
+  const { data } = await api.get<ServiceListResponse>(`${BASE}/admin/all`, {
+    params: {
+      page,
+      size,
+      ...(type?.trim() ? { type: type.trim() } : {}),
+    },
   })
   return normalizedList(data)
 }
@@ -124,7 +129,7 @@ export async function deleteService(id: number): Promise<ApiResponse<null>> {
 
 export async function bulkDeleteServices(ids: number[]): Promise<void> {
   try {
-    await api.delete(`${BASE}/bulk`, { data: { ids } })
+    await api.delete(`${BASE}/bulk`, { data: ids })
   } catch {
     await Promise.all(ids.map((id) => deleteService(id)))
   }

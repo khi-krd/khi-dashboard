@@ -5,6 +5,7 @@ import type {
   VideoContentDto,
   VideoDto,
   VideoPage,
+  VideoSourceDto,
 } from "@/types/videos"
 import { parseFeaturedFields } from "@/lib/featured-fields"
 
@@ -35,6 +36,39 @@ function normalizeContent(raw: unknown): VideoContentDto | null {
     director: coerceStr(o.director) ?? undefined,
     producer: coerceStr(o.producer) ?? undefined,
   }
+}
+
+function normalizeVideoSource(raw: unknown): VideoSourceDto {
+  const o = (raw && typeof raw === "object" ? raw : {}) as Record<
+    string,
+    unknown
+  >
+  return {
+    url: coerceStr(o.url) ?? coerceStr(o.sourceUrl),
+    externalUrl: coerceStr(o.externalUrl) ?? coerceStr(o.external_url),
+    embedUrl: coerceStr(o.embedUrl) ?? coerceStr(o.embed_url),
+    main: coerceBool(o.main) || coerceBool(o.is_main),
+    label: coerceStr(o.label),
+    durationSeconds:
+      coerceNum(o.durationSeconds) ?? coerceNum(o.duration_seconds),
+  }
+}
+
+function synthesizeVideoSources(o: Record<string, unknown>): VideoSourceDto[] {
+  const sourceUrl = coerceStr(o.sourceUrl) ?? coerceStr(o.source_url)
+  const sourceExternalUrl =
+    coerceStr(o.sourceExternalUrl) ?? coerceStr(o.source_external_url)
+  const sourceEmbedUrl =
+    coerceStr(o.sourceEmbedUrl) ?? coerceStr(o.source_embed_url)
+  if (!sourceUrl && !sourceExternalUrl && !sourceEmbedUrl) return []
+  return [
+    {
+      url: sourceUrl,
+      externalUrl: sourceExternalUrl,
+      embedUrl: sourceEmbedUrl,
+      main: true,
+    },
+  ]
 }
 
 function normalizeClip(raw: unknown): VideoClipItemDto {
@@ -79,6 +113,12 @@ export function normalizeVideoDto(raw: unknown): VideoDto {
       ? o.video_clip_items.map(normalizeClip)
       : []
 
+  const rawSources = Array.isArray(o.videoSources)
+    ? o.videoSources.map(normalizeVideoSource)
+    : Array.isArray(o.video_sources)
+      ? o.video_sources.map(normalizeVideoSource)
+      : synthesizeVideoSources(o)
+
   return {
     id: coerceNum(o.id) ?? undefined,
     videoType:
@@ -102,6 +142,7 @@ export function normalizeVideoDto(raw: unknown): VideoDto {
       coerceStr(o.sourceExternalUrl) ?? coerceStr(o.source_external_url),
     sourceEmbedUrl:
       coerceStr(o.sourceEmbedUrl) ?? coerceStr(o.source_embed_url),
+    videoSources: rawSources,
     videoClipItems: clips.sort(
       (a, b) => (a.clipNumber ?? 0) - (b.clipNumber ?? 0),
     ),

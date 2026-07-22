@@ -32,6 +32,7 @@ const SEGMENT_LABELS: Record<string, string> = {
   about: "دەربارە",
   service: "خزمەتگوزاری",
   contact: "پەیوەندی",
+  donations: "بەخشین",
   profile: "پرۆفایل",
   users: "بەکارهێنەران",
   featured: "تایبەتەکان",
@@ -79,6 +80,10 @@ export function DashboardBreadcrumbs() {
   }
 
   if (pathname.startsWith("/dashboard/featured")) {
+    return null
+  }
+
+  if (pathname.startsWith("/dashboard/donations")) {
     return null
   }
 

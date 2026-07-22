@@ -42,3 +42,8 @@ export async function probeVideoFile(file: File): Promise<{
 export function applyVideoFileMeta(file: File): ReturnType<typeof probeVideoFile> {
   return probeVideoFile(file)
 }
+
+export function titleFromVideoFileName(name: string): string {
+  const base = name.replace(/\.[^.]+$/, "")
+  return base.replace(/[-_]+/g, " ").trim() || name
+}

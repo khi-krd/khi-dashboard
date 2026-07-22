@@ -18,6 +18,7 @@ import { HugeiconsIcon } from "@hugeicons/react"
 import {
   Briefcase01Icon,
   Call02Icon,
+  FavouriteIcon,
   CollectionsBookmarkIcon,
   CommandIcon,
   DashboardSquare01Icon,
@@ -130,6 +131,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           title: "پەیوەندی",
           url: "/dashboard/contact",
           icon: <HugeiconsIcon icon={Call02Icon} strokeWidth={2} />,
+        },
+        {
+          title: "بەخشین",
+          url: "/dashboard/donations",
+          icon: <HugeiconsIcon icon={FavouriteIcon} strokeWidth={2} />,
         },
       ],
     },

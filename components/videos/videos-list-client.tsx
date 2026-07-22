@@ -48,6 +48,7 @@ import {
   matchesVideoTopicFilter,
   matchesVideoTypeFilter,
   toVideoAdminRow,
+  toVideosListApiParams,
 } from "@/types/videos-ui"
 
 function ListSkeleton() {
@@ -88,6 +89,8 @@ function VideosListClientInner() {
   const queryClient = useQueryClient()
   const sp = useSearchParams()
   const urlTopic = sp.get("topic")
+  const urlTag = sp.get("tag")
+  const urlKeyword = sp.get("keyword")
 
   const [searchRaw, setSearchRaw] = useState("")
   const debouncedKw = useDebouncedValue(searchRaw.trim(), 300)
@@ -115,13 +118,33 @@ function VideosListClientInner() {
     }
   }, [urlTopic])
 
-  const searchMode = debouncedKw.startsWith("#") ? ("keyword" as const) : "default"
+  useEffect(() => {
+    if (urlTag?.trim()) {
+      setSearchRaw(urlTag.trim())
+    } else if (urlKeyword?.trim()) {
+      setSearchRaw(urlKeyword.trim())
+    }
+  }, [urlTag, urlKeyword])
+
+  const searchMode = urlTag?.trim()
+    ? ("tag" as const)
+    : urlKeyword?.trim()
+      ? ("keyword" as const)
+      : debouncedKw.startsWith("#")
+        ? ("keyword" as const)
+        : ("default" as const)
+
+  const listApiFilters = useMemo(
+    () => toVideosListApiParams(typeFilter, topicId),
+    [typeFilter, topicId],
+  )
 
   const listQuery = useVideosListQuery({
     page: pagination.pageIndex,
     size: pagination.pageSize,
     keyword: debouncedKw,
     searchMode,
+    ...listApiFilters,
   })
 
   const topicsQuery = useVideoTopicsQuery()
@@ -132,15 +155,19 @@ function VideosListClientInner() {
     [listQuery.data],
   )
 
+  const isSearchActive = debouncedKw.length >= 2
+
   const recordCount = listQuery.data?.totalElements ?? 0
 
   const filtered = useMemo(() => {
     return rawRows.filter((r) => {
-      if (!matchesVideoTypeFilter(r, typeFilter)) return false
-      if (!matchesVideoTopicFilter(r, topicId)) return false
+      if (isSearchActive) {
+        if (!matchesVideoTypeFilter(r, typeFilter)) return false
+        if (!matchesVideoTopicFilter(r, topicId)) return false
+      }
       if (!matchesVideoLanguageFilter(r, language)) return false
       if (
-        debouncedKw.length >= 2 &&
+        isSearchActive &&
         searchMode === "default" &&
         !debouncedKw.startsWith("#")
       ) {
@@ -148,7 +175,15 @@ function VideosListClientInner() {
       }
       return true
     })
-  }, [debouncedKw, language, rawRows, searchMode, topicId, typeFilter])
+  }, [
+    debouncedKw,
+    isSearchActive,
+    language,
+    rawRows,
+    searchMode,
+    topicId,
+    typeFilter,
+  ])
 
   const gridRows = useMemo(
     () => filtered.map((r) => toVideoAdminRow(r)),
@@ -159,6 +194,8 @@ function VideosListClientInner() {
 
   const showReset =
     searchRaw.trim().length > 0 ||
+    Boolean(urlTag?.trim()) ||
+    Boolean(urlKeyword?.trim()) ||
     typeFilter !== "all" ||
     topicId != null ||
     language !== "all"
@@ -167,7 +204,9 @@ function VideosListClientInner() {
     typeFilter === "all" &&
     topicId == null &&
     language === "all" &&
-    searchRaw.trim() === ""
+    searchRaw.trim() === "" &&
+    !urlTag?.trim() &&
+    !urlKeyword?.trim()
 
   useEffect(() => {
     queueMicrotask(() => {
@@ -181,6 +220,13 @@ function VideosListClientInner() {
     setTopicId(null)
     setLanguage("all")
     router.replace("/dashboard/videos")
+  }
+
+  const onSearchChange = (value: string) => {
+    setSearchRaw(value)
+    if (urlTag?.trim() || urlKeyword?.trim()) {
+      router.replace("/dashboard/videos")
+    }
   }
 
   const seedDetailCache = useCallback(
@@ -264,7 +310,7 @@ function VideosListClientInner() {
 
       <VideosFiltersToolbar
         search={searchRaw}
-        onSearchChange={setSearchRaw}
+        onSearchChange={onSearchChange}
         typeFilter={typeFilter}
         onTypeChange={setTypeFilter}
         topicId={topicId}

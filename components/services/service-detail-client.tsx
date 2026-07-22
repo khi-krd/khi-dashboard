@@ -23,6 +23,7 @@ import { ServiceActiveSwitch } from "@/components/services/service-active-switch
 import { ServiceDeleteDialog } from "@/components/services/service-delete-dialog"
 import { ServiceDetailSkeleton } from "@/components/services/service-detail-skeleton"
 import { ServiceLanguageChipRow } from "@/components/services/service-language-chip"
+import { ServicePartnersDisplay } from "@/components/services/service-partners-display"
 import {
   ServiceStatusPillSidebar,
   serviceStatusContextLine,
@@ -51,7 +52,7 @@ import {
   isRichTextEmpty,
   sanitizeNewsBodyHtml,
 } from "@/lib/sanitize-news-html"
-import { formatNewsDateLong, formatNewsDateShort } from "@/lib/intl-ckb"
+import { formatNewsDateLong, formatNewsDateShort, formatCkbDigits } from "@/lib/intl-ckb"
 import { cn } from "@/lib/utils"
 import type { Language, ServiceDto } from "@/types/services"
 import { getServiceContent } from "@/types/services-ui"
@@ -141,9 +142,11 @@ export function ServiceDetailClient({ serviceId }: { serviceId: number }) {
   const titleCkb = dto ? getServiceContent(dto, "CKB")?.title ?? "" : ""
   const titleKmr = dto ? getServiceContent(dto, "KMR")?.title ?? "" : ""
   const publicUrl = useMemo(() => {
-    if (!dto?.id) return null
-    return `${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/services/${dto.id}`
-  }, [dto?.id])
+    const base = (process.env.NEXT_PUBLIC_SITE_URL ?? "").replace(/\/$/, "")
+    if (!base) return null
+    const anchor = dto?.navAnchorId?.trim()
+    return anchor ? `${base}/ckb/services#${anchor}` : `${base}/ckb/services`
+  }, [dto?.navAnchorId])
 
   if (detailQuery.isLoading) return <ServiceDetailSkeleton />
 
@@ -289,6 +292,42 @@ export function ServiceDetailClient({ serviceId }: { serviceId: number }) {
                 </section>
               ) : null}
 
+              {dto.navAnchorId?.trim() ? (
+                <section className={cn(sectionDivider, "space-y-2")}>
+                  <h4 className="text-muted-foreground text-xs uppercase tracking-wide">
+                    {NS.col.anchor}
+                  </h4>
+                  <p className="font-mono text-sm">#{dto.navAnchorId}</p>
+                </section>
+              ) : null}
+
+              {dto.layoutType ? (
+                <section className={cn(sectionDivider, "space-y-2")}>
+                  <h4 className="text-muted-foreground text-xs uppercase tracking-wide">
+                    {NS.section.layout}
+                  </h4>
+                  <p className="text-sm">
+                    {dto.layoutType === "MEDIA_HERO"
+                      ? NS.layout.MEDIA_HERO
+                      : dto.layoutType === "FEATURE_GRID"
+                        ? NS.layout.FEATURE_GRID
+                        : NS.layout.DEFAULT}
+                  </p>
+                </section>
+              ) : null}
+
+              {typeof dto.sortOrder === "number" &&
+              Number.isFinite(dto.sortOrder) ? (
+                <section className={cn(sectionDivider, "space-y-2")}>
+                  <h4 className="text-muted-foreground text-xs uppercase tracking-wide">
+                    {NS.field.sortOrderLabel}
+                  </h4>
+                  <p className="font-mono text-sm">
+                    {formatCkbDigits(dto.sortOrder)}
+                  </p>
+                </section>
+              ) : null}
+
               <section className={cn(sectionDivider, "space-y-2")}>
                 <h4 className="text-muted-foreground text-xs uppercase tracking-wide">
                   {NS.section.location}
@@ -424,6 +463,24 @@ export function ServiceDetailClient({ serviceId }: { serviceId: number }) {
                 <span className="text-foreground font-medium">
                   {serviceStatusInlineWord(dto)}
                 </span>
+                {dto.navAnchorId?.trim() ? (
+                  <>
+                    <MetaDot />
+                    <span className="font-mono">#{dto.navAnchorId}</span>
+                  </>
+                ) : null}
+                {dto.layoutType ? (
+                  <>
+                    <MetaDot />
+                    <span>
+                      {dto.layoutType === "MEDIA_HERO"
+                        ? NS.layout.MEDIA_HERO
+                        : dto.layoutType === "FEATURE_GRID"
+                          ? NS.layout.FEATURE_GRID
+                          : NS.layout.DEFAULT}
+                    </span>
+                  </>
+                ) : null}
                 {dto.serviceType ? (
                   <>
                     <MetaDot />
@@ -460,6 +517,47 @@ export function ServiceDetailClient({ serviceId }: { serviceId: number }) {
                   </p>
                 ) : null}
               </div>
+
+              {(dto.galleryMedia?.length ?? 0) > 0 && (
+                <section className="mt-8 space-y-4">
+                  <h2 className="text-sm font-semibold">{NS.section.media}</h2>
+                  <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+                    {(dto.galleryMedia ?? []).map((slot, index) =>
+                      slot.type === "VIDEO" ? (
+                        <div
+                          key={`${slot.url}-${index}`}
+                          className="col-span-2 space-y-1"
+                        >
+                          <p className="text-muted-foreground text-[10px]">
+                            {NS.gallery.typeVideo}
+                          </p>
+                          <video
+                            src={slot.url}
+                            poster={slot.posterUrl ?? undefined}
+                            controls
+                            className="border-border aspect-video w-full rounded-lg border object-cover"
+                          />
+                        </div>
+                      ) : (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          key={`${slot.url}-${index}`}
+                          src={slot.url}
+                          alt={slot.alt ?? ""}
+                          className="border-border aspect-video w-full rounded-lg border object-cover"
+                        />
+                      ),
+                    )}
+                  </div>
+                </section>
+              )}
+
+              {(dto.partnerIds?.length ?? 0) > 0 ? (
+                <section className="mt-8 space-y-3">
+                  <h2 className="text-sm font-semibold">{NS.section.partners}</h2>
+                  <ServicePartnersDisplay partnerIds={dto.partnerIds ?? []} />
+                </section>
+              ) : null}
 
               <ArticleBodyTabs dto={dto} />
             </div>

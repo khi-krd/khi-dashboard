@@ -144,10 +144,15 @@ export function AboutDetailClient({ aboutId }: { aboutId: number }) {
         </div>
       </nav>
 
-      <div className="grid grid-cols-1 gap-8 py-8 lg:grid-cols-[340px_minmax(0,1fr)]">
-        <AboutDetailSidebar about={about} />
+      <div
+        dir="ltr"
+        className="grid grid-cols-1 gap-8 py-8 lg:grid-cols-[340px_minmax(0,1fr)]"
+      >
+        <div dir="rtl">
+          <AboutDetailSidebar about={about} />
+        </div>
 
-        <article className="min-w-0">
+        <article dir="rtl" className="min-w-0">
           <div>
             <div className="text-muted-foreground flex flex-wrap items-center gap-2 text-xs">
               <AboutStatusPill active={about.active} />

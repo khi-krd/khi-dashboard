@@ -10,7 +10,9 @@ import {
 import { NS } from "@/components/videos/videos-strings"
 import { isVimeoUrl, isYoutubeUrl } from "@/lib/video-url-helpers"
 import { cn } from "@/lib/utils"
+import { formatCkbDigits } from "@/lib/intl-ckb"
 import type { VideoDto } from "@/types/videos"
+import { getFilmSourceCount } from "@/types/videos-ui"
 
 export function VideoSourcePill({
   video,
@@ -22,6 +24,7 @@ export function VideoSourcePill({
     | "sourceUrl"
     | "sourceExternalUrl"
     | "sourceEmbedUrl"
+    | "videoSources"
     | "videoClipItems"
   >
   className?: string
@@ -41,7 +44,26 @@ export function VideoSourcePill({
     )
   }
 
-  if (video.sourceUrl?.trim()) {
+  const sourceCount = getFilmSourceCount(video)
+  if (sourceCount > 1) {
+    return (
+      <span
+        className={cn(
+          "bg-muted text-foreground inline-flex items-center gap-1 rounded-md border border-transparent px-2 py-0.5 text-xs font-medium",
+          className,
+        )}
+      >
+        <Square2StackIcon className="size-3.5" aria-hidden />
+        {NS.source.part_count(formatCkbDigits(sourceCount))}
+      </span>
+    )
+  }
+
+  const sources = video.videoSources ?? []
+  const main = sources.find((s) => s.main) ?? sources[0]
+  const fileUrl = main?.url?.trim() || video.sourceUrl?.trim()
+
+  if (fileUrl) {
     return (
       <span
         className={cn(
@@ -55,7 +77,9 @@ export function VideoSourcePill({
     )
   }
 
-  const ext = video.sourceExternalUrl?.trim() ?? ""
+  const embedUrl = main?.embedUrl?.trim() || video.sourceEmbedUrl?.trim()
+  const ext = main?.externalUrl?.trim() || video.sourceExternalUrl?.trim() || ""
+
   if (ext && isYoutubeUrl(ext)) {
     return (
       <span
@@ -86,7 +110,7 @@ export function VideoSourcePill({
     )
   }
 
-  if (video.sourceEmbedUrl?.trim()) {
+  if (embedUrl) {
     return (
       <span
         className={cn(

@@ -2,6 +2,7 @@ import type { CollectionDto } from "@/types/image-collections"
 import type { NewsDto } from "@/types/news"
 import type { ProjectDto } from "@/types/projects"
 import type { ServiceDto } from "@/types/services"
+import { galleryPreviewUrl } from "@/lib/services-media-normalize"
 import { getServiceContent } from "@/types/services-ui"
 import type { SoundDto } from "@/types/sounds"
 import type { VideoDto } from "@/types/videos"
@@ -131,8 +132,17 @@ export function mapServiceToCatalogItem(
     category: "services",
     categoryLabel: FEATURED_CATEGORY_LABELS.services,
     title: bilingualTitle(titleCkb, titleKmr),
-    subtitle: service.serviceType?.trim() || service.location?.trim() || null,
-    coverUrl: null,
+    subtitle:
+      service.navAnchorId?.trim() ||
+      service.serviceType?.trim() ||
+      service.location?.trim() ||
+      null,
+    coverUrl:
+      galleryPreviewUrl(service) ||
+      service.featureImageUrls?.[0]?.trim() ||
+      service.heroPosterUrl?.trim() ||
+      service.thumbnailUrls?.[0]?.trim() ||
+      null,
     coverAspect: "square",
     featured: !!service.featured,
     featuredOrder: service.featuredOrder,

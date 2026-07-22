@@ -10,6 +10,28 @@ const VideoContentSchema = z.object({
   producer: z.string().max(250).optional(),
 })
 
+export const VideoSourceFormSchema = z.object({
+  url: z.string().optional().or(z.literal("")),
+  externalUrl: z.string().optional().or(z.literal("")),
+  embedUrl: z.string().optional().or(z.literal("")),
+  main: z.boolean().default(false),
+  label: z.string().max(300).optional(),
+  durationSeconds: z.number().int().min(0).optional().nullable(),
+  resolution: z.string().optional().nullable(),
+  fileFormat: z.string().optional().nullable(),
+  fileSizeMb: z.number().min(0).optional().nullable(),
+  stagedVideoFile: z.instanceof(File).optional().nullable(),
+})
+
+function sourceHasContent(source: z.infer<typeof VideoSourceFormSchema>) {
+  return !!(
+    source.url?.trim() ||
+    source.externalUrl?.trim() ||
+    source.embedUrl?.trim() ||
+    source.stagedVideoFile
+  )
+}
+
 export const VideoClipItemFormSchema = z.object({
   id: z.number().optional(),
   url: z.string().optional().or(z.literal("")),
@@ -60,6 +82,8 @@ export const videoFormSchema = z
     sourceExternalUrl: z.string().optional().or(z.literal("")),
     sourceEmbedUrl: z.string().optional().or(z.literal("")),
     stagedVideoFile: z.instanceof(File).optional().nullable(),
+    videoSources: z.array(VideoSourceFormSchema).default([]),
+    sourcesTouched: z.boolean().default(false),
     videoClipItems: z.array(VideoClipItemFormSchema).default([]),
     fileFormat: z.string().optional().nullable(),
     durationSeconds: z.number().int().min(0).optional().nullable(),
@@ -100,15 +124,28 @@ export const videoFormSchema = z
       })
     }
     if (val.videoType === "FILM") {
-      const hasUrl =
-        val.sourceUrl?.trim() ||
-        val.sourceExternalUrl?.trim() ||
-        val.sourceEmbedUrl?.trim()
-      if (!hasUrl && !val.stagedVideoFile) {
+      const readySources = val.videoSources.filter(sourceHasContent)
+      if (readySources.length === 0) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: NS.validation.sourceRequired,
-          path: ["sourceUrl"],
+          path: ["videoSources"],
+        })
+      } else {
+        val.videoSources.forEach((source, index) => {
+          const started =
+            source.label?.trim() ||
+            source.url?.trim() ||
+            source.externalUrl?.trim() ||
+            source.embedUrl?.trim() ||
+            source.stagedVideoFile
+          if (started && !sourceHasContent(source)) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: NS.validation.sourceItemRequired,
+              path: ["videoSources", index, "url"],
+            })
+          }
         })
       }
     }
@@ -168,6 +205,8 @@ export const defaultVideoFormValues: VideoFormValues = {
   sourceExternalUrl: "",
   sourceEmbedUrl: "",
   stagedVideoFile: null,
+  videoSources: [],
+  sourcesTouched: false,
   videoClipItems: [],
   fileFormat: "",
   durationSeconds: null,
@@ -192,6 +231,29 @@ export function videoDtoToFormValues(d: import("@/types/videos").VideoDto): Vide
     typeof d.publishmentDate === "string" && d.publishmentDate.length >= 10
       ? d.publishmentDate.slice(0, 10)
       : null
+
+  const dtoSources = d.videoSources ?? []
+  const legacySources =
+    dtoSources.length === 0 &&
+    (d.sourceUrl?.trim() || d.sourceExternalUrl?.trim() || d.sourceEmbedUrl?.trim())
+      ? [
+          {
+            url: d.sourceUrl ?? "",
+            externalUrl: d.sourceExternalUrl ?? "",
+            embedUrl: d.sourceEmbedUrl ?? "",
+            main: true,
+            label: "",
+            durationSeconds: d.durationSeconds ?? null,
+            resolution: d.resolution ?? "",
+            fileFormat: d.fileFormat ?? "",
+            fileSizeMb: d.fileSizeMb ?? null,
+          },
+        ]
+      : dtoSources
+
+  const mainSource =
+    legacySources.find((s) => s.main) ?? legacySources[0] ?? null
+
   return {
     videoType: d.videoType ?? "FILM",
     albumOfMemories: d.albumOfMemories ?? false,
@@ -219,6 +281,19 @@ export function videoDtoToFormValues(d: import("@/types/videos").VideoDto): Vide
     sourceExternalUrl: d.sourceExternalUrl ?? "",
     sourceEmbedUrl: d.sourceEmbedUrl ?? "",
     stagedVideoFile: null,
+    videoSources: legacySources.map((s) => ({
+      url: s.url ?? "",
+      externalUrl: s.externalUrl ?? "",
+      embedUrl: s.embedUrl ?? "",
+      main: s.main ?? false,
+      label: s.label ?? "",
+      durationSeconds: s.durationSeconds ?? null,
+      resolution: "",
+      fileFormat: "",
+      fileSizeMb: null,
+      stagedVideoFile: null,
+    })),
+    sourcesTouched: false,
     videoClipItems: (d.videoClipItems ?? []).map((c, i) => ({
       id: c.id,
       url: c.url ?? "",
@@ -236,7 +311,7 @@ export function videoDtoToFormValues(d: import("@/types/videos").VideoDto): Vide
       stagedVideoFile: null,
     })),
     fileFormat: d.fileFormat ?? "",
-    durationSeconds: d.durationSeconds ?? null,
+    durationSeconds: d.durationSeconds ?? mainSource?.durationSeconds ?? null,
     publishmentDate: date,
     resolution: d.resolution ?? "",
     fileSizeMb: d.fileSizeMb ?? null,

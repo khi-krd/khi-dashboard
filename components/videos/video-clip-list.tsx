@@ -14,6 +14,7 @@ import { useState } from "react"
 import { useFieldArray, useFormContext } from "react-hook-form"
 
 import { VideoAlbumToggle } from "@/components/videos/video-album-toggle"
+import { VideoClipBulkUploader } from "@/components/videos/video-clip-bulk-uploader"
 import { VideoClipCard } from "@/components/videos/video-clip-card"
 import { VideoClipItemSheet } from "@/components/videos/video-clip-item-sheet"
 import { NS } from "@/components/videos/videos-strings"
@@ -83,14 +84,10 @@ export function VideoClipList() {
         </div>
       </div>
 
+      <VideoClipBulkUploader clipCount={fields.length} />
+
       {fields.length === 0 ? (
-        <div className="border-border flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed py-12">
-          <p className="text-muted-foreground text-sm">{NS.clip.empty}</p>
-          <Button type="button" onClick={addClip}>
-            <PlusIcon className="size-4" />
-            {NS.clip.empty_cta}
-          </Button>
-        </div>
+        <p className="text-muted-foreground text-center text-sm">{NS.clip.empty}</p>
       ) : (
         <DndContext
           sensors={sensors}
