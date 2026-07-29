@@ -3,6 +3,7 @@
 import type { MouseEvent } from "react"
 import Image from "next/image"
 
+import { isOptimizableImageSrc } from "@/lib/image-src"
 import { ProjectStatusPill } from "@/components/projects/project-status-pill"
 import { NS, truncateTitle } from "@/components/projects/projects-strings"
 import type { ProjectDto } from "@/types/projects"
@@ -52,7 +53,7 @@ export function ProjectDeleteDialog({
                     alt=""
                     fill
                     className="object-cover"
-                    unoptimized={target.coverUrl.startsWith("http")}
+                    unoptimized={!isOptimizableImageSrc(target.coverUrl)}
                   />
                 ) : null}
               </div>

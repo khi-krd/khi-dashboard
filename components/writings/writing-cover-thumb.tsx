@@ -4,6 +4,7 @@ import { BookOpenIcon } from "@heroicons/react/24/outline"
 import Image from "next/image"
 import { useState } from "react"
 
+import { isOptimizableImageSrc } from "@/lib/image-src"
 import { cn } from "@/lib/utils"
 import type { WritingDto } from "@/types/writings"
 
@@ -52,7 +53,7 @@ export function WritingCoverThumb({
         alt=""
         fill
         className="object-cover transition-opacity duration-300"
-        unoptimized={src.startsWith("http")}
+        unoptimized={!isOptimizableImageSrc(src)}
       />
     </div>
   )

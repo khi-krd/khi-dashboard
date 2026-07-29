@@ -1,11 +1,11 @@
 "use client"
 
 import Image from "next/image"
-import { BuildingLibraryIcon } from "@heroicons/react/24/outline"
 import { useTranslations } from "next-intl"
 import { useRouter } from "next/navigation"
 import { useEffect } from "react"
 
+import { BrandMark } from "@/components/brand-mark"
 import { LoginForm } from "@/components/login-form"
 import backgroundImage from "@/assets/background.jpg"
 import { useLogin } from "@/hooks/use-login"
@@ -32,9 +32,7 @@ export default function LoginPage() {
       <div className="flex flex-col gap-4 p-6 md:p-10">
         <div className="flex justify-center gap-2 md:justify-start">
           <a href="#" className="flex items-center gap-2 font-medium">
-            <div className="flex size-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
-              <BuildingLibraryIcon className="size-4" aria-hidden />
-            </div>
+            <BrandMark size={24} priority />
             {t("name")}
           </a>
         </div>

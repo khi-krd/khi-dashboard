@@ -8,6 +8,7 @@ import {
 import Image from "next/image"
 import { useState } from "react"
 
+import { isOptimizableImageSrc } from "@/lib/image-src"
 import { cn } from "@/lib/utils"
 import { useSoundPlayer } from "@/store/sound-player.store"
 import type { SoundDto } from "@/types/sounds"
@@ -90,7 +91,7 @@ export function SoundCoverThumb({
         alt=""
         fill
         className="object-cover transition-opacity duration-300"
-        unoptimized={src.startsWith("http")}
+        unoptimized={!isOptimizableImageSrc(src)}
       />
       {canPreview && hovered ? (
         <button

@@ -20,6 +20,8 @@ import {
   CollectionBreadcrumbBar,
   dashboardCollectionsCrumbHref,
 } from "@/components/image-collections/collection-breadcrumb"
+import { useSyncedState } from "@/hooks/use-synced-state"
+import { useStoredViewMode } from "@/hooks/use-stored-view-mode"
 import { CollectionDeleteDialog } from "@/components/image-collections/collection-delete-dialog"
 import { CollectionsDataGrid } from "@/components/image-collections/collections-data-grid"
 import { CollectionsFiltersToolbar } from "@/components/image-collections/collections-filters"
@@ -91,10 +93,11 @@ function CollectionsListClientInner() {
   const sp = useSearchParams()
   const urlTopic = sp.get("topic")
 
-  const [viewMode, setViewMode] = useState<CollectionsViewMode>("grid")
-  useEffect(() => {
-    setViewMode(getStoredViewMode())
-  }, [])
+  const [viewMode, changeViewMode] = useStoredViewMode<CollectionsViewMode>(
+    getStoredViewMode,
+    setStoredViewMode,
+    "grid",
+  )
 
   const [searchRaw, setSearchRaw] = useState("")
   const debouncedKw = useDebouncedValue(searchRaw.trim(), 300)
@@ -108,18 +111,17 @@ function CollectionsListClientInner() {
   ])
 
   const [typeFilter, setTypeFilter] = useState<CollectionsUiTypeFilter>("all")
-  const [topicId, setTopicId] = useState<number | null>(
-    urlTopic && Number.isFinite(Number(urlTopic)) ? Number(urlTopic) : null,
+  // Re-seeds when ?topic= changes; a manual pick survives an unrelated
+  // search-param change because `derive` returns undefined for a blank param.
+  const [topicId, setTopicId] = useSyncedState(
+    [urlTopic],
+    () => (urlTopic && Number.isFinite(Number(urlTopic)) ? Number(urlTopic) : undefined),
+    () => (urlTopic && Number.isFinite(Number(urlTopic)) ? Number(urlTopic) : null),
   )
   const [language, setLanguage] = useState<CollectionsUiLanguageFilter>("all")
   const [deleteTarget, setDeleteTarget] =
     useState<CollectionAdminTableRow | null>(null)
 
-  useEffect(() => {
-    if (urlTopic && Number.isFinite(Number(urlTopic))) {
-      setTopicId(Number(urlTopic))
-    }
-  }, [urlTopic])
 
   const listQuery = useCollectionsListQuery({
     page: pagination.pageIndex,
@@ -213,11 +215,6 @@ function CollectionsListClientInner() {
     rawRows.length === 0 &&
     noExtraFilters &&
     debouncedKw.trim() === ""
-
-  function changeViewMode(mode: CollectionsViewMode) {
-    setViewMode(mode)
-    setStoredViewMode(mode)
-  }
 
   return (
     <div className="flex flex-col gap-8" dir="rtl">

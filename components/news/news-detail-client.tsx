@@ -28,6 +28,8 @@ import {
   dashboardNewsCrumbHref,
   NewsBreadcrumbBar,
 } from "@/components/news/news-breadcrumb"
+import Image from "next/image"
+import { isOptimizableImageSrc } from "@/lib/image-src"
 import { NewsDeleteDialog } from "@/components/news/news-delete-dialog"
 import { NewsDetailSkeleton } from "@/components/news/news-detail-skeleton"
 import { NewsErrorState } from "@/components/news/news-error-state"
@@ -163,7 +165,7 @@ function ArticleBodyTabs({
       {!multi ? (
         <>
           {!isRichTextEmpty(hasCkb ? descCkb : descKmr) ? (
-            // eslint-disable-next-line react/no-danger
+             
             <div
               dir="rtl"
               className="prose prose-base mt-6 max-w-none dark:prose-invert prose-p:text-foreground prose-headings:text-foreground"
@@ -195,7 +197,7 @@ function ArticleBodyTabs({
             )}
           </div>
           {!isRichTextEmpty(tab === "CKB" ? descCkb : descKmr) ? (
-            // eslint-disable-next-line react/no-danger
+             
             <div
               dir={tab === "KMR" ? "ltr" : "rtl"}
               className={cn(
@@ -224,6 +226,12 @@ export function NewsDetailClient({ newsId }: { newsId: number }) {
   })
 
   const dto = q.data?.success === true ? q.data.data : undefined
+
+  // Video/audio covers show their poster frame rather than the media file.
+  const coverDisplayUrl =
+    dto?.coverMediaType === "VIDEO" || dto?.coverMediaType === "AUDIO"
+      ? dto.coverThumbnailUrl || dto.coverUrl
+      : dto?.coverUrl
 
   useEffect(() => {
     if (dto) mergeNewsDerivedTaxonomy(queryClient, [dto])
@@ -422,15 +430,13 @@ export function NewsDetailClient({ newsId }: { newsId: number }) {
               <div className="relative mt-5 aspect-[21/9] w-full overflow-hidden rounded-xl border border-border/60 bg-muted">
                 {dto.coverUrl ? (
                   <>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={
-                        dto.coverMediaType === "VIDEO" || dto.coverMediaType === "AUDIO"
-                          ? dto.coverThumbnailUrl || dto.coverUrl
-                          : dto.coverUrl
-                      }
+                    <Image
+                      src={coverDisplayUrl ?? dto.coverUrl}
                       alt=""
-                      className="absolute inset-0 size-full object-cover"
+                      fill
+                      sizes="(max-width: 860px) 100vw, 860px"
+                      className="object-cover"
+                      unoptimized={!isOptimizableImageSrc(coverDisplayUrl)}
                     />
                     {dto.coverMediaType && dto.coverMediaType !== "IMAGE" ? (
                       <span className="bg-background/80 absolute start-3 top-3 rounded-md px-2 py-1 text-xs font-medium">

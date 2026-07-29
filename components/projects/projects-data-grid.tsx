@@ -23,6 +23,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table"
 
+import { isOptimizableImageSrc } from "@/lib/image-src"
 import { ProjectListLangChips } from "@/components/projects/project-language-chip"
 import { ProjectStatusPill } from "@/components/projects/project-status-pill"
 import { NS } from "@/components/projects/projects-strings"
@@ -214,7 +215,7 @@ export function ProjectsDataGrid({
               width={40}
               height={40}
               className="size-10 rounded-md object-cover"
-              unoptimized={row.original.coverUrl.startsWith("http")}
+              unoptimized={!isOptimizableImageSrc(row.original.coverUrl)}
             />
           ) : (
             <div className="bg-muted text-muted-foreground/50 flex size-10 items-center justify-center rounded-md">

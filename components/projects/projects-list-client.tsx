@@ -17,6 +17,7 @@ import {
   ProjectBreadcrumbBar,
   dashboardProjectsCrumbHref,
 } from "@/components/projects/project-breadcrumb"
+import { useSyncedState } from "@/hooks/use-synced-state"
 import { ProjectDeleteDialog } from "@/components/projects/project-delete-dialog"
 import { ProjectsDataGrid } from "@/components/projects/projects-data-grid"
 import {
@@ -99,7 +100,13 @@ function ProjectsListClientInner() {
   const urlKeyword = sp.get("keyword")
   const urlContent = sp.get("content")
 
-  const [searchRaw, setSearchRaw] = useState("")
+  // Seeded from ?tag= / ?keyword=, re-seeded whenever either changes. Typing in
+  // the box afterwards is preserved until the URL itself moves.
+  const [searchRaw, setSearchRaw] = useSyncedState(
+    [urlTag, urlKeyword],
+    () => urlTag?.trim() || urlKeyword?.trim() || undefined,
+    () => urlTag?.trim() || urlKeyword?.trim() || "",
+  )
   const debouncedKw = useDebouncedValue(searchRaw.trim(), 300)
 
   const [pagination, setPagination] = useState<PaginationState>({
@@ -147,10 +154,6 @@ function ProjectsListClientInner() {
     mergeProjectsDerivedTypes(queryClient, rawRows)
   }, [queryClient, rawRows])
 
-  useEffect(() => {
-    if (urlTag?.trim()) setSearchRaw(urlTag.trim())
-    else if (urlKeyword?.trim()) setSearchRaw(urlKeyword.trim())
-  }, [urlTag, urlKeyword])
 
   const recordCount =
     apiEnvelope?.success === true && apiEnvelope.data

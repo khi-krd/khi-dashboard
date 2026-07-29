@@ -3,6 +3,7 @@
 import Image from "next/image"
 import { memo, useCallback, useState } from "react"
 
+import { isOptimizableImageSrc } from "@/lib/image-src"
 import { CollectionLightbox } from "@/components/image-collections/collection-lightbox"
 import { NS } from "@/components/image-collections/collections-strings"
 import { albumItemSrc, sortAlbumItems } from "@/lib/image-album-utils"
@@ -89,7 +90,7 @@ const GalleryTile = memo(function GalleryTile({
             width={item.widthPx ?? 800}
             height={item.heightPx ?? 600}
             className="h-auto w-full object-cover transition-opacity hover:opacity-95"
-            unoptimized={src.startsWith("http")}
+            unoptimized={!isOptimizableImageSrc(src)}
           />
         </div>
       ) : (

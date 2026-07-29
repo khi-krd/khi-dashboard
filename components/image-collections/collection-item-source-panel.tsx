@@ -4,10 +4,12 @@ import { CloudArrowUpIcon } from "@heroicons/react/24/outline"
 import Image from "next/image"
 import { useEffect, useState } from "react"
 
+import { isOptimizableImageSrc } from "@/lib/image-src"
 import { NS } from "@/components/image-collections/collections-strings"
 import { FieldError } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { useFileUpload } from "@/hooks/use-file-upload"
+import { useObjectUrl } from "@/hooks/use-object-url"
 import { applyImageFileMeta } from "@/lib/image-album-utils"
 import { cn } from "@/lib/utils"
 import type { ImageItemFormValues } from "@/lib/validations/image-collections"
@@ -24,18 +26,8 @@ export function CollectionItemSourcePanel({
   sourceError?: string
 }) {
   const [mode, setMode] = useState<SourceMode>("file")
-  const [localPreview, setLocalPreview] = useState<string | null>(null)
   const staged = item.stagedBinary
-
-  useEffect(() => {
-    if (!staged) {
-      setLocalPreview(null)
-      return
-    }
-    const u = URL.createObjectURL(staged)
-    setLocalPreview(u)
-    return () => URL.revokeObjectURL(u)
-  }, [staged])
+  const localPreview = useObjectUrl(staged)
 
   const [
     { isDragging, errors: uploadErrors },
@@ -122,7 +114,7 @@ export function CollectionItemSourcePanel({
                 alt=""
                 fill
                 className="rounded-lg object-contain"
-                unoptimized={preview.startsWith("blob:") || preview.startsWith("http")}
+                unoptimized={!isOptimizableImageSrc(preview)}
               />
             </div>
           ) : (

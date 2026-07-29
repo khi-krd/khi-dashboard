@@ -9,6 +9,7 @@ import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import { useEffect, useState } from "react"
 
+import { useObjectUrl } from "@/hooks/use-object-url"
 import { Badge } from "@/components/ui/badge"
 import { VideoPlayerBlock } from "@/components/videos/video-player-block"
 import { NS } from "@/components/videos/videos-strings"
@@ -37,18 +38,8 @@ export function VideoSourceCard({
   const style = { transform: CSS.Transform.toString(transform), transition }
 
   const label = source.label?.trim() || NS.source.no_label
-  const [localPreview, setLocalPreview] = useState<string | null>(null)
+  const localPreview = useObjectUrl(source.stagedVideoFile)
 
-  useEffect(() => {
-    const staged = source.stagedVideoFile
-    if (!staged) {
-      setLocalPreview(null)
-      return
-    }
-    const u = URL.createObjectURL(staged)
-    setLocalPreview(u)
-    return () => URL.revokeObjectURL(u)
-  }, [source.stagedVideoFile])
 
   return (
     <div

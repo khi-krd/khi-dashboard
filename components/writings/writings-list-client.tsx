@@ -21,6 +21,8 @@ import {
   WritingBreadcrumbBar,
   dashboardWritingsCrumbHref,
 } from "@/components/writings/writing-breadcrumb"
+import { useSyncedState } from "@/hooks/use-synced-state"
+import { useStoredViewMode } from "@/hooks/use-stored-view-mode"
 import { WritingDeleteDialog } from "@/components/writings/writing-delete-dialog"
 import { WritingErrorState } from "@/components/writings/writing-error-state"
 import { WritingsDataGrid } from "@/components/writings/writings-data-grid"
@@ -108,10 +110,11 @@ function WritingsListClientInner() {
   const sp = useSearchParams()
   const urlTopic = sp.get("topic")
 
-  const [viewMode, setViewMode] = useState<WritingsViewMode>("shelf")
-  useEffect(() => {
-    setViewMode(getStoredViewMode())
-  }, [])
+  const [viewMode, changeViewMode] = useStoredViewMode<WritingsViewMode>(
+    getStoredViewMode,
+    setStoredViewMode,
+    "shelf",
+  )
 
   const [searchRaw, setSearchRaw] = useState("")
   const debouncedKw = useDebouncedValue(searchRaw.trim(), 300)
@@ -127,8 +130,12 @@ function WritingsListClientInner() {
 
   const [writerFilter, setWriterFilter] = useState<string | null>(null)
   const [genresFilter, setGenresFilter] = useState<BookGenre[]>([])
-  const [topicId, setTopicId] = useState<number | null>(
-    urlTopic && Number.isFinite(Number(urlTopic)) ? Number(urlTopic) : null,
+  // Re-seeds when ?topic= changes; a manual pick survives an unrelated
+  // search-param change because `derive` returns undefined for a blank param.
+  const [topicId, setTopicId] = useSyncedState(
+    [urlTopic],
+    () => (urlTopic && Number.isFinite(Number(urlTopic)) ? Number(urlTopic) : undefined),
+    () => (urlTopic && Number.isFinite(Number(urlTopic)) ? Number(urlTopic) : null),
   )
   const [language, setLanguage] = useState<WritingsUiLanguageFilter>("all")
   const [institute, setInstitute] = useState<WritingsUiInstituteFilter>("all")
@@ -136,11 +143,6 @@ function WritingsListClientInner() {
     null,
   )
 
-  useEffect(() => {
-    if (urlTopic && Number.isFinite(Number(urlTopic))) {
-      setTopicId(Number(urlTopic))
-    }
-  }, [urlTopic])
 
   const listQuery = useWritingsListQuery({
     page: pagination.pageIndex,
@@ -266,11 +268,6 @@ function WritingsListClientInner() {
     rawRows.length === 0 &&
     noExtraFilters &&
     debouncedKw.trim() === ""
-
-  function changeViewMode(mode: WritingsViewMode) {
-    setViewMode(mode)
-    setStoredViewMode(mode)
-  }
 
   return (
     <div className="flex flex-col gap-8" dir="rtl">

@@ -18,6 +18,7 @@ import {
   VideoBreadcrumbBar,
   dashboardVideosCrumbHref,
 } from "@/components/videos/video-breadcrumb"
+import { useSyncedState } from "@/hooks/use-synced-state"
 import { VideoDeleteDialog } from "@/components/videos/video-delete-dialog"
 import { VideosDataGrid } from "@/components/videos/videos-data-grid"
 import { VideosFiltersToolbar } from "@/components/videos/videos-filters"
@@ -92,7 +93,13 @@ function VideosListClientInner() {
   const urlTag = sp.get("tag")
   const urlKeyword = sp.get("keyword")
 
-  const [searchRaw, setSearchRaw] = useState("")
+  // Seeded from ?tag= / ?keyword=, re-seeded whenever either changes. Typing in
+  // the box afterwards is preserved until the URL itself moves.
+  const [searchRaw, setSearchRaw] = useSyncedState(
+    [urlTag, urlKeyword],
+    () => urlTag?.trim() || urlKeyword?.trim() || undefined,
+    () => urlTag?.trim() || urlKeyword?.trim() || "",
+  )
   const debouncedKw = useDebouncedValue(searchRaw.trim(), 300)
 
   const [pagination, setPagination] = useState<PaginationState>({
@@ -104,27 +111,19 @@ function VideosListClientInner() {
   ])
 
   const [typeFilter, setTypeFilter] = useState<VideosUiTypeFilter>("all")
-  const [topicId, setTopicId] = useState<number | null>(
-    urlTopic ? Number(urlTopic) : null,
+  // Re-seeds when ?topic= changes; a manual pick survives an unrelated
+  // search-param change because `derive` returns undefined for a blank param.
+  const [topicId, setTopicId] = useSyncedState(
+    [urlTopic],
+    () => (urlTopic && Number.isFinite(Number(urlTopic)) ? Number(urlTopic) : undefined),
+    () => (urlTopic && Number.isFinite(Number(urlTopic)) ? Number(urlTopic) : null),
   )
   const [language, setLanguage] = useState<VideosUiLanguageFilter>("all")
   const [deleteTarget, setDeleteTarget] = useState<VideoAdminTableRow | null>(
     null,
   )
 
-  useEffect(() => {
-    if (urlTopic && Number.isFinite(Number(urlTopic))) {
-      setTopicId(Number(urlTopic))
-    }
-  }, [urlTopic])
 
-  useEffect(() => {
-    if (urlTag?.trim()) {
-      setSearchRaw(urlTag.trim())
-    } else if (urlKeyword?.trim()) {
-      setSearchRaw(urlKeyword.trim())
-    }
-  }, [urlTag, urlKeyword])
 
   const searchMode = urlTag?.trim()
     ? ("tag" as const)

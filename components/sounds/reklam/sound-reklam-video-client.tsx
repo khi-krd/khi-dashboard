@@ -174,7 +174,7 @@ export function SoundReklamVideoClient() {
           >
             {hasVideo ? (
               <>
-                {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+                { }
                 <video
                   key={video!.videoUrl}
                   src={video!.videoUrl}

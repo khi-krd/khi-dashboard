@@ -24,6 +24,8 @@ import {
   AboutBreadcrumbBar,
   dashboardAboutCrumbHref,
 } from "@/components/about/about-breadcrumb"
+import Image from "next/image"
+import { isOptimizableImageSrc } from "@/lib/image-src"
 import { AboutErrorState } from "@/components/about/about-error-state"
 import { AboutFormSidebar } from "@/components/about/about-form-sidebar"
 import { AboutStatsEditor } from "@/components/about/about-stats-editor"
@@ -1025,11 +1027,13 @@ export function AboutForm({
                     <Card key={item.id ?? `${item.nameCkb}-${item.displayOrder}`}>
                       <CardHeader className="flex-row items-start gap-3 space-y-0">
                         {item.imageUrl?.trim() ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
+                          <Image
                             src={item.imageUrl}
                             alt=""
+                            width={56}
+                            height={56}
                             className="border-border size-14 shrink-0 rounded-lg border object-cover"
+                            unoptimized={!isOptimizableImageSrc(item.imageUrl)}
                           />
                         ) : null}
                         <div className="min-w-0 flex-1">
@@ -1081,11 +1085,13 @@ export function AboutForm({
                     <Card key={item.id ?? `${item.nameCkb}-${item.displayOrder}`}>
                       <CardHeader className="flex-row items-start gap-3 space-y-0">
                         {item.imageUrl?.trim() ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
+                          <Image
                             src={item.imageUrl}
                             alt=""
+                            width={56}
+                            height={56}
                             className="border-border size-14 shrink-0 rounded-lg border object-cover"
+                            unoptimized={!isOptimizableImageSrc(item.imageUrl)}
                           />
                         ) : null}
                         <div className="min-w-0 flex-1">
@@ -1138,11 +1144,13 @@ export function AboutForm({
                       <Card key={item.id ?? `${item.nameCkb}-${item.displayOrder}`}>
                         <CardHeader className="flex-row items-start gap-3 space-y-0">
                           {item.logoUrl?.trim() ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img
+                            <Image
                               src={item.logoUrl}
                               alt=""
+                              width={56}
+                              height={56}
                               className="border-border size-14 shrink-0 rounded-lg border object-contain bg-background p-1"
+                              unoptimized={!isOptimizableImageSrc(item.logoUrl)}
                             />
                           ) : null}
                           <div className="min-w-0 flex-1">
@@ -1194,11 +1202,13 @@ export function AboutForm({
                     <Card key={item.id ?? `${item.nameCkb}-${item.displayOrder}`}>
                       <CardHeader className="flex-row items-start gap-3 space-y-0">
                         {item.logoUrl?.trim() ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
+                          <Image
                             src={item.logoUrl}
                             alt=""
+                            width={56}
+                            height={56}
                             className="border-border size-14 shrink-0 rounded-lg border object-contain bg-background p-1"
+                            unoptimized={!isOptimizableImageSrc(item.logoUrl)}
                           />
                         ) : null}
                         <div className="min-w-0 flex-1">

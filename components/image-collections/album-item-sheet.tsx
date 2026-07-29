@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 
+import { useSyncedState } from "@/hooks/use-synced-state"
 import { AlbumItemMetadataSection } from "@/components/image-collections/album-item-metadata-section"
 import { CollectionItemSourcePanel } from "@/components/image-collections/collection-item-source-panel"
 import { TiptapEditor } from "@/components/shared/tiptap-editor-lazy"
@@ -36,11 +37,13 @@ export function AlbumItemSheet({
   onDelete: () => void
   showKmrFields?: boolean
 }) {
-  const [draft, setDraft] = useState<ImageItemFormValues | null>(item)
-
-  useEffect(() => {
-    if (item) setDraft({ ...item })
-  }, [item, open])
+  // Re-seeded on each open and whenever a different item is passed in, so
+  // reopening the sheet never shows the previous item's edits.
+  const [draft, setDraft] = useSyncedState<ImageItemFormValues | null>(
+    [item, open],
+    () => (item ? { ...item } : undefined),
+    () => item,
+  )
 
   if (!draft) return null
 

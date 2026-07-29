@@ -19,6 +19,9 @@ import {
   CollectionBreadcrumbBar,
   dashboardCollectionsCrumbHref,
 } from "@/components/image-collections/collection-breadcrumb"
+import Image from "next/image"
+import { isOptimizableImageSrc } from "@/lib/image-src"
+import { useSyncedState } from "@/hooks/use-synced-state"
 import { CollectionDeleteDialog } from "@/components/image-collections/collection-delete-dialog"
 import { CollectionDetailGallery } from "@/components/image-collections/collection-detail-gallery"
 import { CollectionDetailSingle } from "@/components/image-collections/collection-detail-single"
@@ -70,6 +73,49 @@ function toProseHtml(raw: string) {
   return sanitizeNewsBodyHtml(html)
 }
 
+/**
+ * Both of these used to be declared inside `CollectionDetailLoaded`. That gives
+ * them a new identity on every render, so React unmounts and remounts the whole
+ * subtree instead of updating it — losing tooltip state along the way. Neither
+ * closes over anything, so module scope is where they belong.
+ */
+function RelativeDate({ iso }: { iso: string }) {
+  return (
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          <dd className="font-mono cursor-default">{formatRelativeTimeKu(iso)}</dd>
+        }
+      />
+      <TooltipContent>{formatFullTimestampKu(iso)}</TooltipContent>
+    </Tooltip>
+  )
+}
+
+function TaxonomyChip({
+  label,
+  lang,
+  dashed,
+}: {
+  label: string
+  lang: "ckb" | "kmr"
+  dashed?: boolean
+}) {
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs",
+        dashed
+          ? "border border-dashed border-border text-muted-foreground"
+          : "border border-border bg-muted text-foreground",
+      )}
+    >
+      {label}
+      <span className="text-muted-foreground/70 text-[10px] uppercase">{lang}</span>
+    </span>
+  )
+}
+
 function typeContextLabel(c: CollectionDto) {
   const n = formatEnDigits(c.imageAlbum?.length ?? 0)
   if (c.collectionType === "SINGLE") return NS.type.context.single
@@ -83,20 +129,26 @@ export function CollectionDetailClient({ id }: { id: number }) {
     useCollectionDetailQuery(id)
   const deleteMut = useDeleteCollectionMutation()
   const [deleteOpen, setDeleteOpen] = useState(false)
-  const [bodyTab, setBodyTab] = useState<Language>("CKB")
-  const [storyLang, setStoryLang] = useState<Language>("CKB")
-  const { copyToClipboard } = useCopyToClipboard()
-
-  useEffect(() => {
+  // Preferred language for this collection: CKB when available, else whatever
+  // it does have. Re-seeded when a different collection loads.
+  const preferredLang = (): Language | undefined => {
     const langs = collection?.contentLanguages ?? []
-    if (langs.includes("CKB")) {
-      setBodyTab("CKB")
-      setStoryLang("CKB")
-    } else if (langs[0]) {
-      setBodyTab(langs[0])
-      setStoryLang(langs[0])
-    }
-  }, [collection?.id, collection?.contentLanguages])
+    if (langs.includes("CKB")) return "CKB"
+    return langs[0]
+  }
+  const syncDeps = [collection?.id, collection?.contentLanguages]
+
+  const [bodyTab, setBodyTab] = useSyncedState<Language>(
+    syncDeps,
+    preferredLang,
+    () => preferredLang() ?? "CKB",
+  )
+  const [storyLang, setStoryLang] = useSyncedState<Language>(
+    syncDeps,
+    preferredLang,
+    () => preferredLang() ?? "CKB",
+  )
+  const { copyToClipboard } = useCopyToClipboard()
 
   if (isLoading) return <CollectionDetailSkeleton />
   if (isError) return <CollectionErrorState onRetry={() => void refetch()} />
@@ -187,43 +239,6 @@ function CollectionDetailLoaded({
   const publishLabel = collection.publishmentDate
     ? formatNewsDateShort(collection.publishmentDate)
     : null
-
-  function RelativeDate({ iso }: { iso: string }) {
-    return (
-      <Tooltip>
-        <TooltipTrigger
-          render={
-            <dd className="font-mono cursor-default">{formatRelativeTimeKu(iso)}</dd>
-          }
-        />
-        <TooltipContent>{formatFullTimestampKu(iso)}</TooltipContent>
-      </Tooltip>
-    )
-  }
-
-  function TaxonomyChip({
-    label,
-    lang,
-    dashed,
-  }: {
-    label: string
-    lang: "ckb" | "kmr"
-    dashed?: boolean
-  }) {
-    return (
-      <span
-        className={cn(
-          "inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs",
-          dashed
-            ? "border border-dashed border-border text-muted-foreground"
-            : "border border-border bg-muted text-foreground",
-        )}
-      >
-        {label}
-        <span className="text-muted-foreground/70 text-[10px] uppercase">{lang}</span>
-      </span>
-    )
-  }
 
   return (
     <div className="flex flex-col" dir="ltr">
@@ -398,8 +413,14 @@ function CollectionDetailLoaded({
         >
           <div className="bg-muted relative mb-6 aspect-[4/3] w-full overflow-hidden rounded-xl">
             {cover ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={cover} alt="" className="size-full object-cover" />
+              <Image
+                src={cover}
+                alt=""
+                fill
+                sizes="(max-width: 860px) 100vw, 860px"
+                className="object-cover"
+                unoptimized={!isOptimizableImageSrc(cover)}
+              />
             ) : (
               <div className="text-muted-foreground flex size-full flex-col items-center justify-center gap-2">
                 <PhotoIcon className="size-8 text-muted-foreground/40" aria-hidden />

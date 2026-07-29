@@ -19,6 +19,7 @@ import {
   SoundBreadcrumbBar,
   dashboardSoundsCrumbHref,
 } from "@/components/sounds/sound-breadcrumb"
+import { useSyncedState } from "@/hooks/use-synced-state"
 import { SoundDeleteDialog } from "@/components/sounds/sound-delete-dialog"
 import { SoundsDataGrid } from "@/components/sounds/sounds-data-grid"
 import { SoundsFiltersToolbar } from "@/components/sounds/sounds-filters"
@@ -101,19 +102,18 @@ function SoundsListClientInner() {
 
   const [stateFilter, setStateFilter] = useState<SoundsUiStateFilter>("all")
   const [typeFilter, setTypeFilter] = useState<string | null>(null)
-  const [topicId, setTopicId] = useState<number | null>(
-    urlTopic ? Number(urlTopic) : null,
+  // Re-seeds when ?topic= changes; a manual pick survives an unrelated
+  // search-param change because `derive` returns undefined for a blank param.
+  const [topicId, setTopicId] = useSyncedState(
+    [urlTopic],
+    () => (urlTopic && Number.isFinite(Number(urlTopic)) ? Number(urlTopic) : undefined),
+    () => (urlTopic && Number.isFinite(Number(urlTopic)) ? Number(urlTopic) : null),
   )
   const [language, setLanguage] = useState<SoundsUiLanguageFilter>("all")
   const [deleteTarget, setDeleteTarget] = useState<SoundAdminTableRow | null>(
     null,
   )
 
-  useEffect(() => {
-    if (urlTopic && Number.isFinite(Number(urlTopic))) {
-      setTopicId(Number(urlTopic))
-    }
-  }, [urlTopic])
 
   const listQuery = useSoundsListQuery({
     page: pagination.pageIndex,

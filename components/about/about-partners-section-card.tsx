@@ -8,6 +8,8 @@ import {
 import { useState } from "react"
 import { toast } from "sonner"
 
+import Image from "next/image"
+import { isOptimizableImageSrc } from "@/lib/image-src"
 import { AboutSectionCardShell } from "@/components/about/about-section-card-shell"
 import { NS } from "@/components/about/about-strings"
 import { MediaCoverUpload } from "@/components/shared/media-cover-upload"
@@ -131,11 +133,13 @@ export function AboutPartnersSectionCard({ index }: { index: number }) {
               <Card key={item.id ?? `${item.nameCkb}-${item.displayOrder}`}>
                 <CardHeader className="flex-row items-start gap-3 space-y-0">
                   {item.logoUrl?.trim() ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
+                    <Image
                       src={item.logoUrl}
                       alt=""
+                      width={56}
+                      height={56}
                       className="border-border size-14 shrink-0 rounded-lg border bg-background object-contain p-1"
+                      unoptimized={!isOptimizableImageSrc(item.logoUrl)}
                     />
                   ) : null}
                   <div className="min-w-0 flex-1">

@@ -4,6 +4,7 @@ import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline"
 import Image from "next/image"
 import { useEffect, useState } from "react"
 
+import { useObjectUrl } from "@/hooks/use-object-url"
 import { NS } from "@/components/sounds/sounds-strings"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -81,17 +82,8 @@ function BrochureRow({
   onPatch: (p: Partial<BrochureFormValues>) => void
   onRemove: () => void
 }) {
-  const [blob, setBlob] = useState<string | null>(null)
+  const blob = useObjectUrl(brochure.stagedImageFile)
 
-  useEffect(() => {
-    if (!brochure.stagedImageFile) {
-      setBlob(null)
-      return
-    }
-    const u = URL.createObjectURL(brochure.stagedImageFile)
-    setBlob(u)
-    return () => URL.revokeObjectURL(u)
-  }, [brochure.stagedImageFile])
 
   const preview = blob || brochure.imageUrl?.trim() || null
 

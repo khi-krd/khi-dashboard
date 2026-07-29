@@ -59,14 +59,33 @@ function Carousel({
     },
     plugins
   )
-  const [canScrollPrev, setCanScrollPrev] = React.useState(false)
-  const [canScrollNext, setCanScrollNext] = React.useState(false)
+  // Embla is an external store, so read it as one. The previous shape mirrored
+  // it into two useStates and primed them with a synchronous `onSelect(api)`
+  // inside an effect — a cascading render on mount, and a window where the
+  // arrows rendered disabled before the effect corrected them.
+  const subscribeToApi = React.useCallback(
+    (onStoreChange: () => void) => {
+      if (!api) return () => {}
+      api.on("reInit", onStoreChange)
+      api.on("select", onStoreChange)
+      return () => {
+        api.off("reInit", onStoreChange)
+        api.off("select", onStoreChange)
+      }
+    },
+    [api]
+  )
 
-  const onSelect = React.useCallback((api: CarouselApi) => {
-    if (!api) return
-    setCanScrollPrev(api.canScrollPrev())
-    setCanScrollNext(api.canScrollNext())
-  }, [])
+  const canScrollPrev = React.useSyncExternalStore(
+    subscribeToApi,
+    () => api?.canScrollPrev() ?? false,
+    () => false
+  )
+  const canScrollNext = React.useSyncExternalStore(
+    subscribeToApi,
+    () => api?.canScrollNext() ?? false,
+    () => false
+  )
 
   const scrollPrev = React.useCallback(() => {
     api?.scrollPrev()
@@ -89,21 +108,15 @@ function Carousel({
     [scrollPrev, scrollNext]
   )
 
+  // Publishes Embla's imperative handle to the parent once it exists. `api` is
+  // created by a third-party hook and only becomes available after mount, and
+  // consumers (the lightboxes) need it as reactive state so they can call
+  // scrollTo and subscribe to "select" — so there is no render-phase
+  // equivalent. Syncing an external system is what effects are for.
   React.useEffect(() => {
     if (!api || !setApi) return
     setApi(api)
   }, [api, setApi])
-
-  React.useEffect(() => {
-    if (!api) return
-    onSelect(api)
-    api.on("reInit", onSelect)
-    api.on("select", onSelect)
-
-    return () => {
-      api?.off("select", onSelect)
-    }
-  }, [api, onSelect])
 
   return (
     <CarouselContext.Provider

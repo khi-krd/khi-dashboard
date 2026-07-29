@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import Image from "next/image"
 import { ChevronLeftIcon, ChevronRightIcon, XMarkIcon } from "@heroicons/react/24/outline"
 
+import { useSyncedState } from "@/hooks/use-synced-state"
 import { Button } from "@/components/ui/button"
 import {
   Carousel,
@@ -28,12 +29,17 @@ export function SoundBrochureLightbox({
   initialIndex?: number
 }) {
   const [api, setApi] = useState<CarouselApi>()
-  const [current, setCurrent] = useState(initialIndex)
+  // Reset to the clicked slide on open; derived here rather than assigned from
+  // the effect below, which only drives the carousel itself.
+  const [current, setCurrent] = useSyncedState(
+    [open, initialIndex],
+    () => (open ? initialIndex : undefined),
+    () => initialIndex,
+  )
 
   useEffect(() => {
     if (!open || !api) return
     api.scrollTo(initialIndex, true)
-    setCurrent(initialIndex)
   }, [api, initialIndex, open])
 
   useEffect(() => {

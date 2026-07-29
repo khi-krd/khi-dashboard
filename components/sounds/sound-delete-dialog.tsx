@@ -3,6 +3,7 @@
 import type { MouseEvent } from "react"
 import Image from "next/image"
 
+import { isOptimizableImageSrc } from "@/lib/image-src"
 import { SoundStatePill } from "@/components/sounds/sound-state-pill"
 import { NS, truncateTitle } from "@/components/sounds/sounds-strings"
 import { formatDuration } from "@/lib/sound-format"
@@ -60,7 +61,7 @@ export function SoundDeleteDialog({
                     alt=""
                     fill
                     className="object-cover"
-                    unoptimized={cover.startsWith("http")}
+                    unoptimized={!isOptimizableImageSrc(cover)}
                   />
                 ) : null}
               </div>

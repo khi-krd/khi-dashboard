@@ -1,7 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
-
+import { useObjectUrl } from "@/hooks/use-object-url"
 import { CollectionCoverSlot } from "@/components/image-collections/collection-cover-slot"
 import { NS } from "@/components/image-collections/collections-strings"
 import type { Language } from "@/types/image-collections"
@@ -41,39 +40,9 @@ export function CollectionCoverTrio({
   onKmrUrlChange: (s: string) => void
   onHoverUrlChange: (s: string) => void
 }) {
-  const [ckbBlob, setCkbBlob] = useState<string | null>(null)
-  const [kmrBlob, setKmrBlob] = useState<string | null>(null)
-  const [hoverBlob, setHoverBlob] = useState<string | null>(null)
-
-  useEffect(() => {
-    if (!ckbCoverFile) {
-      setCkbBlob(null)
-      return
-    }
-    const u = URL.createObjectURL(ckbCoverFile)
-    setCkbBlob(u)
-    return () => URL.revokeObjectURL(u)
-  }, [ckbCoverFile])
-
-  useEffect(() => {
-    if (!kmrCoverFile) {
-      setKmrBlob(null)
-      return
-    }
-    const u = URL.createObjectURL(kmrCoverFile)
-    setKmrBlob(u)
-    return () => URL.revokeObjectURL(u)
-  }, [kmrCoverFile])
-
-  useEffect(() => {
-    if (!hoverCoverFile) {
-      setHoverBlob(null)
-      return
-    }
-    const u = URL.createObjectURL(hoverCoverFile)
-    setHoverBlob(u)
-    return () => URL.revokeObjectURL(u)
-  }, [hoverCoverFile])
+  const ckbBlob = useObjectUrl(ckbCoverFile)
+  const kmrBlob = useObjectUrl(kmrCoverFile)
+  const hoverBlob = useObjectUrl(hoverCoverFile)
 
   const ckbPreview =
     ckbBlob ?? (ckbCoverUrl.trim() || existingCkbCoverUrl?.trim() || null)

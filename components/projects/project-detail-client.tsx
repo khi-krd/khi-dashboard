@@ -26,6 +26,7 @@ import {
   ProjectBreadcrumbBar,
   dashboardProjectsCrumbHref,
 } from "@/components/projects/project-breadcrumb"
+import { isOptimizableImageSrc } from "@/lib/image-src"
 import { ProjectDeleteDialog } from "@/components/projects/project-delete-dialog"
 import { ProjectDetailSkeleton } from "@/components/projects/project-detail-skeleton"
 import { ProjectLanguageChipRow } from "@/components/projects/project-language-chip"
@@ -517,7 +518,7 @@ export function ProjectDetailClient({ projectId }: { projectId: number }) {
                       alt=""
                       fill
                       className="object-cover"
-                      unoptimized={dto.coverUrl.startsWith("http")}
+                      unoptimized={!isOptimizableImageSrc(dto.coverUrl)}
                       priority
                     />
                     {dto.coverMediaType && dto.coverMediaType !== "IMAGE" ? (
@@ -614,7 +615,7 @@ export function ProjectDetailClient({ projectId }: { projectId: number }) {
                               alt=""
                               fill
                               className="object-cover"
-                              unoptimized={item.url.startsWith("http")}
+                              unoptimized={!isOptimizableImageSrc(item.url)}
                             />
                           </div>
                         )}

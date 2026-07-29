@@ -9,6 +9,7 @@ import {
 import Image from "next/image"
 import { memo, useCallback } from "react"
 
+import { isOptimizableImageSrc } from "@/lib/image-src"
 import { WritingGenrePill } from "@/components/writings/writing-genre-pill"
 import { WritingListLangChips } from "@/components/writings/writing-language-chip"
 import { NS } from "@/components/writings/writings-strings"
@@ -62,7 +63,7 @@ const WritingShelfCard = memo(function WritingShelfCard({
                 overlaySrc &&
                   "transition-opacity duration-300 group-hover:opacity-0",
               )}
-              unoptimized={restingSrc.startsWith("http")}
+              unoptimized={!isOptimizableImageSrc(restingSrc)}
             />
           ) : (
             <div className="text-muted-foreground/40 flex h-full items-center justify-center">
@@ -76,7 +77,7 @@ const WritingShelfCard = memo(function WritingShelfCard({
               aria-hidden
               fill
               className="object-cover opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-              unoptimized={overlaySrc.startsWith("http")}
+              unoptimized={!isOptimizableImageSrc(overlaySrc)}
             />
           ) : null}
           {row.publishedByInstitute ? (

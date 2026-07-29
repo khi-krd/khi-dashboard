@@ -8,13 +8,28 @@ import {
 import Image from "next/image"
 import { useState } from "react"
 
+import { isOptimizableImageSrc } from "@/lib/image-src"
 import { cn } from "@/lib/utils"
 import type { CollectionDto, CollectionType } from "@/types/image-collections"
 
-function TypeIcon({ type }: { type: CollectionType }) {
-  if (type === "SINGLE") return PhotoIcon
-  if (type === "PHOTO_STORY") return BookOpenIcon
-  return Squares2X2Icon
+/**
+ * Renders the icon directly instead of handing back a component reference for
+ * the caller to mount. The previous shape — a `TypeIcon()` helper called like a
+ * function, then rendered through a local `const Icon` — gave the element a
+ * component identity that only existed inside the render body, which is what
+ * `react-hooks/static-components` objects to.
+ */
+function CollectionTypeIcon({
+  type,
+  className,
+}: {
+  type: CollectionType
+  className?: string
+}) {
+  if (type === "SINGLE") return <PhotoIcon className={className} aria-hidden />
+  if (type === "PHOTO_STORY")
+    return <BookOpenIcon className={className} aria-hidden />
+  return <Squares2X2Icon className={className} aria-hidden />
 }
 
 export function CollectionCoverThumb({
@@ -31,7 +46,6 @@ export function CollectionCoverThumb({
   const base = collection.ckbCoverUrl?.trim()
   const hover = collection.hoverCoverUrl?.trim()
   const showHover = hovered && hover
-  const Icon = TypeIcon({ type: collection.collectionType })
 
   if (!base && !hover) {
     return (
@@ -43,7 +57,10 @@ export function CollectionCoverThumb({
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       >
-        <Icon className="size-4" aria-hidden />
+        <CollectionTypeIcon
+          type={collection.collectionType}
+          className="size-4"
+        />
       </div>
     )
   }
@@ -64,7 +81,7 @@ export function CollectionCoverThumb({
         alt=""
         fill
         className="object-cover transition-opacity duration-300"
-        unoptimized={src.startsWith("http")}
+        unoptimized={!isOptimizableImageSrc(src)}
       />
     </div>
   )

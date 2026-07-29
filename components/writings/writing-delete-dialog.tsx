@@ -3,6 +3,7 @@
 import type { MouseEvent } from "react"
 import Image from "next/image"
 
+import { isOptimizableImageSrc } from "@/lib/image-src"
 import { NS } from "@/components/writings/writings-strings"
 import { formatCkbDigits } from "@/lib/intl-ckb"
 import { isPartOfMultiBookSeries } from "@/types/writings-ui"
@@ -61,7 +62,7 @@ export function WritingDeleteDialog({
                     alt=""
                     fill
                     className="object-cover"
-                    unoptimized={cover.startsWith("http")}
+                    unoptimized={!isOptimizableImageSrc(cover)}
                   />
                 ) : null}
               </div>

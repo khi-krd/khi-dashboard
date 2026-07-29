@@ -8,6 +8,7 @@ import { AlbumItemSheet } from "@/components/image-collections/album-item-sheet"
 import { CollectionItemSourcePanel } from "@/components/image-collections/collection-item-source-panel"
 import { NS } from "@/components/image-collections/collections-strings"
 import { FieldError } from "@/components/ui/field"
+import { useObjectUrl } from "@/hooks/use-object-url"
 import { applyImageFileMeta, albumItemSrc } from "@/lib/image-album-utils"
 import {
   createEmptyAlbumItem,
@@ -16,16 +17,7 @@ import {
 } from "@/lib/validations/image-collections"
 
 function useItemPreview(item: ImageItemFormValues | undefined) {
-  const [blob, setBlob] = useState<string | null>(null)
-  useEffect(() => {
-    if (!item?.stagedBinary) {
-      setBlob(null)
-      return
-    }
-    const u = URL.createObjectURL(item.stagedBinary)
-    setBlob(u)
-    return () => URL.revokeObjectURL(u)
-  }, [item?.stagedBinary])
+  const blob = useObjectUrl(item?.stagedBinary)
   return blob ?? albumItemSrc(item ?? { imageUrl: "" }) ?? null
 }
 

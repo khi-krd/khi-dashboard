@@ -1,5 +1,7 @@
 "use client"
 
+import Image from "next/image"
+import { isOptimizableImageSrc } from "@/lib/image-src"
 import { useAboutPartnersQuery } from "@/hooks/useAbout"
 import { NS } from "@/components/services/services-strings"
 import { Spinner } from "@/components/ui/spinner"
@@ -34,11 +36,13 @@ export function ServicePartnersDisplay({ partnerIds }: { partnerIds: number[] })
             className="border-border flex items-center gap-3 rounded-lg border px-3 py-2 text-sm"
           >
             {p.logoUrl?.trim() ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
+              <Image
                 src={p.logoUrl}
                 alt=""
+                width={32}
+                height={32}
                 className="border-border size-8 shrink-0 rounded border object-contain"
+                unoptimized={!isOptimizableImageSrc(p.logoUrl)}
               />
             ) : null}
             <span className="min-w-0 flex-1 truncate">{name}</span>

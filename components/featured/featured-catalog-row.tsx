@@ -4,6 +4,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { EyeIcon, PencilSquareIcon } from "@heroicons/react/24/outline"
 
+import { isOptimizableImageSrc } from "@/lib/image-src"
 import { FeaturedCategoryIcon } from "@/components/featured/featured-category-icon"
 import { NS } from "@/components/featured/featured-strings"
 import { Badge } from "@/components/ui/badge"
@@ -50,7 +51,7 @@ export function FeaturedCatalogRow({
             alt=""
             fill
             className="object-cover"
-            unoptimized={cover.startsWith("http")}
+            unoptimized={!isOptimizableImageSrc(cover)}
           />
         ) : (
           <div className="text-muted-foreground/40 flex h-full w-full items-center justify-center">
@@ -100,7 +101,7 @@ export function FeaturedCatalogRow({
           )
         ) : null}
         <Button
-          type="button"
+          nativeButton={false}
           variant="ghost"
           size="icon-sm"
           render={<Link href={item.detailHref} />}
@@ -109,7 +110,7 @@ export function FeaturedCatalogRow({
           <EyeIcon className="size-4" />
         </Button>
         <Button
-          type="button"
+          nativeButton={false}
           variant="ghost"
           size="icon-sm"
           render={<Link href={item.editHref} />}

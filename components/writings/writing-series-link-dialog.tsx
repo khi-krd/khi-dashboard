@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
 
+import { useSyncedState } from "@/hooks/use-synced-state"
 import { NS } from "@/components/writings/writings-strings"
 import { Button } from "@/components/ui/button"
 import {
@@ -55,14 +56,17 @@ export function WritingSeriesLinkDialog({
     languageFilter: "all",
   })
 
-  const [parentBookId, setParentBookId] = useState<number | null>(null)
-  const [childBookId, setChildBookId] = useState<number | null>(null)
-
-  useEffect(() => {
-    if (!open) return
-    setParentBookId(null)
-    setChildBookId(null)
-  }, [open])
+  // Cleared each time the dialog opens so a previous selection never lingers.
+  const [parentBookId, setParentBookId] = useSyncedState<number | null>(
+    [open],
+    () => (open ? null : undefined),
+    () => null,
+  )
+  const [childBookId, setChildBookId] = useSyncedState<number | null>(
+    [open],
+    () => (open ? null : undefined),
+    () => null,
+  )
 
   const parents = parentsQ.data ?? []
   const books = (listQ.data?.content ?? []).filter((b) => b.id !== writing.id)

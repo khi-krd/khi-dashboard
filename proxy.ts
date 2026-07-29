@@ -100,9 +100,20 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  // `robots.txt` must stay reachable — without it here the auth gate redirects
-  // crawlers to /login and the disallow rule is never served.
+  /**
+   * The trailing `.*\\.[\\w]+$` exclusion covers every static file in `public/`
+   * — robots.txt, the logo, icons, anything added later.
+   *
+   * They have to be excluded: the auth gate answers an unauthenticated request
+   * with a 307 to /login, and `next/image` fetches the source through this same
+   * server. It would receive the login page instead of a PNG and fail with
+   * "The requested resource isn't a valid image". Files under `public/` are
+   * served to anyone by definition, so gating them was never protecting
+   * anything — only breaking them.
+   *
+   * Dashboard routes never contain a dot, so nothing authenticated slips past.
+   */
   matcher: [
-    "/((?!api|_next/static|_next/image|favicon.ico|robots.txt|railway-proxy).*)",
+    "/((?!api|_next/static|_next/image|railway-proxy|.*\\.[\\w]+$).*)",
   ],
 }

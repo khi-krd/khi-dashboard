@@ -9,6 +9,7 @@ import {
   WritingBreadcrumbBar,
   dashboardWritingsCrumbHref,
 } from "@/components/writings/writing-breadcrumb"
+import { isOptimizableImageSrc } from "@/lib/image-src"
 import { WritingErrorState } from "@/components/writings/writing-error-state"
 import { NS } from "@/components/writings/writings-strings"
 import { Badge } from "@/components/ui/badge"
@@ -66,7 +67,7 @@ function SeriesCard({ parent }: { parent: WritingDto }) {
             alt=""
             fill
             className="object-cover"
-            unoptimized={displaySrc.startsWith("http")}
+            unoptimized={!isOptimizableImageSrc(displaySrc)}
           />
         ) : (
           <div className="text-muted-foreground/50 flex h-full items-center justify-center">
@@ -153,8 +154,10 @@ export function SeriesCatalogClient() {
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2">
-          {parents.map((parent) => {
-            const key = resolveSeriesId(parent) ?? String(parent.id ?? Math.random())
+          {parents.map((parent, i) => {
+            // Index is the fallback, not Math.random(): a random key changes on
+            // every render, so React remounts the card each time.
+            const key = resolveSeriesId(parent) ?? String(parent.id ?? `idx-${i}`)
             return <SeriesCard key={key} parent={parent} />
           })}
         </div>

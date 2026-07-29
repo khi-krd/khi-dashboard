@@ -22,6 +22,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table"
 
+import { isOptimizableImageSrc } from "@/lib/image-src"
 import { NS } from "@/components/news/news-strings"
 
 import {
@@ -258,7 +259,7 @@ export function NewsDataGrid({
               width={40}
               height={40}
               className="size-10 rounded-md object-cover"
-              unoptimized={row.original.coverUrl.startsWith("http")}
+              unoptimized={!isOptimizableImageSrc(row.original.coverUrl)}
             />
           ) : (
             <div

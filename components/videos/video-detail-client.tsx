@@ -378,11 +378,13 @@ function VideoDetailLoaded({
 }) {
   const langs = dto.contentLanguages ?? []
   const hasCkb = langs.includes("CKB")
-  const [bodyTab, setBodyTab] = useState<Language>(() => (hasCkb ? "CKB" : "KMR"))
-
-  useEffect(() => {
-    if (!langs.includes(bodyTab) && langs[0]) setBodyTab(langs[0])
-  }, [langs, bodyTab])
+  const [selectedTab, setBodyTab] = useState<Language>(() =>
+    hasCkb ? "CKB" : "KMR",
+  )
+  // Clamp to a language this video actually has, derived rather than corrected
+  // in an effect. The old version depended on `langs`, which is a fresh `[]`
+  // whenever `contentLanguages` is undefined, so the effect re-ran every render.
+  const bodyTab = langs.includes(selectedTab) ? selectedTab : (langs[0] ?? selectedTab)
 
   const titleCkb = dto.ckbContent?.title?.trim() ?? ""
   const titleKmr = dto.kmrContent?.title?.trim() ?? ""

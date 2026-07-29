@@ -10,6 +10,7 @@ import { toast } from "sonner"
 
 import { MagnifyingGlassIcon, NewspaperIcon, PlusIcon, SparklesIcon } from "@heroicons/react/24/outline"
 
+import { useSyncedState } from "@/hooks/use-synced-state"
 import type { NewsCategoryFilterOption } from "@/components/news/news-filters"
 import { NewsFiltersToolbar } from "@/components/news/news-filters"
 import {
@@ -135,8 +136,24 @@ function NewsListClientInner() {
 
   const [status, setStatus] = useState<NewsUiStatusFilter>("all")
   const [language, setLanguage] = useState<NewsUiLanguageFilter>("all")
-  const [categoryFilter, setCategoryFilter] = useState<string | null>(null)
-  const [subcategoryFilter, setSubcategoryFilter] = useState<string | null>(null)
+  // Both follow the URL, but only when the param is actually present — an
+  // unrelated search-param change must not clear a filter set from the toolbar.
+  const [categoryFilter, setCategoryFilter] = useSyncedState<string | null>(
+    [sp.toString()],
+    () =>
+      sp.has("category") ? (sp.get("category")?.trim() || null) : undefined,
+    () => sp.get("category")?.trim() || null,
+  )
+  const [subcategoryFilter, setSubcategoryFilter] = useSyncedState<
+    string | null
+  >(
+    [sp.toString()],
+    () =>
+      sp.has("subcategory")
+        ? (sp.get("subcategory")?.trim() || null)
+        : undefined,
+    () => sp.get("subcategory")?.trim() || null,
+  )
 
   const [hiddenIds, setHiddenIds] = useState<Set<number>>(() => new Set())
 
@@ -179,18 +196,6 @@ function NewsListClientInner() {
   useEffect(() => {
     mergeNewsDerivedTaxonomy(queryClient, rawRows)
   }, [queryClient, rawRows])
-
-  const searchKey = sp.toString()
-  useEffect(() => {
-    const cat = sp.get("category")
-    const sub = sp.get("subcategory")
-    if (sp.has("category")) {
-      setCategoryFilter(cat?.trim() ? cat.trim() : null)
-    }
-    if (sp.has("subcategory")) {
-      setSubcategoryFilter(sub?.trim() ? sub.trim() : null)
-    }
-  }, [searchKey, sp])
 
   const recordCount =
     apiEnvelope?.success === true && apiEnvelope.data

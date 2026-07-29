@@ -3,6 +3,8 @@
 import { CloudArrowUpIcon } from "@heroicons/react/24/outline"
 import { useEffect, useState } from "react"
 
+import { useSyncedState } from "@/hooks/use-synced-state"
+import { useObjectUrl } from "@/hooks/use-object-url"
 import { VideoMetadataGrid } from "@/components/videos/video-metadata-grid"
 import { VideoPlayerBlock } from "@/components/videos/video-player-block"
 import { TiptapEditor } from "@/components/shared/tiptap-editor-lazy"
@@ -40,25 +42,16 @@ export function VideoClipItemSheet({
   onSave: (clip: Clip) => void
   onDelete: () => void
 }) {
-  const [draft, setDraft] = useState<Clip | null>(clip)
+  // Fresh copy on each open and whenever a different clip is passed in.
+  const [draft, setDraft] = useSyncedState<Clip | null>(
+    [clip, open],
+    () => (clip ? { ...clip } : undefined),
+    () => clip,
+  )
   const [mode, setMode] = useState<SourceMode>("file")
   const [tab, setTab] = useState<"CKB" | "KMR">("CKB")
-  const [localPreview, setLocalPreview] = useState<string | null>(null)
+  const localPreview = useObjectUrl(draft?.stagedVideoFile)
 
-  useEffect(() => {
-    if (clip) setDraft({ ...clip })
-  }, [clip, open])
-
-  useEffect(() => {
-    const staged = draft?.stagedVideoFile
-    if (!staged) {
-      setLocalPreview(null)
-      return
-    }
-    const u = URL.createObjectURL(staged)
-    setLocalPreview(u)
-    return () => URL.revokeObjectURL(u)
-  }, [draft?.stagedVideoFile])
 
   const [
     { isDragging, errors: uploadErrors },

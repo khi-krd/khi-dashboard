@@ -12,6 +12,8 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@/components/reui/alert"
+import { useSyncedState } from "@/hooks/use-synced-state"
+import { useObjectUrl } from "@/hooks/use-object-url"
 import { VideoMetadataGrid } from "@/components/videos/video-metadata-grid"
 import { VideoPlayerBlock } from "@/components/videos/video-player-block"
 import { NS } from "@/components/videos/videos-strings"
@@ -55,29 +57,26 @@ export function VideoSourceItemSheet({
   onSave: (source: Source) => void
   onDelete: () => void
 }) {
-  const [draft, setDraft] = useState<Source | null>(source)
-  const [mode, setMode] = useState<SourceMode>("file")
-  const [localPreview, setLocalPreview] = useState<string | null>(null)
+  // Draft and the source-mode tab are both re-seeded from the incoming source
+  // on each open, so reopening never inherits the previous edit.
+  const modeForSource = (s: Source | null): SourceMode => {
+    if (s?.externalUrl?.trim()) return "external"
+    if (s?.embedUrl?.trim()) return "embed"
+    return "file"
+  }
 
-  useEffect(() => {
-    if (source) {
-      setDraft({ ...source })
-      if (source.externalUrl?.trim()) setMode("external")
-      else if (source.embedUrl?.trim()) setMode("embed")
-      else setMode("file")
-    }
-  }, [source, open])
+  const [draft, setDraft] = useSyncedState<Source | null>(
+    [source, open],
+    () => (source ? { ...source } : undefined),
+    () => source,
+  )
+  const [mode, setMode] = useSyncedState<SourceMode>(
+    [source, open],
+    () => (source ? modeForSource(source) : undefined),
+    () => modeForSource(source),
+  )
+  const localPreview = useObjectUrl(draft?.stagedVideoFile)
 
-  useEffect(() => {
-    const staged = draft?.stagedVideoFile
-    if (!staged) {
-      setLocalPreview(null)
-      return
-    }
-    const u = URL.createObjectURL(staged)
-    setLocalPreview(u)
-    return () => URL.revokeObjectURL(u)
-  }, [draft?.stagedVideoFile])
 
   const [
     { isDragging, errors: uploadErrors },

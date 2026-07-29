@@ -11,6 +11,7 @@ import { CSS } from "@dnd-kit/utilities"
 import Image from "next/image"
 import Link from "next/link"
 
+import { isOptimizableImageSrc } from "@/lib/image-src"
 import { NS } from "@/components/featured/featured-strings"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -90,7 +91,7 @@ export function FeaturedSortableRow({
             alt=""
             fill
             className="object-cover"
-            unoptimized={cover.startsWith("http")}
+            unoptimized={!isOptimizableImageSrc(cover)}
           />
         ) : (
           <div className="text-muted-foreground/40 flex h-full w-full items-center justify-center">
@@ -121,7 +122,7 @@ export function FeaturedSortableRow({
 
       <div className="flex shrink-0 items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100">
         <Button
-          type="button"
+          nativeButton={false}
           variant="ghost"
           size="icon-sm"
           render={<Link href={detailHref} />}
@@ -130,7 +131,7 @@ export function FeaturedSortableRow({
           <EyeIcon className="size-4" />
         </Button>
         <Button
-          type="button"
+          nativeButton={false}
           variant="ghost"
           size="icon-sm"
           render={<Link href={editHref} />}

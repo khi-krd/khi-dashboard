@@ -3,6 +3,7 @@
 import Image from "next/image"
 import { useMemo, useState } from "react"
 
+import { isOptimizableImageSrc } from "@/lib/image-src"
 import { CollectionLightbox } from "@/components/image-collections/collection-lightbox"
 import { NS } from "@/components/image-collections/collections-strings"
 import { formatCkbDigits } from "@/lib/intl-ckb"
@@ -139,7 +140,7 @@ function StoryStep({
               alt={caption ?? ""}
               fill
               className="object-cover"
-              unoptimized={src.startsWith("http")}
+              unoptimized={!isOptimizableImageSrc(src)}
             />
           </span>
         ) : (

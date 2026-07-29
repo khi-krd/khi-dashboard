@@ -10,6 +10,8 @@ import Image from "next/image"
 import { useEffect, useState } from "react"
 import { useFieldArray, useFormContext } from "react-hook-form"
 
+import { isOptimizableImageSrc } from "@/lib/image-src"
+import { useObjectUrl } from "@/hooks/use-object-url"
 import { AlbumItemSheet } from "@/components/image-collections/album-item-sheet"
 import { NS } from "@/components/image-collections/collections-strings"
 import { Button } from "@/components/ui/button"
@@ -23,16 +25,7 @@ import {
 } from "@/lib/validations/image-collections"
 
 function useItemPreview(item: ImageItemFormValues) {
-  const [blob, setBlob] = useState<string | null>(null)
-  useEffect(() => {
-    if (!item.stagedBinary) {
-      setBlob(null)
-      return
-    }
-    const u = URL.createObjectURL(item.stagedBinary)
-    setBlob(u)
-    return () => URL.revokeObjectURL(u)
-  }, [item.stagedBinary])
+  const blob = useObjectUrl(item.stagedBinary)
   return blob ?? albumItemSrc(item) ?? null
 }
 
@@ -144,7 +137,7 @@ function StoryEditorCard({
             alt=""
             fill
             className="object-cover"
-            unoptimized={preview.startsWith("blob:") || preview.startsWith("http")}
+            unoptimized={!isOptimizableImageSrc(preview)}
           />
         ) : (
           <span className="text-muted-foreground flex size-full items-center justify-center text-[10px]">

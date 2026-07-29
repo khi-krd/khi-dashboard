@@ -2,6 +2,8 @@
 
 import { PlayIcon } from "@heroicons/react/24/outline"
 
+import Image from "next/image"
+import { isOptimizableImageSrc } from "@/lib/image-src"
 import { NS } from "@/components/services/services-strings"
 import { formatCkbDigits } from "@/lib/intl-ckb"
 import { serviceDtoToHeroFormValues } from "@/lib/services-form-data"
@@ -104,11 +106,13 @@ function HeroPreview({ hero }: { hero?: ServiceDto }) {
       >
         {image ? (
           <>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <Image
               src={image}
               alt=""
-              className="absolute inset-0 size-full object-cover brightness-[0.72]"
+              fill
+              sizes="100vw"
+              className="object-cover brightness-[0.72]"
+              unoptimized={!isOptimizableImageSrc(image)}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
           </>

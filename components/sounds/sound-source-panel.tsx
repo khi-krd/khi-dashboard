@@ -3,6 +3,7 @@
 import { CloudArrowUpIcon } from "@heroicons/react/24/outline"
 import { useCallback, useEffect, useRef, useState } from "react"
 
+import { useObjectUrl } from "@/hooks/use-object-url"
 import { NS } from "@/components/sounds/sounds-strings"
 import { FieldError } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
@@ -47,31 +48,27 @@ export function SoundSourcePanel({
   sourceError?: string
 }) {
   const [mode, setMode] = useState<SourceMode>("file")
-  const [localPreview, setLocalPreview] = useState<string | null>(null)
   const audioRef = useRef<HTMLAudioElement>(null)
   const probeGenRef = useRef(0)
   const onChangeRef = useRef(onChange)
   const fileRef = useRef(file)
   const syncFromAudioElementRef = useRef<() => void>(() => {})
   const staged = file.stagedAudioFile
+  const localPreview = useObjectUrl(staged)
 
-  onChangeRef.current = onChange
-  fileRef.current = file
+  // "Latest value" refs, updated after commit rather than during render.
+  // Mutating a ref while rendering is unsafe under concurrent rendering — the
+  // write survives even when React throws the render away.
+  useEffect(() => {
+    onChangeRef.current = onChange
+    fileRef.current = file
+  })
 
   const applyMetaPatch = useCallback((patch: Partial<SoundFileFormValues>) => {
     if (Object.keys(patch).length === 0) return
     onChangeRef.current(patch)
   }, [])
 
-  useEffect(() => {
-    if (!staged) {
-      setLocalPreview(null)
-      return
-    }
-    const u = URL.createObjectURL(staged)
-    setLocalPreview(u)
-    return () => URL.revokeObjectURL(u)
-  }, [staged])
 
   useEffect(() => {
     if (!staged) return
@@ -133,7 +130,9 @@ export function SoundSourcePanel({
     }
   }, [staged, applyMetaPatch])
 
-  syncFromAudioElementRef.current = syncFromAudioElement
+  useEffect(() => {
+    syncFromAudioElementRef.current = syncFromAudioElement
+  })
 
   useEffect(() => {
     const el = audioRef.current

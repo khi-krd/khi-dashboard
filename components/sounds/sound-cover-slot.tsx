@@ -3,6 +3,7 @@
 import { EyeIcon, PhotoIcon } from "@heroicons/react/24/outline"
 import Image from "next/image"
 
+import { isOptimizableImageSrc } from "@/lib/image-src"
 import { NS } from "@/components/sounds/sounds-strings"
 import {
   Collapsible,
@@ -108,9 +109,7 @@ export function SoundCoverSlot({
               alt=""
               fill
               className="object-cover"
-              unoptimized={
-                preview.startsWith("blob:") || preview.startsWith("http")
-              }
+              unoptimized={!isOptimizableImageSrc(preview)}
             />
             <div className="absolute inset-x-0 top-0 flex justify-between gap-2 bg-gradient-to-b from-black/60 to-transparent p-2 opacity-0 transition-opacity hover:opacity-100">
               <button

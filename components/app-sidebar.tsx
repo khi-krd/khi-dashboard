@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl"
 
 import { NavMain } from "@/components/nav-main"
 import { NavUser } from "@/components/nav-user"
+import { BrandMark } from "@/components/brand-mark"
 import {
   Sidebar,
   SidebarContent,
@@ -20,7 +21,6 @@ import {
   Call02Icon,
   FavouriteIcon,
   CollectionsBookmarkIcon,
-  CommandIcon,
   DashboardSquare01Icon,
   FolderKanbanIcon,
   InformationCircleIcon,
@@ -146,8 +146,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" render={<a href="#" />}>
-              <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                <HugeiconsIcon icon={CommandIcon} strokeWidth={2} className="size-4" />
+              <div className="flex aspect-square size-8 items-center justify-center">
+                <BrandMark size={32} priority />
               </div>
               <div className="grid flex-1 text-start text-sm leading-tight">
                 <span className="truncate font-medium">{t("header.title")}</span>

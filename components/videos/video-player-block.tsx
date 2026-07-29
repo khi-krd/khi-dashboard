@@ -4,6 +4,7 @@ import { PlayIcon } from "@heroicons/react/24/solid"
 import Image from "next/image"
 import Link from "next/link"
 
+import { isOptimizableImageSrc } from "@/lib/image-src"
 import { NS } from "@/components/videos/videos-strings"
 import {
   detectProvider,
@@ -89,7 +90,7 @@ export function VideoPlayerBlock({
               alt=""
               fill
               className="object-cover opacity-90 transition-opacity group-hover:opacity-75"
-              unoptimized={posterUrl.startsWith("http")}
+              unoptimized={!isOptimizableImageSrc(posterUrl)}
             />
           ) : (
             <div className="bg-muted size-full" />

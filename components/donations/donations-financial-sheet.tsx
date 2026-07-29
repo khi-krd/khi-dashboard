@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
 
+import { useSyncedState } from "@/hooks/use-synced-state"
 import { DonationStatusPill } from "@/components/donations/donation-status-pill"
 import { DonationStatusSelect } from "@/components/donations/donation-status-select"
 import { NS } from "@/components/donations/donations-strings"
@@ -50,11 +51,11 @@ export function DonationsFinancialSheet({
   onStatusUpdated?: () => void
 }) {
   const updateMut = useUpdateFinancialDonationStatusMutation()
-  const [statusDraft, setStatusDraft] = useState<DonationStatus>("PENDING")
-
-  useEffect(() => {
-    if (row) setStatusDraft(row.status ?? "PENDING")
-  }, [row])
+  const [statusDraft, setStatusDraft] = useSyncedState(
+    [row],
+    () => (row ? (row.status ?? "PENDING") : undefined),
+    () => (row?.status ?? "PENDING") as DonationStatus,
+  )
 
   if (!row) return null
 

@@ -18,6 +18,7 @@ import {
   WritingBreadcrumbBar,
   dashboardWritingsCrumbHref,
 } from "@/components/writings/writing-breadcrumb"
+import { isOptimizableImageSrc } from "@/lib/image-src"
 import { WritingDeleteDialog } from "@/components/writings/writing-delete-dialog"
 import { WritingDetailSkeleton } from "@/components/writings/writing-detail-skeleton"
 import { WritingGenrePill } from "@/components/writings/writing-genre-pill"
@@ -466,7 +467,7 @@ function WritingDetailLoaded({
                   alt=""
                   fill
                   className="object-cover"
-                  unoptimized={cover.startsWith("http")}
+                  unoptimized={!isOptimizableImageSrc(cover)}
                 />
               ) : (
                 <div className="text-muted-foreground flex size-full flex-col items-center justify-center gap-2 text-sm">

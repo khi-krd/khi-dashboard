@@ -16,6 +16,7 @@ export default function NotFound() {
         ڕەنگە بەستەرەکە هەڵە بێت یان پەڕەکە سڕابێتەوە.
       </p>
       <Button
+        nativeButton={false}
         variant="outline"
         size="sm"
         className="mt-1 rounded-md"

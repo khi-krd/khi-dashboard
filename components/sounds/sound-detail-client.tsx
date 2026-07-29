@@ -19,6 +19,8 @@ import {
   SoundBreadcrumbBar,
   dashboardSoundsCrumbHref,
 } from "@/components/sounds/sound-breadcrumb"
+import { isOptimizableImageSrc } from "@/lib/image-src"
+import { useSyncedState } from "@/hooks/use-synced-state"
 import { SoundDeleteDialog } from "@/components/sounds/sound-delete-dialog"
 import { SoundDetailFilesList } from "@/components/sounds/sound-detail-files-list"
 import { SoundDetailSkeleton } from "@/components/sounds/sound-detail-skeleton"
@@ -66,13 +68,12 @@ export function SoundDetailClient({ soundId }: { soundId: number }) {
   const deleteMut = useDeleteSoundMutation()
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [tab, setTab] = useState<Language>("CKB")
-  const [activeFile, setActiveFile] = useState<SoundFileDto | null>(null)
+  const [activeFile, setActiveFile] = useSyncedState<SoundFileDto | null>(
+    [sound],
+    () => sound?.files?.[0],
+    () => sound?.files?.[0] ?? null,
+  )
   const { copyToClipboard } = useCopyToClipboard()
-
-  useEffect(() => {
-    if (!sound?.files?.length) return
-    setActiveFile(sound.files[0])
-  }, [sound])
 
   if (isLoading) return <SoundDetailSkeleton />
   if (isError) return <SoundsErrorState onRetry={() => void refetch()} />
@@ -368,7 +369,7 @@ function SoundDetailLoaded({
                   alt=""
                   fill
                   className="object-cover"
-                  unoptimized={cover.startsWith("http")}
+                  unoptimized={!isOptimizableImageSrc(cover)}
                 />
               ) : (
                 <div className="text-muted-foreground flex size-full flex-col items-center justify-center gap-2 text-sm">

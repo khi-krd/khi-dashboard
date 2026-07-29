@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { ChevronLeftIcon, ChevronRightIcon, XMarkIcon } from "@heroicons/react/24/outline"
 
+import { useSyncedState } from "@/hooks/use-synced-state"
 import { NS } from "@/components/image-collections/collections-strings"
 import { Button } from "@/components/ui/button"
 import {
@@ -33,8 +34,18 @@ export function CollectionLightbox({
   initialIndex?: number
 }) {
   const [api, setApi] = useState<CarouselApi>()
-  const [current, setCurrent] = useState(initialIndex)
-  const [descOpen, setDescOpen] = useState(false)
+  // Both reset when the lightbox opens on a new slide. Derived here so the
+  // effect below is left doing only what it must: driving the carousel.
+  const [current, setCurrent] = useSyncedState(
+    [open, initialIndex],
+    () => (open ? initialIndex : undefined),
+    () => initialIndex,
+  )
+  const [descOpen, setDescOpen] = useSyncedState(
+    [open, initialIndex],
+    () => (open ? false : undefined),
+    () => false,
+  )
 
   const sorted = [...items].sort(
     (a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0),
@@ -43,8 +54,6 @@ export function CollectionLightbox({
   useEffect(() => {
     if (!open || !api) return
     api.scrollTo(initialIndex, true)
-    setCurrent(initialIndex)
-    setDescOpen(false)
   }, [api, initialIndex, open])
 
   useEffect(() => {

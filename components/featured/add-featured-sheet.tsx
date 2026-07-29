@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react"
 
+import { useSyncedState } from "@/hooks/use-synced-state"
 import { FeaturedCatalogBrowser } from "@/components/featured/featured-catalog-browser"
 import { NS } from "@/components/featured/featured-strings"
 import { Button } from "@/components/ui/button"
@@ -41,29 +42,38 @@ export function AddFeaturedSheet({
   initialCategory?: FeaturedCatalogCategory
   initialStatus?: FeaturedCatalogStatusFilter
 }) {
-  const [search, setSearch] = useState("")
-  const debouncedSearch = useDebouncedValue(search.trim(), 300)
-  const [category, setCategory] = useState<FeaturedCatalogCategory>(
-    initialCategory === "all" ? "sounds" : initialCategory,
+  // Every filter resets when the sheet closes, so the next open starts clean.
+  const closeDeps = [open, initialCategory, initialStatus]
+  const defaultCategory = () =>
+    initialCategory === "all" ? "sounds" : initialCategory
+
+  const [search, setSearch] = useSyncedState(
+    closeDeps,
+    () => (open ? undefined : ""),
+    () => "",
   )
-  const [status, setStatus] =
-    useState<FeaturedCatalogStatusFilter>(initialStatus)
-  const [pageIndex, setPageIndex] = useState(0)
-  const [pageSize, setPageSize] = useState(20)
-
-  useEffect(() => {
-    if (!open) {
-      setSearch("")
-      setCategory(initialCategory === "all" ? "sounds" : initialCategory)
-      setStatus(initialStatus)
-      setPageIndex(0)
-      setPageSize(20)
-    }
-  }, [open, initialCategory, initialStatus])
-
-  useEffect(() => {
-    setPageIndex(0)
-  }, [debouncedSearch, category, status])
+  const debouncedSearch = useDebouncedValue(search.trim(), 300)
+  const [category, setCategory] = useSyncedState<FeaturedCatalogCategory>(
+    closeDeps,
+    () => (open ? undefined : defaultCategory()),
+    defaultCategory,
+  )
+  const [status, setStatus] = useSyncedState<FeaturedCatalogStatusFilter>(
+    closeDeps,
+    () => (open ? undefined : initialStatus),
+    () => initialStatus,
+  )
+  const [pageSize, setPageSize] = useSyncedState(
+    closeDeps,
+    () => (open ? undefined : 20),
+    () => 20,
+  )
+  // Any change to the result set sends you back to the first page.
+  const [pageIndex, setPageIndex] = useSyncedState(
+    [open, debouncedSearch, category, status],
+    () => 0,
+    () => 0,
+  )
 
   const browseQ = useFeaturedBrowseQuery({
     category,

@@ -1,5 +1,7 @@
 import createNextIntlPlugin from "next-intl/plugin"
 
+import { OPTIMIZABLE_IMAGE_HOSTS } from "./lib/image-hosts.mjs"
+
 /**
  * Static headers applied to every response. The Content-Security-Policy is NOT
  * here — it carries a per-request nonce and is set in `proxy.ts` via `lib/csp.ts`.
@@ -35,23 +37,13 @@ const nextConfig = {
     ],
   },
   images: {
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "s3-khiwebsite.s3.us-east-1.amazonaws.com",
-        pathname: "/**",
-      },
-      {
-        protocol: "https",
-        hostname: "i.ytimg.com",
-        pathname: "/**",
-      },
-      {
-        protocol: "https",
-        hostname: "vumbnail.com",
-        pathname: "/**",
-      },
-    ],
+    // Derived from the shared list so this can never drift from the check in
+    // `lib/image-src.ts`.
+    remotePatterns: OPTIMIZABLE_IMAGE_HOSTS.map((hostname) => ({
+      protocol: "https",
+      hostname,
+      pathname: "/**",
+    })),
   },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }]

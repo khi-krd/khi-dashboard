@@ -16,6 +16,7 @@ import { SparklesIcon } from "@heroicons/react/24/outline"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { toast } from "sonner"
 
+import { useSyncedState } from "@/hooks/use-synced-state"
 import { FeaturedCategoryIcon } from "@/components/featured/featured-category-icon"
 import { FeaturedListPagination } from "@/components/featured/featured-list-pagination"
 import { FeaturedSortableRow } from "@/components/featured/featured-sortable-row"
@@ -45,9 +46,7 @@ export function FeaturedPanel({
   onRetry,
   onPatch,
 }: FeaturedPanelProps) {
-  const [pageIndex, setPageIndex] = useState(0)
   const [pageSize, setPageSize] = useState(10)
-  const [orderedKeys, setOrderedKeys] = useState<string[]>([])
   const [pendingKey, setPendingKey] = useState<string | null>(null)
   const [isReordering, setIsReordering] = useState(false)
 
@@ -64,17 +63,21 @@ export function FeaturedPanel({
     return map
   }, [featuredItems])
 
-  useEffect(() => {
-    setOrderedKeys(featuredItems.map((item) => item.key))
-    setPageIndex(0)
-  }, [featuredItems])
+  // Local drag order, re-seeded whenever the featured set itself changes.
+  const [orderedKeys, setOrderedKeys] = useSyncedState<string[]>(
+    [featuredItems],
+    () => featuredItems.map((item) => item.key),
+    () => featuredItems.map((item) => item.key),
+  )
+  const [selectedPage, setPageIndex] = useSyncedState(
+    [featuredItems],
+    () => 0,
+    () => 0,
+  )
 
   const pageCount = Math.max(1, Math.ceil(featuredItems.length / pageSize))
-  useEffect(() => {
-    if (pageIndex > pageCount - 1) {
-      setPageIndex(Math.max(0, pageCount - 1))
-    }
-  }, [pageIndex, pageCount])
+  // Clamped by derivation instead of an effect that corrected it a render late.
+  const pageIndex = Math.min(selectedPage, pageCount - 1)
 
   const pageKeys = useMemo(() => {
     const start = pageIndex * pageSize

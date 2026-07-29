@@ -4,6 +4,7 @@ import { FilmIcon, Square2StackIcon } from "@heroicons/react/24/outline"
 import Image from "next/image"
 import { useState } from "react"
 
+import { isOptimizableImageSrc } from "@/lib/image-src"
 import { cn } from "@/lib/utils"
 import type { VideoDto } from "@/types/videos"
 
@@ -56,7 +57,7 @@ export function VideoCoverThumb({
           "object-cover transition-opacity duration-300",
           showHover ? "opacity-100" : "opacity-100",
         )}
-        unoptimized={src.startsWith("http")}
+        unoptimized={!isOptimizableImageSrc(src)}
       />
     </div>
   )

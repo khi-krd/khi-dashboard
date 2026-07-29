@@ -19,6 +19,8 @@ import {
   AboutBreadcrumbBar,
   dashboardAboutCrumbHref,
 } from "@/components/about/about-breadcrumb"
+import Image from "next/image"
+import { isOptimizableImageSrc } from "@/lib/image-src"
 import { AboutDeleteDialog } from "@/components/about/about-delete-dialog"
 import { AboutDetailSidebar } from "@/components/about/about-detail-sidebar"
 import { AboutDetailSkeleton } from "@/components/about/about-detail-skeleton"
@@ -357,11 +359,13 @@ export function AboutDetailClient({ aboutId }: { aboutId: number }) {
                   <Card key={item.id ?? `${item.nameCkb}-${item.displayOrder}`}>
                     <CardHeader className="flex-row items-start gap-3 space-y-0">
                       {item.imageUrl?.trim() ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
+                        <Image
                           src={item.imageUrl}
                           alt=""
+                          width={56}
+                          height={56}
                           className="border-border size-14 shrink-0 rounded-lg border object-cover"
+                          unoptimized={!isOptimizableImageSrc(item.imageUrl)}
                         />
                       ) : null}
                       <div className="min-w-0">
@@ -392,11 +396,13 @@ export function AboutDetailClient({ aboutId }: { aboutId: number }) {
                   <Card key={item.id ?? `${item.nameCkb}-${item.displayOrder}`}>
                     <CardHeader className="flex-row items-start gap-3 space-y-0">
                       {item.logoUrl?.trim() ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
+                        <Image
                           src={item.logoUrl}
                           alt=""
+                          width={56}
+                          height={56}
                           className="border-border size-14 shrink-0 rounded-lg border bg-background object-contain p-1"
+                          unoptimized={!isOptimizableImageSrc(item.logoUrl)}
                         />
                       ) : null}
                       <div className="min-w-0">
