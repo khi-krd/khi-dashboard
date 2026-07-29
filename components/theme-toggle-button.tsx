@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Moon02Icon, Sun03Icon } from "@hugeicons/core-free-icons"
 
-/** Animated icon crossfade (ReUI c-button-43 pattern), wired to color scheme toggle. */
+/** Animated icon crossfade, wired to the color scheme toggle. */
 export function ThemeToggleButton() {
   const t = useTranslations("Sidebar.a11y")
   const [mounted, setMounted] = useState(false)

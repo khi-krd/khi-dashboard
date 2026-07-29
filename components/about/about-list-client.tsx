@@ -1,258 +1,154 @@
 "use client"
 
-import { Suspense, useEffect, useMemo, useState } from "react"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import {
-  MagnifyingGlassIcon,
-  PlusIcon,
-  XMarkIcon,
-} from "@heroicons/react/24/outline"
+import { Suspense, useMemo, useState } from "react"
+import { PencilSquareIcon, PlusIcon } from "@heroicons/react/24/outline"
 
-import { AboutsTable } from "@/components/about/abouts-table"
-import { AboutDeleteDialog } from "@/components/about/about-delete-dialog"
+import {
+  AboutBreadcrumbBar,
+  dashboardAboutCrumbHref,
+} from "@/components/about/about-breadcrumb"
+import { AboutContentSectionCard } from "@/components/about/about-content-section-card"
+import { AboutFounderSectionCard } from "@/components/about/about-founder-section-card"
+import { AboutPageHeroEditor } from "@/components/about/about-page-hero-editor"
+import { AboutPagePreview } from "@/components/about/about-page-preview"
+import { AboutPartnersSectionCard } from "@/components/about/about-partners-section-card"
+import { AboutStatsSectionCard } from "@/components/about/about-stats-section-card"
+import { AboutTeamSectionCard } from "@/components/about/about-team-section-card"
 import { AboutErrorState } from "@/components/about/about-error-state"
 import { NS } from "@/components/about/about-strings"
-import { Button, buttonVariants } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
-import { useDebouncedValue } from "@/hooks/useDebouncedValue"
-import {
-  useAboutListQuery,
-  useDeleteAboutMutation,
-} from "@/hooks/useAbout"
-import { formatCkbDigits } from "@/lib/intl-ckb"
-import { cn } from "@/lib/utils"
-import { toastError } from "@/lib/toast"
-import { toast } from "sonner"
-import type {
-  AboutUiActiveFilter,
-  AboutUiLanguageFilter,
-} from "@/types/about-ui"
-import {
-  matchesAboutActiveFilter,
-  matchesAboutClientSearchFilter,
-  matchesAboutLanguageFilter,
-  toAboutAdminRow,
-} from "@/types/about-ui"
-import type { AboutAdminTableRow } from "@/types/about-ui"
+import { useAboutListQuery } from "@/hooks/useAbout"
+import type { AboutDto } from "@/types/about"
 
-function ListSkeleton() {
+function PageSkeleton() {
   return (
-    <div className="border-border overflow-hidden rounded-xl border">
-      <Skeleton className="h-10 w-full rounded-none" />
-      {Array.from({ length: 5 }).map((_, i) => (
-        <Skeleton key={i} className="h-16 w-full rounded-none" />
-      ))}
+    <div className="space-y-4" dir="rtl">
+      <Skeleton className="h-64 rounded-xl" />
+      <Skeleton className="h-48 rounded-xl" />
+      <Skeleton className="h-48 rounded-xl" />
     </div>
   )
 }
 
 export function AboutListClient() {
   return (
-    <Suspense fallback={<ListSkeleton />}>
+    <Suspense fallback={<PageSkeleton />}>
       <AboutListClientInner />
     </Suspense>
   )
 }
 
 function AboutListClientInner() {
-  const router = useRouter()
-  const [searchRaw, setSearchRaw] = useState("")
-  const debouncedKw = useDebouncedValue(searchRaw.trim(), 300)
-  const [activeFilter, setActiveFilter] = useState<AboutUiActiveFilter>("all")
-  const [language, setLanguage] = useState<AboutUiLanguageFilter>("all")
-  const [pageIndex, setPageIndex] = useState(0)
-  const pageSize = 20
-  const [deleteTarget, setDeleteTarget] = useState<AboutAdminTableRow | null>(
-    null,
-  )
+  const listQuery = useAboutListQuery({ page: 0, size: 10 })
+  const [pageMode, setPageMode] = useState<"view" | "edit">("view")
 
-  const listQ = useAboutListQuery({ page: pageIndex, size: pageSize })
-  const deleteMut = useDeleteAboutMutation()
+  const aboutRecord = useMemo((): AboutDto | undefined => {
+    const rows = listQuery.data?.content ?? []
+    return rows.find((row) => (row.id ?? 0) > 0)
+  }, [listQuery.data?.content])
 
-  const filtered = useMemo(() => {
-    const rows = (listQ.data?.content ?? []).map(toAboutAdminRow)
-    return rows.filter(
-      (r) =>
-        matchesAboutActiveFilter(r, activeFilter) &&
-        matchesAboutLanguageFilter(r, language) &&
-        matchesAboutClientSearchFilter(r, debouncedKw),
-    )
-  }, [listQ.data?.content, activeFilter, language, debouncedKw])
+  const hasAbout = !!aboutRecord?.id
+  const isEditing = pageMode === "edit"
 
-  const anyFilterActive =
-    activeFilter !== "all" || language !== "all" || debouncedKw.length > 0
-
-  function resetFilters() {
-    setSearchRaw("")
-    setActiveFilter("all")
-    setLanguage("all")
-    setPageIndex(0)
+  function startEditing() {
+    setPageMode("edit")
   }
 
-  const total = listQ.data?.totalElements ?? filtered.length
-  const hasAboutRecord = total > 0
-  const singleAboutId =
-    !listQ.isLoading &&
-    !listQ.isError &&
-    (listQ.data?.totalElements ?? 0) === 1 &&
-    (listQ.data?.content?.[0]?.id ?? 0) > 0
-      ? listQ.data?.content?.[0]?.id
-      : undefined
+  function backToPreview() {
+    setPageMode("view")
+  }
 
-  useEffect(() => {
-    if (
-      singleAboutId &&
-      !anyFilterActive &&
-      searchRaw.trim().length === 0 &&
-      pageIndex === 0
-    ) {
-      router.replace(`/dashboard/about/${singleAboutId}`)
-    }
-  }, [singleAboutId, anyFilterActive, searchRaw, pageIndex, router])
+  function handleSaved() {
+    void listQuery.refetch()
+  }
 
   return (
-    <div dir="rtl" className="px-4 py-6 lg:px-6">
-      <header className="mb-6 flex items-start justify-between gap-4">
-        <div className="min-w-0">
-          <h1 className="text-2xl font-semibold tracking-tight">{NS.title}</h1>
-          <p className="text-muted-foreground mt-1 text-sm">{NS.subtitle}</p>
-          <p className="text-muted-foreground/70 mt-1.5 font-mono text-xs">
-            {NS.count(formatCkbDigits(total))}
+    <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 pb-16" dir="rtl">
+      <AboutBreadcrumbBar
+        segments={[
+          { label: NS.breadcrumb.dashboard, href: dashboardAboutCrumbHref() },
+          { label: NS.page.title },
+        ]}
+      />
+
+      <header className="flex flex-wrap items-start justify-between gap-4">
+        <div className="space-y-1">
+          <h1 className="text-2xl font-semibold tracking-tight">{NS.page.title}</h1>
+          <p className="text-muted-foreground text-sm">
+            {isEditing ? NS.page.subtitleSimple : NS.page.previewHint}
           </p>
         </div>
-        {!hasAboutRecord ? (
-          <Link
-            href="/dashboard/about/new"
-            className={cn(
-              buttonVariants({ variant: "default" }),
-              "bg-primary text-primary-foreground hover:bg-primary/90 shrink-0",
-            )}
-          >
-            <PlusIcon className="me-1 size-4" />
-            {NS.new}
-          </Link>
-        ) : null}
+        <div className="flex shrink-0 gap-2">
+          {!isEditing ? (
+            <Button type="button" onClick={startEditing}>
+              {hasAbout ? (
+                <>
+                  <PencilSquareIcon className="size-4" />
+                  {NS.action.editPage}
+                </>
+              ) : (
+                <>
+                  <PlusIcon className="size-4 rtl:rotate-180" />
+                  {NS.action.createPage}
+                </>
+              )}
+            </Button>
+          ) : (
+            <Button type="button" variant="outline" onClick={backToPreview}>
+              {NS.action.backToPreview}
+            </Button>
+          )}
+        </div>
       </header>
 
-      {hasAboutRecord ? (
-        <div className="border-border bg-muted/20 mb-4 flex items-center justify-between rounded-lg border px-3 py-2 text-xs">
-          <span className="text-muted-foreground">
-            تەنها یەک پەڕەی دەربارە ڕێگەپێدراوە
-          </span>
-          {listQ.data?.content?.[0]?.id ? (
-            <Link
-              href={`/dashboard/about/${listQ.data.content[0].id}/edit`}
-              className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
-            >
-              دەستکاری
-            </Link>
-          ) : null}
-        </div>
-      ) : null}
-
-      <div className="mb-4 flex items-center gap-2">
-        <div className="relative flex-1">
-          <MagnifyingGlassIcon className="text-muted-foreground absolute inset-e-3 top-1/2 size-4 -translate-y-1/2" />
-          <Input
-            value={searchRaw}
-            onChange={(e) => {
-              setSearchRaw(e.target.value)
-              setPageIndex(0)
-            }}
-            placeholder={NS.search_placeholder}
-            className="border-border bg-background h-9 pe-10 ps-3"
-          />
-        </div>
-        <Select
-          value={activeFilter}
-          onValueChange={(v) => {
-            setActiveFilter(v as AboutUiActiveFilter)
-            setPageIndex(0)
-          }}
-        >
-          <SelectTrigger className="bg-background h-9 w-32">
-            <SelectValue placeholder={NS.filter.status_all} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{NS.filter.status_all}</SelectItem>
-            <SelectItem value="active">{NS.filter.active}</SelectItem>
-            <SelectItem value="inactive">{NS.filter.inactive}</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select
-          value={language}
-          onValueChange={(v) => {
-            setLanguage(v as AboutUiLanguageFilter)
-            setPageIndex(0)
-          }}
-        >
-          <SelectTrigger className="bg-background h-9 w-32">
-            <SelectValue placeholder={NS.filter.lang_all} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{NS.filter.lang_all}</SelectItem>
-            <SelectItem value="CKB">{NS.lang.ckb}</SelectItem>
-            <SelectItem value="KMR">{NS.lang.kmr}</SelectItem>
-          </SelectContent>
-        </Select>
-        {anyFilterActive ? (
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="text-muted-foreground h-9"
-            onClick={resetFilters}
-          >
-            <XMarkIcon className="me-1 size-3.5" />
-            {NS.filter.reset}
-          </Button>
-        ) : null}
-      </div>
-
-      {listQ.isLoading ? (
-        <ListSkeleton />
-      ) : listQ.isError ? (
-        <AboutErrorState onRetry={() => void listQ.refetch()} />
-      ) : filtered.length === 0 ? (
-        <div className="text-muted-foreground py-16 text-center text-sm">
-          هیچ پەرەیەک نەدۆزرایەوە
-        </div>
-      ) : (
-        <AboutsTable
-          rows={filtered}
-          pageIndex={pageIndex}
-          pageSize={pageSize}
-          totalElements={listQ.data?.totalElements ?? filtered.length}
-          onPageChange={setPageIndex}
-          onDelete={setDeleteTarget}
+      {listQuery.isError ? (
+        <AboutErrorState onRetry={() => void listQuery.refetch()} />
+      ) : !isEditing ? (
+        <AboutPagePreview
+          about={aboutRecord}
+          isLoading={listQuery.isLoading}
         />
-      )}
+      ) : (
+        <>
+          <AboutPageHeroEditor
+            aboutDto={aboutRecord}
+            isLoading={listQuery.isLoading}
+            onSaved={handleSaved}
+          />
 
-      <AboutDeleteDialog
-        open={!!deleteTarget}
-        onOpenChange={(o) => !o && setDeleteTarget(null)}
-        target={deleteTarget}
-        isPending={deleteMut.isPending}
-        onConfirm={async () => {
-          if (!deleteTarget?.id) return
-          try {
-            await deleteMut.mutateAsync(deleteTarget.id)
-            toast.success(NS.toast.deleted)
-            setDeleteTarget(null)
-          } catch {
-            toastError(NS.error.validation)
-          }
-        }}
-      />
+          {hasAbout && aboutRecord ? (
+            <div className="space-y-4">
+              <div>
+                <h2 className="text-base font-semibold">{NS.page.sectionsTitle}</h2>
+              </div>
+              <div className="space-y-3">
+                <AboutContentSectionCard
+                  index={0}
+                  aboutDto={aboutRecord}
+                  onSaved={handleSaved}
+                />
+                <AboutStatsSectionCard
+                  index={1}
+                  aboutDto={aboutRecord}
+                  onSaved={handleSaved}
+                />
+                <AboutFounderSectionCard
+                  index={2}
+                  aboutDto={aboutRecord}
+                  onSaved={handleSaved}
+                />
+                <AboutTeamSectionCard index={3} />
+                <AboutPartnersSectionCard index={4} />
+              </div>
+            </div>
+          ) : !listQuery.isLoading ? (
+            <p className="text-muted-foreground rounded-lg border border-dashed p-6 text-center text-sm">
+              {NS.page.previewEmptyHint}
+            </p>
+          ) : null}
+        </>
+      )}
     </div>
   )
 }

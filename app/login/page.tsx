@@ -17,6 +17,10 @@ export default function LoginPage() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
   const { form, onSubmit, isLoading, serverError, clearServerError } = useLogin()
 
+  // Belt-and-braces only. `proxy.ts` already bounces cookie-bearing users off
+  // /login at the edge before this renders. The token is not persisted, so on
+  // a fresh page load this is a no-op — that's fine, and not a reason to start
+  // persisting it again.
   useEffect(() => {
     if (isAuthenticated()) {
       router.replace("/dashboard")

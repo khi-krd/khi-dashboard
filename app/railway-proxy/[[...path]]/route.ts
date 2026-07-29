@@ -86,7 +86,13 @@ async function proxy(req: NextRequest, pathSegments: string[]) {
   }
 
   if (req.method !== "GET" && req.method !== "HEAD") {
-    init.body = await req.arrayBuffer()
+    // Stream the body straight through instead of buffering it. Media uploads
+    // run up to 500MB (see `components/shared/media-cover-upload.tsx`), which
+    // `await req.arrayBuffer()` would hold in memory in full and OOM the
+    // server. `duplex: "half"` is required whenever body is a ReadableStream
+    // but is missing from TypeScript's `RequestInit`, hence the cast.
+    init.body = req.body
+    ;(init as RequestInit & { duplex: "half" }).duplex = "half"
   }
 
   // Measure how long the upstream backend takes to respond (time-to-first-byte
@@ -105,9 +111,6 @@ async function proxy(req: NextRequest, pathSegments: string[]) {
     throw err
   }
   const ms = Math.round(performance.now() - start)
-  console.log(
-    `[railway-proxy] ${req.method} /${subPath} -> ${upstream.status} in ${ms}ms`,
-  )
 
   const res = buildProxyResponse(upstream)
   // Surfaces in DevTools → Network → Timing ("Server Timing" section).

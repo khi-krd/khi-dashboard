@@ -68,11 +68,7 @@ export function vimeoPosterUrl(videoId: string): string {
 }
 
 export function videoUrlPublic(id: number) {
-  const base = (
-    process.env.NEXT_PUBLIC_PUBLIC_SITE_URL ??
-    process.env.NEXT_PUBLIC_SITE_URL ??
-    ""
-  ).replace(/\/+$/, "")
+  const base = (process.env.NEXT_PUBLIC_SITE_URL ?? "").replace(/\/+$/, "")
   if (!base) return ""
   return `${base}/videos/${id}`
 }

@@ -28,8 +28,10 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-# env files
-.env*.local
+# env files — never commit real values; `.env.example` is the tracked template
+.env
+.env.*
+!.env.example
 
 # typescript
 *.tsbuildinfo

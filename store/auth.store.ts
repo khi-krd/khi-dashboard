@@ -48,8 +48,14 @@ export const useAuthStore = create<AuthState & AuthActions>()(
     }),
     {
       name: "khi-auth",
+      // Only `expiresAt` is persisted — a plain timestamp, harmless if read.
+      // The JWT itself stays in memory: persisting it to localStorage made it
+      // readable by any injected script, and it is redundant anyway. Requests
+      // authenticate via the httpOnly `auth_token` cookie, which the proxy at
+      // `app/railway-proxy/[[...path]]/route.ts` prefers over any client-sent
+      // Authorization header. Keeping `expiresAt` is what lets the session
+      // guard still expire the session correctly after a page refresh.
       partialize: (state) => ({
-        token: state.token,
         expiresAt: state.expiresAt,
       }),
     },

@@ -27,7 +27,6 @@ import {
   News01Icon,
   SparklesIcon,
   Tag01Icon,
-  UserMultipleIcon,
 } from "@hugeicons/core-free-icons"
 import { useCurrentUserQuery } from "@/hooks/use-current-user"
 import { resolveAvatarSrc } from "@/lib/profile-image"
@@ -136,17 +135,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           title: "بەخشین",
           url: "/dashboard/donations",
           icon: <HugeiconsIcon icon={FavouriteIcon} strokeWidth={2} />,
-        },
-      ],
-    },
-    {
-      label: t("labels.admin"),
-      className: "mt-auto",
-      items: [
-        {
-          title: "بەکارهێنەران",
-          url: "/dashboard/users",
-          icon: <HugeiconsIcon icon={UserMultipleIcon} strokeWidth={2} />,
         },
       ],
     },

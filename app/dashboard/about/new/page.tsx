@@ -1,5 +1,5 @@
-import { AboutForm } from "@/components/about/about-form"
+import { redirect } from "next/navigation"
 
-export default function NewAboutPage() {
-  return <AboutForm mode="create" />
+export default function NewAboutRedirect() {
+  redirect("/dashboard/about")
 }

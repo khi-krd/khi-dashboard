@@ -136,12 +136,62 @@ function BilingualSectionHeader({ lang }: { lang: "CKB" | "KMR" }) {
   )
 }
 
+function AboutEditorSectionCard({
+  title,
+  hint,
+  onSave,
+  saveDisabled,
+  pending,
+  children,
+}: {
+  title: string
+  hint?: string
+  onSave?: () => void
+  saveDisabled?: boolean
+  pending?: boolean
+  children: React.ReactNode
+}) {
+  return (
+    <section className="border-border rounded-xl border">
+      <div className="border-border flex flex-wrap items-center justify-between gap-3 border-b px-4 py-3">
+        <div>
+          <h2 className="text-base font-semibold">{title}</h2>
+          {hint ? <p className="text-muted-foreground text-xs">{hint}</p> : null}
+        </div>
+        {onSave ? (
+          <Button
+            type="button"
+            size="sm"
+            disabled={saveDisabled}
+            className="gap-1"
+            onClick={onSave}
+          >
+            {pending ? (
+              <Spinner className="size-3.5" />
+            ) : (
+              <CheckIcon className="size-3.5" />
+            )}
+            {pending ? NS.action.saving : NS.action.save}
+          </Button>
+        ) : null}
+      </div>
+      <div className="space-y-6 p-4">{children}</div>
+    </section>
+  )
+}
+
 export function AboutForm({
   mode,
   aboutId,
+  embedded,
+  onSaved,
+  onCancel,
 }: {
   mode: "create" | "edit"
   aboutId?: number
+  embedded?: boolean
+  onSaved?: () => void
+  onCancel?: () => void
 }) {
   const router = useRouter()
   const idOk =
@@ -354,17 +404,27 @@ export function AboutForm({
         const res = await createMut.mutateAsync(payload)
         if (res.id) {
           toast.success(NS.toast.saved)
-          router.push(`/dashboard/about/${res.id}`)
+          if (embedded && onSaved) {
+            onSaved()
+          } else {
+            router.push("/dashboard/about")
+          }
         }
       } else if (aboutId) {
         await updateMut.mutateAsync({ id: aboutId, payload })
         toast.success(NS.toast.saved)
-        router.push(`/dashboard/about/${aboutId}`)
+        if (embedded && onSaved) {
+          onSaved()
+        } else {
+          router.push("/dashboard/about")
+        }
       }
     } catch {
       toast.error(NS.error.validation)
     }
   }
+
+  const triggerSave = () => void handleSubmit(onSubmit)()
 
   if (!idOk) {
     return (
@@ -375,7 +435,14 @@ export function AboutForm({
   }
 
   if (mode === "edit" && detailQ.isLoading) {
-    return (
+    return embedded ? (
+      <div
+        dir="rtl"
+        className="border-border flex items-center justify-center rounded-xl border p-12"
+      >
+        <Spinner className="size-6" />
+      </div>
+    ) : (
       <div dir="rtl" className="flex justify-center px-6 py-12">
         <Spinner className="size-8" />
       </div>
@@ -391,96 +458,303 @@ export function AboutForm({
   }
 
   const siteBase = aboutSiteBaseUrl() || "yoursite.com"
+  const sectionSaveProps = {
+    onSave: triggerSave,
+    saveDisabled: submitDisabled,
+    pending,
+  }
+
+  const langTabs = (
+    <div className="mb-2 flex items-center gap-2">
+      {(["CKB", "KMR"] as const).map((lang) => {
+        const isActive = activeLang === lang
+        const isInSet = contentLanguages.includes(lang)
+        return (
+          <button
+            key={lang}
+            type="button"
+            onClick={() => setActiveLang(lang)}
+            className={cn(
+              "inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-medium transition-all",
+              isActive
+                ? lang === "CKB"
+                  ? "border-primary/30 bg-primary/10 text-primary ring-2 ring-primary/15"
+                  : "border-blue-500/30 bg-blue-500/10 text-blue-700 ring-2 ring-blue-500/15 dark:text-blue-400"
+                : "border-border bg-muted/30 text-muted-foreground hover:bg-muted/50",
+              !isInSet && "opacity-50",
+            )}
+          >
+            <span
+              className={cn(
+                "size-1.5 rounded-full",
+                lang === "CKB" ? "bg-primary" : "bg-blue-500",
+              )}
+            />
+            {lang === "CKB" ? NS.lang.ckb : NS.lang.kmr}
+          </button>
+        )
+      })}
+    </div>
+  )
 
   return (
     <FormProvider {...form}>
-      <form dir="rtl" className="pb-24" onSubmit={handleSubmit(onSubmit)}>
-        <header className="border-border bg-background/95 supports-backdrop-filter:backdrop-blur sticky top-0 z-30 border-b">
-          <div className="mx-auto flex max-w-[1280px] flex-wrap items-center justify-between gap-3 px-4 py-3 lg:px-6">
-            <AboutBreadcrumbBar
-              segments={[
-                { label: NS.breadcrumb.dashboard, href: dashboardAboutCrumbHref() },
-                { label: NS.breadcrumb.about, href: "/dashboard/about" },
-                {
-                  label:
-                    mode === "create" ? NS.breadcrumb.new : NS.breadcrumb.edit,
-                },
-              ]}
-            />
-            <Link
-              href={
-                mode === "edit" && aboutId
-                  ? `/dashboard/about/${aboutId}`
-                  : "/dashboard/about"
-              }
-              className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
-            >
-              {NS.action.back}
-            </Link>
-          </div>
-        </header>
+      <form
+        dir="rtl"
+        className={embedded ? "space-y-4" : "pb-24"}
+        onSubmit={handleSubmit(onSubmit)}
+      >
+        {!embedded ? (
+          <header className="border-border bg-background/95 supports-backdrop-filter:backdrop-blur sticky top-0 z-30 border-b">
+            <div className="mx-auto flex max-w-[1280px] flex-wrap items-center justify-between gap-3 px-4 py-3 lg:px-6">
+              <AboutBreadcrumbBar
+                segments={[
+                  { label: NS.breadcrumb.dashboard, href: dashboardAboutCrumbHref() },
+                  { label: NS.breadcrumb.about, href: "/dashboard/about" },
+                  {
+                    label:
+                      mode === "create" ? NS.breadcrumb.new : NS.breadcrumb.edit,
+                  },
+                ]}
+              />
+              <Link
+                href="/dashboard/about"
+                className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
+              >
+                {NS.action.back}
+              </Link>
+            </div>
+          </header>
+        ) : null}
 
         <div
           dir="ltr"
-          className="mx-auto grid max-w-[1280px] grid-cols-1 gap-6 px-4 py-6 lg:grid-cols-[340px_minmax(0,1fr)] lg:gap-8 lg:px-6"
+          className={
+            embedded
+              ? "space-y-4"
+              : "mx-auto grid max-w-[1280px] grid-cols-1 gap-6 px-4 py-6 lg:grid-cols-[340px_minmax(0,1fr)] lg:gap-8 lg:px-6"
+          }
         >
-          <div dir="rtl">
-            <AboutFormSidebar mode={mode} editDto={editDto} />
-          </div>
-
-          <article dir="rtl" className="mx-auto max-w-[860px] pb-12 pt-2">
-            <div className="mb-8 flex items-center gap-2">
-              {(["CKB", "KMR"] as const).map((lang) => {
-                const isActive = activeLang === lang
-                const isInSet = contentLanguages.includes(lang)
-                return (
-                  <button
-                    key={lang}
-                    type="button"
-                    onClick={() => setActiveLang(lang)}
-                    className={cn(
-                      "inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-medium transition-all",
-                      isActive
-                        ? lang === "CKB"
-                          ? "border-primary/30 bg-primary/10 text-primary ring-2 ring-primary/15"
-                          : "border-blue-500/30 bg-blue-500/10 text-blue-700 ring-2 ring-blue-500/15 dark:text-blue-400"
-                        : "border-border bg-muted/30 text-muted-foreground hover:bg-muted/50",
-                      !isInSet && "opacity-50",
-                    )}
-                  >
-                    <span
-                      className={cn(
-                        "size-1.5 rounded-full",
-                        lang === "CKB" ? "bg-primary" : "bg-blue-500",
-                      )}
-                    />
-                    {lang === "CKB" ? NS.lang.ckb : NS.lang.kmr}
-                  </button>
-                )
-              })}
+          {!embedded ? (
+            <div dir="rtl">
+              <AboutFormSidebar mode={mode} editDto={editDto} />
             </div>
+          ) : null}
 
-            <section>
-              <h3 className="mb-3 text-sm font-medium">{NS.form.slugs}</h3>
-              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                <SlugInput
-                  lang="ckb"
-                  required
-                  value={watch("slugCkb") ?? ""}
-                  onChange={(v) =>
-                    setValue("slugCkb", v, { shouldDirty: true, shouldValidate: true })
-                  }
-                />
-                <SlugInput
-                  lang="kmr"
-                  value={watch("slugKmr") ?? ""}
-                  onChange={(v) =>
-                    setValue("slugKmr", v, { shouldDirty: true })
-                  }
-                />
-              </div>
-            </section>
+          <article
+            dir="rtl"
+            className={
+              embedded ? "space-y-4" : "mx-auto max-w-[860px] pb-12 pt-2"
+            }
+          >
+            {embedded ? (
+              <AboutEditorSectionCard
+                title={NS.page.settingsTitle}
+                hint={NS.page.settingsHint}
+                {...sectionSaveProps}
+              >
+                <AboutFormSidebar mode={mode} editDto={editDto} embedded />
+              </AboutEditorSectionCard>
+            ) : null}
 
+            {embedded ? (
+              <AboutEditorSectionCard
+                title={NS.page.heroTitle}
+                hint={NS.page.heroHint}
+                {...sectionSaveProps}
+              >
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                  <MediaCoverUpload
+                    label={NS.form.hero_video}
+                    variant="video"
+                    previewUrl={heroVideoUrl.trim() || null}
+                    urlValue={heroVideoUrl}
+                    onUrlChange={(v) =>
+                      setValue("heroVideoUrl", v, {
+                        shouldDirty: true,
+                        shouldValidate: true,
+                      })
+                    }
+                    urlError={
+                      typeof errors.heroVideoUrl?.message === "string"
+                        ? errors.heroVideoUrl.message
+                        : undefined
+                    }
+                  />
+                  <MediaCoverUpload
+                    label={NS.form.hero_poster}
+                    previewUrl={heroPosterUrl.trim() || null}
+                    urlValue={heroPosterUrl}
+                    onUrlChange={(v) =>
+                      setValue("heroPosterUrl", v, {
+                        shouldDirty: true,
+                        shouldValidate: true,
+                      })
+                    }
+                    urlError={
+                      typeof errors.heroPosterUrl?.message === "string"
+                        ? errors.heroPosterUrl.message
+                        : undefined
+                    }
+                  />
+                </div>
+              </AboutEditorSectionCard>
+            ) : null}
+
+            {embedded ? (
+              <AboutEditorSectionCard
+                title={NS.page.contentTitle}
+                hint={NS.page.contentHint}
+                {...sectionSaveProps}
+              >
+                {langTabs}
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                  <SlugInput
+                    lang="ckb"
+                    required
+                    value={watch("slugCkb") ?? ""}
+                    onChange={(v) =>
+                      setValue("slugCkb", v, {
+                        shouldDirty: true,
+                        shouldValidate: true,
+                      })
+                    }
+                  />
+                  <SlugInput
+                    lang="kmr"
+                    value={watch("slugKmr") ?? ""}
+                    onChange={(v) =>
+                      setValue("slugKmr", v, { shouldDirty: true })
+                    }
+                  />
+                </div>
+
+                <div>
+                  <div className="mb-1 flex items-baseline justify-between">
+                    <span className="text-muted-foreground text-[10px] font-medium tracking-wide uppercase">
+                      {NS.form.title}
+                    </span>
+                    <span className="text-muted-foreground/60 font-mono text-[10px]">
+                      {formatCkbDigits(titleLen)}/300
+                    </span>
+                  </div>
+                  <input
+                    type="text"
+                    maxLength={300}
+                    placeholder="دەربارەی ئێمە…"
+                    className="placeholder:text-muted-foreground/40 w-full rounded-md border border-input bg-background px-3 py-2 text-2xl leading-tight font-bold focus:ring-0 focus-visible:ring-0"
+                    {...register(titleField)}
+                  />
+                </div>
+
+                <div>
+                  <div className="mb-1 flex items-baseline justify-between">
+                    <span className="text-muted-foreground text-[10px] font-medium tracking-wide uppercase">
+                      {NS.form.subtitle}
+                    </span>
+                    <span className="text-muted-foreground/60 font-mono text-[10px]">
+                      {formatCkbDigits(subtitleLen)}/300
+                    </span>
+                  </div>
+                  <input
+                    type="text"
+                    maxLength={300}
+                    placeholder="وەسفی کورت…"
+                    className="text-muted-foreground placeholder:text-muted-foreground/40 w-full rounded-md border border-input bg-background px-3 py-2 text-lg leading-snug focus:ring-0 focus-visible:ring-0"
+                    {...register(subtitleField)}
+                  />
+                </div>
+
+                <div className="border-border bg-muted/20 rounded-xl border p-4">
+                  <div className="mb-2 flex items-baseline justify-between">
+                    <div className="flex items-center gap-1.5">
+                      <MagnifyingGlassIcon className="text-muted-foreground size-3.5" />
+                      <span className="text-xs font-medium">{NS.form.seo}</span>
+                    </div>
+                    <SeoCountChip value={seoLen} max={2500} />
+                  </div>
+                  <Textarea
+                    rows={3}
+                    maxLength={2500}
+                    placeholder="وەسفی کورت بۆ سێرچ ئەنجین…"
+                    className="resize-none"
+                    {...register(seoField)}
+                  />
+                  <div className="border-border/40 mt-3 border-t pt-3">
+                    <div className="text-muted-foreground/70 mb-1.5 text-[10px] tracking-wide uppercase">
+                      {NS.form.seo_preview}
+                    </div>
+                    <div className="border-border/40 bg-background max-w-md rounded-md border p-2.5">
+                      <div className="truncate text-base text-[#1a0dab] dark:text-blue-400">
+                        {titleCkb?.trim() || titleKmr?.trim() || "ناونیشان"}
+                      </div>
+                      <div className="mt-0.5 truncate font-mono text-xs text-[#006621] dark:text-emerald-500">
+                        {siteBase}/about/{slugCkb?.trim() || "…"}
+                      </div>
+                      <div className="text-foreground/70 mt-1 line-clamp-2 text-xs leading-relaxed">
+                        {seoDescriptionCkb?.trim() ||
+                          subtitleCkb?.trim() ||
+                          titleCkb?.trim() ||
+                          NS.form.seo_fallback}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="mb-3 text-sm font-medium">{NS.form.body}</h3>
+                  {activeLang === "CKB" ? (
+                    <TiptapEditor
+                      stickyToolbar
+                      lang="CKB"
+                      value={watch("bodyCkb") ?? ""}
+                      onChange={(v) =>
+                        setValue("bodyCkb", v, { shouldDirty: true })
+                      }
+                    />
+                  ) : (
+                    <TiptapEditor
+                      stickyToolbar
+                      lang="KMR"
+                      value={watch("bodyKmr") ?? ""}
+                      onChange={(v) =>
+                        setValue("bodyKmr", v, { shouldDirty: true })
+                      }
+                    />
+                  )}
+                </div>
+              </AboutEditorSectionCard>
+            ) : (
+              <>
+                <div className="mb-8 flex items-center gap-2">{langTabs}</div>
+
+                <section>
+                  <h3 className="mb-3 text-sm font-medium">{NS.form.slugs}</h3>
+                  <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                    <SlugInput
+                      lang="ckb"
+                      required
+                      value={watch("slugCkb") ?? ""}
+                      onChange={(v) =>
+                        setValue("slugCkb", v, {
+                          shouldDirty: true,
+                          shouldValidate: true,
+                        })
+                      }
+                    />
+                    <SlugInput
+                      lang="kmr"
+                      value={watch("slugKmr") ?? ""}
+                      onChange={(v) =>
+                        setValue("slugKmr", v, { shouldDirty: true })
+                      }
+                    />
+                  </div>
+                </section>
+              </>
+            )}
+
+            {!embedded ? (
             <section className="border-border/60 mt-10 space-y-6 border-t pt-6">
               <div>
                 <div className="mb-1 flex items-baseline justify-between">
@@ -554,7 +828,9 @@ export function AboutForm({
                 </div>
               </div>
             </section>
+            ) : null}
 
+            {!embedded ? (
             <section className="border-border/60 mt-10 border-t pt-6">
               <h3 className="mb-3 text-sm font-medium">{NS.form.body}</h3>
               {activeLang === "CKB" ? (
@@ -577,7 +853,59 @@ export function AboutForm({
                 />
               )}
             </section>
+            ) : null}
 
+            {embedded ? (
+              <AboutEditorSectionCard
+                title={NS.page.founderTitle}
+                hint={NS.page.founderHint}
+                {...sectionSaveProps}
+              >
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                  <div className="space-y-3">
+                    <BilingualSectionHeader lang="CKB" />
+                    <Input
+                      placeholder={NS.form.founder_name_ckb}
+                      {...register("founderNameCkb")}
+                    />
+                    <Textarea
+                      rows={4}
+                      placeholder={NS.form.founder_bio_ckb}
+                      {...register("founderBioCkb")}
+                    />
+                  </div>
+                  <div className="space-y-3">
+                    <BilingualSectionHeader lang="KMR" />
+                    <Input
+                      placeholder={NS.form.founder_name_kmr}
+                      {...register("founderNameKmr")}
+                    />
+                    <Textarea
+                      rows={4}
+                      placeholder={NS.form.founder_bio_kmr}
+                      {...register("founderBioKmr")}
+                    />
+                  </div>
+                </div>
+                <MediaCoverUpload
+                  label={NS.form.founder_image}
+                  previewUrl={founderImageUrl.trim() || null}
+                  urlValue={founderImageUrl}
+                  aspectClass="aspect-square max-w-xs"
+                  onUrlChange={(v) =>
+                    setValue("founderImageUrl", v, {
+                      shouldDirty: true,
+                      shouldValidate: true,
+                    })
+                  }
+                  urlError={
+                    typeof errors.founderImageUrl?.message === "string"
+                      ? errors.founderImageUrl.message
+                      : undefined
+                  }
+                />
+              </AboutEditorSectionCard>
+            ) : (
             <section className="border-border/60 mt-10 border-t pt-6">
               <h3 className="mb-4 text-sm font-medium">{NS.form.founder}</h3>
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -626,7 +954,9 @@ export function AboutForm({
                 />
               </div>
             </section>
+            )}
 
+            {!embedded ? (
             <section className="border-border/60 mt-10 border-t pt-6">
               <h3 className="mb-4 text-sm font-medium">{NS.form.hero}</h3>
               <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -665,9 +995,76 @@ export function AboutForm({
                 />
               </div>
             </section>
+            ) : null}
 
-            <AboutStatsEditor />
+            {embedded ? (
+              <AboutEditorSectionCard
+                title={NS.page.statsTitle}
+                hint={NS.page.statsHint}
+                {...sectionSaveProps}
+              >
+                <AboutStatsEditor />
+              </AboutEditorSectionCard>
+            ) : (
+              <AboutStatsEditor />
+            )}
 
+            {embedded ? (
+              <AboutEditorSectionCard title={NS.page.teamTitle}>
+                <div className="mb-3 flex items-center justify-end">
+                  <Button type="button" size="sm" variant="outline" onClick={openCreateTeamDialog}>
+                  <PlusIcon className="me-1 size-4" />
+                  {NS.form.team_add}
+                </Button>
+              </div>
+              {(teamQ.data ?? []).length === 0 ? (
+                <p className="text-muted-foreground text-sm">{NS.form.team_empty}</p>
+              ) : (
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                  {(teamQ.data ?? []).map((item) => (
+                    <Card key={item.id ?? `${item.nameCkb}-${item.displayOrder}`}>
+                      <CardHeader className="flex-row items-start gap-3 space-y-0">
+                        {item.imageUrl?.trim() ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={item.imageUrl}
+                            alt=""
+                            className="border-border size-14 shrink-0 rounded-lg border object-cover"
+                          />
+                        ) : null}
+                        <div className="min-w-0 flex-1">
+                          <CardTitle className="text-sm">
+                            {item.nameCkb || item.nameKmr || "—"}
+                          </CardTitle>
+                          <p className="text-muted-foreground mt-1 text-xs">
+                            {item.roleCkb || item.roleKmr || "—"}
+                          </p>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-2 text-xs">
+                        <div className="flex items-center gap-2">
+                          <Button type="button" size="sm" variant="outline" onClick={() => openEditTeamDialog(item)}>
+                            <PencilIcon className="me-1 size-3.5" />
+                            {NS.action.edit}
+                          </Button>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="ghost"
+                            className="text-destructive"
+                            onClick={() => item.id && void deleteTeamMut.mutateAsync(item.id)}
+                          >
+                            <TrashIcon className="me-1 size-3.5" />
+                            {NS.action.delete}
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+              </AboutEditorSectionCard>
+            ) : (
             <section className="border-border/60 mt-10 border-t pt-6">
               <div className="mb-3 flex items-center justify-between">
                 <h3 className="text-sm font-medium">{NS.form.team}</h3>
@@ -723,7 +1120,64 @@ export function AboutForm({
                 </div>
               )}
             </section>
+            )}
 
+            {embedded ? (
+              <AboutEditorSectionCard title={NS.page.partnersTitle}>
+                <div className="mb-3 flex items-center justify-end">
+                  <Button type="button" size="sm" variant="outline" onClick={openCreatePartnerDialog}>
+                    <PlusIcon className="me-1 size-4" />
+                    {NS.form.partner_add}
+                  </Button>
+                </div>
+                {(partnersQ.data ?? []).length === 0 ? (
+                  <p className="text-muted-foreground text-sm">{NS.form.partner_empty}</p>
+                ) : (
+                  <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                    {(partnersQ.data ?? []).map((item) => (
+                      <Card key={item.id ?? `${item.nameCkb}-${item.displayOrder}`}>
+                        <CardHeader className="flex-row items-start gap-3 space-y-0">
+                          {item.logoUrl?.trim() ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={item.logoUrl}
+                              alt=""
+                              className="border-border size-14 shrink-0 rounded-lg border object-contain bg-background p-1"
+                            />
+                          ) : null}
+                          <div className="min-w-0 flex-1">
+                            <CardTitle className="text-sm">
+                              {item.nameCkb || item.nameKmr || "—"}
+                            </CardTitle>
+                            <p className="text-muted-foreground mt-1 line-clamp-2 text-xs">
+                              {item.descriptionCkb || item.descriptionKmr || item.websiteUrl || "—"}
+                            </p>
+                          </div>
+                        </CardHeader>
+                        <CardContent className="space-y-2 text-xs">
+                          <div className="flex items-center gap-2">
+                            <Button type="button" size="sm" variant="outline" onClick={() => openEditPartnerDialog(item)}>
+                              <PencilIcon className="me-1 size-3.5" />
+                              {NS.action.edit}
+                            </Button>
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="ghost"
+                              className="text-destructive"
+                              onClick={() => item.id && void deletePartnerMut.mutateAsync(item.id)}
+                            >
+                              <TrashIcon className="me-1 size-3.5" />
+                              {NS.action.delete}
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </AboutEditorSectionCard>
+            ) : (
             <section className="border-border/60 mt-10 border-t pt-6">
               <div className="mb-3 flex items-center justify-between">
                 <h3 className="text-sm font-medium">{NS.form.partners}</h3>
@@ -779,10 +1233,12 @@ export function AboutForm({
                 </div>
               )}
             </section>
+            )}
 
           </article>
         </div>
 
+        {!embedded ? (
         <div className="border-border bg-background/95 supports-backdrop-filter:backdrop-blur sticky bottom-0 inset-x-0 z-30 border-t">
           <div className="mx-auto flex max-w-[1280px] items-center justify-between gap-3 px-6 py-3">
             <div className="text-muted-foreground flex items-center gap-2 text-xs">
@@ -804,13 +1260,13 @@ export function AboutForm({
                 variant="ghost"
                 size="sm"
                 disabled={pending}
-                onClick={() =>
-                  router.push(
-                    mode === "edit" && aboutId
-                      ? `/dashboard/about/${aboutId}`
-                      : "/dashboard/about",
-                  )
-                }
+                onClick={() => {
+                  if (embedded && onCancel) {
+                    onCancel()
+                    return
+                  }
+                  router.push("/dashboard/about")
+                }}
               >
                 {NS.action.cancel}
               </Button>
@@ -836,6 +1292,7 @@ export function AboutForm({
             </div>
           </div>
         </div>
+        ) : null}
       </form>
 
       <Dialog open={teamDialogOpen} onOpenChange={setTeamDialogOpen}>

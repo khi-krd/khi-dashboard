@@ -1,5 +1,5 @@
-import { ContactForm } from "@/components/contact/contact-form"
+import { redirect } from "next/navigation"
 
-export default function NewContactPage() {
-  return <ContactForm mode="create" />
+export default function NewContactRedirect() {
+  redirect("/dashboard/contact")
 }

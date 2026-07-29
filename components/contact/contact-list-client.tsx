@@ -1,218 +1,208 @@
 "use client"
 
 import { Suspense, useMemo, useState } from "react"
-import Link from "next/link"
-import {
-  MagnifyingGlassIcon,
-  PlusIcon,
-  XMarkIcon,
-} from "@heroicons/react/24/outline"
+import { PencilSquareIcon, PlusIcon } from "@heroicons/react/24/outline"
+import { toast } from "sonner"
 
-import { ContactsTable } from "@/components/contact/contacts-table"
+import {
+  ContactBreadcrumbBar,
+  dashboardContactCrumbHref,
+} from "@/components/contact/contact-breadcrumb"
 import { ContactDeleteDialog } from "@/components/contact/contact-delete-dialog"
 import { ContactErrorState } from "@/components/contact/contact-error-state"
+import { ContactOfficeSectionCard } from "@/components/contact/contact-office-section-card"
+import { ContactPagePreview } from "@/components/contact/contact-page-preview"
 import { NS } from "@/components/contact/contact-strings"
-import { Button, buttonVariants } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
-import { useDebouncedValue } from "@/hooks/useDebouncedValue"
 import {
   useContactListQuery,
   useDeleteContactMutation,
 } from "@/hooks/useContact"
 import { formatCkbDigits } from "@/lib/intl-ckb"
-import { cn } from "@/lib/utils"
 import { toastError } from "@/lib/toast"
-import { toast } from "sonner"
-import type {
-  ContactUiActiveFilter,
-  ContactUiLanguageFilter,
-} from "@/types/contact-ui"
-import {
-  matchesContactActiveFilter,
-  matchesContactClientSearchFilter,
-  matchesContactLanguageFilter,
-  toContactAdminRow,
-} from "@/types/contact-ui"
-import type { ContactAdminTableRow } from "@/types/contact-ui"
+import type { ContactDto } from "@/types/contact"
 
-function ListSkeleton() {
+function PageSkeleton() {
   return (
-    <div className="border-border overflow-hidden rounded-xl border">
-      <Skeleton className="h-10 w-full rounded-none" />
-      {Array.from({ length: 5 }).map((_, i) => (
-        <Skeleton key={i} className="h-16 w-full rounded-none" />
-      ))}
+    <div className="space-y-4" dir="rtl">
+      <Skeleton className="h-64 rounded-xl" />
+      <Skeleton className="h-48 rounded-xl" />
+      <Skeleton className="h-48 rounded-xl" />
     </div>
   )
 }
 
 export function ContactListClient() {
   return (
-    <Suspense fallback={<ListSkeleton />}>
+    <Suspense fallback={<PageSkeleton />}>
       <ContactListClientInner />
     </Suspense>
   )
 }
 
 function ContactListClientInner() {
-  const [searchRaw, setSearchRaw] = useState("")
-  const debouncedKw = useDebouncedValue(searchRaw.trim(), 300)
-  const [activeFilter, setActiveFilter] = useState<ContactUiActiveFilter>("all")
-  const [language, setLanguage] = useState<ContactUiLanguageFilter>("all")
-  const [pageIndex, setPageIndex] = useState(0)
-  const pageSize = 20
-  const [deleteTarget, setDeleteTarget] = useState<ContactAdminTableRow | null>(
-    null,
-  )
-
-  const listQ = useContactListQuery({ page: pageIndex, size: pageSize })
+  const listQuery = useContactListQuery({ page: 0, size: 100 })
   const deleteMut = useDeleteContactMutation()
+  const [pageMode, setPageMode] = useState<"view" | "edit">("view")
+  const [draftCount, setDraftCount] = useState(0)
+  const [deleteTarget, setDeleteTarget] = useState<ContactDto | null>(null)
 
-  const filtered = useMemo(() => {
-    const rows = (listQ.data?.content ?? []).map(toContactAdminRow)
-    return rows.filter(
-      (r) =>
-        matchesContactActiveFilter(r, activeFilter) &&
-        matchesContactLanguageFilter(r, language) &&
-        matchesContactClientSearchFilter(r, debouncedKw),
-    )
-  }, [listQ.data?.content, activeFilter, language, debouncedKw])
+  const offices = useMemo(() => {
+    const rows = listQuery.data?.content ?? []
+    return [...rows]
+      .filter((row) => (row.id ?? 0) > 0)
+      .sort((a, b) => {
+        const ao =
+          typeof a.displayOrder === "number"
+            ? a.displayOrder
+            : Number.POSITIVE_INFINITY
+        const bo =
+          typeof b.displayOrder === "number"
+            ? b.displayOrder
+            : Number.POSITIVE_INFINITY
+        return ao - bo
+      })
+  }, [listQuery.data?.content])
 
-  const anyFilterActive =
-    activeFilter !== "all" || language !== "all" || debouncedKw.length > 0
+  const isEditing = pageMode === "edit"
 
-  function resetFilters() {
-    setSearchRaw("")
-    setActiveFilter("all")
-    setLanguage("all")
-    setPageIndex(0)
+  function startEditing() {
+    setPageMode("edit")
   }
 
-  const total = listQ.data?.totalElements ?? filtered.length
+  function backToPreview() {
+    setDraftCount(0)
+    setPageMode("view")
+  }
+
+  function addOffice() {
+    setPageMode("edit")
+    setDraftCount((n) => n + 1)
+  }
+
+  function handleSaved() {
+    setDraftCount((n) => Math.max(0, n - 1))
+    void listQuery.refetch()
+  }
+
+  function handleConfirmDelete() {
+    if (!deleteTarget?.id) return
+    deleteMut.mutate(deleteTarget.id, {
+      onSuccess: () => {
+        toast.success(NS.toast.deleted)
+        setDeleteTarget(null)
+        void listQuery.refetch()
+      },
+      onError: () => toastError(NS.error.validation),
+    })
+  }
 
   return (
-    <div dir="rtl" className="px-4 py-6 lg:px-6">
-      <header className="mb-6 flex items-start justify-between gap-4">
-        <div className="min-w-0">
-          <h1 className="text-2xl font-semibold tracking-tight">{NS.title}</h1>
-          <p className="text-muted-foreground mt-1 text-sm">{NS.subtitle}</p>
-          <p className="text-muted-foreground/70 mt-1.5 font-mono text-xs">
-            {NS.count(formatCkbDigits(total))}
+    <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 pb-16" dir="rtl">
+      <ContactBreadcrumbBar
+        segments={[
+          { label: NS.breadcrumb.dashboard, href: dashboardContactCrumbHref() },
+          { label: NS.page.title },
+        ]}
+      />
+
+      <header className="flex flex-wrap items-start justify-between gap-4">
+        <div className="space-y-1">
+          <h1 className="text-2xl font-semibold tracking-tight">{NS.page.title}</h1>
+          <p className="text-muted-foreground text-sm">
+            {isEditing ? NS.page.subtitleSimple : NS.page.previewHint}
           </p>
+          {!isEditing && offices.length > 0 ? (
+            <p className="text-muted-foreground/70 font-mono text-xs">
+              {NS.count(formatCkbDigits(offices.length))}
+            </p>
+          ) : null}
         </div>
-        <Link
-          href="/dashboard/contact/new"
-          className={cn(
-            buttonVariants({ variant: "default" }),
-            "bg-primary text-primary-foreground hover:bg-primary/90 shrink-0",
+        <div className="flex shrink-0 gap-2">
+          {!isEditing ? (
+            <>
+              <Button type="button" variant="outline" onClick={addOffice}>
+                <PlusIcon className="size-4 rtl:rotate-180" />
+                {NS.action.addOffice}
+              </Button>
+              <Button type="button" onClick={startEditing}>
+                <PencilSquareIcon className="size-4" />
+                {NS.action.editPage}
+              </Button>
+            </>
+          ) : (
+            <Button type="button" variant="outline" onClick={backToPreview}>
+              {NS.action.backToPreview}
+            </Button>
           )}
-        >
-          <PlusIcon className="me-1 size-4" />
-          {NS.new}
-        </Link>
+        </div>
       </header>
 
-      <div className="mb-4 flex items-center gap-2">
-        <div className="relative flex-1">
-          <MagnifyingGlassIcon className="text-muted-foreground absolute end-3 top-1/2 size-4 -translate-y-1/2" />
-          <Input
-            value={searchRaw}
-            onChange={(e) => {
-              setSearchRaw(e.target.value)
-              setPageIndex(0)
-            }}
-            placeholder={NS.search_placeholder}
-            className="border-border bg-background h-9 pe-10 ps-3"
-          />
-        </div>
-        <Select
-          value={activeFilter}
-          onValueChange={(v) => {
-            setActiveFilter(v as ContactUiActiveFilter)
-            setPageIndex(0)
-          }}
-        >
-          <SelectTrigger className="bg-background h-9 w-32">
-            <SelectValue placeholder={NS.filter.status_all} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{NS.filter.status_all}</SelectItem>
-            <SelectItem value="active">{NS.filter.active}</SelectItem>
-            <SelectItem value="inactive">{NS.filter.inactive}</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select
-          value={language}
-          onValueChange={(v) => {
-            setLanguage(v as ContactUiLanguageFilter)
-            setPageIndex(0)
-          }}
-        >
-          <SelectTrigger className="bg-background h-9 w-32">
-            <SelectValue placeholder={NS.filter.lang_all} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{NS.filter.lang_all}</SelectItem>
-            <SelectItem value="CKB">{NS.lang.ckb}</SelectItem>
-            <SelectItem value="KMR">{NS.lang.kmr}</SelectItem>
-          </SelectContent>
-        </Select>
-        {anyFilterActive ? (
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="text-muted-foreground h-9"
-            onClick={resetFilters}
-          >
-            <XMarkIcon className="me-1 size-3.5" />
-            {NS.filter.reset}
-          </Button>
-        ) : null}
-      </div>
-
-      {listQ.isLoading ? (
-        <ListSkeleton />
-      ) : listQ.isError ? (
-        <ContactErrorState onRetry={() => void listQ.refetch()} />
-      ) : filtered.length === 0 ? (
-        <div className="text-muted-foreground py-16 text-center text-sm">
-          {NS.empty}
-        </div>
-      ) : (
-        <ContactsTable
-          rows={filtered}
-          pageIndex={pageIndex}
-          pageSize={pageSize}
-          totalElements={listQ.data?.totalElements ?? filtered.length}
-          onPageChange={setPageIndex}
-          onDelete={setDeleteTarget}
+      {listQuery.isError ? (
+        <ContactErrorState onRetry={() => void listQuery.refetch()} />
+      ) : !isEditing ? (
+        <ContactPagePreview
+          offices={offices}
+          isLoading={listQuery.isLoading}
         />
+      ) : (
+        <div className="space-y-4">
+          <div>
+            <h2 className="text-base font-semibold">{NS.page.sectionsTitle}</h2>
+            <p className="text-muted-foreground text-xs">
+              {NS.count(formatCkbDigits(offices.length + draftCount))}
+            </p>
+          </div>
+
+          {listQuery.isLoading ? (
+            <PageSkeleton />
+          ) : (
+            <div className="space-y-3">
+              {offices.map((office, index) => (
+                <ContactOfficeSectionCard
+                  key={office.id ?? index}
+                  index={index}
+                  dto={office}
+                  onSaved={handleSaved}
+                  onDelete={
+                    office.id
+                      ? () => setDeleteTarget(office)
+                      : undefined
+                  }
+                />
+              ))}
+
+              {Array.from({ length: draftCount }).map((_, i) => (
+                <ContactOfficeSectionCard
+                  key={`draft-${i}`}
+                  index={offices.length + i}
+                  onSaved={handleSaved}
+                />
+              ))}
+
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full gap-2"
+                onClick={() => setDraftCount((n) => n + 1)}
+              >
+                <PlusIcon className="size-4 rtl:rotate-180" />
+                {NS.action.addOffice}
+              </Button>
+            </div>
+          )}
+        </div>
       )}
 
       <ContactDeleteDialog
-        open={!!deleteTarget}
-        onOpenChange={(o) => !o && setDeleteTarget(null)}
-        target={deleteTarget}
-        isPending={deleteMut.isPending}
-        onConfirm={async () => {
-          if (!deleteTarget?.id) return
-          try {
-            await deleteMut.mutateAsync(deleteTarget.id)
-            toast.success(NS.toast.deleted)
-            setDeleteTarget(null)
-          } catch {
-            toastError(NS.error.validation)
-          }
+        open={deleteTarget != null}
+        onOpenChange={(open) => {
+          if (!open) setDeleteTarget(null)
         }}
+        target={deleteTarget}
+        onConfirm={handleConfirmDelete}
+        isPending={deleteMut.isPending}
       />
     </div>
   )

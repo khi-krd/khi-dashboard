@@ -1,11 +1,5 @@
-import { AboutDetailClient } from "@/components/about/about-detail-client"
+import { redirect } from "next/navigation"
 
-export default async function AboutDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>
-}) {
-  const { id } = await params
-  const num = Number(id)
-  return <AboutDetailClient aboutId={num} />
+export default function AboutDetailRedirect() {
+  redirect("/dashboard/about")
 }

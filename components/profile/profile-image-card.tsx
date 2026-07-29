@@ -41,7 +41,7 @@ function initialsOf(user: UserResponse): string {
   return source ? source.slice(0, 2).toUpperCase() : "؟"
 }
 
-/** Profile avatar upload — `@reui/c-file-upload-2` pattern + API sync. */
+/** Profile avatar upload — file-upload widget + API sync. */
 export function ProfileImageCard({ user }: { user: UserResponse }) {
   const queryClient = useQueryClient()
   const [busy, setBusy] = React.useState<"upload" | "delete" | null>(null)

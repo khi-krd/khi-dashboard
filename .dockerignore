@@ -1,0 +1,29 @@
+node_modules
+.next
+.git
+.gitignore
+
+# Never bake real env values into an image layer — pass them as build args
+# (NEXT_PUBLIC_*) or at runtime (API_PROXY_TARGET). See Dockerfile.
+.env
+.env.*
+!.env.example
+
+# Local-only docs and tooling
+API
+docs
+.claude
+.cursor
+.vscode
+README.md
+
+# Build/editor artifacts
+*.tsbuildinfo
+.DS_Store
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+coverage
+Dockerfile
+.dockerignore

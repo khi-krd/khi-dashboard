@@ -66,7 +66,7 @@ export function AboutsTable({
                 <tr
                   key={id}
                   className="group hover:bg-muted/40 cursor-pointer transition-colors"
-                  onClick={() => router.push(`/dashboard/about/${id}`)}
+                  onClick={() => router.push("/dashboard/about")}
                 >
                   <td className="text-muted-foreground py-3 font-mono text-xs">
                     #{formatCkbDigits(id)}
@@ -115,7 +115,7 @@ export function AboutsTable({
                         variant="ghost"
                         size="icon"
                         className="size-7"
-                        onClick={() => router.push(`/dashboard/about/${id}`)}
+                        onClick={() => router.push("/dashboard/about")}
                         aria-label={NS.action.view}
                       >
                         <EyeIcon className="size-4" />
@@ -126,7 +126,7 @@ export function AboutsTable({
                         size="icon"
                         className="size-7"
                         onClick={() =>
-                          router.push(`/dashboard/about/${id}/edit`)
+                          router.push("/dashboard/about")
                         }
                         aria-label={NS.action.edit}
                       >

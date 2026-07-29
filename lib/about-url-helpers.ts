@@ -1,8 +1,5 @@
 export function aboutSiteBaseUrl(): string {
-  const base =
-    process.env.NEXT_PUBLIC_PUBLIC_SITE_URL ??
-    process.env.NEXT_PUBLIC_SITE_URL ??
-    ""
+  const base = process.env.NEXT_PUBLIC_SITE_URL ?? ""
   return base.replace(/\/$/, "")
 }
 

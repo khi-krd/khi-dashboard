@@ -1,11 +1,5 @@
-import { ContactDetailClient } from "@/components/contact/contact-detail-client"
+import { redirect } from "next/navigation"
 
-export default async function ContactDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>
-}) {
-  const { id } = await params
-  const num = Number(id)
-  return <ContactDetailClient contactId={num} />
+export default function ContactDetailRedirect() {
+  redirect("/dashboard/contact")
 }

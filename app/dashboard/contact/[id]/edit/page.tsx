@@ -1,11 +1,5 @@
-import { ContactForm } from "@/components/contact/contact-form"
+import { redirect } from "next/navigation"
 
-export default async function EditContactPage({
-  params,
-}: {
-  params: Promise<{ id: string }>
-}) {
-  const { id } = await params
-  const num = Number(id)
-  return <ContactForm mode="edit" contactId={num} />
+export default function ContactEditRedirect() {
+  redirect("/dashboard/contact")
 }

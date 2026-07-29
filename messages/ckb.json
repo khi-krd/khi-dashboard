@@ -2,32 +2,18 @@
   "Brand": {
     "name": "دەزگای کەلەپوری کورد"
   },
-  "Home": {
-    "title": "پڕۆژە ئامادەیە!",
-    "line1": "ئێستا دەتوانیت کۆمپۆنێنت زیاد بکەیت و دەست بە دروستکردن بکەیت.",
-    "line2": "دوگمەیەکمان بۆ تۆ بەردەستکردووە.",
-    "demoButton": "دوگمە",
-    "toggleHint": "کلیلی d پەنجە بدە بۆ گۆڕینی ڕووناکی/تاریکی"
-  },
   "Login": {
     "title": "چوونەژوورەوە بۆ هەژمارەکەتان",
     "subtitle": "ناوی بەکارهێنەر یان ئیمەیڵ و وشەی نهێنی بنووسە بۆ چوونەژوورەوە",
     "username": "ناوی بەکارهێنەر یان ئیمەیڵ",
     "usernamePlaceholder": "akar_dev یان brwa@example.com",
-    "email": "ئیمەیڵ",
-    "emailPlaceholder": "brwa@example.com",
     "password": "وشەی نهێنی",
     "forgotPassword": "وشەی نهێنیت لەبیرچووە؟",
     "submit": "چووندانەوە",
     "separator": "یان بەردەوام بە لەگەڵ",
     "google": "چوونەژوورەوە لەگەڵ گووگڵ",
     "noAccount": "هەژمارت نییە؟",
-    "signUp": "تۆمارکردن",
-    "validation": {
-      "emailRequired": "ئیمەیڵ پێویستە.",
-      "emailInvalid": "ئیمەیڵێکی دروست بنووسە.",
-      "passwordRequired": "وشەی نهێنی پێویستە."
-    }
+    "signUp": "تۆمارکردن"
   },
   "Sidebar": {
     "header": {
@@ -35,65 +21,11 @@
       "subtitle": "پێشەڕۆ"
     },
     "labels": {
-      "platform": "پلاتفۆرم",
       "overview": "سەرەکی",
       "publishing": "بڵاوکردنەوە",
-      "site": "ناوەڕۆک",
-      "admin": "بەڕێوەبردن",
-      "projects": "پڕۆژەکان"
-    },
-    "mainNav": {
-      "playground": {
-        "title": "مەیدانی تاقیکردنەوە",
-        "items": {
-          "history": "مێژوو",
-          "starred": "دڵخوازەکان",
-          "settings": "ڕێکخستن"
-        }
-      },
-      "models": {
-        "title": "مۆدێلەکان",
-        "items": {
-          "genesis": "جنێسیس",
-          "explorer": "گەڕان",
-          "quantum": "کوانتۆم"
-        }
-      },
-      "documentation": {
-        "title": "بەڵگەنامەکان",
-        "items": {
-          "introduction": "پێشەکی",
-          "getStarted": "دەستپێکردن",
-          "tutorials": "فێرکاری",
-          "changelog": "گۆڕانکاریەکان"
-        }
-      },
-      "settings": {
-        "title": "ڕێکخستنەکان",
-        "items": {
-          "general": "گشتی",
-          "team": "تیم",
-          "billing": "پارەدان",
-          "limits": "سنورەکان"
-        }
-      }
-    },
-    "secondaryNav": {
-      "support": "پشتگیری",
-      "feedback": "ڕەخنە و پێشنیار"
-    },
-    "projects": {
-      "designEngineering": "ئەندازیاری دیزاین",
-      "salesMarketing": "فرۆشتن و مارکێتینگ",
-      "travel": "گەشتەوەرایەتی",
-      "viewProject": "بینینی پڕۆژە",
-      "shareProject": "هاوبەشکردنی پڕۆژە",
-      "deleteProject": "سڕینەوەی پڕۆژە",
-      "more": "زیاتر"
+      "site": "ناوەڕۆک"
     },
     "a11y": {
-      "toggleSubmenu": "کردنەوەی ژێربەش",
-      "openProjectMenu": "زیاتر",
       "themeSwitchToDark": "گۆڕین بۆ دۆخی تاریک",
       "themeSwitchToLight": "گۆڕین بۆ دۆخی ڕووناک",
       "fullscreenEnter": "کردنەوەی دۆخی تەواوی شاشە",
@@ -101,10 +33,7 @@
       "openWebsite": "کردنەوەی ماڵپەڕ لە تابێکی نوێ"
     },
     "user": {
-      "upgradePro": "بەرزکردنەوە بۆ ڤێژنی پڕۆ",
       "account": "هەژمار",
-      "billing": "پارەدان",
-      "notifications": "ئاگادارکردنەوەکان",
       "logOut": "دەرچوون"
     }
   }

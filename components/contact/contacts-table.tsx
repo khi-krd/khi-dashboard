@@ -67,7 +67,7 @@ export function ContactsTable({
                 <tr
                   key={id}
                   className="group hover:bg-muted/40 cursor-pointer transition-colors"
-                  onClick={() => router.push(`/dashboard/contact/${id}`)}
+                  onClick={() => router.push("/dashboard/contact")}
                 >
                   <td className="text-muted-foreground py-3 font-mono text-xs">
                     #{formatCkbDigits(id)}
@@ -126,7 +126,7 @@ export function ContactsTable({
                         variant="ghost"
                         size="icon"
                         className="size-7"
-                        onClick={() => router.push(`/dashboard/contact/${id}`)}
+                        onClick={() => router.push("/dashboard/contact")}
                         aria-label={NS.action.view}
                       >
                         <EyeIcon className="size-4" />
@@ -137,7 +137,7 @@ export function ContactsTable({
                         size="icon"
                         className="size-7"
                         onClick={() =>
-                          router.push(`/dashboard/contact/${id}/edit`)
+                          router.push("/dashboard/contact")
                         }
                         aria-label={NS.action.edit}
                       >

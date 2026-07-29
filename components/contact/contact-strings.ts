@@ -3,6 +3,20 @@ export const NS = {
   subtitle: "بینین، گەڕان و بەڕێوەبردنی نووسینگەکانی پەیوەندی",
   count: (n: string) => `کۆی ${n} نووسینگە`,
   new: "نووسینگەی نوێ",
+  page: {
+    title: "پەڕەی پەیوەندی",
+    previewHint: "ئەمە وەک پەڕەی /contact لە سایت دەردەکەوێت.",
+    subtitleSimple:
+      "هەر بەشێک = یەک نووسینگە لە پەڕەی پەیوەندیدا. زیاد بکە، دواتر زانیارییەکەی پڕ بکەرەوە.",
+    sectionsTitle: "نووسینگەکان",
+    sectionLabel: (n: string) => `بەش ${n}`,
+    previewHeroEmpty: "هێشتا نووسینگەیەک زیاد نەکراوە.",
+    previewEmpty: "هیچ نووسینگەیەک نییە",
+    previewEmptyHint: "یەکەم نووسینگە زیاد بکە، دواتر ناوەڕۆکی پڕ بکەرەوە.",
+  },
+  section: {
+    unnamed: "نووسینگەی بێ ناونیشان",
+  },
   search_placeholder: "گەڕان لە ناونیشان، ناونیشان، تەلەفۆن، یان ئیمەیڵ…",
   filter: {
     status_all: "هەموو دۆخەکان",
@@ -39,6 +53,13 @@ export const NS = {
     save: "پاشەکەوتکردن",
     saving: "پاشەکەوتکردن…",
     cancel: "هەڵوەشاندنەوە",
+    editPage: "دەستکاری پەڕە",
+    backToPreview: "گەڕانەوە بۆ پیشاندان",
+    addOffice: "زیادکردنی نووسینگە",
+  },
+  empty: {
+    list: "هیچ نووسینگەیەک نەدۆزرایەوە",
+    no_body: "وەسف بۆ ئەم زمانە بەردەست نییە.",
   },
   breadcrumb: {
     dashboard: "داشبۆرد",
@@ -111,7 +132,6 @@ export const NS = {
     confirm: "دڵنیام",
     cancel: "هەڵوەشاندنەوە",
   },
-  empty: "هیچ نووسینگەیەک نەدۆزرایەوە",
 } as const
 
 export function truncateTitle(s: string, max = 48) {

@@ -64,13 +64,13 @@ export const DASHBOARD_MODULE_META: readonly ModuleMeta[] = [
     key: "about",
     label: "دەربارە",
     href: "/dashboard/about",
-    createHref: "/dashboard/about/new",
+    createHref: "/dashboard/about",
   },
   {
     key: "contact",
     label: "پەیوەندی",
     href: "/dashboard/contact",
-    createHref: "/dashboard/contact/new",
+    createHref: "/dashboard/contact",
   },
   {
     key: "news",

@@ -24,9 +24,11 @@ const divider = "border-border/60 -mx-5 border-t"
 export function AboutFormSidebar({
   mode,
   editDto,
+  embedded,
 }: {
   mode: "create" | "edit"
   editDto?: AboutDto
+  embedded?: boolean
 }) {
   const { watch, setValue } = useFormContext<AboutFormValues>()
   const active = watch("active")
@@ -37,7 +39,14 @@ export function AboutFormSidebar({
   const kmrScore = computeAboutCompletion(values, "KMR")
 
   return (
-    <aside className="border-border bg-card space-y-5 self-start rounded-xl border p-5 text-sm lg:sticky lg:top-20">
+    <aside
+      className={cn(
+        "border-border bg-card space-y-5 text-sm",
+        embedded
+          ? "space-y-4"
+          : "self-start rounded-xl border p-5 lg:sticky lg:top-20",
+      )}
+    >
       <section>
         <h4 className="text-muted-foreground mb-2 text-[10px] font-medium tracking-wide uppercase">
           {NS.sidebar.visibility}

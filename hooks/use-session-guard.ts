@@ -18,11 +18,14 @@ const MAX_TIMEOUT_MS = 2_147_483_647
  * lapsed while the tab was backgrounded is caught immediately.
  */
 export function useSessionGuard(): void {
-  const token = useAuthStore((s) => s.token)
+  // Keyed on `expiresAt` alone, not the token: the token is deliberately not
+  // persisted (see `store/auth.store.ts`), so after a page refresh it is null
+  // even though the session is still valid via the httpOnly cookie. Gating on
+  // it here would silently disable expiry handling for every reloaded tab.
   const expiresAt = useAuthStore((s) => s.expiresAt)
 
   useEffect(() => {
-    if (!token || expiresAt === null) return
+    if (expiresAt === null) return
 
     let warned = false
     const timers: ReturnType<typeof setTimeout>[] = []
@@ -94,5 +97,5 @@ export function useSessionGuard(): void {
       document.removeEventListener("visibilitychange", recheck)
       window.removeEventListener("focus", recheck)
     }
-  }, [token, expiresAt])
+  }, [expiresAt])
 }

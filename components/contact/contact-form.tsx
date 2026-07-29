@@ -155,12 +155,12 @@ export function ContactForm({
         const res = await createMut.mutateAsync(payload)
         if (res.id) {
           toast.success(NS.toast.saved)
-          router.push(`/dashboard/contact/${res.id}`)
+          router.push("/dashboard/contact")
         }
       } else if (contactId) {
         await updateMut.mutateAsync({ id: contactId, payload })
         toast.success(NS.toast.saved)
-        router.push(`/dashboard/contact/${contactId}`)
+        router.push("/dashboard/contact")
       }
     } catch {
       toast.error(NS.error.validation)
@@ -207,11 +207,7 @@ export function ContactForm({
               ]}
             />
             <Link
-              href={
-                mode === "edit" && contactId
-                  ? `/dashboard/contact/${contactId}`
-                  : "/dashboard/contact"
-              }
+              href="/dashboard/contact"
               className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
             >
               {NS.action.back}
@@ -384,11 +380,7 @@ export function ContactForm({
                 size="sm"
                 disabled={pending}
                 onClick={() =>
-                  router.push(
-                    mode === "edit" && contactId
-                      ? `/dashboard/contact/${contactId}`
-                      : "/dashboard/contact",
-                  )
+                  router.push("/dashboard/contact")
                 }
               >
                 {NS.action.cancel}
