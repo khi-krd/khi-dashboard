@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl"
 
 import { Button } from "@/components/ui/button"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { FullscreenIcon, MinimizeScreenIcon } from "@hugeicons/core-free-icons"
+import { FullScreenIcon, MinimizeScreenIcon } from "@hugeicons/core-free-icons"
 
 function getFullscreenElement(): Element | null {
   const doc = document as Document & {
@@ -92,7 +92,7 @@ export function FullscreenToggleButton() {
       onClick={() => void toggle()}
     >
       <HugeiconsIcon
-        icon={active ? MinimizeScreenIcon : FullscreenIcon}
+        icon={active ? MinimizeScreenIcon : FullScreenIcon}
         strokeWidth={2}
         aria-hidden="true"
         className="size-4"
