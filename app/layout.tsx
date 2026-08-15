@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next"
+import { headers } from "next/headers"
 import { Geist_Mono } from "next/font/google"
 import { NextIntlClientProvider } from "next-intl"
 import { getMessages } from "next-intl/server"
@@ -54,6 +55,12 @@ export default async function RootLayout({
   children: React.ReactNode
 }>) {
   const messages = await getMessages()
+  // `next-themes` renders its own inline <script> to set the theme class before
+  // paint. Next stamps its nonce onto the script tags it emits itself, but not
+  // onto a third party's, so without this the CSP in `proxy.ts` — which is
+  // nonce + 'strict-dynamic' and therefore allows no unnonced inline script —
+  // blocks it and the browser logs a script-src-elem violation.
+  const nonce = (await headers()).get("x-nonce") ?? undefined
 
   return (
     <html
@@ -71,7 +78,7 @@ export default async function RootLayout({
       <body>
         <Providers>
           <NextIntlClientProvider locale="ckb" messages={messages} timeZone="Asia/Baghdad">
-            <ThemeProvider>{children}</ThemeProvider>
+            <ThemeProvider nonce={nonce}>{children}</ThemeProvider>
           </NextIntlClientProvider>
           <Toaster
             position="bottom-left"

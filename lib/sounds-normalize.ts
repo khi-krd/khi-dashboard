@@ -183,6 +183,10 @@ export function normalizeSoundDto(raw: unknown): SoundDto {
     ckbCoverUrl: coerceStr(o.ckbCoverUrl) ?? coerceStr(o.ckb_cover_url),
     kmrCoverUrl: coerceStr(o.kmrCoverUrl) ?? coerceStr(o.kmr_cover_url),
     hoverCoverUrl: coerceStr(o.hoverCoverUrl) ?? coerceStr(o.hover_cover_url),
+    // Rebuilt field-by-field, so anything not listed here is silently dropped —
+    // which is what hid the hero picture after it was saved.
+    featureImageUrl:
+      coerceStr(o.featureImageUrl) ?? coerceStr(o.feature_image_url),
     ckbContent: normalizeContent(o.ckbContent ?? o.ckb_content),
     kmrContent: normalizeContent(o.kmrContent ?? o.kmr_content),
     contentLanguages: normalizeLanguages(
