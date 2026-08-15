@@ -31,6 +31,12 @@ export type FeaturedCatalogItem = {
   title: string
   subtitle?: string | null
   coverUrl?: string | null
+  /**
+   * Optional hero picture. Only the six featureable content types carry it —
+   * services do not (their `featureImageUrls`, plural, is an unrelated gallery
+   * field), so this stays undefined for that category.
+   */
+  featureImageUrl?: string | null
   coverAspect: "square" | "book" | "wide"
   featured: boolean
   featuredOrder?: number | null
@@ -80,6 +86,7 @@ export function mapNewsToCatalogItem(news: NewsDto): FeaturedCatalogItem | null 
       news.category?.kmrName?.trim() ||
       null,
     coverUrl: news.coverUrl?.trim() || news.coverThumbnailUrl?.trim() || null,
+    featureImageUrl: news.featureImageUrl?.trim() || null,
     coverAspect: "wide",
     featured: !!news.featured,
     featuredOrder: news.featuredOrder,
@@ -111,6 +118,7 @@ export function mapProjectToCatalogItem(
       project.coverUrl?.trim() ||
       project.coverThumbnailUrl?.trim() ||
       null,
+    featureImageUrl: project.featureImageUrl?.trim() || null,
     coverAspect: "wide",
     featured: !!project.featured,
     featuredOrder: project.featuredOrder,
@@ -170,6 +178,7 @@ export function mapVideoToCatalogItem(video: VideoDto): FeaturedCatalogItem | nu
       video.kmrCoverUrl,
       video.hoverCoverUrl,
     ),
+    featureImageUrl: video.featureImageUrl?.trim() || null,
     coverAspect: "wide",
     featured: !!video.featured,
     featuredOrder: video.featuredOrder,
@@ -197,6 +206,7 @@ export function mapSoundToCatalogItem(sound: SoundDto): FeaturedCatalogItem | nu
       sound.kmrCoverUrl,
       sound.hoverCoverUrl,
     ),
+    featureImageUrl: sound.featureImageUrl?.trim() || null,
     coverAspect: "square",
     featured: !!sound.featured,
     featuredOrder: sound.featuredOrder,
@@ -229,6 +239,7 @@ export function mapCollectionToCatalogItem(
       collection.kmrCoverUrl,
       collection.hoverCoverUrl,
     ),
+    featureImageUrl: collection.featureImageUrl?.trim() || null,
     coverAspect: "wide",
     featured: !!collection.featured,
     featuredOrder: collection.featuredOrder,
@@ -259,6 +270,7 @@ export function mapWritingToCatalogItem(
       writing.kmrCoverUrl,
       writing.hoverCoverUrl,
     ),
+    featureImageUrl: writing.featureImageUrl?.trim() || null,
     coverAspect: "book",
     featured: !!writing.featured,
     featuredOrder: writing.featuredOrder,

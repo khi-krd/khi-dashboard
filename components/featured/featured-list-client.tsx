@@ -17,6 +17,7 @@ import {
 import type { FeaturedCatalogCategory, FeaturedCatalogItem } from "@/lib/featured-catalog"
 import { nextFeaturedOrder } from "@/lib/featured-utils"
 import { toastError } from "@/lib/toast"
+import type { FeaturedPayload } from "@/types/featured"
 
 const FEATURED_PAGE_SIZE = 100
 
@@ -62,10 +63,7 @@ function FeaturedListClientInner() {
   }, [queryClient])
 
   const patchItem = useCallback(
-    async (
-      item: FeaturedCatalogItem,
-      payload: { featured?: boolean; featuredOrder?: number },
-    ) => {
+    async (item: FeaturedCatalogItem, payload: FeaturedPayload) => {
       if (!item.canFeature) return
       setPendingKey(item.key)
       try {

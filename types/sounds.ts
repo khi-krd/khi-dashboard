@@ -68,6 +68,8 @@ export type SoundDto = {
   id?: number
   featured?: boolean
   featuredOrder?: number | null
+  /** Hero picture for the homepage carousel; falls back to the cover when unset. */
+  featureImageUrl?: string | null
   trackState: TrackState
   soundType?: string | null
   topicId?: number | null

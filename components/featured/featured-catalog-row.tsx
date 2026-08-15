@@ -25,7 +25,10 @@ export function FeaturedCatalogRow({
   onUnfeature?: (item: FeaturedCatalogItem) => void
   showFeaturedBadge?: boolean
 }) {
-  const cover = item.coverUrl?.trim()
+  // Prefer the hero picture so the thumbnail matches what the website paints.
+  const heroImage = item.featureImageUrl?.trim() || null
+  const cover = heroImage ?? item.coverUrl?.trim()
+  const thumbAspect = heroImage ? "wide" : item.coverAspect
 
   return (
     <article
@@ -38,9 +41,9 @@ export function FeaturedCatalogRow({
       <div
         className={cn(
           "bg-muted relative shrink-0 overflow-hidden rounded-lg",
-          item.coverAspect === "book"
+          thumbAspect === "book"
             ? "h-16 w-11"
-            : item.coverAspect === "wide"
+            : thumbAspect === "wide"
               ? "h-11 w-16"
               : "size-14",
         )}

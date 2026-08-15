@@ -49,6 +49,8 @@ export type NewsDto = {
   keywords?: BilingualSet
   featured?: boolean
   featuredOrder?: number | null
+  /** Hero picture for the homepage carousel; falls back to the cover when unset. */
+  featureImageUrl?: string | null
 }
 
 export type ApiResponse<T> = {

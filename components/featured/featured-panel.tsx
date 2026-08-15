@@ -27,6 +27,7 @@ import type { FeaturedCatalogItem } from "@/lib/featured-catalog"
 import { featuredOrderPatches, reorderFeaturedKeys } from "@/lib/featured-utils"
 import { formatCkbDigits } from "@/lib/intl-ckb"
 import { toastError } from "@/lib/toast"
+import type { FeaturedPayload } from "@/types/featured"
 
 type FeaturedPanelProps = {
   items: FeaturedCatalogItem[]
@@ -35,8 +36,13 @@ type FeaturedPanelProps = {
   onRetry?: () => void
   onPatch: (
     item: FeaturedCatalogItem,
-    payload: { featured?: boolean; featuredOrder?: number },
+    payload: FeaturedPayload,
   ) => Promise<void>
+}
+
+/** Services carry no `feature_image_url` column, so the uploader is hidden there. */
+function supportsFeatureImage(item: FeaturedCatalogItem): boolean {
+  return item.category !== "services"
 }
 
 export function FeaturedPanel({
@@ -89,10 +95,7 @@ export function FeaturedPanel({
   )
 
   const runPatch = useCallback(
-    async (
-      item: FeaturedCatalogItem,
-      payload: { featured?: boolean; featuredOrder?: number },
-    ) => {
+    async (item: FeaturedCatalogItem, payload: FeaturedPayload) => {
       setPendingKey(item.key)
       try {
         await onPatch(item, payload)
@@ -143,6 +146,16 @@ export function FeaturedPanel({
   async function handleRemove(item: FeaturedCatalogItem) {
     await runPatch(item, { featured: false })
     toast.success(NS.toast.removed)
+  }
+
+  /**
+   * `featured: true` rides along because the PATCH treats an omitted `featured`
+   * as true anyway, and `featuredOrder` is left out so the slide keeps its
+   * position — only the picture changes.
+   */
+  async function handleFeatureImage(item: FeaturedCatalogItem, url: string) {
+    await runPatch(item, { featured: true, featureImageUrl: url })
+    toast.success(url ? NS.toast.imageUpdated : NS.toast.imageRemoved)
   }
 
   if (isLoading) {
@@ -216,6 +229,7 @@ export function FeaturedPanel({
                       subtitle={item.subtitle}
                       categoryLabel={item.categoryLabel}
                       coverUrl={item.coverUrl}
+                      featureImageUrl={item.featureImageUrl}
                       coverAspect={item.coverAspect}
                       fallbackIcon={
                         <FeaturedCategoryIcon category={item.category} />
@@ -224,6 +238,11 @@ export function FeaturedPanel({
                       editHref={item.editHref}
                       isPending={pendingKey === key || isReordering}
                       onRemove={() => void handleRemove(item)}
+                      onFeatureImageChange={
+                        supportsFeatureImage(item)
+                          ? (url) => void handleFeatureImage(item, url)
+                          : undefined
+                      }
                     />
                   )
                 })}

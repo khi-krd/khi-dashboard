@@ -62,6 +62,8 @@ export type WritingDto = {
   id?: number
   featured?: boolean
   featuredOrder?: number | null
+  /** Hero picture for the homepage carousel; falls back to the cover when unset. */
+  featureImageUrl?: string | null
   bookGenres: BookGenre[]
   topicId?: number | null
   topicNameCkb?: string | null
