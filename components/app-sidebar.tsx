@@ -24,6 +24,7 @@ import {
   DashboardSquare01Icon,
   FolderKanbanIcon,
   InformationCircleIcon,
+  Menu01Icon,
   News01Icon,
   SparklesIcon,
   Tag01Icon,
@@ -114,6 +115,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     {
       label: t("labels.site"),
       items: [
+        {
+          title: "مێنیوی ماڵپەڕ",
+          url: "/dashboard/menu",
+          icon: <HugeiconsIcon icon={Menu01Icon} strokeWidth={2} />,
+        },
         {
           title: "خزمەتگوزارییەکان",
           url: "/dashboard/services",

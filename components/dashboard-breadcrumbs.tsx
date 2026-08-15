@@ -33,6 +33,7 @@ const SEGMENT_LABELS: Record<string, string> = {
   service: "خزمەتگوزاری",
   contact: "پەیوەندی",
   donations: "بەخشین",
+  menu: "مێنیوی ماڵپەڕ",
   profile: "پرۆفایل",
   featured: "تایبەتەکان",
 }
