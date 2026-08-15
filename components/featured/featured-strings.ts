@@ -46,6 +46,8 @@ export const NS = {
     manage_link: "بەڕێوەبردنی تایبەتەکان",
     editImage: "دەستکاری وێنە",
     closeImage: "داخستنی وێنە",
+    saveImage: "پاشەکەوتکردنی وێنە",
+    revertImage: "گەڕاندنەوە",
   },
   field: {
     featureImage: "وێنەی هێرۆ",

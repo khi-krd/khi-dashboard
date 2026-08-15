@@ -65,7 +65,16 @@ export function FeaturedSortableRow({
     transition,
   }
 
+  // Local echo of the picture. The uploader is fully controlled off `previewUrl`,
+  // and the server value only returns after PATCH → invalidate → a 7-category
+  // refetch, so without this the preview stays blank for the whole round trip
+  // and the URL field cannot be typed into at all.
+  const [draftImage, setDraftImage] = useState<string | null>(null)
+
   const heroImage = featureImageUrl?.trim() || null
+  const shownImage = draftImage !== null ? draftImage.trim() || null : heroImage
+  const imageDirty =
+    draftImage !== null && draftImage.trim() !== (heroImage ?? "")
   // Show what the website will actually paint: the hero picture wins over the
   // cover, exactly as the backend's `firstNonBlank` resolves it (§4.5).
   const cover = heroImage ?? coverUrl?.trim()
@@ -189,17 +198,44 @@ export function FeaturedSortableRow({
             label={NS.field.featureImage}
             aspectClass="aspect-video"
             helperText={NS.field.featureImageHint}
-            previewUrl={heroImage}
-            urlValue={heroImage ?? ""}
-            onUrlChange={(url) =>
-              onFeatureImageChange(url.trim() ? url.trim() : "")
-            }
+            previewUrl={shownImage}
+            urlValue={shownImage ?? ""}
+            // Local only. MediaCoverUpload fires this on every keystroke of its
+            // URL field, so patching here would mean one PATCH per character —
+            // and each one disables the row mid-typing via `isPending`.
+            onUrlChange={setDraftImage}
           />
-          {!heroImage ? (
-            <p className="text-muted-foreground mt-2 text-xs">
-              {NS.field.featureImageFallback}
-            </p>
-          ) : null}
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <Button
+              type="button"
+              size="sm"
+              disabled={!imageDirty}
+              onClick={() =>
+                // "" is the documented clear signal; null would mean "unchanged".
+                // The draft is deliberately kept: clearing it here would snap the
+                // preview back to the old picture until the refetch caught up.
+                // Once the server value matches, `imageDirty` goes false on its own.
+                onFeatureImageChange((draftImage ?? "").trim())
+              }
+            >
+              {NS.actions.saveImage}
+            </Button>
+            {imageDirty ? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setDraftImage(null)}
+              >
+                {NS.actions.revertImage}
+              </Button>
+            ) : null}
+            {!shownImage ? (
+              <p className="text-muted-foreground text-xs">
+                {NS.field.featureImageFallback}
+              </p>
+            ) : null}
+          </div>
         </div>
       ) : null}
     </div>
