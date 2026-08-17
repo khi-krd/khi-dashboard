@@ -73,10 +73,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       ],
     },
     {
-      // Its own section on purpose. The carousel is fed by all nine sources —
-      // the six publication types plus About, Service and the donation page —
-      // so filing it under publishing would misdescribe what it controls.
-      label: t("labels.homepage"),
+      // Its own section on purpose. This page controls two different surfaces
+      // — the homepage carousel and the per-page highlight bands on /services
+      // and /about — so filing it under publishing would misdescribe it.
+      label: t("labels.highlighting"),
       items: [
         {
           title: "تایبەتەکان",

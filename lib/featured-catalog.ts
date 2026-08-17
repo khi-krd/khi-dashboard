@@ -25,9 +25,40 @@ export const FEATURED_CATALOG_CATEGORIES = [
 export type FeaturedCatalogCategory = (typeof FEATURED_CATALOG_CATEGORIES)[number]
 
 /**
- * The global slide cap, `SiteSettings.maxFeaturedSlides`. Shared by all nine
- * sources — About pages, services and the donation page draw from the same
- * budget as news and videos.
+ * Where a source's `featured` flag actually shows up.
+ *
+ *   hero — a slide in the homepage carousel, drawn from the shared slide cap
+ *   page — a highlight on that source's own public page, uncapped
+ *
+ * Services and About moved to `page`: featuring a service now highlights it in
+ * a band at the top of `/services`, and a featured About record leads `/about`
+ * and supplies that page's hero image. Neither reaches the carousel any more,
+ * and neither is charged to the cap — which is the point, since a featured
+ * service used to be able to crowd out a news article.
+ *
+ * Donation stays `hero`: it promotes a call-to-action page that has no list of
+ * its own to be highlighted in.
+ */
+export type FeaturedSurface = "hero" | "page"
+
+export const FEATURED_SURFACE: Record<
+  Exclude<FeaturedCatalogCategory, "all">,
+  FeaturedSurface
+> = {
+  news: "hero",
+  projects: "hero",
+  videos: "hero",
+  sounds: "hero",
+  collections: "hero",
+  writings: "hero",
+  donation: "hero",
+  services: "page",
+  about: "page",
+}
+
+/**
+ * The carousel slide cap, `SiteSettings.maxFeaturedSlides`. Charged only by
+ * the seven `hero` sources — services and About pages are free.
  *
  * Hardcoded because the setting has no HTTP endpoint yet: the service methods
  * exist on the backend but no controller exposes them, so today the row can
@@ -53,24 +84,32 @@ export type FeaturedCatalogItem = {
   subtitle?: string | null
   coverUrl?: string | null
   /**
-   * The wide carousel hero. All nine sources now carry it, including services
-   * — not to be confused with their `featureImageUrls` (plural), which is an
-   * unrelated legacy gallery list.
+   * The wide feature picture. All nine sources carry it — not to be confused
+   * with a service's `featureImageUrls` (plural), an unrelated legacy gallery
+   * list. What it feeds depends on `surface`: a carousel slide, the Services
+   * highlight card, or the About page hero.
    */
   featureImageUrl?: string | null
   coverAspect: "square" | "book" | "wide"
   featured: boolean
   featuredOrder?: number | null
   canFeature: boolean
+  /** Which public surface this item's `featured` flag drives. */
+  surface: FeaturedSurface
   /**
-   * True for the three institutional sources, whose PATCH fails with `400`
-   * rather than producing a slide that silently never renders. The six
-   * publication types are dropped server-side instead, so a blank image there
-   * is a warning, not a hard block.
+   * True where the PATCH fails with `400` rather than quietly producing
+   * something broken: About (its picture *is* the page hero), a service with
+   * no gallery image, and donation with no hero. The six publication types
+   * fall back to a cover, so a blank picture there is a warning, not a block.
    */
   strictImage: boolean
   detailHref: string
   editHref: string
+}
+
+/** Only `hero` items are charged to `maxFeaturedSlides`. */
+export function countsTowardSlideCap(item: FeaturedCatalogItem): boolean {
+  return item.surface === "hero"
 }
 
 /**
@@ -140,6 +179,7 @@ export function mapNewsToCatalogItem(news: NewsDto): FeaturedCatalogItem | null 
     featured: !!news.featured,
     featuredOrder: news.featuredOrder,
     canFeature: true,
+    surface: FEATURED_SURFACE.news,
     strictImage: false,
     detailHref: `/dashboard/news/${news.id}`,
     editHref: `/dashboard/news/${news.id}/edit`,
@@ -173,6 +213,7 @@ export function mapProjectToCatalogItem(
     featured: !!project.featured,
     featuredOrder: project.featuredOrder,
     canFeature: true,
+    surface: FEATURED_SURFACE.projects,
     strictImage: false,
     detailHref: `/dashboard/projects/${project.id}`,
     editHref: `/dashboard/projects/${project.id}/edit`,
@@ -228,6 +269,7 @@ export function mapServiceToCatalogItem(
     featured: !!service.featured,
     featuredOrder: service.featuredOrder,
     canFeature: true,
+    surface: FEATURED_SURFACE.services,
     // A service with no gallery image at all is rejected outright.
     strictImage: true,
     detailHref: `/dashboard/services/${service.id}`,
@@ -262,6 +304,7 @@ export function mapAboutToCatalogItem(
     featured: !!about.featured,
     featuredOrder: about.featuredOrder,
     canFeature: true,
+    surface: FEATURED_SURFACE.about,
     strictImage: true,
     detailHref: `/dashboard/about/${about.id}`,
     editHref: `/dashboard/about/${about.id}/edit`,
@@ -294,6 +337,7 @@ export function mapDonationToCatalogItem(
     featured: !!settings.featured,
     featuredOrder: settings.featuredOrder,
     canFeature: true,
+    surface: FEATURED_SURFACE.donation,
     strictImage: true,
     detailHref: "/dashboard/donations",
     editHref: "/dashboard/donations",
@@ -323,6 +367,7 @@ export function mapVideoToCatalogItem(video: VideoDto): FeaturedCatalogItem | nu
     featured: !!video.featured,
     featuredOrder: video.featuredOrder,
     canFeature: true,
+    surface: FEATURED_SURFACE.videos,
     strictImage: false,
     detailHref: `/dashboard/videos/${video.id}`,
     editHref: `/dashboard/videos/${video.id}/edit`,
@@ -352,6 +397,7 @@ export function mapSoundToCatalogItem(sound: SoundDto): FeaturedCatalogItem | nu
     featured: !!sound.featured,
     featuredOrder: sound.featuredOrder,
     canFeature: true,
+    surface: FEATURED_SURFACE.sounds,
     strictImage: false,
     detailHref: `/dashboard/sounds/${sound.id}`,
     editHref: `/dashboard/sounds/${sound.id}/edit`,
@@ -386,6 +432,7 @@ export function mapCollectionToCatalogItem(
     featured: !!collection.featured,
     featuredOrder: collection.featuredOrder,
     canFeature: true,
+    surface: FEATURED_SURFACE.collections,
     strictImage: false,
     detailHref: `/dashboard/image-collections/${collection.id}`,
     editHref: `/dashboard/image-collections/${collection.id}/edit`,
@@ -418,6 +465,7 @@ export function mapWritingToCatalogItem(
     featured: !!writing.featured,
     featuredOrder: writing.featuredOrder,
     canFeature: true,
+    surface: FEATURED_SURFACE.writings,
     strictImage: false,
     detailHref: `/dashboard/writings/${writing.id}`,
     editHref: `/dashboard/writings/${writing.id}/edit`,

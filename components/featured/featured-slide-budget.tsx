@@ -6,6 +6,7 @@ import { FeaturedCategoryIcon } from "@/components/featured/featured-category-ic
 import { NS } from "@/components/featured/featured-strings"
 import { Badge } from "@/components/ui/badge"
 import {
+  countsTowardSlideCap,
   FEATURED_CATEGORY_LABELS,
   MAX_FEATURED_SLIDES,
   type FeaturedCatalogItem,
@@ -14,14 +15,15 @@ import { formatCkbDigits } from "@/lib/intl-ckb"
 import { cn } from "@/lib/utils"
 
 /**
- * The cap is one budget shared by all nine sources, so the counter has to be
- * built from the pooled featured list rather than any single module's count:
+ * The carousel budget, counted from the pooled featured list:
  *
  *   used = news + projects + writings + videos + sounds + collections
- *        + about + services + (donation ? 1 : 0)
+ *        + (donation ? 1 : 0)
  *
- * The donation page contributes at most one because it is a settings
- * singleton — there is no second donation record to feature.
+ * Services and About are excluded on purpose — their flag highlights them on
+ * their own page and never reaches the carousel, so charging them here would
+ * report slots as taken that the carousel could still use. The donation page
+ * contributes at most one, being a settings singleton.
  */
 export function FeaturedSlideBudget({
   items,
@@ -31,7 +33,9 @@ export function FeaturedSlideBudget({
   max?: number
 }) {
   const { used, remaining, breakdown } = useMemo(() => {
-    const featured = items.filter((item) => item.featured)
+    const featured = items.filter(
+      (item) => item.featured && countsTowardSlideCap(item),
+    )
     const counts = new Map<FeaturedCatalogItem["category"], number>()
     for (const item of featured) {
       counts.set(item.category, (counts.get(item.category) ?? 0) + 1)

@@ -59,26 +59,39 @@ export function orderPatches(
 }
 
 /**
- * Numbers the drag order across every source at once, not per category.
+ * How a drag is renumbered depends on who reads the result.
  *
- * The carousel pools all nine sources into one list sorted on `featuredOrder`,
- * breaking ties by newest id. Numbering each category from zero would hand
- * several sources the same `featuredOrder`, leaving the order between them up
- * to raw ids — so the carousel would not match what the admin dragged. One
- * global sequence is the only way the two agree.
+ * `"global"` — one sequence across every source in the list. The carousel
+ * pools all its sources into a single slide order, so numbering each category
+ * from zero would hand several of them the same `featuredOrder` and leave the
+ * order between them up to raw ids, which is not what the admin dragged.
+ *
+ * `"category"` — a separate sequence per source. Page highlights are read by
+ * different pages that never see each other's rows: services order the band on
+ * `/services`, About records order `/about`. Numbering them in one sequence
+ * would leave whichever page sorts second starting at an arbitrary offset.
  */
+export type FeaturedOrderScope = "global" | "category"
+
 export function featuredOrderPatches<
-  T extends { key: string; featuredOrder?: number | null },
->(itemsByKey: Map<string, T>, orderedKeys: string[]): { key: string; featuredOrder: number }[] {
+  T extends { key: string; category: string; featuredOrder?: number | null },
+>(
+  itemsByKey: Map<string, T>,
+  orderedKeys: string[],
+  scope: FeaturedOrderScope = "global",
+): { key: string; featuredOrder: number }[] {
   const patches: { key: string; featuredOrder: number }[] = []
-  let position = 0
+  const positions = new Map<string, number>()
+
   for (const key of orderedKeys) {
     const item = itemsByKey.get(key)
     if (!item) continue
+    const bucket = scope === "global" ? "" : item.category
+    const position = positions.get(bucket) ?? 0
     if ((item.featuredOrder ?? -1) !== position) {
       patches.push({ key, featuredOrder: position })
     }
-    position += 1
+    positions.set(bucket, position + 1)
   }
   return patches
 }

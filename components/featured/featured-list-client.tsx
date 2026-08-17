@@ -17,6 +17,7 @@ import {
 } from "@/hooks/useFeatured"
 import { extractApiErrorReason } from "@/lib/api-error"
 import {
+  countsTowardSlideCap,
   MAX_FEATURED_SLIDES,
   type FeaturedCatalogCategory,
   type FeaturedCatalogItem,
@@ -63,6 +64,33 @@ function FeaturedListClientInner() {
     [featuredQ.data?.items],
   )
 
+  // The two surfaces are managed as two lists. They stopped sharing anything
+  // that made one list meaningful: a carousel slide competes for a capped slot
+  // and is ordered against every other slide, while a page highlight is
+  // uncapped and ordered only against the other rows of its own page.
+  const heroItems = useMemo(
+    () => featuredItems.filter(countsTowardSlideCap),
+    [featuredItems],
+  )
+  // Grouped by source, not interleaved by order. Each source is numbered from
+  // zero independently (they rank rows on different pages), so sorting the two
+  // together on `featuredOrder` alone would produce service 1, about 1,
+  // service 2, about 2 — an order that means nothing on either page.
+  const pageItems = useMemo(
+    () =>
+      featuredItems
+        .filter((item) => !countsTowardSlideCap(item))
+        .sort((a, b) => {
+          if (a.category !== b.category) {
+            return a.category.localeCompare(b.category)
+          }
+          const aOrder = a.featuredOrder ?? Number.POSITIVE_INFINITY
+          const bOrder = b.featuredOrder ?? Number.POSITIVE_INFINITY
+          return aOrder !== bOrder ? aOrder - bOrder : b.id - a.id
+        }),
+    [featuredItems],
+  )
+
   const refreshFeatured = useCallback(async () => {
     await queryClient.invalidateQueries({ queryKey: ["featured"] })
     await queryClient.invalidateQueries({ queryKey: ["featured-catalog"] })
@@ -101,10 +129,18 @@ function FeaturedListClientInner() {
         toastError(blocked)
         return
       }
+      // Appended to whichever sequence actually reads it: the carousel numbers
+      // all its slides together, a page highlight only ranks against the other
+      // rows of its own source.
+      const siblings =
+        item.surface === "hero"
+          ? heroItems
+          : pageItems.filter((entry) => entry.category === item.category)
+
       await patchItem(item, {
         featured: true,
         featuredOrder: nextFeaturedOrder(
-          featuredItems.map((entry) => ({
+          siblings.map((entry) => ({
             id: entry.id,
             featured: true,
             featuredOrder: entry.featuredOrder,
@@ -116,7 +152,7 @@ function FeaturedListClientInner() {
       })
       toast.success(NS.toast.added)
     },
-    [patchItem, featuredItems],
+    [patchItem, heroItems, pageItems],
   )
 
   const handleUnfeature = useCallback(
@@ -170,21 +206,61 @@ function FeaturedListClientInner() {
       </header>
 
       {/*
-        Hidden while the fetch is unresolved *or* failed — an empty list from a
-        failed request would otherwise render an authoritative "0 of 7 used"
-        directly above the panel's own error state.
+        Loading and error belong to the page, not to either panel: the two
+        panels share one query, so letting each render its own state produced
+        the skeleton twice and two competing retry buttons.
       */}
-      {featuredQ.isLoading || featuredQ.isError ? null : (
-        <FeaturedSlideBudget items={featuredItems} />
-      )}
+      {featuredQ.isLoading ? (
+        <div className="space-y-3">
+          <Skeleton className="h-24 w-full rounded-xl" />
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-[4.5rem] w-full rounded-xl" />
+          ))}
+        </div>
+      ) : featuredQ.isError ? (
+        <div className="border-border flex flex-col items-center justify-center rounded-xl border border-dashed py-16 text-center">
+          <p className="text-muted-foreground mb-4 text-base">
+            {NS.error.generic}
+          </p>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => void refreshFeatured()}
+          >
+            {NS.retryLabel}
+          </Button>
+        </div>
+      ) : (
+        <div className="space-y-6">
+          <FeaturedSlideBudget items={heroItems} />
 
-      <FeaturedPanel
-        items={featuredItems}
-        isLoading={featuredQ.isLoading}
-        isError={featuredQ.isError}
-        onRetry={() => void refreshFeatured()}
-        onPatch={patchItem}
-      />
+          <FeaturedPanel
+            items={heroItems}
+            onPatch={patchItem}
+            heading={NS.surfaces.hero.heading}
+            description={NS.surfaces.hero.description}
+            emptyTitle={NS.surfaces.hero.emptyTitle}
+            emptySubtitle={NS.surfaces.hero.emptySubtitle}
+            orderScope="global"
+          />
+
+          {/*
+            No budget widget above this one, deliberately: page highlights are
+            uncapped, and a counter would reintroduce exactly the "these compete
+            for slides" impression this change removes.
+          */}
+          <FeaturedPanel
+            items={pageItems}
+            onPatch={patchItem}
+            heading={NS.surfaces.page.heading}
+            description={NS.surfaces.page.description}
+            emptyTitle={NS.surfaces.page.emptyTitle}
+            emptySubtitle={NS.surfaces.page.emptySubtitle}
+            orderScope="category"
+          />
+        </div>
+      )}
 
       <AddFeaturedSheet
         open={sheetOpen}
@@ -193,7 +269,7 @@ function FeaturedListClientInner() {
         pendingKey={pendingKey}
         initialCategory={sheetCategory}
         initialStatus="not_featured"
-        capReached={featuredItems.length >= MAX_FEATURED_SLIDES}
+        capReached={heroItems.length >= MAX_FEATURED_SLIDES}
         onFeature={handleFeature}
         onUnfeature={handleUnfeature}
       />

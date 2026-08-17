@@ -167,11 +167,13 @@ export const NS = {
     navAnchorHelper:
       "slug بۆ لینکی ناوبری، وەک recording-studio. ئەگەر بەتاڵ بێت سایت ID بەکاردەهێنێت.",
     navAnchorPlaceholder: "recording-studio",
-    featureDescriptionCkb: "کورتەیەکی سادە بۆ سلایدی سەرەکی…",
-    featureDescriptionKmr: "Kurteyeke sade ji bo slaytê…",
-    featureDescriptionLabel: "دەقی سلایدی سەرەکی",
+    featureDescriptionCkb: "کورتەیەکی سادە بۆ کارتی ڕۆشنکردنەوە…",
+    featureDescriptionKmr: "Kurteyeke sade ji bo karta ronîkirinê…",
+    featureDescriptionLabel: "دەقی کارتی ڕۆشنکردنەوە",
     featureDescriptionHelper:
-      "لە کاروسێلی پەڕەی سەرەکی بەکاردێت. دەقی سادە — ئەگەر بەتاڵ بێت کورتەیەک لە وەسفەکە دەبڕدرێت.",
+      "لە کارتی ڕۆشنکردنەوەی سەرەوەی پەڕەی خزمەتگوزارییەکاندا بەکاردێت. دەقی سادە — ئەگەر بەتاڵ بێت کورتەیەک لە وەسفەکە دەبڕدرێت.",
+    featureDescriptionRecommended:
+      "پێشنیارکراوە — ئەم خزمەتگوزارییە ڕۆشنکراوەتەوە و ئەم دێڕە لە کارتەکەدا دەردەکەوێت.",
     heroVideo: "ڤیدیۆی هێرۆ",
     heroPoster: "پۆستەری ڤیدیۆ",
     featureImages: "وێنەکانی تایبەتمەندی",

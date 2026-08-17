@@ -30,6 +30,9 @@ export function FeaturedSortableRow({
   coverUrl,
   featureImageUrl,
   strictImage = false,
+  imageLabel,
+  imageHint,
+  surfaceNote,
   coverAspect = "square",
   fallbackIcon,
   detailHref,
@@ -46,10 +49,15 @@ export function FeaturedSortableRow({
   coverUrl?: string | null
   featureImageUrl?: string | null
   /**
-   * True for the three institutional sources, where clearing the hero with no
-   * fallback cover behind it is rejected rather than silently dropped.
+   * True where clearing the picture with no fallback cover behind it is
+   * rejected rather than silently dropped.
    */
   strictImage?: boolean
+  /** What this source calls its feature picture, and what the picture does. */
+  imageLabel: string
+  imageHint: string
+  /** For page highlights: which public page this row shows up on. */
+  surfaceNote?: string | null
   coverAspect?: "square" | "book" | "wide"
   fallbackIcon: React.ReactNode
   detailHref: string
@@ -151,6 +159,11 @@ export function FeaturedSortableRow({
           {subtitle ? (
             <p className="text-muted-foreground line-clamp-1 text-sm">{subtitle}</p>
           ) : null}
+          {surfaceNote ? (
+            <p className="text-muted-foreground/80 mt-0.5 line-clamp-1 text-xs">
+              {surfaceNote}
+            </p>
+          ) : null}
         </div>
 
         <div className="flex shrink-0 items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100">
@@ -201,9 +214,9 @@ export function FeaturedSortableRow({
       {onFeatureImageChange && imageOpen ? (
         <div className="mt-3 border-t pt-3">
           <MediaCoverUpload
-            label={NS.field.featureImage}
+            label={imageLabel}
             aspectClass="aspect-video"
-            helperText={NS.field.featureImageHint}
+            helperText={imageHint}
             previewUrl={shownImage}
             urlValue={shownImage ?? ""}
             // Local only. MediaCoverUpload fires this on every keystroke of its

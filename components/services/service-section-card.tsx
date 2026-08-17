@@ -43,12 +43,15 @@ function LangFields({
   descPath,
   featureDescPath,
   control,
+  isFeatured,
 }: {
   lang: Language
   titlePath: `contents.${number}.title`
   descPath: `contents.${number}.description`
   featureDescPath: `contents.${number}.featureDescription`
   control: ReturnType<typeof useForm<ServiceFormValues>>["control"]
+  /** Highlighted on /services — the card shows this line, so it matters here. */
+  isFeatured?: boolean
 }) {
   const isCkb = lang === "CKB"
 
@@ -90,8 +93,8 @@ function LangFields({
 
       {/*
         Deliberately a plain textarea, not the rich-text editor the description
-        uses: this line is rendered as bare text on the homepage carousel, and
-        any markup sent here is stripped on save anyway.
+        uses: this line is rendered as bare text on the Services highlight card,
+        and any markup sent here is stripped on save anyway.
       */}
       <Controller
         name={featureDescPath}
@@ -128,6 +131,16 @@ function LangFields({
               <p className="text-muted-foreground text-[11px] leading-relaxed">
                 {NS.field.featureDescriptionHelper}
               </p>
+              {/*
+                Only nags once the service is actually highlighted: until then
+                the field is genuinely optional, and the fallback excerpt is
+                fine.
+              */}
+              {isFeatured && used === 0 ? (
+                <p className="text-[11px] leading-relaxed text-amber-600 dark:text-amber-400">
+                  {NS.field.featureDescriptionRecommended}
+                </p>
+              ) : null}
             </div>
           )
         }}
@@ -271,6 +284,7 @@ export function ServiceSectionCard({
               descPath="contents.0.description"
               featureDescPath="contents.0.featureDescription"
               control={control}
+              isFeatured={dto?.featured}
             />
             <LangFields
               lang="KMR"
@@ -278,6 +292,7 @@ export function ServiceSectionCard({
               descPath="contents.1.description"
               featureDescPath="contents.1.featureDescription"
               control={control}
+              isFeatured={dto?.featured}
             />
           </div>
 

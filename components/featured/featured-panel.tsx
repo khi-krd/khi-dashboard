@@ -20,31 +20,48 @@ import { useSyncedState } from "@/hooks/use-synced-state"
 import { FeaturedCategoryIcon } from "@/components/featured/featured-category-icon"
 import { FeaturedListPagination } from "@/components/featured/featured-list-pagination"
 import { FeaturedSortableRow } from "@/components/featured/featured-sortable-row"
-import { NS } from "@/components/featured/featured-strings"
-import { Button } from "@/components/ui/button"
-import { Skeleton } from "@/components/ui/skeleton"
-import type { FeaturedCatalogItem } from "@/lib/featured-catalog"
-import { featuredOrderPatches, reorderFeaturedKeys } from "@/lib/featured-utils"
+import {
+  featureImageStrings,
+  NS,
+  surfaceNote,
+} from "@/components/featured/featured-strings"
+import {
+  FEATURED_CATEGORY_LABELS,
+  type FeaturedCatalogItem,
+} from "@/lib/featured-catalog"
+import {
+  featuredOrderPatches,
+  reorderFeaturedKeys,
+  type FeaturedOrderScope,
+} from "@/lib/featured-utils"
 import { formatCkbDigits } from "@/lib/intl-ckb"
 import type { FeaturedPayload } from "@/types/featured"
 
 type FeaturedPanelProps = {
   items: FeaturedCatalogItem[]
-  isLoading?: boolean
-  isError?: boolean
-  onRetry?: () => void
   onPatch: (
     item: FeaturedCatalogItem,
     payload: FeaturedPayload,
   ) => Promise<void>
+  heading: string
+  description: string
+  emptyTitle: string
+  emptySubtitle: string
+  /**
+   * How a drag renumbers this list. Carousel slides share one running order;
+   * page highlights are read per page, so each source restarts at zero.
+   */
+  orderScope?: FeaturedOrderScope
 }
 
 export function FeaturedPanel({
   items,
-  isLoading,
-  isError,
-  onRetry,
   onPatch,
+  heading,
+  description,
+  emptyTitle,
+  emptySubtitle,
+  orderScope = "global",
 }: FeaturedPanelProps) {
   const [pageSize, setPageSize] = useState(10)
   const [pendingKey, setPendingKey] = useState<string | null>(null)
@@ -84,6 +101,53 @@ export function FeaturedPanel({
     return orderedKeys.slice(start, start + pageSize)
   }, [orderedKeys, pageIndex, pageSize])
 
+  /**
+   * The visible page of rows, split into drag groups. Global scope is one
+   * unlabelled group; category scope is one labelled group per source, which
+   * is what makes "you can only reorder within a source" legible.
+   */
+  const rowGroups = useMemo(() => {
+    if (orderScope === "global") {
+      return [{ key: "all", label: null as string | null, keys: pageKeys }]
+    }
+    const byCategory = new Map<string, string[]>()
+    for (const key of pageKeys) {
+      const item = featuredByKey.get(key)
+      if (!item) continue
+      const list = byCategory.get(item.category) ?? []
+      list.push(key)
+      byCategory.set(item.category, list)
+    }
+    return [...byCategory.entries()].map(([category, keys]) => ({
+      key: category,
+      label:
+        FEATURED_CATEGORY_LABELS[
+          category as keyof typeof FEATURED_CATEGORY_LABELS
+        ] ?? null,
+      keys,
+    }))
+  }, [pageKeys, featuredByKey, orderScope])
+
+  /**
+   * The number on the row's badge. It has to match the sequence that was
+   * actually written, so under category scope it counts within the row's own
+   * source — a list-wide index would show an About row as 3rd while `/about`
+   * ranks it 1st, offset by however many service rows happened to sort above.
+   */
+  const displayOrderByKey = useMemo(() => {
+    const map = new Map<string, number>()
+    const counters = new Map<string, number>()
+    for (const key of orderedKeys) {
+      const item = featuredByKey.get(key)
+      if (!item) continue
+      const bucket = orderScope === "global" ? "" : item.category
+      const next = counters.get(bucket) ?? 0
+      map.set(key, next)
+      counters.set(bucket, next + 1)
+    }
+    return map
+  }, [orderedKeys, featuredByKey, orderScope])
+
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
   )
@@ -110,12 +174,24 @@ export function FeaturedPanel({
 
     const activeKey = String(active.id)
     const overKey = String(over.id)
+
+    // Under category scope each source is numbered independently, so moving a
+    // row across sources changes no number anywhere. Rejected here rather than
+    // after the fact: painting the new order first and only then discovering
+    // there is nothing to persist left the row sitting in a position that
+    // silently snapped back on the next refetch.
+    if (orderScope === "category") {
+      const activeCategory = featuredByKey.get(activeKey)?.category
+      const overCategory = featuredByKey.get(overKey)?.category
+      if (activeCategory !== overCategory) return
+    }
+
     const previousKeys = orderedKeys
     const nextKeys = reorderFeaturedKeys(previousKeys, activeKey, overKey)
     if (nextKeys === previousKeys) return
 
     setOrderedKeys(nextKeys)
-    const patches = featuredOrderPatches(featuredByKey, nextKeys)
+    const patches = featuredOrderPatches(featuredByKey, nextKeys, orderScope)
     if (patches.length === 0) return
 
     setIsReordering(true)
@@ -164,37 +240,13 @@ export function FeaturedPanel({
     }
   }
 
-  if (isLoading) {
-    return (
-      <div className="space-y-3">
-        <Skeleton className="h-6 w-40" />
-        {Array.from({ length: 4 }).map((_, i) => (
-          <Skeleton key={i} className="h-[4.5rem] w-full rounded-xl" />
-        ))}
-      </div>
-    )
-  }
-
-  if (isError) {
-    return (
-      <div className="border-border flex flex-col items-center justify-center rounded-xl border border-dashed py-16 text-center">
-        <p className="text-muted-foreground mb-4 text-base">{NS.error.generic}</p>
-        {onRetry ? (
-          <Button type="button" variant="outline" size="sm" onClick={onRetry}>
-            دووبارە هەوڵبدەرەوە
-          </Button>
-        ) : null}
-      </div>
-    )
-  }
-
   return (
     <section className="space-y-4">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h2 className="text-lg font-semibold">{NS.views.featured}</h2>
+          <h2 className="text-lg font-semibold">{heading}</h2>
           <p className="text-muted-foreground text-sm">
-            {NS.actions.drag}
+            {description}
             {featuredItems.length > 0
               ? ` · ${formatCkbDigits(featuredItems.length)}`
               : ""}
@@ -207,8 +259,8 @@ export function FeaturedPanel({
           <div className="bg-primary/10 text-primary mb-4 flex size-14 items-center justify-center rounded-2xl">
             <SparklesIcon className="size-6" aria-hidden />
           </div>
-          <h3 className="mb-1 text-lg font-medium">{NS.empty.title}</h3>
-          <p className="text-muted-foreground max-w-sm text-base">{NS.empty.subtitle}</p>
+          <h3 className="mb-1 text-lg font-medium">{emptyTitle}</h3>
+          <p className="text-muted-foreground max-w-sm text-base">{emptySubtitle}</p>
         </div>
       ) : (
         <>
@@ -217,42 +269,61 @@ export function FeaturedPanel({
             collisionDetection={closestCenter}
             onDragEnd={(e) => void handleDragEnd(e)}
           >
-            <SortableContext
-              items={pageKeys}
-              strategy={verticalListSortingStrategy}
-            >
-              <div className="space-y-2">
-                {pageKeys.map((key) => {
-                  const item = featuredByKey.get(key)
-                  if (!item) return null
-                  const globalOrder = orderedKeys.indexOf(key)
-                  return (
-                    <FeaturedSortableRow
-                      key={key}
-                      id={key}
-                      order={globalOrder}
-                      title={item.title}
-                      subtitle={item.subtitle}
-                      categoryLabel={item.categoryLabel}
-                      coverUrl={item.coverUrl}
-                      featureImageUrl={item.featureImageUrl}
-                      strictImage={item.strictImage}
-                      coverAspect={item.coverAspect}
-                      fallbackIcon={
-                        <FeaturedCategoryIcon category={item.category} />
-                      }
-                      detailHref={item.detailHref}
-                      editHref={item.editHref}
-                      isPending={pendingKey === key || isReordering}
-                      onRemove={() => void handleRemove(item)}
-                      onFeatureImageChange={(url) =>
-                        void handleFeatureImage(item, url)
-                      }
-                    />
-                  )
-                })}
+            {/*
+              One group per source under category scope, each with its own
+              heading and its own SortableContext. The boundary has to be
+              visible: rows are only reorderable within their own source, and a
+              single unbroken list gave no hint of that — dragging across it
+              just snapped back.
+            */}
+            {rowGroups.map((group) => (
+              <div key={group.key} className="space-y-2 pt-2 first:pt-0">
+                {group.label ? (
+                  <p className="text-muted-foreground text-xs font-medium">
+                    {group.label}
+                  </p>
+                ) : null}
+                <SortableContext
+                  items={group.keys}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div className="space-y-2">
+                    {group.keys.map((key) => {
+                      const item = featuredByKey.get(key)
+                      if (!item) return null
+                      const rowOrder = displayOrderByKey.get(key) ?? 0
+                      return (
+                        <FeaturedSortableRow
+                          key={key}
+                          id={key}
+                          order={rowOrder}
+                          title={item.title}
+                          subtitle={item.subtitle}
+                          categoryLabel={item.categoryLabel}
+                          coverUrl={item.coverUrl}
+                          featureImageUrl={item.featureImageUrl}
+                          strictImage={item.strictImage}
+                          imageLabel={featureImageStrings(item).label}
+                          imageHint={featureImageStrings(item).hint}
+                          surfaceNote={surfaceNote(item)}
+                          coverAspect={item.coverAspect}
+                          fallbackIcon={
+                            <FeaturedCategoryIcon category={item.category} />
+                          }
+                          detailHref={item.detailHref}
+                          editHref={item.editHref}
+                          isPending={pendingKey === key || isReordering}
+                          onRemove={() => void handleRemove(item)}
+                          onFeatureImageChange={(url) =>
+                            void handleFeatureImage(item, url)
+                          }
+                        />
+                      )
+                    })}
+                  </div>
+                </SortableContext>
               </div>
-            </SortableContext>
+            ))}
           </DndContext>
 
           <FeaturedListPagination

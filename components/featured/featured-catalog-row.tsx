@@ -12,12 +12,18 @@ import { useState } from "react"
 
 import { isOptimizableImageSrc, isUsableImageUrl } from "@/lib/image-src"
 import { FeaturedCategoryIcon } from "@/components/featured/featured-category-icon"
-import { blockedReason, NS } from "@/components/featured/featured-strings"
+import {
+  blockedReason,
+  featureImageStrings,
+  NS,
+  surfaceNote,
+} from "@/components/featured/featured-strings"
 import { MediaCoverUpload } from "@/components/shared/media-cover-upload"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import {
+  countsTowardSlideCap,
   resolvedSlideImage,
   type FeaturedCatalogItem,
 } from "@/lib/featured-catalog"
@@ -70,12 +76,19 @@ export function FeaturedCatalogRow({
   // An already-featured row is never blocked: removing it is always allowed,
   // and the cap only ever bites on the way in.
   const blocked = item.featured ? null : blockedReason(effectiveItem)
-  // The cap is advisory here — its value is a client-side copy of a
-  // database-only setting, so it warns but never withholds the request. The
-  // server stays the authority and its reason is surfaced on rejection.
-  const capWarning = !item.featured && capReached ? NS.blocked.capReached : null
+  // The cap is advisory, and only for carousel sources at that: a service or
+  // an About page is a highlight on its own page and is charged nothing, so
+  // warning about slides there would be simply wrong. Even for hero rows this
+  // only warns — the value is a client-side copy of a database-only setting,
+  // so the server stays the authority.
+  const capWarning =
+    !item.featured && capReached && countsTowardSlideCap(item)
+      ? NS.blocked.capReached
+      : null
   const disabledReason = blocked
   const warning = blocked ?? capWarning
+  const note = surfaceNote(item)
+  const imageStrings = featureImageStrings(item)
 
   return (
     <article
@@ -140,6 +153,11 @@ export function FeaturedCatalogRow({
                 aria-hidden
               />
               {warning}
+            </p>
+          ) : null}
+          {note ? (
+            <p className="text-muted-foreground/80 mt-0.5 line-clamp-1 text-xs">
+              {note}
             </p>
           ) : null}
           {draftUsable && !item.featured ? (
@@ -212,9 +230,9 @@ export function FeaturedCatalogRow({
       {needsImage && pickerOpen ? (
         <div className="mt-3 border-t pt-3">
           <MediaCoverUpload
-            label={NS.field.featureImage}
+            label={imageStrings.label}
             aspectClass="aspect-video"
-            helperText={NS.field.featureImageHint}
+            helperText={imageStrings.hint}
             previewUrl={draft || null}
             urlValue={draftImage}
             onUrlChange={setDraftImage}
