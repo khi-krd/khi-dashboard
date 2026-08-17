@@ -32,15 +32,25 @@ export function AddFeaturedSheet({
   onUnfeature,
   initialCategory = "sounds",
   initialStatus = "not_featured",
+  capReached = false,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
   isPending?: boolean
   pendingKey?: string | null
-  onFeature: (item: FeaturedCatalogItem) => void | Promise<void>
+  onFeature: (
+    item: FeaturedCatalogItem,
+    featureImageUrl?: string,
+  ) => void | Promise<void>
   onUnfeature?: (item: FeaturedCatalogItem) => void | Promise<void>
   initialCategory?: FeaturedCatalogCategory
   initialStatus?: FeaturedCatalogStatusFilter
+  /**
+   * Flags every not-yet-featured row with a "no free slot" warning. Advisory
+   * only — the cap here is a client-side copy of a database-only setting, so
+   * the Add button stays live and the server has the final say.
+   */
+  capReached?: boolean
 }) {
   // Every filter resets when the sheet closes, so the next open starts clean.
   const closeDeps = [open, initialCategory, initialStatus]
@@ -115,8 +125,23 @@ export function AddFeaturedSheet({
             status={status}
             onStatusChange={setStatus}
             pendingKey={pendingKey}
-            onFeature={(item) => void onFeature(item)}
-            onUnfeature={onUnfeature ? (item) => void onUnfeature(item) : undefined}
+            capReached={capReached}
+            // Both handlers reject on a failed PATCH and have already toasted
+            // the reason by then, so the rejection is swallowed here rather
+            // than escaping as an unhandled promise. A rejection is routine:
+            // the cap is enforced server-side, not by disabling the button.
+            onFeature={(item, featureImageUrl) => {
+              void Promise.resolve(onFeature(item, featureImageUrl)).catch(
+                () => {},
+              )
+            }}
+            onUnfeature={
+              onUnfeature
+                ? (item) => {
+                    void Promise.resolve(onUnfeature(item)).catch(() => {})
+                  }
+                : undefined
+            }
             compact
             showFilters
             useCategoryTabs

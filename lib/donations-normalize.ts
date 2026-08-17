@@ -1,4 +1,5 @@
 import { unwrapApiData } from "@/lib/about-normalize"
+import { parseFeaturedFields } from "@/lib/featured-fields"
 import {
   isDonationStatus,
   type ArchiveDonationDto,
@@ -87,6 +88,9 @@ export function normalizeDonationSettingsDto(raw: unknown): DonationSettingsDto 
       o.archiveDonationsEnabled ?? o.archive_donations_enabled,
       true,
     ),
+    ...parseFeaturedFields(o),
+    featureImageUrl:
+      coerceStr(o.featureImageUrl) ?? coerceStr(o.feature_image_url),
   }
 }
 

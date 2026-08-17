@@ -36,6 +36,16 @@ export type DonationSettingsDto = {
   paymentInstructionsKmr?: string | null
   financialDonationsEnabled?: boolean
   archiveDonationsEnabled?: boolean
+  /**
+   * The donation page is a singleton, so it counts as at most one slide and
+   * its toggle takes no id. Unlike About and Service these three are also
+   * writable through `PUT /donations/settings`, where they are null-tolerant —
+   * omitting them leaves the stored values alone.
+   */
+  featured?: boolean
+  featuredOrder?: number | null
+  /** Falls back to `heroImageUrl`, so featuring needs no extra upload. */
+  featureImageUrl?: string | null
 }
 
 export type DonationTypeDto = {

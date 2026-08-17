@@ -70,6 +70,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           url: "/dashboard/projects",
           icon: <HugeiconsIcon icon={FolderKanbanIcon} strokeWidth={2} />,
         },
+      ],
+    },
+    {
+      // Its own section on purpose. The carousel is fed by all nine sources —
+      // the six publication types plus About, Service and the donation page —
+      // so filing it under publishing would misdescribe what it controls.
+      label: t("labels.homepage"),
+      items: [
         {
           title: "تایبەتەکان",
           url: "/dashboard/featured",

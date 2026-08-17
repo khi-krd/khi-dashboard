@@ -1,6 +1,21 @@
 import { OPTIMIZABLE_IMAGE_HOSTS } from "@/lib/image-hosts.mjs"
 
 /**
+ * Is this string complete enough to store as an image URL?
+ *
+ * Non-blank is not a good enough test where a URL is typed by hand: the
+ * backend only rejects blanks, so a half-finished `htt` would be accepted and
+ * render as a broken picture. Mirrors the `optionalUrl` rule the form schemas
+ * already use — an absolute http(s) URL, or a same-origin path.
+ */
+export function isUsableImageUrl(src: string | null | undefined): boolean {
+  const s = src?.trim()
+  if (!s) return false
+  if (s.startsWith("/")) return true
+  return /^https?:\/\/\S+$/i.test(s)
+}
+
+/**
  * Can `next/image` optimize this source?
  *
  * Components previously hardcoded `unoptimized={src.startsWith("http")}`, which

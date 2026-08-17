@@ -13,6 +13,7 @@ import type {
   AboutPartnerDto,
   AboutTeamMemberDto,
 } from "@/types/about"
+import type { FeaturedPayload } from "@/types/featured"
 
 const BASE = "/api/v1/about"
 
@@ -55,6 +56,33 @@ export async function updateAbout(
 
 export async function deleteAbout(id: number): Promise<void> {
   await api.delete(`${BASE}/${id}`)
+}
+
+/**
+ * `204 No Content`. The only writer of `featured` / `featuredOrder` /
+ * `featureImageUrl` — the About PUT is a full-replace save and ignores them.
+ *
+ * Rejects with `400` when `featureImageUrl` is blank on the record and none is
+ * sent: About has no cover to fall back on, so the slide would silently never
+ * render (`details.reason` carries the explanation).
+ */
+export async function patchAboutFeatured(
+  id: number,
+  payload: FeaturedPayload,
+): Promise<void> {
+  await api.patch(`${BASE}/${id}/featured`, payload)
+}
+
+const FEATURED_ABOUT_SCAN_SIZE = 200
+
+/**
+ * About has no `GET /featured` route of its own, so the featured set is read by
+ * scanning the list. The global slide cap keeps the real count in single
+ * digits, and About pages number a handful, so one page covers it.
+ */
+export async function getFeaturedAboutPages(): Promise<AboutDto[]> {
+  const page = await getAboutList(0, FEATURED_ABOUT_SCAN_SIZE)
+  return page.content.filter((dto) => dto.featured && dto.id != null)
 }
 
 type AboutTeamPayload = {

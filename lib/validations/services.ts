@@ -13,6 +13,10 @@ const contentRowSchema = z.object({
   languageCode: z.enum(["CKB", "KMR"]),
   title: z.string().max(300).optional().or(z.literal("")),
   description: z.string().optional(),
+  // Plain text, not Tiptap — this is the one line the carousel slide shows.
+  // The backend strips HTML and truncates past 1000 anyway; capping here means
+  // the editor finds out before saving.
+  featureDescription: z.string().max(1000).optional().or(z.literal("")),
 })
 
 const optionalUrl = z
@@ -104,8 +108,8 @@ export function defaultServiceFormValues(): ServiceFormValues {
     publishedAt: null,
     contentLanguages: ["CKB", "KMR"],
     contents: [
-      { languageCode: "CKB", title: "", description: "" },
-      { languageCode: "KMR", title: "", description: "" },
+      { languageCode: "CKB", title: "", description: "", featureDescription: "" },
+      { languageCode: "KMR", title: "", description: "", featureDescription: "" },
     ],
   }
 }
@@ -135,6 +139,7 @@ export function serviceDtoToFormValues(
         languageCode: lang as "CKB" | "KMR",
         title: hit?.title ?? "",
         description: hit?.description ?? "",
+        featureDescription: hit?.featureDescription ?? "",
       }
     },
   )

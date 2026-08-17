@@ -1,3 +1,4 @@
+import { parseFeaturedFields } from "@/lib/featured-fields"
 import type {
   AboutContentDto,
   AboutDto,
@@ -117,6 +118,9 @@ export function normalizeAboutDto(raw: unknown): AboutDto {
     ckbContent,
     kmrContent,
     stats: normalizeStats(o.stats),
+    ...parseFeaturedFields(o),
+    featureImageUrl:
+      coerceStr(o.featureImageUrl) ?? coerceStr(o.feature_image_url),
     displayOrder: coerceNum(o.displayOrder) ?? coerceNum(o.display_order) ?? undefined,
     createdAt: coerceStr(o.createdAt) ?? coerceStr(o.created_at) ?? undefined,
     updatedAt: coerceStr(o.updatedAt) ?? coerceStr(o.updated_at) ?? undefined,

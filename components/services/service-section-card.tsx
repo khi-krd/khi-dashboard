@@ -35,15 +35,19 @@ import {
 } from "@/lib/validations/services"
 import type { Language, ServiceDto } from "@/types/services"
 
+const FEATURE_DESCRIPTION_MAX = 1000
+
 function LangFields({
   lang,
   titlePath,
   descPath,
+  featureDescPath,
   control,
 }: {
   lang: Language
   titlePath: `contents.${number}.title`
   descPath: `contents.${number}.description`
+  featureDescPath: `contents.${number}.featureDescription`
   control: ReturnType<typeof useForm<ServiceFormValues>>["control"]
 }) {
   const isCkb = lang === "CKB"
@@ -82,6 +86,51 @@ function LangFields({
             className="min-h-[100px] resize-y text-sm"
           />
         )}
+      />
+
+      {/*
+        Deliberately a plain textarea, not the rich-text editor the description
+        uses: this line is rendered as bare text on the homepage carousel, and
+        any markup sent here is stripped on save anyway.
+      */}
+      <Controller
+        name={featureDescPath}
+        control={control}
+        render={({ field }) => {
+          const used = field.value?.length ?? 0
+          const over = used > FEATURE_DESCRIPTION_MAX
+          return (
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between gap-2">
+                <Label className="text-muted-foreground text-xs">
+                  {NS.field.featureDescriptionLabel}
+                </Label>
+                <span
+                  className={cn(
+                    "font-mono text-[11px] tabular-nums",
+                    over ? "text-destructive" : "text-muted-foreground",
+                  )}
+                >
+                  {formatCkbDigits(used)}/{formatCkbDigits(FEATURE_DESCRIPTION_MAX)}
+                </span>
+              </div>
+              <Textarea
+                {...field}
+                value={field.value ?? ""}
+                rows={2}
+                placeholder={
+                  isCkb
+                    ? NS.field.featureDescriptionCkb
+                    : NS.field.featureDescriptionKmr
+                }
+                className="min-h-[56px] resize-y text-sm"
+              />
+              <p className="text-muted-foreground text-[11px] leading-relaxed">
+                {NS.field.featureDescriptionHelper}
+              </p>
+            </div>
+          )
+        }}
       />
     </div>
   )
@@ -220,12 +269,14 @@ export function ServiceSectionCard({
               lang="CKB"
               titlePath="contents.0.title"
               descPath="contents.0.description"
+              featureDescPath="contents.0.featureDescription"
               control={control}
             />
             <LangFields
               lang="KMR"
               titlePath="contents.1.title"
               descPath="contents.1.description"
+              featureDescPath="contents.1.featureDescription"
               control={control}
             />
           </div>

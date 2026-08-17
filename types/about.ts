@@ -29,6 +29,18 @@ export type AboutDto = {
   kmrContent?: AboutContentDto | null
   stats?: AboutStatDto[]
   displayOrder?: number
+  /**
+   * Read-only on this DTO. `POST` / `PUT /api/v1/about` are full-replace saves
+   * and ignore these three, so sending them from the content form would wipe
+   * the hero picture. `PATCH /api/v1/about/{id}/featured` is the only writer.
+   */
+  featured?: boolean
+  featuredOrder?: number | null
+  /**
+   * The carousel slide's only possible image — About has no cover to fall back
+   * on, which is why the backend rejects featuring a page while this is blank.
+   */
+  featureImageUrl?: string | null
   createdAt?: string
   updatedAt?: string
 }

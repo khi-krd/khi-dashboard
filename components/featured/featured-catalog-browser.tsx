@@ -37,6 +37,7 @@ export function FeaturedCatalogBrowser({
   status,
   onStatusChange,
   pendingKey,
+  capReached = false,
   onFeature,
   onUnfeature,
   emptyMessage,
@@ -58,7 +59,8 @@ export function FeaturedCatalogBrowser({
   status: FeaturedCatalogStatusFilter
   onStatusChange: (value: FeaturedCatalogStatusFilter) => void
   pendingKey?: string | null
-  onFeature?: (item: FeaturedCatalogItem) => void
+  capReached?: boolean
+  onFeature?: (item: FeaturedCatalogItem, featureImageUrl?: string) => void
   onUnfeature?: (item: FeaturedCatalogItem) => void
   emptyMessage?: string
   compact?: boolean
@@ -219,6 +221,7 @@ export function FeaturedCatalogBrowser({
               key={item.key}
               item={item}
               isPending={pendingKey === item.key}
+              capReached={capReached}
               onFeature={onFeature}
               onUnfeature={onUnfeature}
             />

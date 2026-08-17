@@ -138,6 +138,8 @@ function normalizeContentDto(raw: unknown): ServiceContentDto | null {
     title,
     description:
       typeof o.description === "string" ? o.description : undefined,
+    featureDescription:
+      coerceStr(o.featureDescription) ?? coerceStr(o.feature_description),
   }
 }
 
@@ -197,6 +199,9 @@ export function normalizeServiceDto(d: ServiceDto): ServiceDto {
       coerceLayoutType(raw.layout_type),
     navAnchorId:
       coerceStr(d.navAnchorId) ?? coerceStr(raw.nav_anchor_id),
+    // Singular hero, distinct from the legacy `featureImageUrls` list below.
+    featureImageUrl:
+      coerceStr(raw.featureImageUrl) ?? coerceStr(raw.feature_image_url),
     sortOrder,
     galleryMedia,
     heroVideoUrl,

@@ -41,11 +41,15 @@ function buildContents(values: ServiceFormValues): ServiceContentDto[] {
     const row = values.contents.find((c) => c.languageCode === lang)
     const title = row?.title?.trim() ?? ""
     if (!title) continue
+    const featureDescription = row?.featureDescription?.trim() ?? ""
     rows.push({
       ...(typeof row?.id === "number" ? { id: row.id } : {}),
       languageCode: lang,
       title,
       description: row?.description?.trim() ?? "",
+      // Sent even when empty so clearing the line actually clears it — this is
+      // a full-replace save, not a partial patch.
+      featureDescription,
     })
   }
   return rows

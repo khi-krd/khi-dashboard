@@ -3,6 +3,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useQuery } from "@tanstack/react-query"
 
+import { aboutKeys } from "@/lib/about-query-keys"
+import { donationKeys } from "@/lib/donations-query-keys"
+import { servicesKeys } from "@/lib/services-query-keys"
 import { fetchFeaturedCatalogItems, patchFeaturedItem } from "@/lib/featured-api"
 import { syncFeaturedSoundsCache, syncFeaturedWritingsCache } from "@/lib/featured-cache-sync"
 import {
@@ -17,13 +20,25 @@ const FEATUREABLE_CATEGORIES = FEATURED_CATALOG_CATEGORIES.filter(
   (category) => category !== "all",
 )
 
+/**
+ * Mirrors how the carousel pools its candidates: one list across all nine
+ * sources ordered on `featuredOrder` with nulls last, ties broken by newest id
+ * first.
+ *
+ * The tiebreak matters more than it looks. Records featured before the order
+ * became global still carry per-category numbers, so duplicate `featuredOrder`
+ * values across sources are the normal state, not an edge case — grouping
+ * those ties by category would show an order the live carousel does not have.
+ * Ids collide across tables, so a tie between two sources is genuinely
+ * arbitrary server-side; dragging the row writes an explicit order and settles
+ * it.
+ */
 function sortFeaturedItems(items: FeaturedCatalogItem[]) {
   return [...items].sort((a, b) => {
-    const categoryOrder =
-      FEATUREABLE_CATEGORIES.indexOf(a.category) -
-      FEATUREABLE_CATEGORIES.indexOf(b.category)
-    if (categoryOrder !== 0) return categoryOrder
-    return (a.featuredOrder ?? 0) - (b.featuredOrder ?? 0)
+    const aOrder = a.featuredOrder ?? Number.POSITIVE_INFINITY
+    const bOrder = b.featuredOrder ?? Number.POSITIVE_INFINITY
+    if (aOrder !== bOrder) return aOrder - bOrder
+    return b.id - a.id
   })
 }
 
@@ -106,6 +121,18 @@ export function usePatchFeaturedMutation() {
 
       void queryClient.invalidateQueries({ queryKey: featuredKeys.all })
       void queryClient.invalidateQueries({ queryKey: ["featured-catalog"] })
+
+      // The three institutional sources are read back through their own
+      // screens' caches, and those DTOs now carry the featured fields — so a
+      // toggle here has to invalidate them or the About list and the donation
+      // settings screen keep showing the pre-toggle state.
+      if (item.category === "about") {
+        void queryClient.invalidateQueries({ queryKey: aboutKeys.all })
+      } else if (item.category === "donation") {
+        void queryClient.invalidateQueries({ queryKey: donationKeys.all })
+      } else if (item.category === "services") {
+        void queryClient.invalidateQueries({ queryKey: servicesKeys.all })
+      }
     },
   })
 }

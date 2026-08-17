@@ -13,7 +13,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { useState } from "react"
 
-import { isOptimizableImageSrc } from "@/lib/image-src"
+import { isOptimizableImageSrc, isUsableImageUrl } from "@/lib/image-src"
 import { MediaCoverUpload } from "@/components/shared/media-cover-upload"
 import { NS } from "@/components/featured/featured-strings"
 import { Badge } from "@/components/ui/badge"
@@ -29,6 +29,7 @@ export function FeaturedSortableRow({
   categoryLabel,
   coverUrl,
   featureImageUrl,
+  strictImage = false,
   coverAspect = "square",
   fallbackIcon,
   detailHref,
@@ -44,6 +45,11 @@ export function FeaturedSortableRow({
   categoryLabel?: string
   coverUrl?: string | null
   featureImageUrl?: string | null
+  /**
+   * True for the three institutional sources, where clearing the hero with no
+   * fallback cover behind it is rejected rather than silently dropped.
+   */
+  strictImage?: boolean
   coverAspect?: "square" | "book" | "wide"
   fallbackIcon: React.ReactNode
   detailHref: string
@@ -51,8 +57,8 @@ export function FeaturedSortableRow({
   isPending?: boolean
   onRemove: () => void
   /**
-   * Omitted for categories with no hero picture (services). Receives `""` to
-   * clear — never `null`, which the API reads as "leave unchanged" (§4.5).
+   * Receives `""` to clear — never `null`, which the API reads as "leave
+   * unchanged" (§4.5).
    */
   onFeatureImageChange?: (url: string) => void
 }) {
@@ -209,7 +215,16 @@ export function FeaturedSortableRow({
             <Button
               type="button"
               size="sm"
-              disabled={!imageDirty}
+              // Two ways to be un-saveable: a half-typed URL, which the backend
+              // accepts (it only rejects blanks) and turns into a slide with a
+              // 404 picture; and clearing the only image a strict source has,
+              // which it rejects outright. An empty draft stays saveable
+              // otherwise — "" is the documented clear signal.
+              disabled={
+                !imageDirty ||
+                (shownImage != null && !isUsableImageUrl(shownImage)) ||
+                (strictImage && !shownImage && !coverUrl)
+              }
               onClick={() =>
                 // "" is the documented clear signal; null would mean "unchanged".
                 // The draft is deliberately kept: clearing it here would snap the
@@ -231,9 +246,15 @@ export function FeaturedSortableRow({
               </Button>
             ) : null}
             {!shownImage ? (
-              <p className="text-muted-foreground text-xs">
-                {NS.field.featureImageFallback}
-              </p>
+              strictImage && !coverUrl ? (
+                <p className="text-xs text-amber-600 dark:text-amber-400">
+                  {NS.field.featureImageRequired}
+                </p>
+              ) : (
+                <p className="text-muted-foreground text-xs">
+                  {NS.field.featureImageFallback}
+                </p>
+              )
             ) : null}
           </div>
         </div>

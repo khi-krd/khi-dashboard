@@ -8,7 +8,9 @@ import {
   useFeaturedOverlayQuery,
 } from "@/hooks/useFeaturedLists"
 import {
+  mapAboutToCatalogItem,
   mapCollectionToCatalogItem,
+  mapDonationToCatalogItem,
   mapNewsToCatalogItem,
   mapProjectToCatalogItem,
   mapServiceToCatalogItem,
@@ -18,6 +20,8 @@ import {
   type FeaturedCatalogCategory,
   type FeaturedCatalogItem,
 } from "@/lib/featured-catalog"
+import { getAboutList } from "@/services/aboutService"
+import { getDonationSettings } from "@/services/donationsService"
 import { getCollectionsList } from "@/services/imageCollectionsService"
 import { getNewsList } from "@/services/newsService"
 import { getProjectsList } from "@/services/projectsService"
@@ -90,8 +94,21 @@ async function fetchBrowsePage(
     return { items, totalElements: data.totalElements ?? items.length }
   }
 
+  if (category === "about") {
+    const data = await getAboutList(page, size)
+    const items = compact(data.content.map(mapAboutToCatalogItem))
+    return { items, totalElements: data.totalElements ?? items.length }
+  }
+
+  if (category === "donation") {
+    // A singleton, so this "list" is one row or none — paging is a no-op.
+    const settings = await getDonationSettings()
+    const items = compact([mapDonationToCatalogItem(settings)])
+    return { items, totalElements: items.length }
+  }
+
   // "all" — first page slice from each module, client-merged
-  const perModule = Math.max(5, Math.ceil(size / 7))
+  const perModule = Math.max(5, Math.ceil(size / 9))
   const [
     newsRes,
     projectsRes,
@@ -100,6 +117,8 @@ async function fetchBrowsePage(
     soundsRes,
     collectionsRes,
     writingsRes,
+    aboutRes,
+    donationRes,
   ] = await Promise.all([
     getNewsList(0, perModule),
     getProjectsList(0, perModule),
@@ -110,6 +129,8 @@ async function fetchBrowsePage(
     kw.length >= 1
       ? searchWritingsByWriter(kw, 0, perModule)
       : getWritingsList(0, perModule),
+    getAboutList(0, perModule),
+    getDonationSettings(),
   ])
 
   const merged = [
@@ -120,6 +141,8 @@ async function fetchBrowsePage(
     ...compact(soundsRes.content.map(mapSoundToCatalogItem)),
     ...compact(collectionsRes.content.map(mapCollectionToCatalogItem)),
     ...compact(writingsRes.content.map(mapWritingToCatalogItem)),
+    ...compact(aboutRes.content.map(mapAboutToCatalogItem)),
+    ...compact([mapDonationToCatalogItem(donationRes)]),
   ].sort((a, b) => a.title.localeCompare(b.title, "ckb"))
 
   const filtered = kw

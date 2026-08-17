@@ -58,27 +58,27 @@ export function orderPatches(
   return patches
 }
 
+/**
+ * Numbers the drag order across every source at once, not per category.
+ *
+ * The carousel pools all nine sources into one list sorted on `featuredOrder`,
+ * breaking ties by newest id. Numbering each category from zero would hand
+ * several sources the same `featuredOrder`, leaving the order between them up
+ * to raw ids — so the carousel would not match what the admin dragged. One
+ * global sequence is the only way the two agree.
+ */
 export function featuredOrderPatches<
-  T extends { key: string; category: string; featuredOrder?: number | null },
+  T extends { key: string; featuredOrder?: number | null },
 >(itemsByKey: Map<string, T>, orderedKeys: string[]): { key: string; featuredOrder: number }[] {
-  const categoryKeys = new Map<string, string[]>()
+  const patches: { key: string; featuredOrder: number }[] = []
+  let position = 0
   for (const key of orderedKeys) {
     const item = itemsByKey.get(key)
     if (!item) continue
-    const list = categoryKeys.get(item.category) ?? []
-    list.push(key)
-    categoryKeys.set(item.category, list)
-  }
-
-  const patches: { key: string; featuredOrder: number }[] = []
-  for (const keys of categoryKeys.values()) {
-    for (let i = 0; i < keys.length; i++) {
-      const key = keys[i]!
-      const item = itemsByKey.get(key)!
-      if ((item.featuredOrder ?? -1) !== i) {
-        patches.push({ key, featuredOrder: i })
-      }
+    if ((item.featuredOrder ?? -1) !== position) {
+      patches.push({ key, featuredOrder: position })
     }
+    position += 1
   }
   return patches
 }

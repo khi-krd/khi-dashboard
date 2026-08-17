@@ -16,6 +16,7 @@ import type {
   DonationTypeDto,
   FinancialDonationDto,
 } from "@/types/donations"
+import type { FeaturedPayload } from "@/types/featured"
 
 const BASE = "/api/v1/donations"
 
@@ -37,6 +38,21 @@ export async function updateDonationSettings(
   const { data } = await api.put<unknown>(`${BASE}/settings`, payload, {
     headers: { "Content-Type": "application/json" },
   })
+  return normalizeDonationSettingsDto(unwrapApiData(data))
+}
+
+/**
+ * The singleton's featured toggle — no id, and unlike the other eight it
+ * answers `200` with the whole saved settings rather than `204`, so the
+ * donation screen can re-render straight from the response.
+ *
+ * Rejects with `400` when both `featureImageUrl` and `heroImageUrl` are blank,
+ * or when the settings row has never been saved.
+ */
+export async function patchDonationSettingsFeatured(
+  payload: FeaturedPayload,
+): Promise<DonationSettingsDto> {
+  const { data } = await api.patch<unknown>(`${BASE}/settings/featured`, payload)
   return normalizeDonationSettingsDto(unwrapApiData(data))
 }
 

@@ -34,6 +34,12 @@ export type ServiceContentDto = {
   languageCode: Language
   title: string
   description?: string | null
+  /**
+   * The single plain-text line the homepage carousel shows for this language.
+   * Saved through the normal service POST/PUT — not the featured PATCH. Left
+   * blank, the slide falls back to a tag-stripped excerpt of `description`.
+   */
+  featureDescription?: string | null
 }
 
 export type ServiceGalleryMediaType = "IMAGE" | "VIDEO"
@@ -68,6 +74,12 @@ export type ServiceDto = {
   updatedBy?: string | null
   featured?: boolean
   featuredOrder?: number | null
+  /**
+   * Singular — the wide carousel hero. Unrelated to `featureImageUrls`
+   * (plural), which is a legacy gallery list. Read-only on this DTO: the
+   * service PUT ignores it, `PATCH /api/v1/services/{id}/featured` writes it.
+   */
+  featureImageUrl?: string | null
 }
 
 export type ApiResponse<T> = {

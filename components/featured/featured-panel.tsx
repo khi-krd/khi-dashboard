@@ -13,7 +13,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable"
 import { SparklesIcon } from "@heroicons/react/24/outline"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { toast } from "sonner"
 
 import { useSyncedState } from "@/hooks/use-synced-state"
@@ -26,7 +26,6 @@ import { Skeleton } from "@/components/ui/skeleton"
 import type { FeaturedCatalogItem } from "@/lib/featured-catalog"
 import { featuredOrderPatches, reorderFeaturedKeys } from "@/lib/featured-utils"
 import { formatCkbDigits } from "@/lib/intl-ckb"
-import { toastError } from "@/lib/toast"
 import type { FeaturedPayload } from "@/types/featured"
 
 type FeaturedPanelProps = {
@@ -38,11 +37,6 @@ type FeaturedPanelProps = {
     item: FeaturedCatalogItem,
     payload: FeaturedPayload,
   ) => Promise<void>
-}
-
-/** Services carry no `feature_image_url` column, so the uploader is hidden there. */
-function supportsFeatureImage(item: FeaturedCatalogItem): boolean {
-  return item.category !== "services"
 }
 
 export function FeaturedPanel({
@@ -99,10 +93,11 @@ export function FeaturedPanel({
       setPendingKey(item.key)
       try {
         await onPatch(item, payload)
-      } catch {
-        toastError(NS.error.generic)
-        throw new Error("patch failed")
       } finally {
+        // No catch on purpose: `onPatch` has already toasted the server's own
+        // explanation, and adding a generic retry here would stack two toasts
+        // and leave the useless one on top. The rejection still propagates so
+        // the drag handler can roll its optimistic order back.
         setPendingKey(null)
       }
     },
@@ -143,9 +138,16 @@ export function FeaturedPanel({
     }
   }
 
+  // Terminal handlers: `runPatch` rejects on failure with the reason already
+  // toasted upstream, so the rejection is absorbed here rather than escaping
+  // to the window as an unhandled promise.
   async function handleRemove(item: FeaturedCatalogItem) {
-    await runPatch(item, { featured: false })
-    toast.success(NS.toast.removed)
+    try {
+      await runPatch(item, { featured: false })
+      toast.success(NS.toast.removed)
+    } catch {
+      /* already reported */
+    }
   }
 
   /**
@@ -154,8 +156,12 @@ export function FeaturedPanel({
    * position — only the picture changes.
    */
   async function handleFeatureImage(item: FeaturedCatalogItem, url: string) {
-    await runPatch(item, { featured: true, featureImageUrl: url })
-    toast.success(url ? NS.toast.imageUpdated : NS.toast.imageRemoved)
+    try {
+      await runPatch(item, { featured: true, featureImageUrl: url })
+      toast.success(url ? NS.toast.imageUpdated : NS.toast.imageRemoved)
+    } catch {
+      /* already reported */
+    }
   }
 
   if (isLoading) {
@@ -230,6 +236,7 @@ export function FeaturedPanel({
                       categoryLabel={item.categoryLabel}
                       coverUrl={item.coverUrl}
                       featureImageUrl={item.featureImageUrl}
+                      strictImage={item.strictImage}
                       coverAspect={item.coverAspect}
                       fallbackIcon={
                         <FeaturedCategoryIcon category={item.category} />
@@ -238,10 +245,8 @@ export function FeaturedPanel({
                       editHref={item.editHref}
                       isPending={pendingKey === key || isReordering}
                       onRemove={() => void handleRemove(item)}
-                      onFeatureImageChange={
-                        supportsFeatureImage(item)
-                          ? (url) => void handleFeatureImage(item, url)
-                          : undefined
+                      onFeatureImageChange={(url) =>
+                        void handleFeatureImage(item, url)
                       }
                     />
                   )

@@ -167,6 +167,11 @@ export const NS = {
     navAnchorHelper:
       "slug بۆ لینکی ناوبری، وەک recording-studio. ئەگەر بەتاڵ بێت سایت ID بەکاردەهێنێت.",
     navAnchorPlaceholder: "recording-studio",
+    featureDescriptionCkb: "کورتەیەکی سادە بۆ سلایدی سەرەکی…",
+    featureDescriptionKmr: "Kurteyeke sade ji bo slaytê…",
+    featureDescriptionLabel: "دەقی سلایدی سەرەکی",
+    featureDescriptionHelper:
+      "لە کاروسێلی پەڕەی سەرەکی بەکاردێت. دەقی سادە — ئەگەر بەتاڵ بێت کورتەیەک لە وەسفەکە دەبڕدرێت.",
     heroVideo: "ڤیدیۆی هێرۆ",
     heroPoster: "پۆستەری ڤیدیۆ",
     featureImages: "وێنەکانی تایبەتمەندی",

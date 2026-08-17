@@ -1,3 +1,8 @@
+import { getFeaturedAboutPages, patchAboutFeatured } from "@/services/aboutService"
+import {
+  getDonationSettings,
+  patchDonationSettingsFeatured,
+} from "@/services/donationsService"
 import { patchCollectionFeatured, getFeaturedCollections } from "@/services/imageCollectionsService"
 import { patchNewsFeatured, getFeaturedNews } from "@/services/newsService"
 import { patchProjectFeatured, getFeaturedProjects } from "@/services/projectsService"
@@ -6,7 +11,9 @@ import { patchSoundFeatured, getFeaturedSounds } from "@/services/soundsService"
 import { patchVideoFeatured, getFeaturedVideos } from "@/services/videosService"
 import { patchWritingFeatured, getFeaturedWritings } from "@/services/writingsService"
 import {
+  mapAboutToCatalogItem,
   mapCollectionToCatalogItem,
+  mapDonationToCatalogItem,
   mapNewsToCatalogItem,
   mapProjectToCatalogItem,
   mapServiceToCatalogItem,
@@ -39,6 +46,12 @@ export async function patchFeaturedItem(
       return patchCollectionFeatured(id, payload)
     case "writings":
       return patchWritingFeatured(id, payload)
+    case "about":
+      return patchAboutFeatured(id, payload)
+    case "donation":
+      // Singleton — the id is only the catalog key, the endpoint takes none.
+      await patchDonationSettingsFeatured(payload)
+      return
   }
 }
 
@@ -110,6 +123,19 @@ export async function fetchFeaturedCatalogItems(
           mapWritingToCatalogItem({ ...item, featured: true }),
         ),
       )
+    }
+    case "about": {
+      // No `/about/featured` route exists — the list is scanned and filtered.
+      const items = await getFeaturedAboutPages()
+      return keepMapped(
+        items.map((item) => mapAboutToCatalogItem({ ...item, featured: true })),
+      )
+    }
+    case "donation": {
+      // At most one slide, so paging never applies.
+      const settings = await getDonationSettings()
+      if (!settings?.featured) return []
+      return keepMapped([mapDonationToCatalogItem(settings)])
     }
   }
 }

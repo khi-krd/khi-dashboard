@@ -4,6 +4,8 @@ import {
   BookOpenIcon,
   BriefcaseIcon,
   FilmIcon,
+  HeartIcon,
+  InformationCircleIcon,
   MusicalNoteIcon,
   NewspaperIcon,
   PhotoIcon,
@@ -35,6 +37,10 @@ export function FeaturedCategoryIcon({
       return <PhotoIcon className={className} aria-hidden />
     case "writings":
       return <BookOpenIcon className={className} aria-hidden />
+    case "about":
+      return <InformationCircleIcon className={className} aria-hidden />
+    case "donation":
+      return <HeartIcon className={className} aria-hidden />
     default:
       return <SparklesIcon className={className} aria-hidden />
   }

@@ -21,6 +21,8 @@ const CATEGORIES: StoredFeaturedCategory[] = [
   "sounds",
   "collections",
   "writings",
+  "about",
+  "donation",
 ]
 
 function emptyBucket(): Record<string, StoredFeaturedEntry> {
@@ -36,6 +38,8 @@ function emptyState(): StoredFeaturedState {
     sounds: emptyBucket(),
     collections: emptyBucket(),
     writings: emptyBucket(),
+    about: emptyBucket(),
+    donation: emptyBucket(),
   }
 }
 

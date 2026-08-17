@@ -1,3 +1,8 @@
+import {
+  canFeatureNow,
+  type FeaturedCatalogItem,
+} from "@/lib/featured-catalog"
+
 export const NS = {
   title: "تایبەتەکان",
   subtitle: "بەڕێوەبردنی ناوەڕۆکی تایبەت کە لە ماڵپەڕەکەدا دەردەکەوێت",
@@ -12,6 +17,11 @@ export const NS = {
   sections: {
     sounds: "دەنگە تایبەتەکان",
     writings: "نووسراوە تایبەتەکان",
+  },
+  /** The three institutional pages, added alongside the six publication types. */
+  institutional: {
+    label: "پەڕە نەتەوەییەکان",
+    hint: "دەربارە، خزمەتگوزاری و بەخشین هەمان شوێنی سلاید بەکاردەهێنن",
   },
   stats: {
     total: "کۆی ناوەڕۆک",
@@ -55,6 +65,26 @@ export const NS = {
       "٢٥٦٠×١٤٤٠ — بابەتەکە لە ناوەڕاست و سەرەوە دابنێ. خوارەوە و لای ڕاست بە دەق داپۆشراون.",
     featureImageFallback: "وێنە دانەنراوە — هێرۆ وێنەی بەرگ بەکاردەهێنێت.",
     featureImageSet: "وێنەی هێرۆ دانراوە",
+    featureImageRequired: "وێنەی هێرۆ پێویستە",
+  },
+  /** The global cap, shared by all nine sources. */
+  budget: {
+    label: "شوێنی سلایدەکان",
+    used: (used: string, max: string) => `${used} لە ${max} بەکارهێنراوە`,
+    remaining: (count: string) => `${count} شوێنی بەتاڵ ماوە`,
+    full: "سنووری سلایدەکان پڕ بووە — سەرەتا یەکێک لاببە",
+    hint: "ئەم سنوورە هەموو جۆرەکان پێکەوە دەگرێتەوە",
+  },
+  /** Why the Add button is disabled, per source. */
+  blocked: {
+    about:
+      "دەربارە هیچ وێنەیەکی بەرگی نییە — سەرەتا وێنەی هێرۆ دابنێ.",
+    service:
+      "ئەم خزمەتگوزارییە هیچ وێنەیەکی گەلەری نییە — سەرەتا وێنەی هێرۆ دابنێ.",
+    donation:
+      "پەڕەی بەخشین هیچ وێنەیەکی هێرۆ نییە — سەرەتا وێنە دابنێ.",
+    generic: "وێنەی هێرۆ پێویستە بۆ تایبەتکردن",
+    capReached: "سنووری سلایدەکان پڕ بووە",
   },
   empty: {
     title: "هیچ ناوەڕۆکی تایبەت نییە",
@@ -86,3 +116,24 @@ export const NS = {
   },
   order: "ڕیز",
 } as const
+
+/**
+ * Why this item cannot be featured right now, or `null` when it can.
+ *
+ * Only the three institutional sources ever block: their PATCH returns `400`
+ * when no image resolves, so saying which picture is missing beats letting the
+ * request fail. The six publication types are never blocked here.
+ */
+export function blockedReason(item: FeaturedCatalogItem): string | null {
+  if (canFeatureNow(item)) return null
+  switch (item.category) {
+    case "about":
+      return NS.blocked.about
+    case "services":
+      return NS.blocked.service
+    case "donation":
+      return NS.blocked.donation
+    default:
+      return NS.blocked.generic
+  }
+}
