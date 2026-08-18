@@ -167,13 +167,14 @@ export const NS = {
     navAnchorHelper:
       "slug بۆ لینکی ناوبری، وەک recording-studio. ئەگەر بەتاڵ بێت سایت ID بەکاردەهێنێت.",
     navAnchorPlaceholder: "recording-studio",
-    featureDescriptionCkb: "کورتەیەکی سادە بۆ کارتی ڕۆشنکردنەوە…",
-    featureDescriptionKmr: "Kurteyeke sade ji bo karta ronîkirinê…",
-    featureDescriptionLabel: "دەقی کارتی ڕۆشنکردنەوە",
+    featureDescriptionCkb:
+      "زیاتر لە ٢٠٠٠٠ ئاواز و مەقامی کوردی، هەندێکیان تەمەنیان دەگاتە ٦٠٠ ساڵ.",
+    featureDescriptionKmr: "Kurteyeke sade ji bo rêza ronîkirinê…",
+    featureDescriptionLabel: "دەقی ڕیزی ڕۆشنکردنەوە",
     featureDescriptionHelper:
-      "لە کارتی ڕۆشنکردنەوەی سەرەوەی پەڕەی خزمەتگوزارییەکاندا بەکاردێت. دەقی سادە — ئەگەر بەتاڵ بێت کورتەیەک لە وەسفەکە دەبڕدرێت.",
+      "دەبێتە دێڕی ژێر ناونیشان لە ڕیزی ڕۆشنکردنەوەدا لە ناو هێرۆی پەڕەی خزمەتگوزارییەکان. لە دیسکتۆپدا دوو دێڕ دەبڕدرێت و لە مۆبایلدا دەرناکەوێت — نزیکەی ٩٠–١٣٠ پیت باشترینە. ئەگەر بەتاڵ بێت کورتەیەک لە وەسفەکە دەبڕدرێت.",
     featureDescriptionRecommended:
-      "پێشنیارکراوە — ئەم خزمەتگوزارییە ڕۆشنکراوەتەوە و ئەم دێڕە لە کارتەکەدا دەردەکەوێت.",
+      "پێشنیارکراوە — ئەم خزمەتگوزارییە ڕۆشنکراوەتەوە و ئەم دێڕە لە ڕیزەکەدا لە ژێر ناونیشانەکە دەردەکەوێت.",
     heroVideo: "ڤیدیۆی هێرۆ",
     heroPoster: "پۆستەری ڤیدیۆ",
     featureImages: "وێنەکانی تایبەتمەندی",

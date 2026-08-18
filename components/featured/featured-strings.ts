@@ -38,7 +38,7 @@ export const NS = {
       emptySubtitle:
         "خزمەتگوزارییەک یان پەڕەیەکی دەربارە زیاد بکە بۆ ڕۆشنکردنەوەی لە پەڕەکەی خۆیدا",
       /** Per-source explanation of where the flag actually shows up. */
-      services: "لە باندی سەرەوەی پەڕەی خزمەتگوزارییەکاندا دەردەکەوێت",
+      services: "لە ڕیزی ڕۆشنکردنەوەدا لە ناو هێرۆی پەڕەی خزمەتگوزارییەکاندا دەردەکەوێت",
       about:
         "کەمترین ڕیز پێشەنگی پەڕەی دەربارە دەبێت و وێنەکەی دەبێتە وێنەی سەرەکی — ئەوانی تر لە خوارەوە دەردەکەون",
     },
@@ -88,10 +88,10 @@ export const NS = {
     featureImageRequired: "وێنە پێویستە",
     featureImageAbout: "وێنەی سەرەکی پەڕەی دەربارە",
     featureImageAboutHint:
-      "٢٥٦٠×١٤٤٠ — دەبێتە وێنەی سەرەکی پەڕەی دەربارە.",
-    featureImageService: "وێنەی کارتی ڕۆشنکردنەوە",
+      "٢٥٦٠×١٤٤٠ — دەبێتە وێنەی سەرەکی پەڕەی دەربارە. ئەم وێنەیە جێگەی heroPosterUrl ی تۆمارەکە دەگرێتەوە.",
+    featureImageService: "وێنەی بچووکی ڕۆشنکردنەوە",
     featureImageServiceHint:
-      "٢٥٦٠×١٤٤٠ — لە کارتی ڕۆشنکردنەوەی پەڕەی خزمەتگوزارییەکاندا بەکاردێت.",
+      "٨٠٠×٦٠٠ — وێنەیەکی بچووکە لە هێرۆی پەڕەی خزمەتگوزارییەکاندا. بابەتێکی ڕوون هەڵبژێرە؛ وێنەی فراوان لەم قەبارەیەدا ناخوێنرێتەوە.",
   },
   /** The carousel cap. Services and About do not draw on it. */
   budget: {
@@ -150,8 +150,8 @@ export const NS = {
  *
  * The same column feeds three different things, and naming them all "hero
  * image" was fine only while they were all carousel slides: for About it is
- * now literally the About page's hero, and for a service it is the highlight
- * card's picture.
+ * now literally the About page's hero, and for a service it is the thumbnail
+ * in the services hero's highlight rail.
  */
 export function featureImageStrings(item: FeaturedCatalogItem): {
   label: string
