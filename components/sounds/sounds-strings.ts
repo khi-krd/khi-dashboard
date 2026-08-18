@@ -7,6 +7,8 @@ export const NS = {
     retry: "دووبارە هەوڵبدەرەوە",
     validation: "داواکارییەکە هەڵەی هەیە — تکایە خانەکان بپشکنە.",
     uploadTooLarge: "قەبارەی فایلەکە زۆرە.",
+    /** `403` arrives with an empty body, so the copy has to live here. */
+    forbidden: "مۆڵەتت نییە بۆ ئەم کارە — تەنها بەڕێوەبەر دەتوانێت.",
   },
   page: {
     title: "دەنگەکان",
@@ -42,6 +44,11 @@ export const NS = {
     drop_replace: "فایلەکە ئازاد بکە بۆ گۆڕینی ڤیدیۆ",
     status_active: "چالاک",
     status_empty: "بەتاڵ",
+    /** Lost the upload race — another editor's video is now on screen. */
+    conflict:
+      "ئەدیتۆرێکی تر ڤیدیۆیەکی بارکرد. ئەوەی ئێستا هەیە پیشان دەدرێت — ئەگەر دەتەوێت هی خۆت دابنێیت، «گۆڕینی ڤیدیۆ» بەکاربهێنە.",
+    /** Delete raced another delete. The button got what it asked for. */
+    already_gone: "ڤیدیۆکە پێشتر سڕابووەوە.",
     copy_url: "لەبەرگرتنەوەی لینک",
     empty: {
       title: "هیچ ڤیدیۆیەکی ریکلام نییە",

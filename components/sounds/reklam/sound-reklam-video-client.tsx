@@ -26,11 +26,13 @@ import {
   useFileUpload,
 } from "@/hooks/use-file-upload"
 import {
+  isReklamVideoConflict,
   useCreateSoundReklamVideoMutation,
   useDeleteSoundReklamVideoMutation,
   useSoundReklamVideoQuery,
   useUpdateSoundReklamVideoMutation,
 } from "@/hooks/useSoundReklamVideo"
+import { extractApiErrorMessage, extractApiErrorReason } from "@/lib/api-error"
 import {
   formatFullTimestampKu,
   formatRelativeTimeKu,
@@ -78,6 +80,23 @@ export function SoundReklamVideoClient() {
     },
   })
 
+  /**
+   * A `502` from S3 puts the real cause in `details.reason` and leaves
+   * `message` as the generic "upload failed", so the reason is read first. A
+   * `403` carries no body at all — upload wants `EMPLOYEE` and up, delete
+   * wants `ADMIN` — so that one needs its own copy or it degrades into
+   * "something went wrong" for what is really a permissions problem.
+   */
+  function uploadErrorText(err: unknown): string {
+    const status = (err as { response?: { status?: number } })?.response?.status
+    if (status === 403) return NS.error.forbidden
+    return (
+      extractApiErrorReason(err) ??
+      extractApiErrorMessage(err) ??
+      NS.error.generic
+    )
+  }
+
   function uploadFile(file: File) {
     clearErrors()
     const mutate = hasVideo ? updateMut.mutate : createMut.mutate
@@ -87,7 +106,17 @@ export function SoundReklamVideoClient() {
           hasVideo ? NS.toast.reklam_updated : NS.toast.reklam_created,
         )
       },
-      onError: () => toast.error(NS.error.generic),
+      onError: (err) => {
+        // Not a failure so much as a lost race: the hook has already pulled in
+        // the video the other editor uploaded, so this screen is about to
+        // switch itself from Upload to Replace. Their file is left intact and
+        // the editor is told how to override it if they still want to.
+        if (isReklamVideoConflict(err)) {
+          toast.warning(NS.reklam.conflict)
+          return
+        }
+        toast.error(uploadErrorText(err))
+      },
     })
   }
 
@@ -174,9 +203,14 @@ export function SoundReklamVideoClient() {
           >
             {hasVideo ? (
               <>
-                { }
+                {/*
+                  Keyed on `updatedAt`, which changes on every replace. The URL
+                  alone is not enough: a replace that happens to reuse the same
+                  S3 object key leaves `videoUrl` identical, and the player then
+                  sits on the previous file with no reason to reload it.
+                */}
                 <video
-                  key={video!.videoUrl}
+                  key={video!.updatedAt ?? video!.videoUrl}
                   src={video!.videoUrl}
                   controls
                   playsInline
@@ -382,11 +416,17 @@ export function SoundReklamVideoClient() {
         isPending={deleteMut.isPending}
         onConfirm={() => {
           deleteMut.mutate(undefined, {
-            onSuccess: () => {
-              toast.success(NS.toast.reklam_deleted)
+            onSuccess: ({ alreadyGone }) => {
+              // Deleting twice `404`s — the endpoint is not idempotent — but
+              // the video being gone is what the button asked for either way.
+              toast.success(
+                alreadyGone
+                  ? NS.reklam.already_gone
+                  : NS.toast.reklam_deleted,
+              )
               setDeleteOpen(false)
             },
-            onError: () => toast.error(NS.error.generic),
+            onError: (err) => toast.error(uploadErrorText(err)),
           })
         }}
       />

@@ -19,6 +19,11 @@ const api = axios.create({
   baseURL: normalizeApiBaseUrl(process.env.NEXT_PUBLIC_API_URL),
   headers: {
     "Content-Type": "application/json",
+    // `message` is the only error field the backend localises, and it is
+    // resolved from this header (`ckb`, `kmr`, `en`). Left unset the server
+    // picks its own default, which is how a Sorani-only dashboard ended up
+    // able to surface an English sentence in a toast.
+    "Accept-Language": "ckb",
   },
   withCredentials: true,
 })
