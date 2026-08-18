@@ -75,6 +75,7 @@ export const NS = {
     drag: "ڕاکێشان بۆ ڕیزکردن",
     manage_link: "بەڕێوەبردنی تایبەتەکان",
     editImage: "دەستکاری وێنە",
+    setImage: "دانانی وێنە",
     closeImage: "داخستنی وێنە",
     saveImage: "پاشەکەوتکردنی وێنە",
     revertImage: "گەڕاندنەوە",
@@ -89,6 +90,13 @@ export const NS = {
     featureImageAbout: "وێنەی سەرەکی پەڕەی دەربارە",
     featureImageAboutHint:
       "٢٥٦٠×١٤٤٠ — دەبێتە وێنەی سەرەکی پەڕەی دەربارە. ئەم وێنەیە جێگەی heroPosterUrl ی تۆمارەکە دەگرێتەوە.",
+    /**
+     * Shown on a service that *can* be featured as-is. The picture is optional
+     * — not a warning that something is broken, a nudge that the automatic
+     * choice is a wide gallery frame at 88×64.
+     */
+    featureImageServiceFallback:
+      "بەبێ وێنە، یەکەم وێنەی گەلەری بەکاردێت — لە قەبارەی بچووکدا باش دەرناکەوێت.",
     featureImageService: "وێنەی بچووکی ڕۆشنکردنەوە",
     featureImageServiceHint:
       "٨٠٠×٦٠٠ — وێنەیەکی بچووکە لە هێرۆی پەڕەی خزمەتگوزارییەکاندا. بابەتێکی ڕوون هەڵبژێرە؛ وێنەی فراوان لەم قەبارەیەدا ناخوێنرێتەوە.",

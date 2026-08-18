@@ -31,8 +31,8 @@ export type FeaturedCatalogCategory = (typeof FEATURED_CATALOG_CATEGORIES)[numbe
  *   page — a highlight on that source's own public page, uncapped
  *
  * Services and About moved to `page`: featuring a service now highlights it in
- * a band at the top of `/services`, and a featured About record leads `/about`
- * and supplies that page's hero image. Neither reaches the carousel any more,
+ * the index rail inside the `/services` hero, and a featured About record
+ * leads `/about` and supplies that page's hero image. Neither reaches the carousel any more,
  * and neither is charged to the cap — which is the point, since a featured
  * service used to be able to crowd out a news article.
  *
@@ -87,7 +87,7 @@ export type FeaturedCatalogItem = {
    * The wide feature picture. All nine sources carry it — not to be confused
    * with a service's `featureImageUrls` (plural), an unrelated legacy gallery
    * list. What it feeds depends on `surface`: a carousel slide, the Services
-   * highlight card, or the About page hero.
+   * rail thumbnail, or the About page hero.
    */
   featureImageUrl?: string | null
   coverAspect: "square" | "book" | "wide"

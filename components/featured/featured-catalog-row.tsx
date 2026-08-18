@@ -53,10 +53,9 @@ export function FeaturedCatalogRow({
   const cover = heroImage ?? item.coverUrl?.trim()
   const thumbAspect = heroImage ? "wide" : item.coverAspect
 
-  // A hero picture chosen right here, for sources that cannot be featured
-  // without one. It rides along with the toggle in a single PATCH, which is
-  // also the only order the backend accepts: it validates the image on the
-  // same request that turns `featured` on.
+  // A feature picture chosen right here. It rides along with the toggle in a
+  // single PATCH, which is also the only order the backend accepts: it
+  // validates the image on the same request that turns `featured` on.
   const [draftImage, setDraftImage] = useState("")
   const [pickerOpen, setPickerOpen] = useState(false)
 
@@ -67,11 +66,26 @@ export function FeaturedCatalogRow({
   const draftUsable = isUsableImageUrl(draft)
   const effectiveItem = draftUsable ? { ...item, featureImageUrl: draft } : item
 
-  // Derived from the item's *stored* state, never the draft: keying it off
-  // `blocked` collapsed the picker the moment a URL became valid, taking the
-  // field being typed into with it.
-  const needsImage =
+  // Two separate reasons to offer the picker, deliberately not collapsed into
+  // one flag.
+  //
+  // Required — the PATCH `400`s without a picture, so Add stays disabled until
+  // one is supplied. Derived from the item's *stored* state, never the draft:
+  // keying it off `blocked` collapsed the picker the moment a URL became
+  // valid, taking the field being typed into with it.
+  const requiresImage =
     !item.featured && item.strictImage && resolvedSlideImage(item) == null
+
+  // Offered — a service saves fine without one, because the backend falls back
+  // to the gallery's first frame. That frame is a wide establishing shot and
+  // the rail paints it at 88×64, where it reads as a smear, so the thumbnail
+  // has to be offered on the way in: the moment Add succeeds the row leaves
+  // this list, and the only way back to the picture is the featured list far
+  // below — which is exactly how services ended up featured with the wrong
+  // crop.
+  const offersImage = !item.featured && item.category === "services"
+
+  const canPickImage = requiresImage || offersImage
 
   // An already-featured row is never blocked: removing it is always allowed,
   // and the cap only ever bites on the way in.
@@ -89,6 +103,15 @@ export function FeaturedCatalogRow({
   const warning = blocked ?? capWarning
   const note = surfaceNote(item)
   const imageStrings = featureImageStrings(item)
+
+  // Says what the row will actually publish if Add is pressed as-is. Suppressed
+  // when `requiresImage`, because then there is no gallery frame to fall back
+  // to and the blocking warning above already says so — two amber lines, one
+  // of them false.
+  const fallbackNote =
+    offersImage && !requiresImage && !heroImage && !draftUsable
+      ? NS.field.featureImageServiceFallback
+      : null
 
   return (
     <article
@@ -160,6 +183,11 @@ export function FeaturedCatalogRow({
               {note}
             </p>
           ) : null}
+          {fallbackNote ? (
+            <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
+              {fallbackNote}
+            </p>
+          ) : null}
           {draftUsable && !item.featured ? (
             <p className="text-primary mt-1 text-xs">
               {NS.field.featureImageSet}
@@ -168,7 +196,7 @@ export function FeaturedCatalogRow({
         </div>
 
         <div className="flex shrink-0 items-center gap-1">
-          {needsImage ? (
+          {canPickImage ? (
             <Button
               type="button"
               variant="ghost"
@@ -176,7 +204,9 @@ export function FeaturedCatalogRow({
               className={cn(pickerOpen && "bg-accent")}
               onClick={() => setPickerOpen((v) => !v)}
               aria-expanded={pickerOpen}
-              aria-label={NS.actions.editImage}
+              aria-label={
+                heroImage ? NS.actions.editImage : NS.actions.setImage
+              }
             >
               <PhotoIcon className="size-4" />
             </Button>
@@ -227,13 +257,19 @@ export function FeaturedCatalogRow({
         </div>
       </div>
 
-      {needsImage && pickerOpen ? (
+      {canPickImage && pickerOpen ? (
         <div className="mt-3 border-t pt-3">
           <MediaCoverUpload
             label={imageStrings.label}
-            aspectClass="aspect-video"
+            // A service's thumbnail is cropped to 4:3, not to a slide's 16:9 —
+            // previewing it wide would frame a shot that the rail then cuts.
+            aspectClass={
+              item.category === "services" ? "aspect-[4/3]" : "aspect-video"
+            }
             helperText={imageStrings.hint}
-            previewUrl={draft || null}
+            // Falls back to what is already stored so re-featuring shows the
+            // current picture instead of an empty well.
+            previewUrl={draft || heroImage}
             urlValue={draftImage}
             onUrlChange={setDraftImage}
           />
