@@ -4,12 +4,9 @@ import {
   ReklamVideoManager,
   type ReklamVideoStrings,
 } from "@/components/shared/reklam-video-manager"
-import {
-  SoundBreadcrumbBar,
-  dashboardSoundsCrumbHref,
-} from "@/components/sounds/sound-breadcrumb"
-import { NS } from "@/components/sounds/sounds-strings"
-import { SOUND_REKLAM_VIDEO } from "@/lib/reklam-video"
+import { VideoBreadcrumbBar } from "@/components/videos/video-breadcrumb"
+import { NS } from "@/components/videos/videos-strings"
+import { FILM_REKLAM_VIDEO } from "@/lib/reklam-video"
 
 const STRINGS: ReklamVideoStrings = {
   title: NS.reklam.page.title,
@@ -17,6 +14,7 @@ const STRINGS: ReklamVideoStrings = {
   statusActive: NS.reklam.status_active,
   statusEmpty: NS.reklam.status_empty,
   helper: NS.reklam.helper,
+  notes: [...NS.reklam.notes],
   maxSizeLabel: NS.reklam.max_size,
   upload: NS.reklam.upload,
   replace: NS.reklam.replace,
@@ -47,20 +45,17 @@ const STRINGS: ReklamVideoStrings = {
   dash: NS.dash,
 }
 
-export function SoundReklamVideoClient() {
+export function FilmReklamVideoClient() {
   return (
     <ReklamVideoManager
-      config={SOUND_REKLAM_VIDEO}
+      config={FILM_REKLAM_VIDEO}
       strings={STRINGS}
-      backHref="/dashboard/sounds"
+      backHref="/dashboard/videos"
       breadcrumb={
-        <SoundBreadcrumbBar
+        <VideoBreadcrumbBar
           segments={[
-            {
-              label: NS.breadcrumb.dashboard,
-              href: dashboardSoundsCrumbHref(),
-            },
-            { label: NS.breadcrumb.sounds, href: "/dashboard/sounds" },
+            { label: NS.breadcrumb.dashboard, href: "/dashboard" },
+            { label: NS.breadcrumb.videos, href: "/dashboard/videos" },
             { label: NS.breadcrumb.reklam },
           ]}
         />

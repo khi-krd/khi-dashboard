@@ -110,11 +110,3 @@ export type FeaturedPayload = {
 }
 
 /** Single global homepage sound reklam video (one record in the system). */
-export type SoundReklamVideoDto = {
-  id: number
-  videoUrl: string
-  sizeBytes: number | null
-  mimeType: string | null
-  createdAt: string | null
-  updatedAt: string | null
-}

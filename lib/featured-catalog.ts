@@ -56,15 +56,13 @@ export const FEATURED_SURFACE: Record<
   about: "page",
 }
 
-/**
- * The carousel slide cap, `SiteSettings.maxFeaturedSlides`. Charged only by
- * the seven `hero` sources — services and About pages are free.
- *
- * Hardcoded because the setting has no HTTP endpoint yet: the service methods
- * exist on the backend but no controller exposes them, so today the row can
- * only be changed in the database. Swap this for a fetch once it is exposed.
+/*
+ * The carousel slide cap, `SiteSettings.maxFeaturedSlides`, is charged only by
+ * the seven `hero` sources — services and About pages are free. It used to be
+ * hardcoded here because no controller exposed it. It is now read live from
+ * `GET /api/v1/site-settings` through `useMaxFeaturedSlides()` and edited on
+ * the Branding screen, with `DEFAULT_MAX_FEATURED_SLIDES` as the fallback.
  */
-export const MAX_FEATURED_SLIDES = 7
 
 /**
  * The donation page is a settings singleton, so there is no "which record" to

@@ -295,6 +295,13 @@ function VideosListClientInner() {
             {NS.topics.link}
           </Link>
           <Link
+            href="/dashboard/videos/film-reklam-video"
+            className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 text-xs transition-colors"
+          >
+            <FilmIcon className="size-4" aria-hidden />
+            {NS.reklam.link}
+          </Link>
+          <Link
             href="/dashboard/videos/new"
             className={cn(
               buttonVariants({ variant: "default", size: "lg" }),

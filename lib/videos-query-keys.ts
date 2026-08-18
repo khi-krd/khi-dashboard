@@ -9,4 +9,5 @@ export const videoKeys = {
   topics: () => [...videoKeys.all, "topics"] as const,
   search: (mode: string, q: string) =>
     [...videoKeys.all, "search", mode, q] as const,
+  filmReklamVideo: () => [...videoKeys.all, "film-reklam-video"] as const,
 }

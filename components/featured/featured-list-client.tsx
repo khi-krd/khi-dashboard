@@ -15,10 +15,10 @@ import {
   useFeaturedAllQuery,
   usePatchFeaturedMutation,
 } from "@/hooks/useFeatured"
+import { useMaxFeaturedSlides } from "@/hooks/useSiteSettings"
 import { extractApiErrorReason } from "@/lib/api-error"
 import {
   countsTowardSlideCap,
-  MAX_FEATURED_SLIDES,
   type FeaturedCatalogCategory,
   type FeaturedCatalogItem,
 } from "@/lib/featured-catalog"
@@ -53,6 +53,8 @@ function FeaturedListClientInner() {
   const queryClient = useQueryClient()
   const featuredQ = useFeaturedAllQuery(0, FEATURED_PAGE_SIZE)
   const featuredMut = usePatchFeaturedMutation()
+  // Editable on the Branding screen, so it is read live rather than assumed.
+  const maxFeaturedSlides = useMaxFeaturedSlides()
 
   const [sheetOpen, setSheetOpen] = useState(false)
   const [sheetCategory, setSheetCategory] =
@@ -117,10 +119,10 @@ function FeaturedListClientInner() {
 
   const handleFeature = useCallback(
     async (item: FeaturedCatalogItem, featureImageUrl?: string) => {
-      // No local cap check on purpose. `MAX_FEATURED_SLIDES` is a client-side
-      // copy of a database-only setting, so refusing here would make slides
-      // unaddable the moment someone raises the real limit. The counter warns,
-      // the server decides, and its `details.reason` explains a rejection.
+      // No local cap check on purpose. The cap read here can lag the stored
+      // setting, so refusing would make slides unaddable the moment someone
+      // raises the real limit. The counter warns, the server decides, and its
+      // `details.reason` explains a rejection.
       const hero = featureImageUrl?.trim()
       const blocked = blockedReason(
         hero ? { ...item, featureImageUrl: hero } : item,
@@ -269,7 +271,7 @@ function FeaturedListClientInner() {
         pendingKey={pendingKey}
         initialCategory={sheetCategory}
         initialStatus="not_featured"
-        capReached={heroItems.length >= MAX_FEATURED_SLIDES}
+        capReached={heroItems.length >= maxFeaturedSlides}
         onFeature={handleFeature}
         onUnfeature={handleUnfeature}
       />

@@ -5,10 +5,10 @@ import { useMemo } from "react"
 import { FeaturedCategoryIcon } from "@/components/featured/featured-category-icon"
 import { NS } from "@/components/featured/featured-strings"
 import { Badge } from "@/components/ui/badge"
+import { useMaxFeaturedSlides } from "@/hooks/useSiteSettings"
 import {
   countsTowardSlideCap,
   FEATURED_CATEGORY_LABELS,
-  MAX_FEATURED_SLIDES,
   type FeaturedCatalogItem,
 } from "@/lib/featured-catalog"
 import { formatCkbDigits } from "@/lib/intl-ckb"
@@ -27,11 +27,17 @@ import { cn } from "@/lib/utils"
  */
 export function FeaturedSlideBudget({
   items,
-  max = MAX_FEATURED_SLIDES,
+  max: maxOverride,
 }: {
   items: FeaturedCatalogItem[]
   max?: number
 }) {
+  // The cap is a stored setting, editable on the Branding screen, so it is read
+  // live rather than assumed. The hook falls back to the documented default
+  // while the request is in flight.
+  const liveMax = useMaxFeaturedSlides()
+  const max = maxOverride ?? liveMax
+
   const { used, remaining, breakdown } = useMemo(() => {
     const featured = items.filter(
       (item) => item.featured && countsTowardSlideCap(item),
