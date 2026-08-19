@@ -43,14 +43,18 @@ import { formatCkbDigits } from "@/lib/intl-ckb"
 import { cn } from "@/lib/utils"
 import type { ContactDto, Language } from "@/types/contact"
 
+const sectionCard =
+  "rounded-xl border border-border/60 bg-card/50 p-5 shadow-xs"
+
+const sectionHeading =
+  "inline-flex items-center gap-2 text-sm font-semibold text-foreground before:h-3.5 before:w-1 before:rounded-full before:bg-primary/70 before:content-['']"
+
 function SlugInput({
   lang,
-  required,
   value,
   onChange,
 }: {
   lang: "ckb" | "kmr"
-  required?: boolean
   value: string
   onChange: (v: string) => void
 }) {
@@ -68,8 +72,7 @@ function SlugInput({
               : "bg-blue-500/10 text-blue-700 dark:text-blue-400",
           )}
         >
-          {lang.toUpperCase()}{" "}
-          {required ? NS.form.slug_required : NS.form.slug_optional}
+          {lang.toUpperCase()}
         </span>
       </div>
       <div className="relative">
@@ -255,12 +258,11 @@ export function ContactForm({
               })}
             </div>
 
-            <section>
-              <h3 className="mb-3 text-sm font-medium">{NS.form.slugs}</h3>
+            <section className={sectionCard}>
+              <h3 className={cn("mb-3", sectionHeading)}>{NS.form.slugs}</h3>
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 <SlugInput
                   lang="ckb"
-                  required
                   value={watch("slugCkb") ?? ""}
                   onChange={(v) =>
                     setValue("slugCkb", v, { shouldDirty: true, shouldValidate: true })
@@ -276,7 +278,7 @@ export function ContactForm({
               </div>
             </section>
 
-            <section className="border-border/60 mt-10 space-y-6 border-t pt-6">
+            <section className={cn("mt-10 space-y-6", sectionCard)}>
               <div>
                 <div className="mb-1 flex items-baseline justify-between">
                   <span className="text-muted-foreground text-[10px] font-medium tracking-wide uppercase">
@@ -333,8 +335,8 @@ export function ContactForm({
               </div>
             </section>
 
-            <section className="border-border/60 mt-10 border-t pt-6">
-              <h3 className="mb-3 text-sm font-medium">{NS.form.description}</h3>
+            <section className={cn("mt-10", sectionCard)}>
+              <h3 className={cn("mb-3", sectionHeading)}>{NS.form.description}</h3>
               {activeLang === "CKB" ? (
                 <TiptapEditor
                   stickyToolbar
@@ -358,7 +360,12 @@ export function ContactForm({
           </article>
         </div>
 
-        <div className="border-border bg-background/95 supports-backdrop-filter:backdrop-blur sticky bottom-0 inset-x-0 z-30 border-t">
+        <div
+          className={cn(
+            "border-border bg-background/95 supports-backdrop-filter:backdrop-blur sticky bottom-0 inset-x-0 z-30 border-t",
+            "shadow-[0_-8px_24px_-16px_rgb(0_0_0/0.25)]",
+          )}
+        >
           <div className="mx-auto flex max-w-[1280px] items-center justify-between gap-3 px-6 py-3">
             <div className="text-muted-foreground flex items-center gap-2 text-xs">
               {isDirty ? (

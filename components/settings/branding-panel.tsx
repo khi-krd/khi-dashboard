@@ -131,9 +131,9 @@ function BrandingForm({
 
   return (
     <form onSubmit={onSubmit} className="space-y-8">
-      <section className="border-border/60 space-y-4 rounded-xl border p-5">
+      <section className="border-border/60 bg-card/50 space-y-4 rounded-xl border p-5 shadow-xs">
         <div>
-          <h2 className="text-base font-semibold">{NS.logo.label}</h2>
+          <h2 className="inline-flex items-center gap-2 text-base font-semibold before:h-4 before:w-1 before:rounded-full before:bg-primary/70 before:content-['']">{NS.logo.label}</h2>
           <p className="text-muted-foreground text-sm">{NS.logo.hint}</p>
         </div>
 
@@ -163,9 +163,9 @@ function BrandingForm({
         />
       </section>
 
-      <section className="border-border/60 space-y-4 rounded-xl border p-5">
+      <section className="border-border/60 bg-card/50 space-y-4 rounded-xl border p-5 shadow-xs">
         <div>
-          <h2 className="text-base font-semibold">{NS.donate.label}</h2>
+          <h2 className="inline-flex items-center gap-2 text-base font-semibold before:h-4 before:w-1 before:rounded-full before:bg-primary/70 before:content-['']">{NS.donate.label}</h2>
           <p className="text-muted-foreground text-sm">{NS.donate.hint}</p>
         </div>
 
@@ -195,9 +195,9 @@ function BrandingForm({
         />
       </section>
 
-      <section className="border-border/60 space-y-4 rounded-xl border p-5">
+      <section className="border-border/60 bg-card/50 space-y-4 rounded-xl border p-5 shadow-xs">
         <div>
-          <h2 className="text-base font-semibold">{NS.slides.label}</h2>
+          <h2 className="inline-flex items-center gap-2 text-base font-semibold before:h-4 before:w-1 before:rounded-full before:bg-primary/70 before:content-['']">{NS.slides.label}</h2>
           <p className="text-muted-foreground text-sm">{NS.slides.hint}</p>
         </div>
 
@@ -218,7 +218,8 @@ function BrandingForm({
                 value={Number.isFinite(field.value) ? field.value : ""}
                 // Kept as a number in form state so the zod `int()` rule sees a
                 // number rather than a numeric string. An emptied box becomes
-                // NaN, which fails validation rather than silently saving 0.
+                // NaN, which the schema maps to "leave the stored value alone"
+                // rather than silently saving 0.
                 onChange={(e) => field.onChange(e.target.valueAsNumber)}
                 onBlur={field.onBlur}
                 className="font-mono tabular-nums"

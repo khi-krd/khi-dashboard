@@ -304,7 +304,7 @@ export const NS = {
   },
   help: {
     save_requirements:
-      "بۆ پاشەکەوتکردن: جۆری دەنگ، دۆخ، لانیکەم یەک زمان، ناونیشان و لانیکەم یەک پارچە پێویستن.",
+      "هەموو خانەکان ئارەزوومەندانەن — دەتوانیت بە هەر بەشێکی پڕکراوەوە پاشەکەوت بکەیت",
   },
   system: {
     id: "ناسنامە",
@@ -315,16 +315,8 @@ export const NS = {
     now_playing: "دەنگی ئێستا",
   },
   validation: {
-    soundTypeRequired: "جۆری دەنگ پێویستە",
     trackStateInvalid: "دۆخێکی دروست هەڵبژێرە",
     languageRequired: "لانیکەم زمانێک پێویستە",
-    filesRequired: "لانیکەم یەک پارچە پێویستە",
-    titleCkbRequired: "ناونیشانی سۆرانی پێویستە",
-    titleKmrRequired: "ناونیشانی کورمانجی پێویستە",
-    fileSourceRequired:
-      "هەر پارچەیەک پێویستی بە سەرچاوەیەکە (فایل، لینک، یان Embed)",
-    attachmentSourceRequired:
-      "هەر پاشکۆیەک پێویستی بە فایل یان لینکێکە",
     albumMemoriesSingle:
       "ئەلبوومی بیرەوەرییەکان تەنیا بۆ ئەلبووم بەردەستە",
     topicNameRequired: "ناوی بابەت پێویستە",

@@ -6,6 +6,12 @@ import type { WritingDto } from "@/types/writings"
 
 const bookGenreEnum = z.enum(BOOK_GENRES)
 
+// A typed-then-cleared numeric input yields NaN; treat it as unset.
+const optionalPositiveInt = z.preprocess(
+  (v) => (typeof v === "number" && Number.isNaN(v) ? undefined : v),
+  z.number().int().min(1).optional(),
+)
+
 const WritingContentSchema = z.object({
   title: z.string().max(300).optional(),
   description: z.string().optional(),
@@ -13,25 +19,24 @@ const WritingContentSchema = z.object({
   fileUrl: z.string().url().optional().or(z.literal("")),
   fileFormat: z.enum(["PDF", "DOCX", "EPUB", "TXT", "OTHER"]).optional(),
   fileSizeBytes: z.number().int().min(0).default(0),
-  pageCount: z.number().int().min(1).optional(),
+  pageCount: optionalPositiveInt,
   genre: z.string().max(150).optional(),
 })
 
+// Every field is optional by design: an editor can save a draft with any
+// subset filled in. Only format/length rules remain — they fire on what was
+// typed, never on what was left blank. contentLanguages keeps min(1): the
+// language toggle UI guarantees at least one is always active.
 export const writingFormSchema = z
   .object({
-    bookGenres: z
-      .array(bookGenreEnum)
-      .min(1, NS.genre.required),
+    bookGenres: z.array(bookGenreEnum),
     topicId: z.number().int().nullable().optional(),
     newTopic: z
       .object({
         nameCkb: z.string().optional(),
         nameKmr: z.string().optional(),
       })
-      .optional()
-      .refine((t) => !t || t.nameCkb?.trim() || t.nameKmr?.trim(), {
-        message: NS.validation.topicNameRequired,
-      }),
+      .optional(),
     clearTopic: z.boolean().optional(),
     publishedByInstitute: z.boolean().default(false),
     contentLanguages: z
@@ -55,7 +60,7 @@ export const writingFormSchema = z
     seriesName: z.string().max(300).optional(),
     seriesOrder: z.number().min(0).default(1),
     parentBookId: z.number().int().nullable().optional(),
-    seriesTotalBooks: z.number().int().min(1).optional(),
+    seriesTotalBooks: optionalPositiveInt,
     seriesMode: z.enum(["standalone", "series"]).default("standalone"),
     ckbCoverFile: z.instanceof(File).optional().nullable(),
     kmrCoverFile: z.instanceof(File).optional().nullable(),
@@ -68,22 +73,6 @@ export const writingFormSchema = z
     existingHoverCoverUrl: z.string().optional().nullable(),
     ckbBookFile: z.instanceof(File).optional().nullable(),
     kmrBookFile: z.instanceof(File).optional().nullable(),
-  })
-  .superRefine((val, ctx) => {
-    if (val.contentLanguages.includes("CKB") && !val.ckbContent?.title?.trim()) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: NS.validation.titleCkbRequired,
-        path: ["ckbContent", "title"],
-      })
-    }
-    if (val.contentLanguages.includes("KMR") && !val.kmrContent?.title?.trim()) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: NS.validation.titleKmrRequired,
-        path: ["kmrContent", "title"],
-      })
-    }
   })
 
 export type WritingFormValues = z.infer<typeof writingFormSchema>

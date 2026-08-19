@@ -29,15 +29,22 @@ const brandingUrl = z
 export const siteSettingsSchema = z.object({
   logoUrl: brandingUrl,
   donateImageUrl: brandingUrl,
-  maxFeaturedSlides: z
-    .number({ message: "ژمارەیەک بنووسە" })
-    .int({ message: "ژمارەی تەواو بنووسە" })
-    .min(MIN_MAX_FEATURED_SLIDES, {
-      message: `کەمترین ${MIN_MAX_FEATURED_SLIDES}`,
-    })
-    .max(MAX_MAX_FEATURED_SLIDES, {
-      message: `زۆرترین ${MAX_MAX_FEATURED_SLIDES}`,
-    }),
+  // Optional: an emptied box (NaN from `valueAsNumber`) means "leave the
+  // stored value alone" and is omitted from the payload, not a validation
+  // failure. The range rules still apply to anything actually typed.
+  maxFeaturedSlides: z.preprocess(
+    (v) => (typeof v === "number" && Number.isNaN(v) ? undefined : v),
+    z
+      .number({ message: "ژمارەیەک بنووسە" })
+      .int({ message: "ژمارەی تەواو بنووسە" })
+      .min(MIN_MAX_FEATURED_SLIDES, {
+        message: `کەمترین ${MIN_MAX_FEATURED_SLIDES}`,
+      })
+      .max(MAX_MAX_FEATURED_SLIDES, {
+        message: `زۆرترین ${MAX_MAX_FEATURED_SLIDES}`,
+      })
+      .optional(),
+  ),
 })
 
 export type SiteSettingsFormValues = z.infer<typeof siteSettingsSchema>
@@ -61,19 +68,21 @@ export function siteSettingsDtoToFormValues(
 }
 
 /**
- * This screen owns all three fields, so it sends all three rather than
- * exercising the omit-to-leave-alone case: `""` clears, which is exactly what
- * an editor emptying a picker means. Omission stays available on the payload
- * type for callers that only touch one field.
+ * For the pictures, `""` clears — that is what an editor emptying a picker
+ * means. The slide count is the one field with no "clear" concept, so an
+ * emptied box is omitted and the stored value stays as it was.
  */
 export function formValuesToSiteSettingsPayload(
   values: SiteSettingsFormValues,
 ): SiteSettingsPayload {
-  return {
+  const payload: SiteSettingsPayload = {
     logoUrl: values.logoUrl.trim(),
     donateImageUrl: values.donateImageUrl.trim(),
-    maxFeaturedSlides: values.maxFeaturedSlides,
   }
+  if (typeof values.maxFeaturedSlides === "number") {
+    payload.maxFeaturedSlides = values.maxFeaturedSlides
+  }
+  return payload
 }
 
 /**

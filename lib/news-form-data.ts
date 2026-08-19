@@ -1,6 +1,7 @@
 import type { NewsDto } from "@/types/news"
 import { galleryFormValuesToDto } from "@/types/media-gallery"
 
+import { isRichTextEmpty } from "@/lib/rich-text-empty"
 import type { NewsFormValues } from "@/lib/validations/news"
 
 export type NewsWritePayload = Omit<
@@ -38,16 +39,24 @@ export function newsFormValuesToPayload(values: NewsFormValues): NewsWritePayloa
     tags: values.tags,
     keywords: values.keywords,
     ckbContent: values.contentLanguages.includes("CKB")
-      ? {
-          title: values.ckbContent?.title?.trim() ?? "",
-          description: values.ckbContent?.description ?? "",
-        }
+      ? contentOrUndefined(values.ckbContent)
       : undefined,
     kmrContent: values.contentLanguages.includes("KMR")
-      ? {
-          title: values.kmrContent?.title?.trim() ?? "",
-          description: values.kmrContent?.description ?? "",
-        }
+      ? contentOrUndefined(values.kmrContent)
       : undefined,
   }
+}
+
+/**
+ * Every field is optional to fill: a language block the editor never touched
+ * is omitted from the payload entirely rather than sent as empty strings.
+ */
+function contentOrUndefined(
+  content?: { title?: string | null; description?: string | null } | null,
+): { title: string; description: string } | undefined {
+  const title = content?.title?.trim() ?? ""
+  const description = content?.description ?? ""
+  const emptyDescription = isRichTextEmpty(description)
+  if (!title && emptyDescription) return undefined
+  return { title, description: emptyDescription ? "" : description }
 }

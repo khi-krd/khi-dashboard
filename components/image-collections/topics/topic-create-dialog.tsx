@@ -39,7 +39,10 @@ export function TopicCreateDialog({
   }
 
   async function handleSubmit() {
-    if (!nameCkb.trim() && !nameKmr.trim()) return
+    if (!nameCkb.trim() && !nameKmr.trim()) {
+      toast.error(NS.validation.topicNameRequired)
+      return
+    }
     try {
       await createMut.mutateAsync({
         nameCkb: nameCkb.trim() || undefined,

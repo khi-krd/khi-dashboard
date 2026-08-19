@@ -1,6 +1,5 @@
 import { z } from "zod"
 
-import { NS } from "@/components/about/about-strings"
 import type { AboutDto } from "@/types/about"
 
 export const aboutPageHeroSchema = z.object({
@@ -35,9 +34,3 @@ export function aboutDtoToHeroFormValues(dto: AboutDto): AboutPageHeroFormValues
     subtitleKmr: dto.kmrContent?.subtitle ?? "",
   }
 }
-
-export function heroFormIsValid(values: AboutPageHeroFormValues): boolean {
-  return Boolean(values.titleCkb?.trim() || values.titleKmr?.trim())
-}
-
-export const heroValidationMessage = NS.validation.titleCkbRequired

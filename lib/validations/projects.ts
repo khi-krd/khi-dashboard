@@ -4,6 +4,9 @@ import { NS } from "@/components/projects/projects-strings"
 
 import { mediaGalleryFieldSchema } from "@/lib/validations/media-gallery"
 
+// Every field is optional by design: an editor can save a draft with any
+// subset filled in. Only format/length rules remain — they fire on what was
+// typed, never on what was left blank.
 export const projectFormSchema = z
   .object({
     status: z.enum(["ACTIVE", "COMPLETED", "ARCHIVED"]),
@@ -43,37 +46,9 @@ export const projectFormSchema = z
     }),
   })
   .superRefine((data, ctx) => {
-    const hasCover =
-      !!(data.coverUrl && data.coverUrl.trim()) ||
-      !!(data.existingCoverUrl && data.existingCoverUrl.trim())
-
-    if (!hasCover) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: NS.validation.coverRequired,
-        path: ["coverUrl"],
-      })
-    }
-
-    const typeCkb = data.projectTypeCkb?.trim() ?? ""
-    const typeKmr = data.projectTypeKmr?.trim() ?? ""
-    if ((typeCkb && !typeKmr) || (!typeCkb && typeKmr)) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: NS.validation.typeBothLanguages,
-        path: ["projectTypeKmr"],
-      })
-    }
-
     if (data.contentLanguages.includes("CKB")) {
       const title = data.ckbContent?.title?.trim() ?? ""
-      if (!title) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: NS.validation.titleCkbRequired,
-          path: ["ckbContent", "title"],
-        })
-      } else if (title.length > 255) {
+      if (title.length > 255) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: NS.validation.titleMax,
@@ -92,13 +67,7 @@ export const projectFormSchema = z
 
     if (data.contentLanguages.includes("KMR")) {
       const title = data.kmrContent?.title?.trim() ?? ""
-      if (!title) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: NS.validation.titleKmrRequired,
-          path: ["kmrContent", "title"],
-        })
-      } else if (title.length > 255) {
+      if (title.length > 255) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: NS.validation.titleMax,

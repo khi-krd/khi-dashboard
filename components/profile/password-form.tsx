@@ -51,9 +51,11 @@ export function PasswordForm() {
   }
 
   return (
-    <Card>
+    <Card className="shadow-xs">
       <CardHeader>
-        <CardTitle>گۆڕینی وشەی نهێنی</CardTitle>
+        <CardTitle className="inline-flex items-center gap-2 font-semibold text-foreground before:h-4 before:w-1 before:rounded-full before:bg-primary/70 before:content-['']">
+          گۆڕینی وشەی نهێنی
+        </CardTitle>
         <CardDescription>
           بۆ پاراستن، وشەی نهێنی ئێستات داخڵ بکە
         </CardDescription>

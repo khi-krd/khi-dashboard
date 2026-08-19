@@ -58,8 +58,11 @@ import { formatCkbDigits } from "@/lib/intl-ckb"
 import { cn } from "@/lib/utils"
 import type { Language, SoundDto } from "@/types/sounds"
 
-const sectionDivider =
-  "mt-6 border-t border-border/60 pt-6 [&:first-child]:mt-0 [&:first-child]:border-t-0 [&:first-child]:pt-0"
+const sectionCard =
+  "rounded-xl border border-border/60 bg-card/50 p-5 shadow-xs"
+
+const sectionHeading =
+  "inline-flex items-center gap-2 text-sm font-semibold text-foreground before:h-3.5 before:w-1 before:rounded-full before:bg-primary/70 before:content-['']"
 
 const borderlessTitleClass =
   "w-full border-0 bg-transparent px-0 text-4xl leading-tight font-bold shadow-none placeholder:text-muted-foreground/50 focus:ring-0 focus-visible:ring-0"
@@ -241,9 +244,9 @@ export function SoundForm({
         >
           <aside
             dir="rtl"
-            className="space-y-6 rounded-xl border border-border bg-card p-6 text-sm lg:sticky lg:top-20 lg:self-start"
+            className="space-y-6 text-sm lg:sticky lg:top-20 lg:self-start"
           >
-            <section className={sectionDivider}>
+            <section className={sectionCard}>
               <SoundTypeCombobox
                 value={watch("soundType")}
                 onChange={(v) => setValue("soundType", v, { shouldDirty: true })}
@@ -251,10 +254,10 @@ export function SoundForm({
               />
             </section>
 
-            <section className={sectionDivider}>
-              <Label className="text-muted-foreground mb-2 block text-xs uppercase">
+            <section className={sectionCard}>
+              <h2 className={cn(sectionHeading, "mb-3")}>
                 {NS.section.topic}
-              </Label>
+              </h2>
               <SoundTopicCombobox
                 topicId={topicId ?? null}
                 newTopic={newTopic}
@@ -276,10 +279,10 @@ export function SoundForm({
               />
             </section>
 
-            <section className={sectionDivider}>
-              <Label className="text-muted-foreground mb-2 block text-xs uppercase">
+            <section className={sectionCard}>
+              <h2 className={cn(sectionHeading, "mb-3")}>
                 {NS.section.languages}
-              </Label>
+              </h2>
               <div className="flex flex-wrap gap-2">
                 {(["CKB", "KMR"] as const).map((code) => {
                   const on = contentLanguages.includes(code)
@@ -316,7 +319,7 @@ export function SoundForm({
             </section>
 
             {mode === "edit" && editDto ? (
-              <section className={cn(sectionDivider, "space-y-2 text-xs")}>
+              <section className={cn(sectionCard, "space-y-2 text-xs")}>
                 <Label className="text-muted-foreground uppercase">
                   {NS.section.system}
                 </Label>
@@ -466,11 +469,11 @@ export function SoundForm({
 
             <SoundFilesList />
 
-            <section className={sectionDivider}>
-              <Label className="mb-2 flex items-center gap-2 text-sm">
+            <section className={cn("mt-6", sectionCard)}>
+              <h2 className={cn(sectionHeading, "mb-3")}>
                 <HashtagIcon className="size-4" />
                 {NS.section.tags} ({langLabel})
-              </Label>
+              </h2>
               <Controller
                 name={activeLang === "CKB" ? "tags.ckb" : "tags.kmr"}
                 control={control}
@@ -484,11 +487,11 @@ export function SoundForm({
               />
             </section>
 
-            <section className="mt-6">
-              <Label className="mb-2 flex items-center gap-2 text-sm">
+            <section className={cn("mt-6", sectionCard)}>
+              <h2 className={cn(sectionHeading, "mb-3")}>
                 <HashtagIcon className="size-4" />
                 {NS.section.keywords} ({langLabel})
-              </Label>
+              </h2>
               <Controller
                 name={activeLang === "CKB" ? "keywords.ckb" : "keywords.kmr"}
                 control={control}
@@ -506,7 +509,13 @@ export function SoundForm({
           </div>
         </div>
 
-        <div className="border-border bg-background/95 supports-backdrop-filter:backdrop-blur fixed inset-x-0 bottom-0 z-40 border-t pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+        <div
+          className={cn(
+            "border-border bg-background/95 supports-backdrop-filter:backdrop-blur fixed inset-x-0 bottom-0 z-40 border-t",
+            "shadow-[0_-8px_24px_-16px_rgb(0_0_0/0.25)]",
+            "pb-[max(0.75rem,env(safe-area-inset-bottom))]",
+          )}
+        >
           <div className="mx-auto flex min-h-14 max-w-full items-center justify-between gap-3 px-4 py-3 lg:px-6">
             <div className="flex min-h-10 flex-1 flex-wrap items-center gap-x-4 gap-y-1 text-sm">
               {isDirty ? (

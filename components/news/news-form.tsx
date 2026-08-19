@@ -72,8 +72,11 @@ import { galleryDtoToFormValues } from "@/types/media-gallery"
 import type { Language, MediaKind, NewsDto } from "@/types/news"
 import { useQueryClient } from "@tanstack/react-query"
 
-const sectionDivider =
-  "mt-6 border-t border-border/60 pt-6 [&:first-child]:mt-0 [&:first-child]:border-t-0 [&:first-child]:pt-0"
+const sectionCard =
+  "rounded-xl border border-border/60 bg-card/50 p-5 shadow-xs"
+
+const sectionHeading =
+  "inline-flex items-center gap-2 text-sm font-semibold text-foreground before:h-3.5 before:w-1 before:rounded-full before:bg-primary/70 before:content-['']"
 
 function dtoToFormValues(d: NewsDto): NewsFormValues {
   const date =
@@ -324,16 +327,18 @@ export function NewsForm({
             </Link>
           </div>
 
-          <header className="mb-8 space-y-1">
-            <h1 className="text-xl font-semibold md:text-2xl">
+          <header className="mb-8 space-y-1.5">
+            <h1 className="text-2xl font-bold tracking-tight md:text-3xl">
               {mode === "create" ? NS.action.new : NS.action.edit}
             </h1>
-            <p className="text-muted-foreground text-sm">{NS.page.subtitle}</p>
+            <p className="text-muted-foreground text-sm leading-relaxed">
+              {NS.page.subtitle}
+            </p>
           </header>
 
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 lg:gap-8">
             <div className="space-y-6 lg:col-span-2">
-              <section className={cn("space-y-6", sectionDivider)}>
+              <section className={cn("space-y-6", sectionCard)}>
                 {bothLangActive ? (
                   <Tabs
                     value={activeLangTab}
@@ -402,8 +407,8 @@ export function NewsForm({
                 )}
               </section>
 
-              <section className={cn("space-y-4", sectionDivider)}>
-                <h2 className="text-sm font-semibold text-foreground">
+              <section className={cn("space-y-4", sectionCard)}>
+                <h2 className={sectionHeading}>
                   {NS.section.classification}
                 </h2>
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -485,17 +490,8 @@ export function NewsForm({
             </div>
 
             <aside className="space-y-6 lg:sticky lg:top-20 lg:col-span-1 lg:self-start">
-              <section className={cn("space-y-3", sectionDivider)}>
-                <h2 className="text-sm font-semibold text-foreground inline-flex flex-wrap items-center gap-2">
-                  {NS.section.cover}
-                  <span
-                    className="text-destructive"
-                    aria-hidden
-                    title={NS.field.cover_required}
-                  >
-                    •
-                  </span>
-                </h2>
+              <section className={cn("space-y-3", sectionCard)}>
+                <h2 className={sectionHeading}>{NS.section.cover}</h2>
                 <Controller
                   name="coverUrl"
                   control={control}
@@ -527,10 +523,8 @@ export function NewsForm({
                 />
               </section>
 
-              <section className={cn("space-y-3", sectionDivider)}>
-                <h2 className="text-sm font-semibold text-foreground">
-                  {NS.section.cover_type}
-                </h2>
+              <section className={cn("space-y-3", sectionCard)}>
+                <h2 className={sectionHeading}>{NS.section.cover_type}</h2>
                 <Controller
                   name="coverMediaType"
                   control={control}
@@ -583,7 +577,7 @@ export function NewsForm({
                 ) : null}
               </section>
 
-              <section className={cn(sectionDivider)}>
+              <section className={cn(sectionCard)}>
                 <MediaGalleryEditor<NewsFormValues>
                   name="mediaGallery"
                   title={NS.section.media_gallery}
@@ -592,7 +586,7 @@ export function NewsForm({
                 />
               </section>
 
-              <section className={cn("space-y-3", sectionDivider)}>
+              <section className={cn("space-y-3", sectionCard)}>
                 <Controller
                   name="contentLanguages"
                   control={control}
@@ -640,10 +634,8 @@ export function NewsForm({
                 </FieldError>
               </section>
 
-              <section className={cn("space-y-3", sectionDivider)}>
-                <h2 className="text-sm font-semibold text-foreground">
-                  {NS.section.publish}
-                </h2>
+              <section className={cn("space-y-3", sectionCard)}>
+                <h2 className={sectionHeading}>{NS.section.publish}</h2>
                 <Label htmlFor="nf-date">{NS.field.date_published}</Label>
                 <Input
                   id="nf-date"
@@ -658,7 +650,7 @@ export function NewsForm({
               </section>
 
               {mode === "edit" && typeof editDto?.id === "number" ? (
-                <section className={cn("space-y-3", sectionDivider)}>
+                <section className={cn("space-y-3", sectionCard)}>
                   <h2 className="text-muted-foreground text-sm font-semibold">
                     {NS.section.system}
                   </h2>
@@ -727,6 +719,7 @@ export function NewsForm({
         <div
           className={cn(
             "border-border bg-background/95 supports-backdrop-filter:backdrop-blur fixed inset-x-0 bottom-0 z-40 border-t",
+            "shadow-[0_-8px_24px_-16px_rgb(0_0_0/0.25)]",
             "pb-[max(0.75rem,env(safe-area-inset-bottom))]",
           )}
         >

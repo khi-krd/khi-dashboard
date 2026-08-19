@@ -10,6 +10,12 @@ export const aboutStatSchema = z.object({
   value: z.string().max(100).optional().nullable(),
 })
 
+// Every field is optional by design: an editor can save with any subset
+// filled in. Only format/length rules remain — they fire on what was typed,
+// never on what was left blank. This must stay all-optional: the Stats and
+// Founder section cards mount this whole schema while rendering only their
+// slice, so any required rule on title/slug would make those cards
+// unsavable for a record with that field blank.
 export const aboutFormSchema = z
   .object({
     active: z.boolean().default(true),
@@ -34,29 +40,6 @@ export const aboutFormSchema = z
     contentLanguages: z
       .array(z.enum(["CKB", "KMR"]))
       .min(1, NS.validation.languageRequired),
-  })
-  .superRefine((val, ctx) => {
-    if (val.contentLanguages.includes("CKB") && !val.slugCkb?.trim()) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: NS.validation.slugCkbRequired,
-        path: ["slugCkb"],
-      })
-    }
-    if (val.contentLanguages.includes("CKB") && !val.titleCkb?.trim()) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: NS.validation.titleCkbRequired,
-        path: ["titleCkb"],
-      })
-    }
-    if (val.contentLanguages.includes("KMR") && !val.titleKmr?.trim()) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: NS.validation.titleKmrRequired,
-        path: ["titleKmr"],
-      })
-    }
   })
 
 export type AboutFormValues = z.infer<typeof aboutFormSchema>

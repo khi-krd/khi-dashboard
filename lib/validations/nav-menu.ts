@@ -2,16 +2,17 @@ import { z } from "zod"
 
 import type { NavMenuItemDto } from "@/types/nav-menu"
 
+// Every field is optional by design: an editor can save with any subset filled
+// in. Format/length rules fire on what was typed, never on what was left blank.
 /** Caps mirror the column widths in §2 so the client rejects before the API does. */
 export const navMenuLinkSchema = z.object({
-  labelCkb: z.string().trim().min(1).max(200),
+  labelCkb: z.string().trim().max(200),
   labelKmr: z.string().max(200).optional().nullable(),
   href: z
     .string()
     .trim()
-    .min(1)
     .max(300)
-    .refine((v) => v.startsWith("/") || /^https?:\/\//i.test(v), {
+    .refine((v) => v === "" || v.startsWith("/") || /^https?:\/\//i.test(v), {
       message: "href_relative",
     }),
   active: z.boolean().default(true),
@@ -21,21 +22,21 @@ export const navMenuItemSchema = z.object({
   itemKey: z
     .string()
     .trim()
-    .min(1)
     .max(60)
     // Lower-cased on save by the server; the same rule is applied client-side so
     // what the editor typed matches what comes back.
-    .regex(/^[a-z0-9][a-z0-9-]*$/i, { message: "item_key_format" }),
-  labelCkb: z.string().trim().min(1).max(200),
+    .refine((v) => v === "" || /^[a-z0-9][a-z0-9-]*$/i.test(v), {
+      message: "item_key_format",
+    }),
+  labelCkb: z.string().trim().max(200),
   labelKmr: z.string().max(200).optional().nullable(),
   descriptionCkb: z.string().optional().nullable(),
   descriptionKmr: z.string().optional().nullable(),
   href: z
     .string()
     .trim()
-    .min(1)
     .max(300)
-    .refine((v) => v.startsWith("/"), { message: "href_relative" }),
+    .refine((v) => v === "" || v.startsWith("/"), { message: "href_relative" }),
   imageUrl: z.string().optional().nullable(),
   displayOrder: z.number().int().min(0).default(0),
   active: z.boolean().default(true),

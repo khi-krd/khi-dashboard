@@ -2,6 +2,10 @@ import { z } from "zod"
 
 import { NS } from "@/components/videos/videos-strings"
 
+// A typed-then-cleared numeric input arrives as NaN; treat it as unset.
+const nanToUndefined = (v: unknown) =>
+  typeof v === "number" && Number.isNaN(v) ? undefined : v
+
 const VideoContentSchema = z.object({
   title: z.string().max(300).optional(),
   description: z.string().optional(),
@@ -16,32 +20,38 @@ export const VideoSourceFormSchema = z.object({
   embedUrl: z.string().optional().or(z.literal("")),
   main: z.boolean().default(false),
   label: z.string().max(300).optional(),
-  durationSeconds: z.number().int().min(0).optional().nullable(),
+  durationSeconds: z.preprocess(
+    nanToUndefined,
+    z.number().int().min(0).optional().nullable(),
+  ),
   resolution: z.string().optional().nullable(),
   fileFormat: z.string().optional().nullable(),
-  fileSizeMb: z.number().min(0).optional().nullable(),
+  fileSizeMb: z.preprocess(
+    nanToUndefined,
+    z.number().min(0).optional().nullable(),
+  ),
   stagedVideoFile: z.instanceof(File).optional().nullable(),
 })
-
-function sourceHasContent(source: z.infer<typeof VideoSourceFormSchema>) {
-  return !!(
-    source.url?.trim() ||
-    source.externalUrl?.trim() ||
-    source.embedUrl?.trim() ||
-    source.stagedVideoFile
-  )
-}
 
 export const VideoClipItemFormSchema = z.object({
   id: z.number().optional(),
   url: z.string().optional().or(z.literal("")),
   externalUrl: z.string().optional().or(z.literal("")),
   embedUrl: z.string().optional().or(z.literal("")),
-  clipNumber: z.number().int().positive().optional(),
-  durationSeconds: z.number().int().min(0).optional().nullable(),
+  clipNumber: z.preprocess(
+    nanToUndefined,
+    z.number().int().positive().optional(),
+  ),
+  durationSeconds: z.preprocess(
+    nanToUndefined,
+    z.number().int().min(0).optional().nullable(),
+  ),
   resolution: z.string().optional().nullable(),
   fileFormat: z.string().optional().nullable(),
-  fileSizeMb: z.number().min(0).optional().nullable(),
+  fileSizeMb: z.preprocess(
+    nanToUndefined,
+    z.number().min(0).optional().nullable(),
+  ),
   titleCkb: z.string().max(300).optional(),
   titleKmr: z.string().max(300).optional(),
   descriptionCkb: z.string().optional(),
@@ -49,134 +59,62 @@ export const VideoClipItemFormSchema = z.object({
   stagedVideoFile: z.instanceof(File).optional().nullable(),
 })
 
-function clipHasSource(clip: z.infer<typeof VideoClipItemFormSchema>) {
-  return !!(
-    clip.url?.trim() ||
-    clip.externalUrl?.trim() ||
-    clip.embedUrl?.trim() ||
-    clip.stagedVideoFile
-  )
-}
-
-export const videoFormSchema = z
-  .object({
-    videoType: z.enum(["FILM", "VIDEO_CLIP"]),
-    albumOfMemories: z.boolean().default(false),
-    topicId: z.number().int().nullable().optional(),
-    newTopic: z
-      .object({
-        nameCkb: z.string().optional(),
-        nameKmr: z.string().optional(),
-      })
-      .optional()
-      .refine((t) => !t || t.nameCkb?.trim() || t.nameKmr?.trim(), {
-        message: NS.validation.topicNameRequired,
-      }),
-    clearTopic: z.boolean().optional(),
-    contentLanguages: z
-      .array(z.enum(["CKB", "KMR"]))
-      .min(1, NS.validation.languageRequired),
-    ckbContent: VideoContentSchema.optional(),
-    kmrContent: VideoContentSchema.optional(),
-    sourceUrl: z.string().optional().or(z.literal("")),
-    sourceExternalUrl: z.string().optional().or(z.literal("")),
-    sourceEmbedUrl: z.string().optional().or(z.literal("")),
-    stagedVideoFile: z.instanceof(File).optional().nullable(),
-    videoSources: z.array(VideoSourceFormSchema).default([]),
-    sourcesTouched: z.boolean().default(false),
-    videoClipItems: z.array(VideoClipItemFormSchema).default([]),
-    fileFormat: z.string().optional().nullable(),
-    durationSeconds: z.number().int().min(0).optional().nullable(),
-    publishmentDate: z.string().optional().nullable(),
-    resolution: z.string().optional().nullable(),
-    fileSizeMb: z.number().min(0).optional().nullable(),
-    tags: z.object({
-      ckb: z.array(z.string().max(100)),
-      kmr: z.array(z.string().max(100)),
-    }),
-    keywords: z.object({
-      ckb: z.array(z.string().max(150)),
-      kmr: z.array(z.string().max(150)),
-    }),
-    ckbCoverFile: z.instanceof(File).optional().nullable(),
-    kmrCoverFile: z.instanceof(File).optional().nullable(),
-    hoverCoverFile: z.instanceof(File).optional().nullable(),
-    ckbCoverUrl: z.string().optional().nullable(),
-    kmrCoverUrl: z.string().optional().nullable(),
-    hoverCoverUrl: z.string().optional().nullable(),
-    existingCkbCoverUrl: z.string().optional().nullable(),
-    existingKmrCoverUrl: z.string().optional().nullable(),
-    existingHoverCoverUrl: z.string().optional().nullable(),
-  })
-  .superRefine((val, ctx) => {
-    if (val.contentLanguages.includes("CKB") && !val.ckbContent?.title?.trim()) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: NS.validation.titleCkbRequired,
-        path: ["ckbContent", "title"],
-      })
-    }
-    if (val.contentLanguages.includes("KMR") && !val.kmrContent?.title?.trim()) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: NS.validation.titleKmrRequired,
-        path: ["kmrContent", "title"],
-      })
-    }
-    if (val.videoType === "FILM") {
-      const readySources = val.videoSources.filter(sourceHasContent)
-      if (readySources.length === 0) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: NS.validation.sourceRequired,
-          path: ["videoSources"],
-        })
-      } else {
-        val.videoSources.forEach((source, index) => {
-          const started =
-            source.label?.trim() ||
-            source.url?.trim() ||
-            source.externalUrl?.trim() ||
-            source.embedUrl?.trim() ||
-            source.stagedVideoFile
-          if (started && !sourceHasContent(source)) {
-            ctx.addIssue({
-              code: z.ZodIssueCode.custom,
-              message: NS.validation.sourceItemRequired,
-              path: ["videoSources", index, "url"],
-            })
-          }
-        })
-      }
-    }
-    if (val.videoType === "VIDEO_CLIP") {
-      const readyClips = val.videoClipItems.filter(clipHasSource)
-      if (readyClips.length === 0) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: NS.validation.clipsRequired,
-          path: ["videoClipItems"],
-        })
-      } else {
-        val.videoClipItems.forEach((clip, index) => {
-          const started =
-            clip.titleCkb?.trim() ||
-            clip.titleKmr?.trim() ||
-            clip.url?.trim() ||
-            clip.externalUrl?.trim() ||
-            clip.embedUrl?.trim() ||
-            clip.stagedVideoFile
-          if (started && !clipHasSource(clip)) {
-            ctx.addIssue({
-              code: z.ZodIssueCode.custom,
-              message: NS.validation.clipSourceRequired,
-              path: ["videoClipItems", index, "url"],
-            })
-          }
-        })
-      }
-    }
-  })
+// Every field is optional by design: an editor can save a draft with any
+// subset filled in. Only format/length rules remain — they fire on what was
+// typed, never on what was left blank. The payload builder filters
+// sourceless rows before send.
+export const videoFormSchema = z.object({
+  videoType: z.enum(["FILM", "VIDEO_CLIP"]),
+  albumOfMemories: z.boolean().default(false),
+  topicId: z.number().int().nullable().optional(),
+  newTopic: z
+    .object({
+      nameCkb: z.string().optional(),
+      nameKmr: z.string().optional(),
+    })
+    .optional(),
+  clearTopic: z.boolean().optional(),
+  contentLanguages: z
+    .array(z.enum(["CKB", "KMR"]))
+    .min(1, NS.validation.languageRequired),
+  ckbContent: VideoContentSchema.optional(),
+  kmrContent: VideoContentSchema.optional(),
+  sourceUrl: z.string().optional().or(z.literal("")),
+  sourceExternalUrl: z.string().optional().or(z.literal("")),
+  sourceEmbedUrl: z.string().optional().or(z.literal("")),
+  stagedVideoFile: z.instanceof(File).optional().nullable(),
+  videoSources: z.array(VideoSourceFormSchema).default([]),
+  sourcesTouched: z.boolean().default(false),
+  videoClipItems: z.array(VideoClipItemFormSchema).default([]),
+  fileFormat: z.string().optional().nullable(),
+  durationSeconds: z.preprocess(
+    nanToUndefined,
+    z.number().int().min(0).optional().nullable(),
+  ),
+  publishmentDate: z.string().optional().nullable(),
+  resolution: z.string().optional().nullable(),
+  fileSizeMb: z.preprocess(
+    nanToUndefined,
+    z.number().min(0).optional().nullable(),
+  ),
+  tags: z.object({
+    ckb: z.array(z.string().max(100)),
+    kmr: z.array(z.string().max(100)),
+  }),
+  keywords: z.object({
+    ckb: z.array(z.string().max(150)),
+    kmr: z.array(z.string().max(150)),
+  }),
+  ckbCoverFile: z.instanceof(File).optional().nullable(),
+  kmrCoverFile: z.instanceof(File).optional().nullable(),
+  hoverCoverFile: z.instanceof(File).optional().nullable(),
+  ckbCoverUrl: z.string().optional().nullable(),
+  kmrCoverUrl: z.string().optional().nullable(),
+  hoverCoverUrl: z.string().optional().nullable(),
+  existingCkbCoverUrl: z.string().optional().nullable(),
+  existingKmrCoverUrl: z.string().optional().nullable(),
+  existingHoverCoverUrl: z.string().optional().nullable(),
+})
 
 export type VideoFormValues = z.infer<typeof videoFormSchema>
 

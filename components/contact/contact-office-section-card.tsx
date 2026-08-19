@@ -35,6 +35,9 @@ import {
 } from "@/lib/validations/contact"
 import type { ContactDto, Language } from "@/types/contact"
 
+const sectionHeading =
+  "inline-flex items-center gap-2 text-sm font-semibold text-foreground before:h-3.5 before:w-1 before:rounded-full before:bg-primary/70 before:content-['']"
+
 function LangBlock({
   lang,
   register,
@@ -256,8 +259,8 @@ export function ContactOfficeSectionCard({
           <LangBlock lang="KMR" register={register} control={control} />
         </div>
 
-        <div className="border-border space-y-3 rounded-lg border p-4">
-          <p className="text-xs font-medium">{NS.sidebar.contact_info}</p>
+        <div className="border-border space-y-3 rounded-lg border bg-card/50 p-4 shadow-xs">
+          <p className={sectionHeading}>{NS.sidebar.contact_info}</p>
           <div className="grid gap-3 sm:grid-cols-2">
             <Input {...register("phone")} placeholder={NS.form.phone} dir="ltr" />
             <Input

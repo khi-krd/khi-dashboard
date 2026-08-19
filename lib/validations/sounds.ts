@@ -25,7 +25,11 @@ export const SoundFileFormSchema = z.object({
   embedUrl: z.string().optional().or(z.literal("")),
   title: z.string().max(300).optional(),
   fileType: z.enum(["AUDIO", "VIDEO", "DOCUMENT", "OTHER"]).default("AUDIO"),
-  publishmentYear: z.number().int().min(1900).max(2100).optional().nullable(),
+  // A typed-then-cleared numeric input yields NaN; treat it as unset.
+  publishmentYear: z.preprocess(
+    (v) => (typeof v === "number" && Number.isNaN(v) ? undefined : v),
+    z.number().int().min(1900).max(2100).optional().nullable(),
+  ),
   fileFormat: z.string().max(50).optional().nullable(),
   sizeBytes: z.number().int().min(0).default(0),
   durationSeconds: z.number().int().min(0).default(0),
@@ -38,15 +42,6 @@ export const SoundFileFormSchema = z.object({
   brochures: z.array(BrochureFormSchema).default([]),
   stagedAudioFile: z.instanceof(File).optional().nullable(),
 })
-
-function soundFileHasSource(file: z.infer<typeof SoundFileFormSchema>) {
-  return !!(
-    file.fileUrl?.trim() ||
-    file.externalUrl?.trim() ||
-    file.embedUrl?.trim() ||
-    file.stagedAudioFile
-  )
-}
 
 export const AttachmentFormSchema = z.object({
   clientKey: z.string(),
@@ -62,27 +57,21 @@ export const AttachmentFormSchema = z.object({
   stagedAttachmentFile: z.instanceof(File).optional().nullable(),
 })
 
-function attachmentHasSource(file: z.infer<typeof AttachmentFormSchema>) {
-  return !!(file.fileUrl?.trim() || file.stagedAttachmentFile)
-}
-
+// Every field is optional by design: an editor can save a draft with any
+// subset filled in. Only format/length rules remain — they fire on what was
+// typed, never on what was left blank. Sourceless file/attachment rows are
+// filtered by the payload builder before send.
 export const soundFormSchema = z
   .object({
     trackState: z.enum(["SINGLE", "MULTI"]),
-    soundType: z
-      .string()
-      .min(1, NS.validation.soundTypeRequired)
-      .max(100),
+    soundType: z.string().max(100),
     topicId: z.number().int().nullable().optional(),
     newTopic: z
       .object({
         nameCkb: z.string().optional(),
         nameKmr: z.string().optional(),
       })
-      .optional()
-      .refine((t) => !t || t.nameCkb?.trim() || t.nameKmr?.trim(), {
-        message: NS.validation.topicNameRequired,
-      }),
+      .optional(),
     clearTopic: z.boolean().optional(),
     contentLanguages: z
       .array(z.enum(["CKB", "KMR"]))
@@ -108,63 +97,6 @@ export const soundFormSchema = z
     existingCkbCoverUrl: z.string().optional().nullable(),
     existingKmrCoverUrl: z.string().optional().nullable(),
     existingHoverCoverUrl: z.string().optional().nullable(),
-  })
-  .superRefine((val, ctx) => {
-    if (val.contentLanguages.includes("CKB") && !val.ckbContent?.title?.trim()) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: NS.validation.titleCkbRequired,
-        path: ["ckbContent", "title"],
-      })
-    }
-    if (val.contentLanguages.includes("KMR") && !val.kmrContent?.title?.trim()) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: NS.validation.titleKmrRequired,
-        path: ["kmrContent", "title"],
-      })
-    }
-
-    const readyFiles = val.files.filter(soundFileHasSource)
-    if (readyFiles.length === 0) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: NS.validation.filesRequired,
-        path: ["files"],
-      })
-    } else {
-      val.files.forEach((file, index) => {
-        const started =
-          file.title?.trim() ||
-          file.fileUrl?.trim() ||
-          file.externalUrl?.trim() ||
-          file.embedUrl?.trim() ||
-          file.stagedAudioFile
-        if (started && !soundFileHasSource(file)) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: NS.validation.fileSourceRequired,
-            path: ["files", index, "fileUrl"],
-          })
-        }
-      })
-    }
-
-    if (val.trackState === "MULTI") {
-      val.attachments.forEach((attachment, index) => {
-        const started =
-          attachment.title?.trim() ||
-          attachment.fileUrl?.trim() ||
-          attachment.stagedAttachmentFile
-        if (started && !attachmentHasSource(attachment)) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: NS.validation.attachmentSourceRequired,
-            path: ["attachments", index, "fileUrl"],
-          })
-        }
-      })
-    }
   })
 
 export type SoundFormValues = z.infer<typeof soundFormSchema>

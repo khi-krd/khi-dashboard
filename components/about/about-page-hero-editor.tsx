@@ -20,7 +20,6 @@ import {
   aboutDtoToHeroFormValues,
   aboutPageHeroSchema,
   defaultAboutPageHeroValues,
-  heroFormIsValid,
   type AboutPageHeroFormValues,
 } from "@/lib/validations/about-page"
 import { toastError } from "@/lib/toast"
@@ -70,11 +69,8 @@ export function AboutPageHeroEditor({
   const canSave = isDirty && !pending
 
   const onSubmit = handleSubmit((values) => {
-    if (!heroFormIsValid(values)) {
-      toastError(NS.validation.titleCkbRequired)
-      return
-    }
-
+    // A fully blank hero must stay savable — lib/about-page-data.ts
+    // auto-fills the "derbare" slug so the payload is always valid.
     const payload = heroFormValuesToAboutPayload(values, aboutDto)
     const onSuccess = () => {
       toast(NS.toast.heroSaved)
@@ -101,10 +97,12 @@ export function AboutPageHeroEditor({
   }
 
   return (
-    <section className="border-border rounded-xl border">
+    <section className="border-border bg-card/50 rounded-xl border shadow-xs">
       <div className="border-border flex flex-wrap items-center justify-between gap-3 border-b px-4 py-3">
         <div>
-          <h2 className="text-base font-semibold">{NS.page.heroTitle}</h2>
+          <h2 className="inline-flex items-center gap-2 text-sm font-semibold text-foreground before:h-3.5 before:w-1 before:rounded-full before:bg-primary/70 before:content-['']">
+            {NS.page.heroTitle}
+          </h2>
           <p className="text-muted-foreground text-xs">{NS.page.heroHint}</p>
         </div>
         <Button

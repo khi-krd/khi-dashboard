@@ -73,14 +73,18 @@ import { cn } from "@/lib/utils"
 import type { AboutDto, Language } from "@/types/about"
 import type { AboutPartnerDto, AboutTeamMemberDto } from "@/types/about"
 
+const sectionCard =
+  "rounded-xl border border-border/60 bg-card/50 p-5 shadow-xs"
+
+const sectionHeading =
+  "inline-flex items-center gap-2 text-sm font-semibold text-foreground before:h-3.5 before:w-1 before:rounded-full before:bg-primary/70 before:content-['']"
+
 function SlugInput({
   lang,
-  required,
   value,
   onChange,
 }: {
   lang: "ckb" | "kmr"
-  required?: boolean
   value: string
   onChange: (v: string) => void
 }) {
@@ -98,8 +102,7 @@ function SlugInput({
               : "bg-blue-500/10 text-blue-700 dark:text-blue-400",
           )}
         >
-          {lang.toUpperCase()}{" "}
-          {required ? NS.form.slug_required : NS.form.slug_optional}
+          {lang.toUpperCase()} {NS.form.slug_optional}
         </span>
       </div>
       <div className="relative">
@@ -154,10 +157,10 @@ function AboutEditorSectionCard({
   children: React.ReactNode
 }) {
   return (
-    <section className="border-border rounded-xl border">
+    <section className="border-border bg-card/50 rounded-xl border shadow-xs">
       <div className="border-border flex flex-wrap items-center justify-between gap-3 border-b px-4 py-3">
         <div>
-          <h2 className="text-base font-semibold">{title}</h2>
+          <h2 className={sectionHeading}>{title}</h2>
           {hint ? <p className="text-muted-foreground text-xs">{hint}</p> : null}
         </div>
         {onSave ? (
@@ -613,7 +616,6 @@ export function AboutForm({
                 <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                   <SlugInput
                     lang="ckb"
-                    required
                     value={watch("slugCkb") ?? ""}
                     onChange={(v) =>
                       setValue("slugCkb", v, {
@@ -704,7 +706,7 @@ export function AboutForm({
                 </div>
 
                 <div>
-                  <h3 className="mb-3 text-sm font-medium">{NS.form.body}</h3>
+                  <h3 className={cn("mb-3", sectionHeading)}>{NS.form.body}</h3>
                   {activeLang === "CKB" ? (
                     <TiptapEditor
                       stickyToolbar
@@ -730,12 +732,11 @@ export function AboutForm({
               <>
                 <div className="mb-8 flex items-center gap-2">{langTabs}</div>
 
-                <section>
-                  <h3 className="mb-3 text-sm font-medium">{NS.form.slugs}</h3>
+                <section className={sectionCard}>
+                  <h3 className={cn("mb-3", sectionHeading)}>{NS.form.slugs}</h3>
                   <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                     <SlugInput
                       lang="ckb"
-                      required
                       value={watch("slugCkb") ?? ""}
                       onChange={(v) =>
                         setValue("slugCkb", v, {
@@ -757,7 +758,7 @@ export function AboutForm({
             )}
 
             {!embedded ? (
-            <section className="border-border/60 mt-10 space-y-6 border-t pt-6">
+            <section className={cn("mt-10 space-y-6", sectionCard)}>
               <div>
                 <div className="mb-1 flex items-baseline justify-between">
                   <span className="text-muted-foreground text-[10px] font-medium tracking-wide uppercase">
@@ -833,8 +834,8 @@ export function AboutForm({
             ) : null}
 
             {!embedded ? (
-            <section className="border-border/60 mt-10 border-t pt-6">
-              <h3 className="mb-3 text-sm font-medium">{NS.form.body}</h3>
+            <section className={cn("mt-10", sectionCard)}>
+              <h3 className={cn("mb-3", sectionHeading)}>{NS.form.body}</h3>
               {activeLang === "CKB" ? (
                 <TiptapEditor
                   stickyToolbar
@@ -908,8 +909,8 @@ export function AboutForm({
                 />
               </AboutEditorSectionCard>
             ) : (
-            <section className="border-border/60 mt-10 border-t pt-6">
-              <h3 className="mb-4 text-sm font-medium">{NS.form.founder}</h3>
+            <section className={cn("mt-10", sectionCard)}>
+              <h3 className={cn("mb-4", sectionHeading)}>{NS.form.founder}</h3>
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 <div className="space-y-3">
                   <BilingualSectionHeader lang="CKB" />
@@ -959,8 +960,8 @@ export function AboutForm({
             )}
 
             {!embedded ? (
-            <section className="border-border/60 mt-10 border-t pt-6">
-              <h3 className="mb-4 text-sm font-medium">{NS.form.hero}</h3>
+            <section className={cn("mt-10", sectionCard)}>
+              <h3 className={cn("mb-4", sectionHeading)}>{NS.form.hero}</h3>
               <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                 <MediaCoverUpload
                   label={NS.form.hero_video}
@@ -1069,9 +1070,9 @@ export function AboutForm({
               )}
               </AboutEditorSectionCard>
             ) : (
-            <section className="border-border/60 mt-10 border-t pt-6">
+            <section className={cn("mt-10", sectionCard)}>
               <div className="mb-3 flex items-center justify-between">
-                <h3 className="text-sm font-medium">{NS.form.team}</h3>
+                <h3 className={sectionHeading}>{NS.form.team}</h3>
                 <Button type="button" size="sm" variant="outline" onClick={openCreateTeamDialog}>
                   <PlusIcon className="me-1 size-4" />
                   {NS.form.team_add}
@@ -1186,9 +1187,9 @@ export function AboutForm({
                 )}
               </AboutEditorSectionCard>
             ) : (
-            <section className="border-border/60 mt-10 border-t pt-6">
+            <section className={cn("mt-10", sectionCard)}>
               <div className="mb-3 flex items-center justify-between">
-                <h3 className="text-sm font-medium">{NS.form.partners}</h3>
+                <h3 className={sectionHeading}>{NS.form.partners}</h3>
                 <Button type="button" size="sm" variant="outline" onClick={openCreatePartnerDialog}>
                   <PlusIcon className="me-1 size-4" />
                   {NS.form.partner_add}
@@ -1249,7 +1250,12 @@ export function AboutForm({
         </div>
 
         {!embedded ? (
-        <div className="border-border bg-background/95 supports-backdrop-filter:backdrop-blur sticky bottom-0 inset-x-0 z-30 border-t">
+        <div
+          className={cn(
+            "border-border bg-background/95 supports-backdrop-filter:backdrop-blur sticky bottom-0 inset-x-0 z-30 border-t",
+            "shadow-[0_-8px_24px_-16px_rgb(0_0_0/0.25)]",
+          )}
+        >
           <div className="mx-auto flex max-w-[1280px] items-center justify-between gap-3 px-6 py-3">
             <div className="text-muted-foreground flex items-center gap-2 text-xs">
               {isDirty ? (

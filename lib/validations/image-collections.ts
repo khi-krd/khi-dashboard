@@ -39,6 +39,9 @@ function imageItemHasSource(item: z.infer<typeof ImageItemFormSchema>) {
   )
 }
 
+// Every field is optional by design: an editor can save with any subset
+// filled in. Only format/length caps and structural rules remain — they fire
+// on what was typed, never on what was left blank.
 export const collectionFormSchema = z
   .object({
     collectionType: z.enum(["SINGLE", "GALLERY", "PHOTO_STORY"]),
@@ -48,10 +51,7 @@ export const collectionFormSchema = z
         nameCkb: z.string().optional(),
         nameKmr: z.string().optional(),
       })
-      .optional()
-      .refine((t) => !t || t.nameCkb?.trim() || t.nameKmr?.trim(), {
-        message: NS.validation.topicNameRequired,
-      }),
+      .optional(),
     clearTopic: z.boolean().optional(),
     publishmentDate: z.string().optional().nullable(),
     contentLanguages: z
@@ -67,7 +67,7 @@ export const collectionFormSchema = z
       ckb: z.array(z.string()).default([]),
       kmr: z.array(z.string()).default([]),
     }),
-    imageAlbum: z.array(ImageItemFormSchema),
+    imageAlbum: z.array(ImageItemFormSchema).default([]),
     ckbCoverFile: z.instanceof(File).optional().nullable(),
     kmrCoverFile: z.instanceof(File).optional().nullable(),
     hoverCoverFile: z.instanceof(File).optional().nullable(),
@@ -79,57 +79,14 @@ export const collectionFormSchema = z
     existingHoverCoverUrl: z.string().optional().nullable(),
   })
   .superRefine((val, ctx) => {
+    // Structural cap: a SINGLE collection can never carry more than one
+    // sourced image.
     const readyItems = val.imageAlbum.filter(imageItemHasSource)
-    if (readyItems.length === 0) {
-      ctx.addIssue({
-        code: "custom",
-        message: NS.validation.albumRequired,
-        path: ["imageAlbum"],
-      })
-    } else {
-      val.imageAlbum.forEach((item, index) => {
-        const started =
-          item.captionCkb?.trim() ||
-          item.captionKmr?.trim() ||
-          item.imageUrl?.trim() ||
-          item.externalUrl?.trim() ||
-          item.embedUrl?.trim() ||
-          item.stagedBinary
-        if (started && !imageItemHasSource(item)) {
-          ctx.addIssue({
-            code: "custom",
-            message: NS.validation.itemSourceRequired,
-            path: ["imageAlbum", index, "imageUrl"],
-          })
-        }
-      })
-    }
     if (val.collectionType === "SINGLE" && readyItems.length > 1) {
       ctx.addIssue({
         code: "custom",
         message: NS.validation.singleAlbumLimit,
         path: ["imageAlbum"],
-      })
-    }
-    if (val.collectionType === "PHOTO_STORY" && readyItems.length < 2) {
-      ctx.addIssue({
-        code: "custom",
-        message: NS.validation.storyAlbumMinimum,
-        path: ["imageAlbum"],
-      })
-    }
-    if (val.contentLanguages.includes("CKB") && !val.ckbContent?.title?.trim()) {
-      ctx.addIssue({
-        code: "custom",
-        message: NS.validation.ckbTitleRequired,
-        path: ["ckbContent", "title"],
-      })
-    }
-    if (val.contentLanguages.includes("KMR") && !val.kmrContent?.title?.trim()) {
-      ctx.addIssue({
-        code: "custom",
-        message: NS.validation.kmrTitleRequired,
-        path: ["kmrContent", "title"],
       })
     }
   })

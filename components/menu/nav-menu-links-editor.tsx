@@ -36,7 +36,9 @@ export function NavMenuLinksEditor({ derivedKey }: { derivedKey: boolean }) {
     <section className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="space-y-0.5">
-          <h3 className="text-sm font-medium">{NM.links.title}</h3>
+          <h3 className="inline-flex items-center gap-2 text-sm font-semibold text-foreground before:h-3.5 before:w-1 before:rounded-full before:bg-primary/70 before:content-['']">
+            {NM.links.title}
+          </h3>
           <p className="text-muted-foreground text-xs">
             {fields.length > 0
               ? NM.links.count(formatCkbDigits(fields.length))

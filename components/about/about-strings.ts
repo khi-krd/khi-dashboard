@@ -129,7 +129,6 @@ export const NS = {
     slug_kmr: "سلەگی کورمانجی",
     slug_ckb_hint: "ناسەری URL — کاراکتەری ASCII یان کوردی",
     slug_kmr_hint: "ئەگەر بۆشێت، سلەگی سۆرانی بەکاردێت",
-    slug_required: "پێویستە",
     slug_optional: "ئیختیاری",
     title: "ناونیشان",
     subtitle: "ژێرناونیشان",
@@ -178,9 +177,6 @@ export const NS = {
   },
   validation: {
     languageRequired: "لانیکەم یەک زمان هەڵبژێرە",
-    slugCkbRequired: "سلەگی سۆرانی پێویستە",
-    titleCkbRequired: "ناونیشانی سۆرانی پێویستە",
-    titleKmrRequired: "ناونیشانی کورمانجی پێویستە",
   },
   toast: {
     saved: "پاشەکەوت کرا",

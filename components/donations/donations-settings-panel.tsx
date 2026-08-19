@@ -117,9 +117,9 @@ function DonationsSettingsForm({
 
   return (
     <form onSubmit={onSubmit} className="space-y-8">
-      <section className="border-border/60 space-y-4 rounded-xl border p-5">
+      <section className="border-border/60 bg-card/50 space-y-4 rounded-xl border p-5 shadow-xs">
         <div>
-          <h2 className="text-base font-semibold">{NS.settings.title}</h2>
+          <h2 className="inline-flex items-center gap-2 text-base font-semibold text-foreground before:h-4 before:w-1 before:rounded-full before:bg-primary/70 before:content-['']">{NS.settings.title}</h2>
           <p className="text-muted-foreground text-sm">{NS.settings.subtitle}</p>
         </div>
 
@@ -140,8 +140,8 @@ function DonationsSettingsForm({
         />
       </section>
 
-      <section className="border-border/60 space-y-4 rounded-xl border p-5">
-        <h3 className="text-sm font-semibold">{NS.settings.titles}</h3>
+      <section className="border-border/60 bg-card/50 space-y-4 rounded-xl border p-5 shadow-xs">
+        <h3 className="inline-flex items-center gap-2 text-sm font-semibold text-foreground before:h-3.5 before:w-1 before:rounded-full before:bg-primary/70 before:content-['']">{NS.settings.titles}</h3>
         <div className="grid gap-4 sm:grid-cols-2">
           <Controller
             control={control}
@@ -188,8 +188,8 @@ function DonationsSettingsForm({
         </div>
       </section>
 
-      <section className="border-border/60 space-y-4 rounded-xl border p-5">
-        <h3 className="text-sm font-semibold">{NS.settings.bank}</h3>
+      <section className="border-border/60 bg-card/50 space-y-4 rounded-xl border p-5 shadow-xs">
+        <h3 className="inline-flex items-center gap-2 text-sm font-semibold text-foreground before:h-3.5 before:w-1 before:rounded-full before:bg-primary/70 before:content-['']">{NS.settings.bank}</h3>
         <div className="grid gap-4 sm:grid-cols-2">
           <Controller
             control={control}
@@ -276,8 +276,8 @@ function DonationsSettingsForm({
         </div>
       </section>
 
-      <section className="border-border/60 space-y-4 rounded-xl border p-5">
-        <h3 className="text-sm font-semibold">{NS.settings.toggles}</h3>
+      <section className="border-border/60 bg-card/50 space-y-4 rounded-xl border p-5 shadow-xs">
+        <h3 className="inline-flex items-center gap-2 text-sm font-semibold text-foreground before:h-3.5 before:w-1 before:rounded-full before:bg-primary/70 before:content-['']">{NS.settings.toggles}</h3>
         <Controller
           control={control}
           name="financialDonationsEnabled"

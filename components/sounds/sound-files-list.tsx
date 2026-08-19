@@ -112,7 +112,6 @@ export function SoundFilesList() {
       {fields.length === 0 ? (
         <div className="border-border flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed py-12">
           <p className="text-muted-foreground text-sm">{NS.files.empty}</p>
-          <p className="text-muted-foreground text-xs">{NS.files.empty_sub}</p>
           <Button type="button" onClick={addFile}>
             <PlusIcon className="size-4" />
             {NS.files.empty_cta}

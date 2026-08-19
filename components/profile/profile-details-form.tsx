@@ -61,9 +61,11 @@ export function ProfileDetailsForm({ user }: { user: UserResponse }) {
   }
 
   return (
-    <Card>
+    <Card className="shadow-xs">
       <CardHeader>
-        <CardTitle>زانیاری کەسی</CardTitle>
+        <CardTitle className="inline-flex items-center gap-2 font-semibold text-foreground before:h-4 before:w-1 before:rounded-full before:bg-primary/70 before:content-['']">
+          زانیاری کەسی
+        </CardTitle>
         <CardDescription>
           ناوی پیشاندان و ناوی بەکارهێنەرت بگۆڕە
         </CardDescription>

@@ -133,7 +133,7 @@ export function DonationsFinancialSheet({
             />
           ) : null}
 
-          <div className="border-border space-y-2 border-t pt-4">
+          <div className="border-border/60 bg-card/50 space-y-2 rounded-xl border p-4 shadow-xs">
             <Label>{NS.financial.changeStatus}</Label>
             <DonationStatusSelect
               value={statusDraft}

@@ -21,7 +21,6 @@ import {
 } from "@/lib/services-form-data"
 import {
   defaultServicesPageHeroValues,
-  heroFormIsValid,
   servicesPageHeroSchema,
   type ServicesPageHeroFormValues,
 } from "@/lib/validations/services-page"
@@ -72,11 +71,6 @@ export function ServicesPageHeroEditor({
   const canSave = isDirty && !pending
 
   const onSubmit = handleSubmit((values) => {
-    if (!heroFormIsValid(values)) {
-      toastError(NS.validation.titleRequired)
-      return
-    }
-
     const payload = heroFormValuesToServicePayload(values, heroDto?.id)
     const onSuccess = (res: { success?: boolean }) => {
       if (!res.success) {
@@ -101,17 +95,19 @@ export function ServicesPageHeroEditor({
 
   if (isLoading) {
     return (
-      <div className="border-border flex items-center justify-center rounded-xl border p-12">
+      <div className="border-border bg-card/50 flex items-center justify-center rounded-xl border p-12 shadow-xs">
         <Spinner className="size-6" />
       </div>
     )
   }
 
   return (
-    <section className="border-border rounded-xl border">
+    <section className="border-border bg-card/50 rounded-xl border shadow-xs">
       <div className="border-border flex flex-wrap items-center justify-between gap-3 border-b px-4 py-3">
         <div>
-          <h2 className="text-base font-semibold">{NS.page.heroTitle}</h2>
+          <h2 className="inline-flex items-center gap-2 text-sm font-semibold text-foreground before:h-3.5 before:w-1 before:rounded-full before:bg-primary/70 before:content-['']">
+            {NS.page.heroTitle}
+          </h2>
           <p className="text-muted-foreground text-xs">{NS.page.heroHint}</p>
         </div>
         <Button

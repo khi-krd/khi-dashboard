@@ -33,8 +33,6 @@ export const NS = {
   },
   validation: {
     languageRequired: "لانیکەم زمانێک پێویستە",
-    titleCkbRequired: "ناونیشانی سۆرانی پێویستە",
-    titleKmrRequired: "ناونیشانی کورمانجی پێویستە",
     topicNameRequired: "ناوی بابەت پێویستە",
   },
   page: {
@@ -137,8 +135,7 @@ export const NS = {
       culture_life: "کلتوور و ژیان",
     },
     selected_count: (count: string) => `${count} هەڵبژێردراوە`,
-    empty_helper: "لانیکەم یەک جۆر هەڵبژێرە",
-    required: "لانیکەم یەک جۆر پێویستە",
+    empty_helper: "هیچ جۆرێک هەڵنەبژێردراوە",
   },
   filter: {
     search_placeholder: "گەڕان لە ناونیشان، نووسەر، تاگ، یان کلیلەوشە",
@@ -290,7 +287,7 @@ export const NS = {
   },
   help: {
     save_requirements:
-      "بۆ پاشەکەوتکردن: لانیکەم زمانێک، یەک جۆر، ناونیشان و وێنەی ڕووکار پێویستن.",
+      "هەموو خانەکان ئارەزوومەندانەن — دەتوانیت بە هەر بەشێکی پڕکراوەوە پاشەکەوت بکەیت",
   },
   system: {
     id: "ناسنامە",

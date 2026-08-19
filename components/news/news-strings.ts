@@ -108,7 +108,6 @@ export const NS = {
     cover_or_url: "یان لینکی URL بەکاربهێنە",
     cover_drop: "وێنە و فایلەکانت دابنێ یان کلیک بکە بۆ هەڵبژاردن",
     cover_loading: "بارکردنی وێنە…",
-    cover_required: "(پێویست)",
     cover_thumbnail: "وێنەی بچووکی ڕووکار",
     /** Cover section helper under dropzone */
     cover_format_hint: "PNG، JPEG، یان WEBP · زۆرترین قەبارە ٥ MB",
@@ -172,7 +171,7 @@ export const NS = {
   },
   help: {
     publish_requirements:
-      "بۆ بڵاوکردنەوە: ناونیشان، وەسف، پۆل، ژێرپۆل و وێنەی ڕووکار پێویستن",
+      "هەموو خانەکان ئارەزوومەندانەن — دەتوانیت بە هەر بەشێکی پڕکراوەوە پاشەکەوت بکەیت",
     languages_min_one: "لانیکەم زمانێک پێویستە",
     scheduled_if_future:
       "ئەگەر بەرواری داهاتوو هەڵبژێریت، هەواڵەکە کاتبۆداندراو دەبێت",

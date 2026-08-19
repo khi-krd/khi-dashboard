@@ -235,7 +235,7 @@ export function ServiceSectionCard({
     ""
 
   return (
-    <section className="bg-card rounded-lg border shadow-sm">
+    <section className="bg-card/50 rounded-lg border shadow-xs">
       <div className="flex items-center justify-between gap-3 px-4 py-3">
         <div className="min-w-0">
           <p className="text-muted-foreground text-xs">
@@ -297,9 +297,9 @@ export function ServiceSectionCard({
           </div>
 
           <div className="space-y-2">
-            <Label className="text-muted-foreground text-xs">
+            <p className="inline-flex items-center gap-2 text-sm font-semibold text-foreground before:h-3.5 before:w-1 before:rounded-full before:bg-primary/70 before:content-['']">
               {NS.gallery.section}
-            </Label>
+            </p>
             <ServiceGalleryEditor />
           </div>
         </div>

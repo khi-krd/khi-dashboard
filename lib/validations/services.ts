@@ -37,6 +37,9 @@ export const serviceGalleryMediaSchema = z.object({
   alt: z.string().max(500).optional().or(z.literal("")),
 })
 
+// Every field is optional by design: a section can be saved with any subset
+// filled in. Only format/length rules remain — the payload builder drops
+// blank-title content rows before sending.
 export const serviceFormSchema = z
   .object({
     serviceType: z.string().max(100).optional().or(z.literal("")),
@@ -61,23 +64,7 @@ export const serviceFormSchema = z
     contentLanguages: z
       .array(z.enum(["CKB", "KMR"]))
       .min(1, NS.validation.languageRequired),
-    contents: z.array(contentRowSchema).min(1),
-  })
-  .superRefine((data, ctx) => {
-    const titledLangs = data.contentLanguages.filter((lang) => {
-      const row = data.contents.find((c) => c.languageCode === lang)
-      return Boolean(row?.title?.trim())
-    })
-    if (titledLangs.length === 0) {
-      const firstIdx = data.contents.findIndex(
-        (c) => c.languageCode === data.contentLanguages[0],
-      )
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: NS.validation.titleRequired,
-        path: ["contents", firstIdx >= 0 ? firstIdx : 0, "title"],
-      })
-    }
+    contents: z.array(contentRowSchema).default([]),
   })
 
 export type ServiceFormValues = z.infer<typeof serviceFormSchema>

@@ -350,7 +350,6 @@ export const NS = {
   },
   validation: {
     languageRequired: "زمانێک پێویستە",
-    titleRequired: "ناونیشان پێویستە",
     collectionNameRequired: "ناوی کۆکراوە پێویستە",
     mediaTypeRequired: "جۆری میدیا هەڵبژێرە",
     navAnchorInvalid:

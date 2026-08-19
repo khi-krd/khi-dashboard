@@ -51,7 +51,7 @@ export function LoginForm({
     >
       <FieldGroup>
         <div className="flex flex-col items-center gap-1 text-center">
-          <h1 className="text-2xl font-bold">{t("title")}</h1>
+          <h1 className="text-2xl font-bold tracking-tight">{t("title")}</h1>
           <p className="text-sm text-balance text-muted-foreground">{t("subtitle")}</p>
         </div>
         <Field data-invalid={!!errors.username}>

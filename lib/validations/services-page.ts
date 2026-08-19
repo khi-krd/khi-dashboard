@@ -1,6 +1,5 @@
 import { z } from "zod"
 
-import { NS } from "@/components/services/services-strings"
 import type { ServicesPageSettingsDto } from "@/types/services-page"
 
 export const servicesPageHeroSchema = z.object({
@@ -40,28 +39,3 @@ export function settingsDtoToHeroFormValues(
     subtitleKmr: dto.subtitleKmr ?? "",
   }
 }
-
-export function heroFormValuesToSettingsPayload(
-  values: ServicesPageHeroFormValues,
-  id?: number,
-): ServicesPageSettingsDto {
-  const trim = (v: string | undefined) => v?.trim() || null
-  return {
-    ...(typeof id === "number" ? { id } : {}),
-    heroImageUrl: trim(values.heroImageUrl),
-    eyebrowCkb: trim(values.eyebrowCkb),
-    eyebrowKmr: trim(values.eyebrowKmr),
-    titleCkb: trim(values.titleCkb),
-    titleKmr: trim(values.titleKmr),
-    subtitleCkb: trim(values.subtitleCkb),
-    subtitleKmr: trim(values.subtitleKmr),
-  }
-}
-
-export function heroFormIsValid(values: ServicesPageHeroFormValues): boolean {
-  const hasCkb = Boolean(values.titleCkb?.trim())
-  const hasKmr = Boolean(values.titleKmr?.trim())
-  return hasCkb || hasKmr
-}
-
-export const heroValidationMessage = NS.validation.titleRequired

@@ -1,8 +1,11 @@
 import { z } from "zod"
 
+// Every field is optional by design: an office can be saved with any subset
+// filled in. Only format/length rules remain — contentLanguages keeps min(1)
+// because the language toggle UI always guarantees at least one selection.
 export const contactFormSchema = z.object({
   active: z.boolean().default(true),
-  slugCkb: z.string().min(1).max(200),
+  slugCkb: z.string().max(200),
   slugKmr: z.string().max(200).optional().nullable(),
   contentLanguages: z.array(z.enum(["CKB", "KMR"])).min(1),
   titleCkb: z.string().max(300).optional().nullable(),

@@ -41,6 +41,12 @@ import {
 } from "@/lib/validations/nav-menu"
 import { isDerivedLinksKey, type NavMenuItemDto } from "@/types/nav-menu"
 
+const sectionCard =
+  "rounded-xl border border-border/60 bg-card/50 p-5 shadow-xs"
+
+const sectionHeading =
+  "inline-flex items-center gap-2 text-sm font-semibold text-foreground before:h-3.5 before:w-1 before:rounded-full before:bg-primary/70 before:content-['']"
+
 /**
  * §3.6 — a `403` comes back with an empty body, so `extractApiErrorMessage`
  * finds nothing to read and the toast needs its own copy. `409` does carry a
@@ -141,7 +147,7 @@ export function NavMenuItemCard({
   const keyLocked = mode === "edit"
 
   return (
-    <section className="bg-card rounded-lg border shadow-sm">
+    <section className="bg-card/50 rounded-lg border border-border/60 shadow-xs">
       <div className="flex items-center justify-between gap-3 px-4 py-3">
         <button
           type="button"
@@ -222,7 +228,12 @@ export function NavMenuItemCard({
       {open ? (
         <FormProvider {...methods}>
           <div className="space-y-5 border-t px-4 py-4">
-            <div className="grid gap-4 md:grid-cols-[200px_1fr_120px]">
+            <div
+              className={cn(
+                "grid gap-4 md:grid-cols-[200px_1fr_120px]",
+                sectionCard,
+              )}
+            >
               <div className="space-y-1.5">
                 <Label className="text-muted-foreground text-xs">
                   {NM.field.itemKey}
@@ -299,8 +310,8 @@ export function NavMenuItemCard({
             </div>
 
             <div className="grid gap-5 md:grid-cols-2">
-              <div className="space-y-3">
-                <p className="text-primary text-xs font-medium">{NM.lang.ckb}</p>
+              <div className={cn("space-y-3", sectionCard)}>
+                <p className={sectionHeading}>{NM.lang.ckb}</p>
                 <Input
                   placeholder={NM.field.labelCkb}
                   className="h-10"
@@ -313,10 +324,8 @@ export function NavMenuItemCard({
                   {...register("descriptionCkb")}
                 />
               </div>
-              <div className="space-y-3">
-                <p className="text-xs font-medium text-blue-600 dark:text-blue-400">
-                  {NM.lang.kmr}
-                </p>
+              <div className={cn("space-y-3", sectionCard)}>
+                <p className={sectionHeading}>{NM.lang.kmr}</p>
                 <Input
                   placeholder={NM.field.labelKmr}
                   className="h-10"
@@ -331,22 +340,24 @@ export function NavMenuItemCard({
               </div>
             </div>
 
-            <Controller
-              name="imageUrl"
-              control={control}
-              render={({ field }) => (
-                <MediaCoverUpload
-                  label={NM.field.image}
-                  previewUrl={field.value ?? ""}
-                  urlValue={field.value ?? ""}
-                  onUrlChange={field.onChange}
-                  helperText={NM.field.imageHint}
-                  aspectClass="aspect-[21/9]"
-                />
-              )}
-            />
+            <div className={sectionCard}>
+              <Controller
+                name="imageUrl"
+                control={control}
+                render={({ field }) => (
+                  <MediaCoverUpload
+                    label={NM.field.image}
+                    previewUrl={field.value ?? ""}
+                    urlValue={field.value ?? ""}
+                    onUrlChange={field.onChange}
+                    helperText={NM.field.imageHint}
+                    aspectClass="aspect-[21/9]"
+                  />
+                )}
+              />
+            </div>
 
-            <div className="flex items-center gap-2">
+            <div className={cn("flex items-center gap-2", sectionCard)}>
               <Controller
                 name="active"
                 control={control}
@@ -371,7 +382,7 @@ export function NavMenuItemCard({
               </div>
             </div>
 
-            <div className="border-t pt-4">
+            <div className={sectionCard}>
               <NavMenuLinksEditor derivedKey={derived} />
             </div>
           </div>
