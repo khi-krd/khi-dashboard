@@ -27,6 +27,7 @@ import {
   Menu01Icon,
   News01Icon,
   PaintBoardIcon,
+  Share01Icon,
   SparklesIcon,
   Tag01Icon,
 } from "@hugeicons/core-free-icons"
@@ -150,6 +151,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           title: "بەخشین",
           url: "/dashboard/donations",
           icon: <HugeiconsIcon icon={FavouriteIcon} strokeWidth={2} />,
+        },
+        {
+          title: "لینکە کۆمەڵایەتییەکان",
+          url: "/dashboard/settings/social",
+          icon: <HugeiconsIcon icon={Share01Icon} strokeWidth={2} />,
         },
         {
           title: "براندینگ",

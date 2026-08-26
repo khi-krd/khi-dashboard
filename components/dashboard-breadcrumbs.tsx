@@ -95,6 +95,10 @@ export function DashboardBreadcrumbs() {
     return null
   }
 
+  if (pathname.startsWith("/dashboard/settings/social")) {
+    return null
+  }
+
   const segments = pathname.split("/").filter(Boolean)
   const tail =
     segments[0] === "dashboard" ? segments.slice(1) : segments
