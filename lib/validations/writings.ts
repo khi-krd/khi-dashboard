@@ -1,10 +1,7 @@
 import { z } from "zod"
 
 import { NS } from "@/components/writings/writings-strings"
-import { BOOK_GENRES } from "@/types/writings"
 import type { WritingDto } from "@/types/writings"
-
-const bookGenreEnum = z.enum(BOOK_GENRES)
 
 // A typed-then-cleared numeric input yields NaN; treat it as unset.
 const optionalPositiveInt = z.preprocess(
@@ -29,7 +26,10 @@ const WritingContentSchema = z.object({
 // language toggle UI guarantees at least one is always active.
 export const writingFormSchema = z
   .object({
-    bookGenres: z.array(bookGenreEnum),
+    // Open strings, not an enum: genres are database rows managed from
+    // /dashboard/writings/genres, so a book can legitimately carry a slug this
+    // build has never heard of.
+    bookGenres: z.array(z.string()),
     topicId: z.number().int().nullable().optional(),
     newTopic: z
       .object({

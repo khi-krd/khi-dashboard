@@ -15,7 +15,7 @@ import {
 } from "@heroicons/react/24/outline"
 import type { ComponentType, SVGProps } from "react"
 
-import { GENRE_LABEL_CKB } from "@/components/writings/writings-strings"
+import { genreLabelCkb } from "@/components/writings/writings-strings"
 import {
   Tooltip,
   TooltipContent,
@@ -23,10 +23,10 @@ import {
 } from "@/components/ui/tooltip"
 import { GENRE_FAMILY_CLASSES, genreFamily } from "@/lib/writings-genres"
 import { cn } from "@/lib/utils"
-import type { BookGenre } from "@/types/writings"
+import type { BookGenre, KnownBookGenre } from "@/types/writings"
 
 const GENRE_ICONS: Record<
-  BookGenre,
+  KnownBookGenre,
   ComponentType<SVGProps<SVGSVGElement>>
 > = {
   NOVEL: BookOpenIcon,
@@ -47,7 +47,7 @@ const GENRE_ICONS: Record<
   OTHER: BookOpenIcon,
 }
 
-const GENRE_ABBR: Partial<Record<BookGenre, string>> = {
+const GENRE_ABBR: Partial<Record<KnownBookGenre, string>> = {
   NOVEL: "ڕۆ",
   SHORT_STORY: "چک",
   POETRY: "شع",
@@ -70,8 +70,10 @@ export function WritingGenrePill({
 }) {
   const family = genreFamily(genre)
   const classes = GENRE_FAMILY_CLASSES[family].pill
-  const Icon = GENRE_ICONS[genre]
-  const label = GENRE_LABEL_CKB[genre]
+  // A genre created from the dashboard has no icon or label of its own, and an
+  // undefined component here used to throw rather than render.
+  const Icon = GENRE_ICONS[genre as KnownBookGenre] ?? BookOpenIcon
+  const label = genreLabelCkb(genre)
 
   const pill = (
     <span
@@ -93,7 +95,7 @@ export function WritingGenrePill({
       )}
     >
       <Icon className="size-3 shrink-0" aria-hidden />
-      {compact ? (GENRE_ABBR[genre] ?? label.slice(0, 2)) : label}
+      {compact ? (GENRE_ABBR[genre as KnownBookGenre] ?? label.slice(0, 2)) : label}
     </span>
   )
 

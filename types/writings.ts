@@ -1,5 +1,16 @@
+import type { BookGenreRefDto } from "@/types/book-genre"
+
 export type Language = "CKB" | "KMR"
 
+/**
+ * The genre slugs this dashboard ships a Sorani label and an icon for.
+ *
+ * Genres are rows in the database now, managed from
+ * `/dashboard/writings/genres`, so this is no longer the set of genres that
+ * exist — only the set the dashboard can draw specially. Live data already
+ * carries slugs that are not in here (`EDUCATIONAL`, `ARTS`, `CULTURAL`), and
+ * every new genre an editor creates will be another one.
+ */
 export const BOOK_GENRES = [
   "NOVEL",
   "SHORT_STORY",
@@ -19,7 +30,16 @@ export const BOOK_GENRES = [
   "OTHER",
 ] as const
 
-export type BookGenre = (typeof BOOK_GENRES)[number]
+/** One of the built-ins above — the only slugs with a label and an icon. */
+export type KnownBookGenre = (typeof BOOK_GENRES)[number]
+
+/**
+ * Any genre slug, built-in or created from the dashboard. Deliberately widened
+ * from the old union: books carry whatever the database holds, and typing that
+ * as a closed set is what made the dashboard silently drop the genres it did
+ * not recognise.
+ */
+export type BookGenre = string
 
 export type BookFileFormat = "PDF" | "DOCX" | "EPUB" | "TXT" | "OTHER"
 
@@ -65,6 +85,12 @@ export type WritingDto = {
   /** Hero picture for the homepage carousel; falls back to the cover when unset. */
   featureImageUrl?: string | null
   bookGenres: BookGenre[]
+  /**
+   * The same genres as objects, once the backend sends them. `bookGenres` stays
+   * the slug-only view every display component reads; this is what the book
+   * form needs to submit `genreIds`.
+   */
+  genres?: BookGenreRefDto[]
   topicId?: number | null
   topicNameCkb?: string | null
   topicNameKmr?: string | null

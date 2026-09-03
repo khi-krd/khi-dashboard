@@ -1,9 +1,9 @@
 /** Central CKB copy for the writings module (verbatim from spec §11). */
 
-import type { BookGenre } from "@/types/writings"
+import type { KnownBookGenre } from "@/types/writings"
 import { BOOK_GENRES } from "@/types/writings"
 
-export const GENRE_LABEL_CKB: Record<BookGenre, string> = {
+export const GENRE_LABEL_CKB: Record<KnownBookGenre, string> = {
   NOVEL: "ڕۆمان",
   SHORT_STORY: "چیرۆکی کورت",
   POETRY: "شیعر",
@@ -23,6 +23,20 @@ export const GENRE_LABEL_CKB: Record<BookGenre, string> = {
 }
 
 export { BOOK_GENRES }
+
+/**
+ * The Sorani label for a genre slug, or the slug itself when there is none.
+ *
+ * Genres are editable rows now, so a book can carry a slug this bundle has
+ * never heard of. Showing the raw key is honest — it reads as "not translated
+ * yet" rather than as a missing genre, which is what the old `Record` lookup
+ * produced when it returned `undefined`.
+ */
+export function genreLabelCkb(slug: string): string {
+  return (
+    GENRE_LABEL_CKB[slug as KnownBookGenre] ?? slug.replaceAll("_", " ")
+  )
+}
 
 export const NS = {
   dash: "—",

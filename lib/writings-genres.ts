@@ -1,4 +1,4 @@
-import type { BookGenre } from "@/types/writings"
+import type { KnownBookGenre } from "@/types/writings"
 
 export type GenreFamily =
   | "literary"
@@ -31,37 +31,44 @@ export const GENRE_FAMILY_CLASSES: Record<
   },
 }
 
-const LITERARY: BookGenre[] = [
+const LITERARY: KnownBookGenre[] = [
   "NOVEL",
   "SHORT_STORY",
   "POETRY",
   "ESSAY",
   "DRAMA",
 ]
-const HISTORY_SOCIETY: BookGenre[] = [
+const HISTORY_SOCIETY: KnownBookGenre[] = [
   "HISTORY",
   "BIOGRAPHY",
   "POLITICAL",
   "GEOGRAPHY",
 ]
-const KNOWLEDGE: BookGenre[] = ["ACADEMIC", "REFERENCE", "LINGUISTICS"]
-const CULTURE_LIFE: BookGenre[] = [
+const KNOWLEDGE: KnownBookGenre[] = ["ACADEMIC", "REFERENCE", "LINGUISTICS"]
+const CULTURE_LIFE: KnownBookGenre[] = [
   "RELIGIOUS",
   "FOLKLORE",
   "CHILDREN",
   "OTHER",
 ]
 
-export function genreFamily(genre: BookGenre): GenreFamily {
-  if (LITERARY.includes(genre)) return "literary"
-  if (HISTORY_SOCIETY.includes(genre)) return "history_society"
-  if (KNOWLEDGE.includes(genre)) return "knowledge"
+/**
+ * Any slug is accepted — a genre created from the dashboard belongs to no
+ * built-in family, and falls through to the same default `OTHER` always had
+ * rather than leaving the pill unstyled.
+ */
+export function genreFamily(genre: string): GenreFamily {
+  const key = genre as KnownBookGenre
+  if (LITERARY.includes(key)) return "literary"
+  if (HISTORY_SOCIETY.includes(key)) return "history_society"
+  if (KNOWLEDGE.includes(key)) return "knowledge"
   return "culture_life"
 }
 
+/** The built-in genres, grouped. Used as the fallback picker and the filters. */
 export const GENRE_GROUPS: {
   family: GenreFamily
-  genres: BookGenre[]
+  genres: KnownBookGenre[]
 }[] = [
   { family: "literary", genres: LITERARY },
   { family: "history_society", genres: HISTORY_SOCIETY },

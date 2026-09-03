@@ -38,6 +38,7 @@ import { FieldError } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Spinner } from "@/components/ui/spinner"
+import { useBookGenresQuery } from "@/hooks/useBookGenres"
 import {
   useCreateWriting,
   useUpdateWriting,
@@ -145,6 +146,10 @@ export function WritingForm({
       ? (watch("ckbContent.title")?.length ?? 0)
       : (watch("kmrContent.title")?.length ?? 0)
 
+  // Same query key the genre picker uses, so this shares its cache rather than
+  // issuing a second request; it is read only to turn the picked slugs into ids.
+  const genresQ = useBookGenresQuery(false)
+
   const tabMarkers = useMemo(() => {
     const m = { CKB: false, KMR: false }
     if (errors.ckbContent?.title) m.CKB = true
@@ -157,6 +162,7 @@ export function WritingForm({
       mode,
       mode === "edit" ? writingId : undefined,
       values,
+      genresQ.data,
     )
     try {
       if (mode === "create") {

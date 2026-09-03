@@ -1,4 +1,5 @@
 import type { WritingFormValues } from "@/lib/validations/writings"
+import { normalizeGenreSlug, type BookGenreDto } from "@/types/book-genre"
 
 function trimOrUndef(s: string | null | undefined) {
   const t = s?.trim()
@@ -25,15 +26,47 @@ function buildContent(
   }
 }
 
+/**
+ * Maps the picked slugs onto the ids the backend is moving to.
+ *
+ * Returns `undefined` — meaning "do not send `genreIds` at all" — whenever the
+ * mapping cannot be completed: the genre list was unreachable, or the book
+ * carries a slug the loaded list does not contain (a genre hidden since the
+ * book was written). A partial `genreIds` would read to the server as a
+ * deliberate removal of the genres that were left out, so in those cases only
+ * the slug array is sent and the server's own lookup does the work.
+ */
+function resolveGenreIds(
+  slugs: string[],
+  genres: BookGenreDto[] | undefined,
+): number[] | undefined {
+  if (!genres || genres.length === 0) return undefined
+  const bySlug = new Map(
+    genres.flatMap((g) => (g.id == null ? [] : [[g.slug, g.id] as const])),
+  )
+  const ids: number[] = []
+  for (const slug of slugs) {
+    const id = bySlug.get(normalizeGenreSlug(slug))
+    if (id == null) return undefined
+    ids.push(id)
+  }
+  return ids
+}
+
 export function writingFormValuesToMultipart(
   mode: "create" | "edit",
   writingId: number | undefined,
   values: WritingFormValues,
+  /** The genres currently known to the dashboard, for the slug → id mapping. */
+  genres?: BookGenreDto[],
 ): FormData {
   const fd = new FormData()
 
   const payload: Record<string, unknown> = {
     ...(mode === "edit" && typeof writingId === "number" ? { id: writingId } : {}),
+    // The slug array is what the backend accepts today and still accepts during
+    // the transition; `genreIds` below is what it is moving to. Both go while
+    // the two coexist, so a save works against either build of the API.
     bookGenres: values.bookGenres,
     publishedByInstitute: values.publishedByInstitute,
     contentLanguages: values.contentLanguages,
@@ -48,6 +81,11 @@ export function writingFormValuesToMultipart(
     kmrContent: values.contentLanguages.includes("KMR")
       ? buildContent("KMR", values, values.kmrBookFile)
       : undefined,
+  }
+
+  const genreIds = resolveGenreIds(values.bookGenres, genres)
+  if (genreIds) {
+    payload.genreIds = genreIds
   }
 
   if (values.seriesMode === "series") {

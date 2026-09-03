@@ -1,4 +1,6 @@
 import { unwrapApiData } from "@/lib/api-unwrap"
+import { normalizeBookGenreRef } from "@/lib/book-genre-normalize"
+import type { BookGenreRefDto } from "@/types/book-genre"
 import type {
   BookFileFormat,
   BookGenre,
@@ -11,7 +13,6 @@ import type {
   WritingDto,
   WritingPage,
 } from "@/types/writings"
-import { BOOK_GENRES } from "@/types/writings"
 
 function coerceStr(v: unknown): string | null {
   if (v == null) return null
@@ -37,11 +38,33 @@ function coerceStringArray(raw: unknown): string[] {
   return []
 }
 
+/**
+ * Every slug the book carries, whether or not this build has a label for it.
+ *
+ * This used to filter against the compiled-in `BOOK_GENRES` list, which meant a
+ * genre added to the database simply vanished from the dashboard: live data
+ * already contains `EDUCATIONAL`, `ARTS` and `CULTURAL`, and a book whose only
+ * genre was one of those rendered as having none at all. Genres are editable
+ * rows now, so there is no fixed set left to validate against.
+ */
 function normalizeBookGenres(raw: unknown): BookGenre[] {
-  const arr = coerceStringArray(raw)
-  return arr.filter((g): g is BookGenre =>
-    (BOOK_GENRES as readonly string[]).includes(g),
-  )
+  const seen = new Set<string>()
+  const out: BookGenre[] = []
+  for (const g of coerceStringArray(raw)) {
+    const slug = g.trim().toUpperCase()
+    if (!slug || seen.has(slug)) continue
+    seen.add(slug)
+    out.push(slug)
+  }
+  return out
+}
+
+/** The embedded genre objects, once the backend sends them alongside the slugs. */
+function normalizeGenreRefs(raw: unknown): BookGenreRefDto[] {
+  if (!Array.isArray(raw)) return []
+  return raw
+    .map(normalizeBookGenreRef)
+    .filter((g): g is BookGenreRefDto => g != null)
 }
 
 function normalizeFileFormat(raw: unknown): BookFileFormat | null {
@@ -182,13 +205,18 @@ export function normalizeWritingDto(raw: unknown): WritingDto {
   const tagData = normalizeTags(o)
   const embeddedSeries = o.series ?? o.seriesInfo ?? o.series_info
   const seriesInfo = normalizeSeriesInfo(embeddedSeries)
-  const bookGenres = normalizeBookGenres(o.bookGenres ?? o.book_genres)
+  const genres = normalizeGenreRefs(o.genres)
+  const slugs = normalizeBookGenres(o.bookGenres ?? o.book_genres)
+  // Once the API stops sending the flat slug array, derive it from the objects
+  // so every display component keeps reading one field.
+  const bookGenres = slugs.length > 0 ? slugs : genres.map((g) => g.slug)
 
   return {
     id: coerceNum(o.id) ?? undefined,
     featured: coerceBool(o.featured),
     featuredOrder: coerceNum(o.featuredOrder) ?? coerceNum(o.featured_order),
     bookGenres,
+    genres,
     topicId:
       coerceNum(o.topicId) ??
       coerceNum(o.topic_id) ??

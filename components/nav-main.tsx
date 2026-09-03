@@ -48,9 +48,25 @@ export function NavMain({
           <SidebarMenu>
             {group.items.map((item) => {
               const hasSubItems = Boolean(item.items?.length)
-              const isChildActive =
-                hasSubItems &&
-                item.items!.some((sub) => pathname.startsWith(sub.url))
+              // Longest match wins. The donations group holds both
+              // `/dashboard/donations` and `/dashboard/donations/type-cards`, so a
+              // plain `startsWith` would mark the parent page active while the
+              // child page is open — two highlighted rows, neither of them wrong
+              // enough to explain itself. Matching on a whole path segment also
+              // stops `/dashboard/videos` claiming `/dashboard/videos-archive`.
+              const activeSubUrl = item.items
+                ?.filter(
+                  (sub) =>
+                    pathname === sub.url || pathname.startsWith(`${sub.url}/`),
+                )
+                .reduce<string | undefined>(
+                  (best, sub) =>
+                    best == null || sub.url.length > best.length
+                      ? sub.url
+                      : best,
+                  undefined,
+                )
+              const isChildActive = hasSubItems && activeSubUrl != null
               const isActive = hasSubItems
                 ? isChildActive
                 : item.url === "/dashboard"
@@ -98,7 +114,7 @@ export function NavMain({
                   <CollapsibleContent>
                     <SidebarMenuSub>
                       {item.items?.map((subItem) => {
-                        const subActive = pathname.startsWith(subItem.url)
+                        const subActive = subItem.url === activeSubUrl
                         return (
                           <SidebarMenuSubItem key={subItem.title}>
                             <SidebarMenuSubButton

@@ -15,6 +15,7 @@ import {
   RectangleStackIcon,
   SparklesIcon,
   Squares2X2Icon,
+  TagIcon,
 } from "@heroicons/react/24/outline"
 
 import {
@@ -23,6 +24,7 @@ import {
 } from "@/components/writings/writing-breadcrumb"
 import { useSyncedState } from "@/hooks/use-synced-state"
 import { useStoredViewMode } from "@/hooks/use-stored-view-mode"
+import { BG } from "@/components/writings/genres/book-genres-strings"
 import { WritingDeleteDialog } from "@/components/writings/writing-delete-dialog"
 import { WritingErrorState } from "@/components/writings/writing-error-state"
 import { WritingsDataGrid } from "@/components/writings/writings-data-grid"
@@ -315,6 +317,13 @@ function WritingsListClientInner() {
           >
             <RectangleStackIcon className="size-4" aria-hidden />
             {NS.series.link}
+          </Link>
+          <Link
+            href="/dashboard/writings/genres"
+            className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 text-xs transition-colors"
+          >
+            <TagIcon className="size-4" aria-hidden />
+            {BG.action.link}
           </Link>
           <Link
             href="/dashboard/writings/new"

@@ -113,6 +113,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               title: "نووسراوەکان",
               url: "/dashboard/writings",
             },
+            {
+              title: "جۆرەکانی کتێب",
+              url: "/dashboard/writings/genres",
+            },
           ],
         },
         {
@@ -149,8 +153,18 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         },
         {
           title: "بەخشین",
-          url: "/dashboard/donations",
+          url: "#",
           icon: <HugeiconsIcon icon={FavouriteIcon} strokeWidth={2} />,
+          items: [
+            {
+              title: "ڕێکخستن و داواکارییەکان",
+              url: "/dashboard/donations",
+            },
+            {
+              title: "کارتەکانی بەخشین",
+              url: "/dashboard/donations/type-cards",
+            },
+          ],
         },
         {
           title: "لینکە کۆمەڵایەتییەکان",
