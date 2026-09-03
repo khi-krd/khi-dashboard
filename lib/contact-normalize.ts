@@ -52,6 +52,10 @@ export function normalizeContactDto(raw: unknown): ContactDto {
     mapEmbedUrl: coerceStr(o.mapEmbedUrl) ?? coerceStr(o.map_embed_url),
     latitude: coerceNum(o.latitude) ?? undefined,
     longitude: coerceNum(o.longitude) ?? undefined,
+    heroImageUrl: coerceStr(o.heroImageUrl) ?? coerceStr(o.hero_image_url),
+    officeType: coerceStr(o.officeType) ?? coerceStr(o.office_type),
+    badgeCkb: coerceStr(o.badgeCkb) ?? coerceStr(o.badge_ckb),
+    badgeKmr: coerceStr(o.badgeKmr) ?? coerceStr(o.badge_kmr),
     createdAt: coerceStr(o.createdAt) ?? coerceStr(o.created_at) ?? undefined,
     updatedAt: coerceStr(o.updatedAt) ?? coerceStr(o.updated_at) ?? undefined,
   }

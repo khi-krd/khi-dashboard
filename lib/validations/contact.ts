@@ -24,6 +24,10 @@ export const contactFormSchema = z.object({
   mapEmbedUrl: z.string().optional().nullable(),
   latitude: z.number().nullable().optional(),
   longitude: z.number().nullable().optional(),
+  heroImageUrl: z.string().optional().nullable(),
+  officeType: z.string().max(40).optional().nullable(),
+  badgeCkb: z.string().max(200).optional().nullable(),
+  badgeKmr: z.string().max(200).optional().nullable(),
 })
 
 export type ContactFormValues = z.infer<typeof contactFormSchema>
@@ -49,6 +53,10 @@ export const defaultContactFormValues: ContactFormValues = {
   mapEmbedUrl: "",
   latitude: null,
   longitude: null,
+  heroImageUrl: "",
+  officeType: "",
+  badgeCkb: "",
+  badgeKmr: "",
 }
 
 export type ContactCompletionInput = {
@@ -106,5 +114,9 @@ export function contactDtoToFormValues(
     mapEmbedUrl: dto.mapEmbedUrl ?? "",
     latitude: dto.latitude ?? null,
     longitude: dto.longitude ?? null,
+    heroImageUrl: dto.heroImageUrl ?? "",
+    officeType: dto.officeType ?? "",
+    badgeCkb: dto.badgeCkb ?? "",
+    badgeKmr: dto.badgeKmr ?? "",
   }
 }

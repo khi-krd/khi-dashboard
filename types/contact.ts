@@ -22,6 +22,10 @@ export type ContactDto = {
   mapEmbedUrl?: string | null
   latitude?: number | null
   longitude?: number | null
+  heroImageUrl?: string | null
+  officeType?: string | null
+  badgeCkb?: string | null
+  badgeKmr?: string | null
   createdAt?: string
   updatedAt?: string
 }

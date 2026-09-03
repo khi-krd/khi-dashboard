@@ -29,6 +29,10 @@ export type ContactWritePayload = {
   mapEmbedUrl?: string
   latitude?: number
   longitude?: number
+  heroImageUrl?: string
+  officeType?: string
+  badgeCkb?: string
+  badgeKmr?: string
 }
 
 export function contactFormValuesToPayload(
@@ -62,5 +66,11 @@ export function contactFormValuesToPayload(
     mapEmbedUrl: trimOrUndef(values.mapEmbedUrl),
     latitude: values.latitude ?? undefined,
     longitude: values.longitude ?? undefined,
+    // PUT is a full replacement: anything omitted here is nulled server-side,
+    // so these round-trip even though the form may never touch them.
+    heroImageUrl: trimOrUndef(values.heroImageUrl),
+    officeType: trimOrUndef(values.officeType),
+    badgeCkb: trimOrUndef(values.badgeCkb),
+    badgeKmr: trimOrUndef(values.badgeKmr),
   }
 }

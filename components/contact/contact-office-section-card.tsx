@@ -14,6 +14,7 @@ import { toast } from "sonner"
 import { ContactSectionCardShell } from "@/components/contact/contact-section-card-shell"
 import { NS } from "@/components/contact/contact-strings"
 import { ServiceActiveSwitch } from "@/components/services/service-active-switch"
+import { MediaCoverUpload } from "@/components/shared/media-cover-upload"
 import { TiptapEditor } from "@/components/shared/tiptap-editor-lazy"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -254,6 +255,27 @@ export function ContactOfficeSectionCard({
           </div>
         </div>
 
+        <div className="border-border space-y-3 rounded-lg border bg-card/50 p-4 shadow-xs">
+          <p className={sectionHeading}>{NS.form.hero_image}</p>
+          <Controller
+            control={control}
+            name="heroImageUrl"
+            render={({ field, fieldState }) => (
+              <MediaCoverUpload
+                previewUrl={field.value?.trim() || null}
+                urlValue={field.value ?? ""}
+                onUrlChange={field.onChange}
+                urlError={fieldState.error?.message}
+                helperText={NS.form.hero_image_hint}
+                aspectClass="aspect-[16/10]"
+              />
+            )}
+          />
+          <p className="text-muted-foreground text-xs">
+            {NS.form.hero_image_empty}
+          </p>
+        </div>
+
         <div className="grid gap-5 md:grid-cols-2">
           <LangBlock lang="CKB" register={register} control={control} />
           <LangBlock lang="KMR" register={register} control={control} />
@@ -293,7 +315,17 @@ export function ContactOfficeSectionCard({
               placeholder={NS.form.longitude}
               dir="ltr"
             />
+            <Input
+              {...register("officeType")}
+              placeholder={NS.form.office_type}
+              dir="ltr"
+            />
+            <Input {...register("badgeCkb")} placeholder={NS.form.badge_ckb} />
+            <Input {...register("badgeKmr")} placeholder={NS.form.badge_kmr} />
           </div>
+          <p className="text-muted-foreground text-xs">
+            {NS.form.office_type_hint}
+          </p>
         </div>
       </FormProvider>
     </ContactSectionCardShell>
