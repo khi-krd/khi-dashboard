@@ -28,7 +28,7 @@ import Image from "next/image"
 import { isOptimizableImageSrc } from "@/lib/image-src"
 import { AboutErrorState } from "@/components/about/about-error-state"
 import { AboutFormSidebar } from "@/components/about/about-form-sidebar"
-import { AboutStatsEditor } from "@/components/about/about-stats-editor"
+
 import { NS } from "@/components/about/about-strings"
 import { MediaCoverUpload } from "@/components/shared/media-cover-upload"
 import { TiptapEditor } from "@/components/shared/tiptap-editor-lazy"
@@ -1013,18 +1013,6 @@ export function AboutForm({
               </div>
             </section>
             ) : null}
-
-            {embedded ? (
-              <AboutEditorSectionCard
-                title={NS.page.statsTitle}
-                hint={NS.page.statsHint}
-                {...sectionSaveProps}
-              >
-                <AboutStatsEditor />
-              </AboutEditorSectionCard>
-            ) : (
-              <AboutStatsEditor />
-            )}
 
             {embedded ? (
               <AboutEditorSectionCard title={NS.page.teamTitle}>

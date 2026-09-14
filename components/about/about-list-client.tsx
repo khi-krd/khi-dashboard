@@ -12,7 +12,6 @@ import { AboutFounderSectionCard } from "@/components/about/about-founder-sectio
 import { AboutPageHeroEditor } from "@/components/about/about-page-hero-editor"
 import { AboutPagePreview } from "@/components/about/about-page-preview"
 import { AboutPartnersSectionCard } from "@/components/about/about-partners-section-card"
-import { AboutStatsSectionCard } from "@/components/about/about-stats-section-card"
 import { AboutTeamSectionCard } from "@/components/about/about-team-section-card"
 import { AboutErrorState } from "@/components/about/about-error-state"
 import { NS } from "@/components/about/about-strings"
@@ -171,18 +170,13 @@ function AboutListClientInner() {
                   aboutDto={aboutRecord}
                   onSaved={handleSaved}
                 />
-                <AboutStatsSectionCard
+                <AboutFounderSectionCard
                   index={1}
                   aboutDto={aboutRecord}
                   onSaved={handleSaved}
                 />
-                <AboutFounderSectionCard
-                  index={2}
-                  aboutDto={aboutRecord}
-                  onSaved={handleSaved}
-                />
-                <AboutTeamSectionCard index={3} />
-                <AboutPartnersSectionCard index={4} />
+                <AboutTeamSectionCard index={2} />
+                <AboutPartnersSectionCard index={3} />
               </div>
             </div>
           ) : !listQuery.isLoading ? (

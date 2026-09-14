@@ -46,7 +46,7 @@ import {
 } from "@/lib/sanitize-news-html"
 import { cn } from "@/lib/utils"
 import { aboutContentLanguages } from "@/types/about-ui"
-import type { AboutDto, Language } from "@/types/about"
+import type { Language } from "@/types/about"
 
 export function AboutDetailClient({ aboutId }: { aboutId: number }) {
   const router = useRouter()
@@ -246,36 +246,6 @@ export function AboutDetailClient({ aboutId }: { aboutId: number }) {
                     __html: sanitizeNewsBodyHtml(body ?? ""),
                   }}
                 />
-              </section>
-            ) : null}
-
-            {(about.stats?.length ?? 0) > 0 ? (
-              <section className="border-border/60 mt-12 border-t pt-8">
-                <h3 className="text-muted-foreground mb-4 text-xs font-medium tracking-wide uppercase">
-                  {NS.detail.stats}
-                </h3>
-                <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {about.stats!.map((stat, i) => (
-                    <div
-                      key={i}
-                      className="border-border bg-muted/20 rounded-lg border p-4 text-center"
-                    >
-                      <dt className="text-muted-foreground text-xs">
-                        {stat.labelCkb?.trim() || stat.labelKmr?.trim() || "—"}
-                      </dt>
-                      {stat.labelKmr?.trim() &&
-                      stat.labelCkb?.trim() &&
-                      stat.labelKmr !== stat.labelCkb ? (
-                        <div className="text-muted-foreground/70 mt-0.5 text-[10px]">
-                          {stat.labelKmr}
-                        </div>
-                      ) : null}
-                      <dd className="mt-2 text-2xl font-bold tracking-tight">
-                        {stat.value?.trim() || "—"}
-                      </dd>
-                    </div>
-                  ))}
-                </dl>
               </section>
             ) : null}
 

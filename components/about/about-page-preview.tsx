@@ -132,16 +132,6 @@ function AboutSections({ about }: { about: AboutDto }) {
     stripHtml(about.ckbContent?.body ?? "") ||
     stripHtml(about.kmrContent?.body ?? "")
 
-  const stats = (about.stats ?? []).filter(
-    (s) => s.labelCkb?.trim() || s.labelKmr?.trim() || s.value?.trim(),
-  )
-  const statsBody = stats
-    .map(
-      (s) =>
-        `${s.labelCkb?.trim() || s.labelKmr?.trim() || "—"}: ${s.value?.trim() || "—"}`,
-    )
-    .join(" · ")
-
   const founderName =
     about.founderNameCkb?.trim() || about.founderNameKmr?.trim() || ""
   const founderBio =
@@ -161,14 +151,6 @@ function AboutSections({ about }: { about: AboutDto }) {
     sections.push({
       title: NS.section.content,
       body,
-      thumbnails: [],
-    })
-  }
-
-  if (statsBody) {
-    sections.push({
-      title: NS.section.stats,
-      body: statsBody,
       thumbnails: [],
     })
   }
