@@ -47,6 +47,7 @@ export type TiptapEditorProps = {
 
 type EditorMode = "edit" | "preview" | "markdown" | "html"
 type SourceMode = "markdown" | "html"
+type PreviewPane = "preview" | "markdown" | "html"
 
 const EDITABLE_MODES: EditorMode[] = ["edit", "markdown", "html"]
 const VIEWER_MODES: EditorMode[] = ["preview", "markdown", "html"]
@@ -80,6 +81,32 @@ export function tiptapEditorShellClass(error?: string | null | boolean) {
   )
 }
 
+/** Read-only document body for the preview modal — no editor chrome. */
+function PreviewDocument({
+  content,
+  lang,
+}: {
+  content: string
+  lang?: "CKB" | "KMR"
+}) {
+  const editor = useEditor({
+    extensions: createTiptapExtensions({ editable: false }),
+    editable: false,
+    content,
+    contentType: tiptapContentType(content),
+    immediatelyRender: false,
+    editorProps: {
+      attributes: {
+        class:
+          "prose prose-sm md:prose-base max-w-none dark:prose-invert outline-none prose-img:rounded-lg",
+      },
+    },
+  })
+
+  if (!editor) return null
+  return <EditorContent editor={editor} dir={langToDir(lang)} />
+}
+
 export function TiptapEditor({
   value,
   onChange,
@@ -98,6 +125,7 @@ export function TiptapEditor({
   const [mode, setMode] = useState<EditorMode>(editable ? "edit" : "preview")
   const [previewOpen, setPreviewOpen] = useState(false)
   const [previewContent, setPreviewContent] = useState("")
+  const [previewPane, setPreviewPane] = useState<PreviewPane>("preview")
   /** Draft of the open source pane. `emitted` marks text the user just typed
    * there (vs. a seed), so an incoming `value` equal to it is recognized as
    * this pane's own echo rather than an external change. */
@@ -192,6 +220,7 @@ export function TiptapEditor({
     setPreviewContent(
       editor && !editor.isDestroyed ? getEditorMarkdown(editor) : (value ?? ""),
     )
+    setPreviewPane("preview")
     setPreviewOpen(true)
   }
 
@@ -298,18 +327,51 @@ export function TiptapEditor({
         <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
           <DialogContent
             dir={dir}
-            className="max-h-[85vh] overflow-y-auto sm:max-w-4xl"
+            className="flex max-h-[85vh] flex-col gap-0 overflow-hidden p-0 sm:max-w-4xl"
           >
-            <DialogHeader>
+            <DialogHeader className="shrink-0 flex-row flex-wrap items-center justify-between gap-3 border-b px-4 py-3 pe-12">
               <DialogTitle>{TIPTAP_NS.modes.preview}</DialogTitle>
+              <div
+                role="tablist"
+                aria-label={TIPTAP_NS.modes.label}
+                className="bg-muted inline-flex w-fit items-center gap-0.5 rounded-lg p-[3px]"
+              >
+                {(["preview", "markdown", "html"] as const).map((m) => (
+                  <button
+                    key={m}
+                    type="button"
+                    role="tab"
+                    aria-selected={previewPane === m}
+                    onClick={() => setPreviewPane(m)}
+                    className={cn(
+                      "text-foreground/60 hover:text-foreground rounded-md px-2.5 py-1 text-xs font-medium whitespace-nowrap transition-all",
+                      previewPane === m &&
+                        "bg-background text-foreground shadow-sm dark:bg-input/30",
+                    )}
+                  >
+                    {TIPTAP_NS.modes[m]}
+                  </button>
+                ))}
+              </div>
             </DialogHeader>
-            <TiptapEditor
-              editable={false}
-              value={previewContent}
-              lang={lang}
-              previewModal={false}
-              contentMinHeightClass="min-h-0"
-            />
+            <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
+              {!previewContent.trim() ? (
+                <p className="text-muted-foreground text-sm">
+                  {TIPTAP_NS.modes.empty}
+                </p>
+              ) : previewPane === "preview" ? (
+                <PreviewDocument content={previewContent} lang={lang} />
+              ) : (
+                <pre
+                  dir="ltr"
+                  className="bg-muted/50 overflow-x-auto rounded-lg p-4 text-left font-mono text-xs leading-relaxed whitespace-pre-wrap"
+                >
+                  {previewPane === "markdown"
+                    ? previewContent
+                    : seedFromValue("html", previewContent)}
+                </pre>
+              )}
+            </div>
           </DialogContent>
         </Dialog>
       ) : null}
