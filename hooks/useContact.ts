@@ -8,15 +8,22 @@ import {
 } from "@tanstack/react-query"
 
 import type { ContactWritePayload } from "@/lib/contact-form-data"
-import { contactKeys, type ContactListQueryKeyParts } from "@/lib/contact-query-keys"
+import {
+  contactKeys,
+  type ContactListQueryKeyParts,
+  type ContactMessagesQueryKeyParts,
+} from "@/lib/contact-query-keys"
 import {
   createContact,
   deleteContact,
   getContactById,
   getContactListAdmin,
+  getContactMessages,
   updateContact,
+  updateContactMessageStatus,
 } from "@/services/contactService"
 import type { ContactDto, ContactPage } from "@/types/contact"
+import type { DonationStatus } from "@/types/donations"
 
 export function useContactListQuery(params: ContactListQueryKeyParts) {
   return useQuery({
@@ -98,6 +105,26 @@ export function useDeleteContactMutation() {
     onSuccess: (_data, id) => {
       void queryClient.invalidateQueries({ queryKey: contactKeys.lists() })
       queryClient.removeQueries({ queryKey: contactKeys.detail(id) })
+    },
+  })
+}
+
+export function useContactMessagesQuery(params: ContactMessagesQueryKeyParts) {
+  return useQuery({
+    queryKey: contactKeys.messagesList(params),
+    queryFn: () => getContactMessages(params.page, params.size),
+    staleTime: 1000 * 60 * 2,
+    placeholderData: keepPreviousData,
+  })
+}
+
+export function useUpdateContactMessageStatusMutation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, status }: { id: number; status: DonationStatus }) =>
+      updateContactMessageStatus(id, status),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: contactKeys.messages() })
     },
   })
 }

@@ -2,7 +2,6 @@
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { LinkIcon, TrashIcon } from "@heroicons/react/24/outline"
-import { useEffect, useRef } from "react"
 import {
   Controller,
   FormProvider,
@@ -23,6 +22,7 @@ import {
   useCreateContact,
   useUpdateContact,
 } from "@/hooks/useContact"
+import { useServerFormSync } from "@/hooks/use-server-form-sync"
 import { contactFormValuesToPayload } from "@/lib/contact-form-data"
 import { contactDisplayTitle } from "@/lib/contact-normalize"
 import { extractApiErrorMessage } from "@/lib/api-error"
@@ -103,7 +103,6 @@ export function ContactOfficeSectionCard({
   const contactId = dto?.id
   const createMut = useCreateContact()
   const updateMut = useUpdateContact()
-  const bootstrapped = useRef(false)
 
   const methods = useForm<ContactFormValues>({
     resolver: zodResolver(contactFormSchema) as Resolver<ContactFormValues>,
@@ -121,20 +120,23 @@ export function ContactOfficeSectionCard({
     formState: { isDirty, isValid },
   } = methods
 
-  useEffect(() => {
-    if (bootstrapped.current) return
-    bootstrapped.current = true
-    if (dto) {
-      reset(contactDtoToFormValues(dto))
-      return
-    }
-    reset({
-      ...defaultContactFormValues,
-      contentLanguages: ["CKB", "KMR"],
-      slugCkb: `peywend-${index + 1}`,
-      active: true,
-    })
-  }, [dto, reset, index])
+  // Re-seed whenever the server record changes (`id:updatedAt`), unless the
+  // form is dirty — a one-shot bootstrap would freeze the card on its
+  // mount-time snapshot and send stale data back to the destructive PUT.
+  useServerFormSync({
+    signature: dto?.id
+      ? `${dto.id}:${dto.updatedAt ?? ""}`
+      : `draft:${index}`,
+    buildValues: () =>
+      dto?.id
+        ? contactDtoToFormValues(dto)
+        : {
+            ...defaultContactFormValues,
+            contentLanguages: ["CKB", "KMR"],
+          },
+    reset,
+    isDirty,
+  })
 
   const pending = createMut.isPending || updateMut.isPending
   const submitDisabled =
@@ -232,9 +234,9 @@ export function ContactOfficeSectionCard({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
           <div className="space-y-2">
-            <Label className="text-xs">{NS.form.slug_ckb}</Label>
+            <Label className="text-xs">{NS.form.slug_ckb} *</Label>
             <div className="relative">
               <LinkIcon className="text-muted-foreground/60 absolute inset-e-3 top-1/2 size-4 -translate-y-1/2" />
               <Input
@@ -252,6 +254,21 @@ export function ContactOfficeSectionCard({
                 className="pe-10 font-mono text-sm"
               />
             </div>
+          </div>
+          <div className="space-y-2">
+            <Label className="text-xs">{NS.form.display_order}</Label>
+            <Input
+              type="number"
+              step="1"
+              {...register("displayOrder", {
+                setValueAs: (v) =>
+                  v === "" || v == null || Number.isNaN(Number(v))
+                    ? null
+                    : Number(v),
+              })}
+              dir="ltr"
+              className="font-mono text-sm"
+            />
           </div>
         </div>
 
@@ -284,7 +301,11 @@ export function ContactOfficeSectionCard({
         <div className="border-border space-y-3 rounded-lg border bg-card/50 p-4 shadow-xs">
           <p className={sectionHeading}>{NS.sidebar.contact_info}</p>
           <div className="grid gap-3 sm:grid-cols-2">
-            <Input {...register("phone")} placeholder={NS.form.phone} dir="ltr" />
+            <Input
+              {...register("phone")}
+              placeholder={`${NS.form.phone} *`}
+              dir="ltr"
+            />
             <Input
               {...register("secondaryPhone")}
               placeholder={NS.form.secondary_phone}
@@ -293,7 +314,7 @@ export function ContactOfficeSectionCard({
             <Input
               type="email"
               {...register("email")}
-              placeholder={NS.form.email}
+              placeholder={`${NS.form.email} *`}
               dir="ltr"
             />
             <Input

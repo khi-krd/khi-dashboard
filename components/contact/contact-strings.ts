@@ -17,6 +17,27 @@ export const NS = {
   section: {
     unnamed: "نووسینگەی بێ ناونیشان",
   },
+  tabs: {
+    offices: "نووسینگەکان",
+    messages: "نامەکان",
+  },
+  messages: {
+    title: "نامەکانی پەیوەندی",
+    subtitle: "نامە نێردراوەکانی سەردانکەران لە فۆڕمی پەیوەندی ماڵپەڕ",
+    empty: "هیچ نامەیەک نەگەشتووە",
+    count: (n: string) => `کۆی ${n} نامە`,
+    sender: "نێرەر",
+    subject: "بابەت",
+    message: "نامە",
+    contact: "پەیوەندی",
+    locale: "زمان",
+    status: "دۆخ",
+    date: "بەروار",
+    sheetTitle: (id: string) => `نامە #${id}`,
+    sentAt: "بەرواری ناردن",
+    changeStatus: "گۆڕینی دۆخ",
+    replyHint: "بۆ وەڵامدانەوە لە ئیمەیڵەکەی نێرەر بەکاری بهێنە.",
+  },
   search_placeholder: "گەڕان لە ناونیشان، ناونیشان، تەلەفۆن، یان ئیمەیڵ…",
   filter: {
     status_all: "هەموو دۆخەکان",
@@ -104,6 +125,7 @@ export const NS = {
     map_embed_url: "لینکی نەخشە (embed)",
     latitude: "پانی",
     longitude: "درێژی",
+    display_order: "ڕیزبەندی",
     hero_image: "وێنەی نووسینگە",
     hero_image_hint:
       "پێشنیارکراو: ڕێژەی ١٦:١٠ — ١٦٠٠×١٠٠٠ پیکسل، JPEG یان WebP، کەمتر لە ٤٠٠ کیلۆبایت. لاکانی وێنەکە لەسەر مۆبایل دەبڕدرێن، بۆیە بەشە گرنگەکە لە ناوەڕاست دابنێ.",
@@ -118,10 +140,16 @@ export const NS = {
   },
   validation: {
     languageRequired: "لانیکەم یەک زمان هەڵبژێرە",
+    slugCkbRequired: "سلەگی سۆرانی پێویستە",
+    phoneRequired: "ژمارەی تەلەفۆن پێویستە",
+    emailRequired: "ئیمەیڵ پێویستە",
+    emailInvalid: "ئیمەیڵەکە نادروستە",
+    slugsMustDiffer: "سلەگی کورمانجی دەبێت جیاواز بێت لە سلەگی سۆرانی",
   },
   toast: {
     saved: "پاشەکەوت کرا",
     deleted: "سڕایەوە",
+    statusUpdated: "دۆخ نوێکرایەوە.",
   },
   error: {
     validation: "تکایە هەڵەکان چاک بکە",

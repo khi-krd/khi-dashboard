@@ -1,34 +1,54 @@
 import { z } from "zod"
 
-// Every field is optional by design: an office can be saved with any subset
-// filled in. Only format/length rules remain — contentLanguages keeps min(1)
-// because the language toggle UI always guarantees at least one selection.
-export const contactFormSchema = z.object({
-  active: z.boolean().default(true),
-  slugCkb: z.string().max(200),
-  slugKmr: z.string().max(200).optional().nullable(),
-  contentLanguages: z.array(z.enum(["CKB", "KMR"])).min(1),
-  titleCkb: z.string().max(300).optional().nullable(),
-  titleKmr: z.string().max(300).optional().nullable(),
-  subtitleCkb: z.string().max(500).optional().nullable(),
-  subtitleKmr: z.string().max(500).optional().nullable(),
-  addressCkb: z.string().max(500).optional().nullable(),
-  addressKmr: z.string().max(500).optional().nullable(),
-  workingHoursCkb: z.string().max(300).optional().nullable(),
-  workingHoursKmr: z.string().max(300).optional().nullable(),
-  descriptionCkb: z.string().optional().nullable(),
-  descriptionKmr: z.string().optional().nullable(),
-  phone: z.string().max(60).optional().nullable(),
-  secondaryPhone: z.string().max(60).optional().nullable(),
-  email: z.string().email().max(200).optional().or(z.literal("")),
-  mapEmbedUrl: z.string().optional().nullable(),
-  latitude: z.number().nullable().optional(),
-  longitude: z.number().nullable().optional(),
-  heroImageUrl: z.string().optional().nullable(),
-  officeType: z.string().max(40).optional().nullable(),
-  badgeCkb: z.string().max(200).optional().nullable(),
-  badgeKmr: z.string().max(200).optional().nullable(),
-})
+import { NS } from "@/components/contact/contact-strings"
+
+// slugCkb, phone and email are @NotBlank on the API (`email` is @Email too) —
+// optional here only ever produced a generic 400 toast. Everything else stays
+// optional: an office can be saved with any subset filled in.
+export const contactFormSchema = z
+  .object({
+    active: z.boolean().default(true),
+    slugCkb: z.string().trim().min(1, NS.validation.slugCkbRequired).max(200),
+    slugKmr: z.string().max(200).optional().nullable(),
+    displayOrder: z.number().int().nullable().optional(),
+    contentLanguages: z.array(z.enum(["CKB", "KMR"])).min(1),
+    titleCkb: z.string().max(300).optional().nullable(),
+    titleKmr: z.string().max(300).optional().nullable(),
+    subtitleCkb: z.string().max(500).optional().nullable(),
+    subtitleKmr: z.string().max(500).optional().nullable(),
+    addressCkb: z.string().max(500).optional().nullable(),
+    addressKmr: z.string().max(500).optional().nullable(),
+    workingHoursCkb: z.string().max(300).optional().nullable(),
+    workingHoursKmr: z.string().max(300).optional().nullable(),
+    descriptionCkb: z.string().optional().nullable(),
+    descriptionKmr: z.string().optional().nullable(),
+    phone: z.string().trim().min(1, NS.validation.phoneRequired).max(60),
+    secondaryPhone: z.string().max(60).optional().nullable(),
+    email: z
+      .string()
+      .trim()
+      .min(1, NS.validation.emailRequired)
+      .max(200)
+      .email(NS.validation.emailInvalid),
+    mapEmbedUrl: z.string().optional().nullable(),
+    latitude: z.number().nullable().optional(),
+    longitude: z.number().nullable().optional(),
+    heroImageUrl: z.string().optional().nullable(),
+    officeType: z.string().max(40).optional().nullable(),
+    badgeCkb: z.string().max(200).optional().nullable(),
+    badgeKmr: z.string().max(200).optional().nullable(),
+  })
+  .superRefine((values, ctx) => {
+    // The API rejects slugCkb == slugKmr with a bare 400 — catch it inline.
+    const kmr = values.slugKmr?.trim()
+    if (kmr && kmr === values.slugCkb.trim()) {
+      ctx.addIssue({
+        code: "custom",
+        message: NS.validation.slugsMustDiffer,
+        path: ["slugKmr"],
+      })
+    }
+  })
 
 export type ContactFormValues = z.infer<typeof contactFormSchema>
 
@@ -36,6 +56,7 @@ export const defaultContactFormValues: ContactFormValues = {
   active: true,
   slugCkb: "",
   slugKmr: "",
+  displayOrder: null,
   contentLanguages: ["CKB"],
   titleCkb: "",
   titleKmr: "",
@@ -97,6 +118,7 @@ export function contactDtoToFormValues(
     active: dto.active ?? true,
     slugCkb: dto.slugCkb ?? "",
     slugKmr: dto.slugKmr ?? "",
+    displayOrder: dto.displayOrder ?? null,
     contentLanguages: langs.length ? langs : ["CKB"],
     titleCkb: dto.ckbContent?.title ?? "",
     titleKmr: dto.kmrContent?.title ?? "",

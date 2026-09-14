@@ -9,6 +9,14 @@ function stripHtml(html: string): string {
   return html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim()
 }
 
+/** `mapEmbedUrl` may hold a pasted `<iframe src="…">` tag — show just the URL. */
+function embedSrc(value?: string | null): string | null {
+  const raw = value?.trim()
+  if (!raw) return null
+  const m = raw.match(/src=["']([^"']+)["']/i)
+  return m?.[1] ?? raw
+}
+
 function PageHero({ offices }: { offices: ContactDto[] }) {
   const first = offices[0]
   const title = first ? contactDisplayTitle(first) : NS.page.title
@@ -90,9 +98,9 @@ function OfficeSectionPreview({
           {NS.empty.no_body}
         </p>
       )}
-      {office.mapEmbedUrl?.trim() ? (
-        <p className="text-muted-foreground mt-3 truncate text-xs">
-          {NS.detail.map}: {office.mapEmbedUrl.trim()}
+      {embedSrc(office.mapEmbedUrl) ? (
+        <p className="text-muted-foreground mt-3 truncate text-xs" dir="ltr">
+          {NS.detail.map}: {embedSrc(office.mapEmbedUrl)}
         </p>
       ) : null}
     </article>

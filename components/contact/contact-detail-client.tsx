@@ -31,6 +31,7 @@ import {
   useContactDetailQuery,
   useDeleteContactMutation,
 } from "@/hooks/useContact"
+import { extractApiErrorMessage } from "@/lib/api-error"
 import { contactDisplayTitle } from "@/lib/contact-normalize"
 import { formatCkbDigits } from "@/lib/intl-ckb"
 import { formatRelativeTimeKu } from "@/lib/news-relative-time"
@@ -265,22 +266,28 @@ export function ContactDetailClient({ contactId }: { contactId: number }) {
               </div>
             )}
 
-            {contact.mapEmbedUrl?.trim() ? (
-              <section className="border-border/60 mt-10 border-t pt-8">
-                <h3 className="text-muted-foreground mb-3 text-xs font-medium tracking-wide uppercase">
-                  {NS.detail.map}
-                </h3>
-                <div className="border-border aspect-video overflow-hidden rounded-lg border">
-                  <iframe
-                    src={contact.mapEmbedUrl}
-                    title={NS.detail.map}
-                    className="size-full border-0"
-                    loading="lazy"
-                    referrerPolicy="no-referrer-when-downgrade"
-                  />
-                </div>
-              </section>
-            ) : null}
+            {(() => {
+              const raw = contact.mapEmbedUrl?.trim()
+              if (!raw) return null
+              const src =
+                raw.match(/src=["']([^"']+)["']/i)?.[1] ?? raw
+              return (
+                <section className="border-border/60 mt-10 border-t pt-8">
+                  <h3 className="text-muted-foreground mb-3 text-xs font-medium tracking-wide uppercase">
+                    {NS.detail.map}
+                  </h3>
+                  <div className="border-border aspect-video overflow-hidden rounded-lg border">
+                    <iframe
+                      src={src}
+                      title={NS.detail.map}
+                      className="size-full border-0"
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                    />
+                  </div>
+                </section>
+              )
+            })()}
           </div>
         </article>
       </div>
@@ -296,8 +303,8 @@ export function ContactDetailClient({ contactId }: { contactId: number }) {
             await deleteMut.mutateAsync(contact.id)
             toast.success(NS.toast.deleted)
             router.push("/dashboard/contact")
-          } catch {
-            toast.error(NS.error.validation)
+          } catch (err) {
+            toast.error(extractApiErrorMessage(err) ?? NS.error.validation)
           }
         }}
       />

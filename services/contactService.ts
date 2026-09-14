@@ -2,10 +2,18 @@ import api from "@/lib/axios"
 import type { ContactWritePayload } from "@/lib/contact-form-data"
 import {
   normalizeContactDto,
+  normalizeContactMessageDto,
+  normalizeContactMessagePage,
   normalizeContactPage,
 } from "@/lib/contact-normalize"
 import { unwrapApiData } from "@/lib/about-normalize"
-import type { ContactDto, ContactPage } from "@/types/contact"
+import type {
+  ContactDto,
+  ContactMessageDto,
+  ContactMessagePage,
+  ContactPage,
+} from "@/types/contact"
+import type { DonationStatus } from "@/types/donations"
 
 const BASE = "/api/v1/contact"
 
@@ -74,4 +82,30 @@ export async function updateContact(
 
 export async function deleteContact(id: number): Promise<void> {
   await api.delete(`${BASE}/${id}`)
+}
+
+// ─── Visitor message inbox ─────────────────────────────────────
+// Read-plus-status only: there is no message delete, no per-message GET, and
+// `status` shares the donations SUBMISSION_STATUSES set server-side.
+
+export async function getContactMessages(
+  page: number,
+  size: number,
+): Promise<ContactMessagePage> {
+  const { data } = await api.get<unknown>(`${BASE}/messages`, {
+    params: { page, size },
+  })
+  return normalizeContactMessagePage(data)
+}
+
+export async function updateContactMessageStatus(
+  id: number,
+  status: DonationStatus,
+): Promise<ContactMessageDto> {
+  const { data } = await api.patch<unknown>(
+    `${BASE}/messages/${id}/status`,
+    { status },
+    { headers: { "Content-Type": "application/json" } },
+  )
+  return normalizeContactMessageDto(unwrapApiData(data))
 }

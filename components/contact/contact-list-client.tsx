@@ -10,6 +10,7 @@ import {
 } from "@/components/contact/contact-breadcrumb"
 import { ContactDeleteDialog } from "@/components/contact/contact-delete-dialog"
 import { ContactErrorState } from "@/components/contact/contact-error-state"
+import { ContactMessagesInbox } from "@/components/contact/contact-messages-inbox"
 import { ContactOfficeSectionCard } from "@/components/contact/contact-office-section-card"
 import { ContactPagePreview } from "@/components/contact/contact-page-preview"
 import { NS } from "@/components/contact/contact-strings"
@@ -19,8 +20,10 @@ import {
   useContactListQuery,
   useDeleteContactMutation,
 } from "@/hooks/useContact"
+import { extractApiErrorMessage } from "@/lib/api-error"
 import { formatCkbDigits } from "@/lib/intl-ckb"
 import { toastError } from "@/lib/toast"
+import { cn } from "@/lib/utils"
 import type { ContactDto } from "@/types/contact"
 
 function PageSkeleton() {
@@ -44,6 +47,7 @@ export function ContactListClient() {
 function ContactListClientInner() {
   const listQuery = useContactListQuery({ page: 0, size: 100 })
   const deleteMut = useDeleteContactMutation()
+  const [section, setSection] = useState<"offices" | "messages">("offices")
   const [pageMode, setPageMode] = useState<"view" | "edit">("view")
   const [draftCount, setDraftCount] = useState(0)
   const [deleteTarget, setDeleteTarget] = useState<ContactDto | null>(null)
@@ -94,7 +98,8 @@ function ContactListClientInner() {
         setDeleteTarget(null)
         void listQuery.refetch()
       },
-      onError: () => toastError(NS.error.validation),
+      onError: (err) =>
+        toastError(extractApiErrorMessage(err) ?? NS.error.validation),
     })
   }
 
@@ -111,35 +116,66 @@ function ContactListClientInner() {
         <div className="space-y-1">
           <h1 className="text-2xl font-semibold tracking-tight">{NS.page.title}</h1>
           <p className="text-muted-foreground text-sm">
-            {isEditing ? NS.page.subtitleSimple : NS.page.previewHint}
+            {section === "messages"
+              ? NS.messages.subtitle
+              : isEditing
+                ? NS.page.subtitleSimple
+                : NS.page.previewHint}
           </p>
-          {!isEditing && offices.length > 0 ? (
+          {section === "offices" && !isEditing && offices.length > 0 ? (
             <p className="text-muted-foreground/70 font-mono text-xs">
               {NS.count(formatCkbDigits(offices.length))}
             </p>
           ) : null}
         </div>
         <div className="flex shrink-0 gap-2">
-          {!isEditing ? (
-            <>
-              <Button type="button" variant="outline" onClick={addOffice}>
-                <PlusIcon className="size-4 rtl:rotate-180" />
-                {NS.action.addOffice}
+          {section === "offices" ? (
+            !isEditing ? (
+              <>
+                <Button type="button" variant="outline" onClick={addOffice}>
+                  <PlusIcon className="size-4 rtl:rotate-180" />
+                  {NS.action.addOffice}
+                </Button>
+                <Button type="button" onClick={startEditing}>
+                  <PencilSquareIcon className="size-4" />
+                  {NS.action.editPage}
+                </Button>
+              </>
+            ) : (
+              <Button type="button" variant="outline" onClick={backToPreview}>
+                {NS.action.backToPreview}
               </Button>
-              <Button type="button" onClick={startEditing}>
-                <PencilSquareIcon className="size-4" />
-                {NS.action.editPage}
-              </Button>
-            </>
-          ) : (
-            <Button type="button" variant="outline" onClick={backToPreview}>
-              {NS.action.backToPreview}
-            </Button>
-          )}
+            )
+          ) : null}
         </div>
       </header>
 
-      {listQuery.isError ? (
+      <div
+        role="tablist"
+        aria-label={NS.page.title}
+        className="bg-muted inline-flex w-fit items-center gap-0.5 rounded-lg p-[3px]"
+      >
+        {(["offices", "messages"] as const).map((tab) => (
+          <button
+            key={tab}
+            type="button"
+            role="tab"
+            aria-selected={section === tab}
+            onClick={() => setSection(tab)}
+            className={cn(
+              "text-foreground/60 hover:text-foreground rounded-md px-3 py-1.5 text-xs font-medium whitespace-nowrap transition-all",
+              section === tab &&
+                "bg-background text-foreground shadow-sm dark:bg-input/30",
+            )}
+          >
+            {NS.tabs[tab]}
+          </button>
+        ))}
+      </div>
+
+      {section === "messages" ? (
+        <ContactMessagesInbox />
+      ) : listQuery.isError ? (
         <ContactErrorState onRetry={() => void listQuery.refetch()} />
       ) : !isEditing ? (
         <ContactPagePreview

@@ -37,3 +37,28 @@ export type ContactPage = {
   number: number
   size: number
 }
+
+/**
+ * Visitor contact-form submissions. `status` shares the backend's
+ * `SUBMISSION_STATUSES` set with the donations submissions, so the donations
+ * status type/pill/select components are reused rather than duplicated.
+ */
+export type ContactMessageDto = {
+  id?: number
+  name?: string | null
+  email?: string | null
+  phone?: string | null
+  subject?: string | null
+  message?: string | null
+  locale?: string | null
+  status?: string | null
+  createdAt?: string
+}
+
+export type ContactMessagePage = {
+  content: ContactMessageDto[]
+  totalElements: number
+  totalPages: number
+  number: number
+  size: number
+}

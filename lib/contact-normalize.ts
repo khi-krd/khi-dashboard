@@ -1,4 +1,10 @@
-import type { ContactContentDto, ContactDto, ContactPage } from "@/types/contact"
+import type {
+  ContactContentDto,
+  ContactDto,
+  ContactMessageDto,
+  ContactMessagePage,
+  ContactPage,
+} from "@/types/contact"
 
 import { unwrapApiData } from "@/lib/about-normalize"
 
@@ -71,6 +77,42 @@ export function normalizeContactPage(raw: unknown): ContactPage {
     o.content ?? o.items ?? o.data ?? (Array.isArray(unwrapped) ? unwrapped : [])
   const content = Array.isArray(contentRaw)
     ? contentRaw.map(normalizeContactDto)
+    : []
+
+  return {
+    content,
+    totalElements:
+      coerceNum(o.totalElements) ?? coerceNum(o.total_elements) ?? content.length,
+    totalPages: coerceNum(o.totalPages) ?? coerceNum(o.total_pages) ?? 1,
+    number: coerceNum(o.number) ?? coerceNum(o.page) ?? 0,
+    size: coerceNum(o.size) ?? content.length,
+  }
+}
+
+export function normalizeContactMessageDto(raw: unknown): ContactMessageDto {
+  const o = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>
+  return {
+    id: coerceNum(o.id) ?? undefined,
+    name: coerceStr(o.name),
+    email: coerceStr(o.email),
+    phone: coerceStr(o.phone),
+    subject: coerceStr(o.subject),
+    message: coerceStr(o.message),
+    locale: coerceStr(o.locale),
+    status: coerceStr(o.status),
+    createdAt: coerceStr(o.createdAt) ?? coerceStr(o.created_at) ?? undefined,
+  }
+}
+
+export function normalizeContactMessagePage(raw: unknown): ContactMessagePage {
+  const unwrapped = unwrapApiData<unknown>(raw)
+  const o = (unwrapped && typeof unwrapped === "object"
+    ? unwrapped
+    : {}) as Record<string, unknown>
+
+  const contentRaw = o.content ?? o.items ?? []
+  const content = Array.isArray(contentRaw)
+    ? contentRaw.map(normalizeContactMessageDto)
     : []
 
   return {
