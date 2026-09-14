@@ -41,7 +41,7 @@ import {
 } from "@/lib/sanitize-news-html"
 import { cn } from "@/lib/utils"
 import { contactContentLanguages } from "@/types/contact-ui"
-import type { ContactDto, Language } from "@/types/contact"
+import type { Language } from "@/types/contact"
 
 export function ContactDetailClient({ contactId }: { contactId: number }) {
   const router = useRouter()

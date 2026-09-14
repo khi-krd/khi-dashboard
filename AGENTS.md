@@ -42,6 +42,21 @@ Read these before touching a write path — the API is not forgiving.
   About is not cached at all.
 - Error bodies are generic. Key UI messages off `status` + `code` + `details`,
   not `message`.
+- **`PUT /api/v1/contact/{id}` is a full replace** like About: omitting
+  `ckbContent`, `mapEmbedUrl`, `officeType`, badges, etc. blanks them
+  (`active`/`displayOrder` alone are preserved when null). The payload builder
+  is `contactFormValuesToPayload` in `lib/contact-form-data.ts`.
+- **`GET /api/v1/contact` (admin) answers a flat array**, but
+  `GET /api/v1/contact/active` (public) answers a Spring page — the admin
+  matcher is the exact literal path, so only the bare collection is protected.
+  `slugCkb`, `phone` and `email` are `@NotBlank` (`email` is `@Email`), and
+  `slugCkb`/`slugKmr` must differ and be unique.
+- **Contact messages are read + status only**: `GET /contact/messages` and
+  `PATCH /contact/messages/{id}/status` with `{ "status": "…" }` — there is no
+  delete and no per-message GET. `status` shares `SUBMISSION_STATUSES` with
+  donations, so the donations status pill/select are reused.
+- **`mapEmbedUrl` may contain a pasted `<iframe>` tag**, not a URL — extract
+  `src` before rendering (see `embedSrc` in `contact-page-preview.tsx`).
 
 ## Form conventions
 

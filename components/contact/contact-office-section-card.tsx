@@ -127,7 +127,7 @@ export function ContactOfficeSectionCard({
     signature: dto?.id
       ? `${dto.id}:${dto.updatedAt ?? ""}`
       : `draft:${index}`,
-    buildValues: () =>
+    buildValues: (): ContactFormValues =>
       dto?.id
         ? contactDtoToFormValues(dto)
         : {
