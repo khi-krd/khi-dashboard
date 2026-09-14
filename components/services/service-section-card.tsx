@@ -2,11 +2,11 @@
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { CheckIcon, TrashIcon } from "@heroicons/react/24/outline"
-import { useEffect, useRef } from "react"
 import {
   Controller,
   FormProvider,
   useForm,
+  useWatch,
   type Resolver,
 } from "react-hook-form"
 import { toast } from "sonner"
@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Spinner } from "@/components/ui/spinner"
 import { Textarea } from "@/components/ui/textarea"
+import { useServerFormSync } from "@/hooks/use-server-form-sync"
 import {
   useCreateService,
   useUpdateService,
@@ -166,7 +167,6 @@ export function ServiceSectionCard({
   const serviceId = dto?.id
   const createMut = useCreateService()
   const updateMut = useUpdateService()
-  const bootstrapped = useRef(false)
 
   const methods = useForm<ServiceFormValues>({
     resolver: zodResolver(serviceFormSchema) as Resolver<ServiceFormValues>,
@@ -181,31 +181,49 @@ export function ServiceSectionCard({
     formState: { isDirty, isValid },
   } = methods
 
-  useEffect(() => {
-    if (bootstrapped.current) return
-    bootstrapped.current = true
-    if (dto) {
-      reset(serviceDtoToFormValues(dto))
-      return
-    }
-    reset({
-      ...defaultServiceFormValues(),
-      contentLanguages: ["CKB", "KMR"],
-      sortOrder,
-      active: true,
-      layoutType: "MEDIA_HERO",
-    })
-  }, [dto, reset, sortOrder])
+  // `updatedAt` in the signature is what lets a saved card show what the
+  // backend actually stored (trimmed titles, dropped gallery slots, stripped
+  // markup) instead of staying frozen on the mount-time snapshot. A draft
+  // keeps a fixed signature so it is seeded once and never re-seeded.
+  useServerFormSync({
+    signature: dto?.id ? `${dto.id}:${dto.updatedAt ?? ""}` : "draft",
+    buildValues: () =>
+      dto
+        ? serviceDtoToFormValues(dto)
+        : {
+            ...defaultServiceFormValues(),
+            sortOrder,
+            active: true,
+            layoutType: "MEDIA_HERO" as const,
+          },
+    reset,
+    isDirty,
+  })
+
+  /**
+   * A section with no title in either language is accepted by the backend
+   * (`validateContents` returns early on an empty array) and then renders as
+   * a nameless block on the public site and an unidentifiable card here —
+   * which is how stray, seemingly-duplicate sections appeared. Block it in
+   * the editor instead.
+   */
+  const titles = useWatch({ control, name: "contents" })
+  const hasTitle = (titles ?? []).some((row) => row?.title?.trim())
 
   const pending = createMut.isPending || updateMut.isPending
   const submitDisabled =
-    pending || !isValid || (mode === "edit" && !isDirty)
+    pending || !isValid || !hasTitle || (mode === "edit" && !isDirty)
 
   const onSubmit = handleSubmit(
     (values) => {
       const payload = serviceFormValuesToPayload(mode, serviceId, values, {
         sortOrder,
       })
+
+      if (payload.contents.length === 0) {
+        toastError(NS.validation.titleRequired)
+        return
+      }
 
       const onSuccess = (res: { success?: boolean }) => {
         if (!res.success) {

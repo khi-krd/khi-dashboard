@@ -2,7 +2,6 @@
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { CheckIcon } from "@heroicons/react/24/outline"
-import { useEffect, useRef } from "react"
 import { Controller, useForm, type Resolver } from "react-hook-form"
 import { toast } from "sonner"
 
@@ -13,6 +12,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Spinner } from "@/components/ui/spinner"
 import { Textarea } from "@/components/ui/textarea"
+import { useServerFormSync } from "@/hooks/use-server-form-sync"
 import { useCreateService, useUpdateService } from "@/hooks/useServices"
 import { extractApiErrorMessage } from "@/lib/api-error"
 import {
@@ -39,7 +39,6 @@ export function ServicesPageHeroEditor({
 }) {
   const createMut = useCreateService()
   const updateMut = useUpdateService()
-  const bootstrapped = useRef(false)
 
   const {
     control,
@@ -52,20 +51,19 @@ export function ServicesPageHeroEditor({
     mode: "onChange",
   })
 
-  useEffect(() => {
-    bootstrapped.current = false
-  }, [heroDto?.id])
-
-  useEffect(() => {
-    if (bootstrapped.current) return
-    if (isLoading) return
-    bootstrapped.current = true
-    if (heroDto) {
-      reset(serviceDtoToHeroFormValues(heroDto))
-    } else {
-      reset(defaultServicesPageHeroValues())
-    }
-  }, [heroDto, isLoading, reset])
+  useServerFormSync({
+    signature: isLoading
+      ? null
+      : heroDto?.id
+        ? `${heroDto.id}:${heroDto.updatedAt ?? ""}`
+        : "empty",
+    buildValues: () =>
+      heroDto
+        ? serviceDtoToHeroFormValues(heroDto)
+        : defaultServicesPageHeroValues(),
+    reset,
+    isDirty,
+  })
 
   const pending = createMut.isPending || updateMut.isPending
   const canSave = isDirty && !pending

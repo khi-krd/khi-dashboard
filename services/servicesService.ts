@@ -95,7 +95,10 @@ export async function updateService(
 export async function createServiceJson(
   payload: unknown,
 ): Promise<ServiceSingleResponse> {
-  const { data } = await api.post<ServiceSingleResponse>(`${BASE}/`, payload)
+  // No trailing slash: `@PostMapping` on `ServiceController` maps
+  // `/api/v1/services` exactly, and Spring 6 no longer matches a trailing
+  // slash by default.
+  const { data } = await api.post<ServiceSingleResponse>(BASE, payload)
   return normalizedSingle(data)
 }
 

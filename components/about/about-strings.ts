@@ -177,6 +177,7 @@ export const NS = {
   },
   validation: {
     languageRequired: "لانیکەم یەک زمان هەڵبژێرە",
+    titleRequired: "لانیکەم ناونیشانی یەک زمان پێویستە",
   },
   toast: {
     saved: "پاشەکەوت کرا",
@@ -189,6 +190,8 @@ export const NS = {
     validation: "تکایە هەڵەکان چاک بکە",
     load: "بارکردن سەرکەوتوو نەبوو",
     retry: "دووبارە هەوڵبدەرەوە",
+    refreshFailed: "نوێکردنەوە سەرکەوتوو نەبوو — نووسینەکانت وەک خۆیان ماون.",
+    deleteFailed: "سڕینەوە سەرکەوتوو نەبوو",
   },
   not_found: {
     title: "پەرەکە نەدۆزرایەوە",

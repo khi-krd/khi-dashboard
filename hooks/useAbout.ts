@@ -50,13 +50,19 @@ function findInListCaches(
   return null
 }
 
+/**
+ * Deliberately never answers from `queryClient.getQueryData(detail(id))`.
+ *
+ * Reading the cache inside the query function made the query unrefetchable:
+ * `invalidateQueries`, `refetch()` and a remount all re-ran this and got the
+ * same stale object back, so a record edited or emptied on the server kept
+ * rendering its old values — deleted stats and cleared fields included. The
+ * cache is react-query's job; this function's job is to go and ask.
+ */
 async function resolveAboutDetail(
   id: number,
   queryClient: ReturnType<typeof useQueryClient>,
 ): Promise<AboutDto | null> {
-  const cached = queryClient.getQueryData<AboutDto>(aboutKeys.detail(id))
-  if (cached?.id) return cached
-
   try {
     const fromApi = await getAboutById(id)
     if (fromApi) return fromApi

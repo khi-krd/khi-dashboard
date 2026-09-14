@@ -50,11 +50,21 @@ function ServicesListClientInner() {
   const listQuery = useServicesListQuery({ page: 0, size: 100, keyword: "" })
   const deleteMut = useDeleteServiceMutation()
   const [pageMode, setPageMode] = useState<"view" | "edit">("view")
-  const [draftCount, setDraftCount] = useState(0)
+  /**
+   * One stable id per unsaved draft card, not a count. With a count, saving
+   * the *first* of two drafts dropped the last React key (`draft-1`), so the
+   * surviving card reused the just-saved card's component instance: the new
+   * section showed up a second time as a still-unsaved draft (and saving it
+   * again created a duplicate record), while the other draft's typing was
+   * thrown away.
+   */
+  const [draftIds, setDraftIds] = useState<string[]>([])
   const [deleteDlg, setDeleteDlg] = useState<{
     mode: "single"
     item: ReturnType<typeof serviceToDeleteTarget>
   } | null>(null)
+
+  const hasRows = listQuery.data?.success === true
 
   const { heroRecord, sections } = useMemo(() => {
     const rows =
@@ -97,13 +107,17 @@ function ServicesListClientInner() {
   }
 
   function backToPreview() {
-    setDraftCount(0)
+    setDraftIds([])
     setPageMode("view")
+  }
+
+  function addDraft() {
+    setDraftIds((ids) => [...ids, crypto.randomUUID()])
   }
 
   function addSection() {
     setPageMode("edit")
-    setDraftCount((n) => n + 1)
+    addDraft()
   }
 
   return (
@@ -142,7 +156,30 @@ function ServicesListClientInner() {
         </div>
       </header>
 
-      {listQuery.isError ? (
+      {listQuery.isError && hasRows ? (
+        <div className="border-border bg-muted/30 flex flex-wrap items-center justify-between gap-2 rounded-lg border px-3 py-2">
+          <p className="text-muted-foreground text-xs">
+            {NS.error.refreshFailed}
+          </p>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => void listQuery.refetch()}
+          >
+            {NS.error.retry}
+          </Button>
+        </div>
+      ) : null}
+
+      {/*
+        A failed *background* refresh must not unmount the editor: every
+        section card holds unsaved form state, and swapping the whole subtree
+        for an error panel wiped it — which read as "the page reloaded and
+        cleared my fields". Only a first load with nothing to show gets the
+        full error state; afterwards it degrades to a retry strip.
+      */}
+      {listQuery.isError && !hasRows ? (
         <ServicesErrorState onRetry={() => void listQuery.refetch()} />
       ) : pageMode === "view" ? (
         <ServicesPagePreview
@@ -162,7 +199,9 @@ function ServicesListClientInner() {
             <div>
               <h2 className="text-base font-semibold">{NS.page.sectionsTitle}</h2>
               <p className="text-muted-foreground text-xs">
-                {NS.list.totalCount(formatCkbDigits(sections.length + draftCount))}
+                {NS.list.totalCount(
+                  formatCkbDigits(sections.length + draftIds.length),
+                )}
               </p>
             </div>
 
@@ -199,13 +238,13 @@ function ServicesListClientInner() {
                   />
                 ))}
 
-                {Array.from({ length: draftCount }).map((_, i) => (
+                {draftIds.map((draftId, i) => (
                   <ServiceSectionCard
-                    key={`draft-${i}`}
+                    key={draftId}
                     index={sections.length + i}
                     sortOrder={nextSortOrder + i}
                     onSaved={() => {
-                      setDraftCount((n) => Math.max(0, n - 1))
+                      setDraftIds((ids) => ids.filter((id) => id !== draftId))
                       void listQuery.refetch()
                     }}
                   />
@@ -215,7 +254,7 @@ function ServicesListClientInner() {
                   type="button"
                   variant="outline"
                   className="w-full gap-2"
-                  onClick={() => setDraftCount((n) => n + 1)}
+                  onClick={addDraft}
                 >
                   <PlusIcon className="size-4 rtl:rotate-180" />
                   {NS.action.addSection}

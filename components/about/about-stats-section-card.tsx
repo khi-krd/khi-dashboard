@@ -1,13 +1,13 @@
 "use client"
 
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useEffect, useRef } from "react"
 import { FormProvider, useForm, type Resolver } from "react-hook-form"
 import { toast } from "sonner"
 
 import { AboutSectionCardShell } from "@/components/about/about-section-card-shell"
 import { AboutStatsEditorFields } from "@/components/about/about-stats-editor-fields"
 import { NS } from "@/components/about/about-strings"
+import { useServerFormSync } from "@/hooks/use-server-form-sync"
 import { useUpdateAbout } from "@/hooks/useAbout"
 import { aboutPatchToPayload } from "@/lib/about-page-data"
 import { extractApiErrorMessage } from "@/lib/api-error"
@@ -29,7 +29,6 @@ export function AboutStatsSectionCard({
   onSaved: () => void
 }) {
   const updateMut = useUpdateAbout()
-  const bootstrapped = useRef(false)
 
   const methods = useForm<AboutFormValues>({
     resolver: zodResolver(aboutFormSchema) as Resolver<AboutFormValues>,
@@ -43,11 +42,14 @@ export function AboutStatsSectionCard({
     formState: { isDirty, isValid },
   } = methods
 
-  useEffect(() => {
-    if (bootstrapped.current) return
-    bootstrapped.current = true
-    reset(aboutDtoToFormValues(aboutDto))
-  }, [aboutDto, reset])
+  useServerFormSync({
+    signature: aboutDto.id
+      ? `${aboutDto.id}:${aboutDto.updatedAt ?? ""}`
+      : null,
+    buildValues: () => aboutDtoToFormValues(aboutDto),
+    reset,
+    isDirty,
+  })
 
   const pending = updateMut.isPending
   const submitDisabled = pending || !isValid || !isDirty
@@ -56,7 +58,12 @@ export function AboutStatsSectionCard({
     (values) => {
       if (!aboutDto.id) return
       updateMut.mutate(
-        { id: aboutDto.id, payload: aboutPatchToPayload(aboutDto, values) },
+        {
+          id: aboutDto.id,
+          // Stats only — see `aboutPatchToPayload`. Sending this form's copy
+          // of the rest of the record would revert sibling cards.
+          payload: aboutPatchToPayload(aboutDto, { stats: values.stats }),
+        },
         {
           onSuccess: () => {
             toast(NS.toast.saved)

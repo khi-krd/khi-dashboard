@@ -174,7 +174,15 @@ export function AboutTeamSectionCard({ index }: { index: number }) {
                     size="sm"
                     variant="ghost"
                     className="text-destructive"
-                    onClick={() => item.id && void deleteMut.mutateAsync(item.id)}
+                    // A silent failure here reads as "the dashboard keeps
+                    // showing something I deleted" — say so instead.
+                    onClick={() => {
+                      if (!item.id) return
+                      deleteMut.mutate(item.id, {
+                        onSuccess: () => toast.success(NS.toast.deleted),
+                        onError: () => toast.error(NS.error.deleteFailed),
+                      })
+                    }}
                   >
                     <TrashIcon className="me-1 size-3.5" />
                     {NS.action.delete}

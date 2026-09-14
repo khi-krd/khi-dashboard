@@ -13,7 +13,6 @@ import {
   type FeaturedCatalogItem,
 } from "@/lib/featured-catalog"
 import { featuredKeys } from "@/lib/featured-query-keys"
-import { setStoredFeatured } from "@/lib/featured-storage"
 import type { FeaturedPayload } from "@/types/featured"
 
 const FEATUREABLE_CATEGORIES = FEATURED_CATALOG_CATEGORIES.filter(
@@ -108,7 +107,6 @@ export function usePatchFeaturedMutation() {
       } else if (item.category === "writings") {
         syncFeaturedWritingsCache(queryClient, item.id, featured, featuredOrder)
       } else {
-        setStoredFeatured(item.category, item.id, featured, featuredOrder)
         queryClient.setQueryData<
           Map<string, { featured: boolean; featuredOrder: number | null }>
         >(featuredKeys.overlay(), (prev) => {

@@ -4,6 +4,7 @@ import type { ReactNode } from "react"
 
 import { AppSidebar } from "@/components/app-sidebar"
 import { SessionGuard } from "@/components/session-guard"
+import { StrayFileDropGuard } from "@/components/stray-file-drop-guard"
 import { DashboardSoundPlayer } from "@/components/sounds/dashboard-sound-player"
 import { DashboardBreadcrumbs } from "@/components/dashboard-breadcrumbs"
 import { ThemeToggleButton } from "@/components/theme-toggle-button"
@@ -28,6 +29,7 @@ export default async function DashboardLayout({
     <NextIntlClientProvider locale={locale} messages={messages}>
       <SidebarProvider>
         <SessionGuard />
+        <StrayFileDropGuard />
         <AppSidebar />
         <SidebarInset>
           <header className="flex h-16 shrink-0 items-center gap-2 px-4">

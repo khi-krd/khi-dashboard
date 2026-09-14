@@ -35,9 +35,23 @@ function buildGalleryMedia(
     })
 }
 
+/**
+ * Emits one row per language that actually has a title.
+ *
+ * Deliberately driven by what is typed, not by `values.contentLanguages`:
+ * that flag is seeded from the languages a record already had, so a service
+ * saved with a Sorani title only could never gain a Kurmanji one — the row
+ * was silently dropped here on every subsequent save. The editor always
+ * renders both columns, so both are always candidates.
+ *
+ * Blank-title rows stay dropped: `title` is required and non-blank on
+ * `ServiceContentRequest`, and `ServiceService.update` rewrites the whole
+ * `contents` collection from the request, so omitting a row is how a language
+ * gets cleared.
+ */
 function buildContents(values: ServiceFormValues): ServiceContentDto[] {
   const rows: ServiceContentDto[] = []
-  for (const lang of values.contentLanguages) {
+  for (const lang of ["CKB", "KMR"] as const) {
     const row = values.contents.find((c) => c.languageCode === lang)
     const title = row?.title?.trim() ?? ""
     if (!title) continue

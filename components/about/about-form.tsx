@@ -642,7 +642,16 @@ export function AboutForm({
                       {formatCkbDigits(titleLen)}/300
                     </span>
                   </div>
+                  {/*
+                    `key` is load-bearing on every field whose registered name
+                    follows the language tab: react-hook-form only writes a
+                    value into an input when it attaches to a *new* element,
+                    so without the remount the field keeps the previous
+                    language's text and the next keystroke saves it into the
+                    other language.
+                  */}
                   <input
+                    key={titleField}
                     type="text"
                     maxLength={300}
                     placeholder="دەربارەی ئێمە…"
@@ -661,6 +670,7 @@ export function AboutForm({
                     </span>
                   </div>
                   <input
+                    key={subtitleField}
                     type="text"
                     maxLength={300}
                     placeholder="وەسفی کورت…"
@@ -678,6 +688,7 @@ export function AboutForm({
                     <SeoCountChip value={seoLen} max={2500} />
                   </div>
                   <Textarea
+                    key={seoField}
                     rows={3}
                     maxLength={2500}
                     placeholder="وەسفی کورت بۆ سێرچ ئەنجین…"
@@ -769,6 +780,7 @@ export function AboutForm({
                   </span>
                 </div>
                 <input
+                  key={titleField}
                   type="text"
                   maxLength={300}
                   placeholder="دەربارەی ئێمە…"
@@ -787,6 +799,7 @@ export function AboutForm({
                   </span>
                 </div>
                 <input
+                  key={subtitleField}
                   type="text"
                   maxLength={300}
                   placeholder="وەسفی کورت…"
@@ -804,6 +817,7 @@ export function AboutForm({
                   <SeoCountChip value={seoLen} max={2500} />
                 </div>
                 <Textarea
+                  key={seoField}
                   rows={3}
                   maxLength={2500}
                   placeholder="وەسفی کورت بۆ سێرچ ئەنجین…"

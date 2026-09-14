@@ -22,7 +22,14 @@ export function CollectionCreditsInlineRow({ activeLang }: { activeLang: Languag
     <div className="mt-3 flex flex-wrap items-center gap-4">
       <label className="text-muted-foreground flex min-w-0 flex-1 items-center gap-2">
         <CameraIcon className="size-4 shrink-0" aria-hidden />
+        {/*
+          `key` is load-bearing: the registered name changes with the language
+          tab, and react-hook-form only pushes a value into an input when it
+          attaches to a new element. Without the remount the field keeps the
+          previous language's text and overwrites the other language with it.
+        */}
         <input
+          key={collectedByField}
           type="text"
           className={inlineFieldClass}
           placeholder={NS.credits.collected_by_placeholder}
@@ -33,6 +40,7 @@ export function CollectionCreditsInlineRow({ activeLang }: { activeLang: Languag
       <label className="text-muted-foreground flex min-w-0 flex-1 items-center gap-2">
         <MapPinIcon className="size-4 shrink-0" aria-hidden />
         <input
+          key={locationField}
           type="text"
           className={inlineFieldClass}
           placeholder={NS.credits.location_placeholder}

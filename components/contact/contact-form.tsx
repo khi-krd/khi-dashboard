@@ -288,7 +288,16 @@ export function ContactForm({
                     {formatCkbDigits(titleLen)}/300
                   </span>
                 </div>
+                {/*
+                  `key` is load-bearing on every field whose registered name
+                  follows the language tab: react-hook-form only writes a
+                  value into an input when it attaches to a *new* element, so
+                  without the remount the field keeps the previous language's
+                  text and the next keystroke saves it into the other
+                  language.
+                */}
                 <input
+                  key={titleField}
                   type="text"
                   maxLength={300}
                   placeholder="پەیوەندیمان…"
@@ -302,6 +311,7 @@ export function ContactForm({
                   {NS.form.subtitle}
                 </span>
                 <input
+                  key={subtitleField}
                   type="text"
                   maxLength={500}
                   placeholder="ژێرناونیشان…"
@@ -315,6 +325,7 @@ export function ContactForm({
                   {NS.form.address}
                 </span>
                 <Input
+                  key={addressField}
                   maxLength={500}
                   placeholder="ناونیشانی فیزیکی…"
                   className="mt-1.5"
@@ -327,6 +338,7 @@ export function ContactForm({
                   {NS.form.working_hours}
                 </span>
                 <Input
+                  key={hoursField}
                   maxLength={300}
                   placeholder="کاتەکانی کار…"
                   className="mt-1.5"

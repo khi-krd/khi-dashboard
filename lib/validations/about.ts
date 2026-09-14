@@ -64,14 +64,10 @@ export const defaultAboutFormValues: AboutFormValues = {
   heroVideoUrl: "",
   heroPosterUrl: "",
   stats: [],
-  contentLanguages: ["CKB"],
+  contentLanguages: ["CKB", "KMR"],
 }
 
 export function aboutDtoToFormValues(dto: AboutDto): AboutFormValues {
-  const contentLanguages: ("CKB" | "KMR")[] = []
-  if (dto.ckbContent) contentLanguages.push("CKB")
-  if (dto.kmrContent) contentLanguages.push("KMR")
-
   return {
     active: dto.active ?? true,
     slugCkb: dto.slugCkb ?? "",
@@ -96,7 +92,11 @@ export function aboutDtoToFormValues(dto: AboutDto): AboutFormValues {
       labelKmr: s.labelKmr ?? "",
       value: s.value ?? "",
     })),
-    contentLanguages: contentLanguages.length ? contentLanguages : ["CKB"],
+    // Both languages are always editable. This used to be derived from which
+    // content blocks the record happened to have, which meant a CKB-only
+    // record could never be given Kurmanji text: the language tab bounced
+    // back and the payload builder dropped the KMR block on save.
+    contentLanguages: ["CKB", "KMR"],
   }
 }
 

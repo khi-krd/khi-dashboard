@@ -29,6 +29,13 @@ export const TIPTAP_NS = {
     preview: "پێشبینین",
     previewExit: "دەستکاری",
   },
+  modes: {
+    label: "شێوازی پیشاندان",
+    edit: "دەستکاری",
+    preview: "پێشبینین",
+    markdown: "Markdown",
+    html: "HTML",
+  },
   prompt: {
     link: "ناونیشانی لینک بنووسە",
     image: "ناونیشانی وێنە بنووسە",

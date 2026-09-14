@@ -7,6 +7,7 @@ export const NS = {
     validation: "تکایە بەشە پڕنەکراوەکان پڕ بکەرەوە.",
     heroSave: "پاشەکەوتکردنی هێرۆ سەرکەوتوو نەبوو.",
     retry: "دووبارە هەوڵبدەرەوە",
+    refreshFailed: "نوێکردنەوە سەرکەوتوو نەبوو — نووسینەکانت وەک خۆیان ماون.",
   },
   page: {
     title: "پەڕەی خزمەتگوزاری",
@@ -350,6 +351,7 @@ export const NS = {
   },
   validation: {
     languageRequired: "زمانێک پێویستە",
+    titleRequired: "لانیکەم ناونیشانی یەک زمان پێویستە",
     collectionNameRequired: "ناوی کۆکراوە پێویستە",
     mediaTypeRequired: "جۆری میدیا هەڵبژێرە",
     navAnchorInvalid:

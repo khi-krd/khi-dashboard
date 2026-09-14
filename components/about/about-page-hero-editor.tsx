@@ -2,7 +2,6 @@
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { CheckIcon } from "@heroicons/react/24/outline"
-import { useEffect, useRef } from "react"
 import { Controller, useForm, type Resolver } from "react-hook-form"
 import { toast } from "sonner"
 
@@ -13,6 +12,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Spinner } from "@/components/ui/spinner"
 import { Textarea } from "@/components/ui/textarea"
+import { useServerFormSync } from "@/hooks/use-server-form-sync"
 import { useCreateAbout, useUpdateAbout } from "@/hooks/useAbout"
 import { heroFormValuesToAboutPayload } from "@/lib/about-page-data"
 import { extractApiErrorMessage } from "@/lib/api-error"
@@ -37,7 +37,6 @@ export function AboutPageHeroEditor({
 }) {
   const createMut = useCreateAbout()
   const updateMut = useUpdateAbout()
-  const bootstrapped = useRef(false)
 
   const {
     control,
@@ -50,20 +49,17 @@ export function AboutPageHeroEditor({
     mode: "onChange",
   })
 
-  useEffect(() => {
-    bootstrapped.current = false
-  }, [aboutDto?.id])
-
-  useEffect(() => {
-    if (bootstrapped.current) return
-    if (isLoading) return
-    bootstrapped.current = true
-    if (aboutDto) {
-      reset(aboutDtoToHeroFormValues(aboutDto))
-    } else {
-      reset(defaultAboutPageHeroValues())
-    }
-  }, [aboutDto, isLoading, reset])
+  useServerFormSync({
+    signature: isLoading
+      ? null
+      : aboutDto?.id
+        ? `${aboutDto.id}:${aboutDto.updatedAt ?? ""}`
+        : "empty",
+    buildValues: () =>
+      aboutDto ? aboutDtoToHeroFormValues(aboutDto) : defaultAboutPageHeroValues(),
+    reset,
+    isDirty,
+  })
 
   const pending = createMut.isPending || updateMut.isPending
   const canSave = isDirty && !pending
@@ -72,6 +68,15 @@ export function AboutPageHeroEditor({
     // A fully blank hero must stay savable — lib/about-page-data.ts
     // auto-fills the "derbare" slug so the payload is always valid.
     const payload = heroFormValuesToAboutPayload(values, aboutDto)
+
+    // `AboutService.validateContent` rejects a record with no title in either
+    // language with a bare 400 whose message is generic. Say what is actually
+    // wrong instead of surfacing "داواکاری هەڵەیە".
+    if (!payload.ckbContent?.title && !payload.kmrContent?.title) {
+      toastError(NS.validation.titleRequired)
+      return
+    }
+
     const onSuccess = () => {
       toast(NS.toast.heroSaved)
       reset(values)

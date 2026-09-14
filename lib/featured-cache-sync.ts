@@ -1,7 +1,6 @@
 import type { QueryClient } from "@tanstack/react-query"
 
 import { featuredKeys } from "@/lib/featured-query-keys"
-import { setStoredFeatured } from "@/lib/featured-storage"
 import {
   mapSoundToCatalogItem,
   mapWritingToCatalogItem,
@@ -106,7 +105,6 @@ export function syncFeaturedSoundsCache(
       return next
     },
   )
-  setStoredFeatured("sounds", id, featured, featuredOrder)
 }
 
 export function syncFeaturedWritingsCache(
@@ -158,5 +156,4 @@ export function syncFeaturedWritingsCache(
       return next
     },
   )
-  setStoredFeatured("writings", id, featured, featuredOrder)
 }

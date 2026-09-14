@@ -113,11 +113,6 @@ function coerceLayoutType(
 export function serviceDtoToFormValues(
   dto: import("@/types/services").ServiceDto,
 ): ServiceFormValues {
-  const contentLanguages =
-    dto.contentLanguages?.length
-      ? dto.contentLanguages
-      : dto.contents.map((c) => c.languageCode)
-
   const contents: ServiceFormValues["contents"] = ["CKB", "KMR"].map(
     (lang) => {
       const hit = dto.contents.find((c) => c.languageCode === lang)
@@ -154,8 +149,10 @@ export function serviceDtoToFormValues(
     partnerIds: [...(dto.partnerIds ?? [])],
     active: dto.active ?? true,
     publishedAt: dto.publishedAt ?? null,
-    contentLanguages:
-      contentLanguages.length > 0 ? contentLanguages : ["CKB", "KMR"],
+    // Both columns are always rendered and always savable. Seeding this from
+    // the languages the record happened to have is what locked a
+    // Sorani-only service out of ever getting Kurmanji text.
+    contentLanguages: ["CKB", "KMR"],
     contents,
   }
 }

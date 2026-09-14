@@ -18,6 +18,7 @@ import { AboutErrorState } from "@/components/about/about-error-state"
 import { NS } from "@/components/about/about-strings"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
+import { useSyncedState } from "@/hooks/use-synced-state"
 import { useAboutListQuery } from "@/hooks/useAbout"
 import type { AboutDto } from "@/types/about"
 
@@ -43,10 +44,31 @@ function AboutListClientInner() {
   const listQuery = useAboutListQuery({ page: 0, size: 10 })
   const [pageMode, setPageMode] = useState<"view" | "edit">("view")
 
-  const aboutRecord = useMemo((): AboutDto | undefined => {
+  const fetchedRecord = useMemo((): AboutDto | undefined => {
     const rows = listQuery.data?.content ?? []
     return rows.find((row) => (row.id ?? 0) > 0)
   }, [listQuery.data?.content])
+
+  /**
+   * Keeps the last record the API actually returned. `useSyncedState`'s
+   * `derive` returning `undefined` means "leave it alone", so an in-flight or
+   * failed refetch cannot blank it out.
+   *
+   * Losing `aboutRecord` unmounts every section card below and takes their
+   * unsaved text with it, so a hiccup in the post-save refetch must not be
+   * able to do that. A successful response that genuinely has no record still
+   * falls through to the empty state below.
+   */
+  const [lastKnownRecord] = useSyncedState<AboutDto | undefined>(
+    [fetchedRecord],
+    () => fetchedRecord,
+    () => fetchedRecord,
+  )
+  const aboutRecord =
+    fetchedRecord ??
+    (listQuery.isError || listQuery.isFetching || listQuery.isLoading
+      ? lastKnownRecord
+      : undefined)
 
   const hasAbout = !!aboutRecord?.id
   const isEditing = pageMode === "edit"
@@ -102,7 +124,28 @@ function AboutListClientInner() {
         </div>
       </header>
 
-      {listQuery.isError ? (
+      {listQuery.isError && hasAbout ? (
+        <div className="border-border bg-muted/30 flex flex-wrap items-center justify-between gap-2 rounded-lg border px-3 py-2">
+          <p className="text-muted-foreground text-xs">
+            {NS.error.refreshFailed}
+          </p>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => void listQuery.refetch()}
+          >
+            {NS.error.retry}
+          </Button>
+        </div>
+      ) : null}
+
+      {/*
+        Only a load that produced nothing gets the full error panel. Replacing
+        the editor on a failed background refresh threw away every unsaved
+        field in the section cards below.
+      */}
+      {listQuery.isError && !hasAbout ? (
         <AboutErrorState onRetry={() => void listQuery.refetch()} />
       ) : !isEditing ? (
         <AboutPagePreview

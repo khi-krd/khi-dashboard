@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { LinkIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline"
-import { useEffect, useRef, useState } from "react"
+import { useState } from "react"
 import {
   Controller,
   FormProvider,
@@ -14,11 +14,11 @@ import { toast } from "sonner"
 import { AboutSectionCardShell } from "@/components/about/about-section-card-shell"
 import { SeoCountChip } from "@/components/about/seo-count-chip"
 import { NS } from "@/components/about/about-strings"
-import { ServiceActiveSwitch } from "@/components/services/service-active-switch"
 import { TiptapEditor } from "@/components/shared/tiptap-editor-lazy"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { useServerFormSync } from "@/hooks/use-server-form-sync"
 import { useUpdateAbout } from "@/hooks/useAbout"
 import { aboutPatchToPayload } from "@/lib/about-page-data"
 import { aboutSiteBaseUrl } from "@/lib/about-url-helpers"
@@ -43,7 +43,6 @@ export function AboutContentSectionCard({
   onSaved: () => void
 }) {
   const updateMut = useUpdateAbout()
-  const bootstrapped = useRef(false)
   const [activeLang, setActiveLang] = useState<Language>("CKB")
 
   const methods = useForm<AboutFormValues>({
@@ -58,15 +57,17 @@ export function AboutContentSectionCard({
     reset,
     register,
     watch,
-    setValue,
     formState: { isDirty, isValid },
   } = methods
 
-  useEffect(() => {
-    if (bootstrapped.current) return
-    bootstrapped.current = true
-    reset(aboutDtoToFormValues(aboutDto))
-  }, [aboutDto, reset])
+  useServerFormSync({
+    signature: aboutDto.id
+      ? `${aboutDto.id}:${aboutDto.updatedAt ?? ""}`
+      : null,
+    buildValues: () => aboutDtoToFormValues(aboutDto),
+    reset,
+    isDirty,
+  })
 
   const pending = updateMut.isPending
   const submitDisabled = pending || !isValid || !isDirty
@@ -85,7 +86,22 @@ export function AboutContentSectionCard({
     (values) => {
       if (!aboutDto.id) return
       updateMut.mutate(
-        { id: aboutDto.id, payload: aboutPatchToPayload(aboutDto, values) },
+        {
+          id: aboutDto.id,
+          // Only the fields this card owns. Everything else is filled from
+          // the freshest server record by `aboutPatchToPayload` — the About
+          // PUT replaces every field it receives, so posting this form's
+          // mount-time copy of the hero, founder block or stats would undo
+          // whatever a sibling card saved in the meantime.
+          payload: aboutPatchToPayload(aboutDto, {
+            slugCkb: values.slugCkb,
+            slugKmr: values.slugKmr,
+            seoDescriptionCkb: values.seoDescriptionCkb,
+            seoDescriptionKmr: values.seoDescriptionKmr,
+            bodyCkb: values.bodyCkb,
+            bodyKmr: values.bodyKmr,
+          }),
+        },
         {
           onSuccess: () => {
             toast(NS.toast.saved)
@@ -115,18 +131,14 @@ export function AboutContentSectionCard({
       pending={pending}
     >
       <FormProvider {...methods}>
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <ServiceActiveSwitch
-              checked={watch("active")}
-              onCheckedChange={(v) =>
-                setValue("active", v, { shouldDirty: true })
-              }
-            />
-            <span className="text-muted-foreground text-xs">
-              {watch("active") ? NS.status.active : NS.status.inactive}
-            </span>
-          </div>
+        {/*
+          No visibility switch here on purpose: `GET /api/v1/about` — the only
+          list endpoint the backend exposes — returns active records only, so
+          deactivating the page from this dashboard would hide it from this
+          dashboard, and the next hero save would create a second About
+          record instead of updating the hidden one.
+        */}
+        <div className="flex flex-wrap items-center justify-end gap-3">
           <div className="flex gap-2">
             {(["CKB", "KMR"] as const).map((lang) => (
               <button
@@ -179,7 +191,15 @@ export function AboutContentSectionCard({
             </div>
             <SeoCountChip value={seoLen} max={2500} />
           </div>
+          {/*
+            `key` is load-bearing: the registered name changes with the
+            language tab, and react-hook-form only pushes a value into an
+            input when it attaches to a *new* element. Without the remount the
+            textarea keeps the previous language's text on screen while
+            writing it into the other language's field on the next keystroke.
+          */}
           <Textarea
+            key={seoField}
             rows={3}
             maxLength={2500}
             className="resize-none"

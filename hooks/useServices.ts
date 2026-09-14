@@ -44,15 +44,19 @@ export function useServicesListQuery(params: ServicesListQueryKeyParts) {
   })
 }
 
+/**
+ * Deliberately never answers from `queryClient.getQueryData(detail(id))`.
+ *
+ * Reading the cache inside the query function made the query unrefetchable:
+ * `invalidateQueries`, `refetch()` and a remount all re-ran this and got the
+ * same stale object back, so a service edited on the server kept rendering
+ * its old contents and gallery. The cache is react-query's job; this
+ * function's job is to go and ask.
+ */
 async function resolveServiceDetail(
   id: number,
   queryClient: ReturnType<typeof useQueryClient>,
 ): Promise<ServiceSingleResponse> {
-  const cached = queryClient.getQueryData<ServiceSingleResponse>(
-    servicesKeys.detail(id),
-  )
-  if (cached?.success && cached.data) return cached
-
   const fromApi = await getServiceById(id)
   if (fromApi?.success && fromApi.data) return fromApi
 
