@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { EditorContent, useEditor } from "@tiptap/react"
+import { EyeIcon } from "@heroicons/react/24/outline"
 import { marked } from "marked"
 
 import { tiptapContentType } from "@/components/shared/tiptap-content"
@@ -9,6 +10,12 @@ import { getEditorMarkdown } from "@/components/shared/tiptap-markdown"
 import { createTiptapExtensions } from "@/components/shared/tiptap-extensions"
 import { TIPTAP_NS } from "@/components/shared/tiptap-strings"
 import { TiptapToolbar } from "@/components/shared/tiptap-toolbar"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { Field, FieldError, FieldLabel } from "@/components/ui/field"
 import { cn } from "@/lib/utils"
 
@@ -30,13 +37,18 @@ export type TiptapEditorProps = {
   layout?: "bordered" | "sticky"
   /** Pin toolbar inside the bordered editor while scrolling (former `layout="sticky"`). */
   stickyToolbar?: boolean
+  /**
+   * Show the preview-in-modal button (default true). Disabled inside the
+   * preview modal itself so the nested viewer cannot spawn another modal.
+   */
+  previewModal?: boolean
   className?: string
 }
 
 type EditorMode = "edit" | "preview" | "markdown" | "html"
 type SourceMode = "markdown" | "html"
 
-const EDITABLE_MODES: EditorMode[] = ["edit", "preview", "markdown", "html"]
+const EDITABLE_MODES: EditorMode[] = ["edit", "markdown", "html"]
 const VIEWER_MODES: EditorMode[] = ["preview", "markdown", "html"]
 
 function langToDir(lang?: "CKB" | "KMR"): "rtl" | "ltr" {
@@ -80,9 +92,12 @@ export function TiptapEditor({
   toolbar = "full",
   layout = "bordered",
   stickyToolbar,
+  previewModal = true,
   className,
 }: TiptapEditorProps) {
   const [mode, setMode] = useState<EditorMode>(editable ? "edit" : "preview")
+  const [previewOpen, setPreviewOpen] = useState(false)
+  const [previewContent, setPreviewContent] = useState("")
   /** Draft of the open source pane. `emitted` marks text the user just typed
    * there (vs. a seed), so an incoming `value` equal to it is recognized as
    * this pane's own echo rather than an external change. */
@@ -171,6 +186,15 @@ export function TiptapEditor({
     setMode(next)
   }
 
+  function openPreview() {
+    // Snapshot the live doc — unsaved edits and media nodes included — even
+    // when `onChange` has not round-tripped the value back to the form.
+    setPreviewContent(
+      editor && !editor.isDestroyed ? getEditorMarkdown(editor) : (value ?? ""),
+    )
+    setPreviewOpen(true)
+  }
+
   function handleSourceChange(text: string) {
     if (!isSourceMode) return
     setSourceEdit({ mode: activeMode as SourceMode, text, emitted: true })
@@ -230,6 +254,17 @@ export function TiptapEditor({
             {TIPTAP_NS.modes[m]}
           </button>
         ))}
+        {previewModal ? (
+          <button
+            type="button"
+            onClick={openPreview}
+            title={TIPTAP_NS.modes.preview}
+            className="text-foreground/60 hover:text-foreground inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-medium whitespace-nowrap transition-all"
+          >
+            <EyeIcon className="size-3.5" />
+            {editable ? TIPTAP_NS.modes.preview : TIPTAP_NS.modes.expand}
+          </button>
+        ) : null}
       </div>
       <div className={tiptapEditorShellClass(error)}>
         <div className="bg-background min-h-0 max-h-[480px] overflow-y-auto">
@@ -259,6 +294,25 @@ export function TiptapEditor({
           ) : null}
         </div>
       </div>
+      {previewModal ? (
+        <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+          <DialogContent
+            dir={dir}
+            className="max-h-[85vh] overflow-y-auto sm:max-w-4xl"
+          >
+            <DialogHeader>
+              <DialogTitle>{TIPTAP_NS.modes.preview}</DialogTitle>
+            </DialogHeader>
+            <TiptapEditor
+              editable={false}
+              value={previewContent}
+              lang={lang}
+              previewModal={false}
+              contentMinHeightClass="min-h-0"
+            />
+          </DialogContent>
+        </Dialog>
+      ) : null}
     </div>
   )
 

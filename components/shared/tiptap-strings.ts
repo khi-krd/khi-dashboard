@@ -33,6 +33,7 @@ export const TIPTAP_NS = {
     label: "شێوازی پیشاندان",
     edit: "دەستکاری",
     preview: "پێشبینین",
+    expand: "گەورەکردنی پێشبینین",
     markdown: "Markdown",
     html: "HTML",
   },
