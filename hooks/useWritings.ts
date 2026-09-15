@@ -7,6 +7,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query"
 
+import type { UploadProgressHandler } from "@/lib/axios"
 import { writingsKeys } from "@/lib/writings-query-keys"
 import { syncFeaturedWritingsCache } from "@/lib/featured-cache-sync"
 import {
@@ -151,7 +152,10 @@ export function useSeriesDetailQuery(seriesId: string) {
 export function useCreateWriting() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (formData: FormData) => createWriting(formData),
+    mutationFn: (variables: {
+      formData: FormData
+      onProgress?: UploadProgressHandler
+    }) => createWriting(variables.formData, variables.onProgress),
     onSuccess: (data) => {
       if (data.id) {
         queryClient.setQueryData(writingsKeys.detail(data.id), data)
@@ -167,8 +171,11 @@ export function useCreateWriting() {
 export function useUpdateWriting() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (variables: { id: number; formData: FormData }) =>
-      updateWriting(variables.id, variables.formData),
+    mutationFn: (variables: {
+      id: number
+      formData: FormData
+      onProgress?: UploadProgressHandler
+    }) => updateWriting(variables.id, variables.formData, variables.onProgress),
     onSuccess: (data, variables) => {
       if (data.id) {
         queryClient.setQueryData(writingsKeys.detail(variables.id), data)

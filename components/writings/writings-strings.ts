@@ -48,6 +48,8 @@ export const NS = {
   validation: {
     languageRequired: "لانیکەم زمانێک پێویستە",
     topicNameRequired: "ناوی بابەت پێویستە",
+    titleRequired: "ناونیشان بۆ هەر زمانێکی چالاککراو پێویستە",
+    selfParent: "کتێب ناتوانێت دایکی خۆی بێت",
   },
   page: {
     title: "نووسراوەکان",

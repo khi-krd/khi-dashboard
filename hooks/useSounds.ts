@@ -7,6 +7,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query"
 
+import type { UploadProgressHandler } from "@/lib/axios"
 import { soundKeys } from "@/lib/sounds-query-keys"
 import { syncFeaturedSoundsCache } from "@/lib/featured-cache-sync"
 import {
@@ -138,7 +139,10 @@ export function useDeleteTopicMutation() {
 export function useCreateSound() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (formData: FormData) => createSound(formData),
+    mutationFn: (variables: {
+      formData: FormData
+      onProgress?: UploadProgressHandler
+    }) => createSound(variables.formData, variables.onProgress),
     onSuccess: (data) => {
       if (data.id) {
         queryClient.setQueryData(soundKeys.detail(data.id), data)
@@ -151,8 +155,11 @@ export function useCreateSound() {
 export function useUpdateSound() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (variables: { id: number; formData: FormData }) =>
-      updateSound(variables.id, variables.formData),
+    mutationFn: (variables: {
+      id: number
+      formData: FormData
+      onProgress?: UploadProgressHandler
+    }) => updateSound(variables.id, variables.formData, variables.onProgress),
     onSuccess: (data, variables) => {
       if (data.id) {
         queryClient.setQueryData(soundKeys.detail(variables.id), data)

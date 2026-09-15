@@ -89,16 +89,19 @@ export function writingFormValuesToMultipart(
   }
 
   if (values.seriesMode === "series") {
-    if (values.seriesId?.trim()) {
+    // `seriesId` only exists on the create contract — `UpdateRequest` has no
+    // such field, and the strict `data` parser fails the whole update with
+    // `400 Unrecognized field "seriesId"` if it is sent. Reparenting on edit
+    // happens through `parentBookId`, which copies the parent's series key.
+    if (mode === "create" && values.seriesId?.trim()) {
       payload.seriesId = values.seriesId.trim()
     }
     payload.seriesName = trimOrUndef(values.seriesName)
     payload.seriesOrder = values.seriesOrder ?? 1
     payload.parentBookId = values.parentBookId ?? null
-  } else if (mode === "edit") {
-    payload.parentBookId = null
-    payload.seriesName = null
   }
+  // On edit + standalone nothing is sent: update merges non-null fields, and
+  // `parentBookId: null` cannot unlink a book anyway, so the nulls were noise.
 
   if (
     values.newTopic?.nameCkb?.trim() ||
@@ -108,6 +111,11 @@ export function writingFormValuesToMultipart(
       nameCkb: trimOrUndef(values.newTopic.nameCkb),
       nameKmr: trimOrUndef(values.newTopic.nameKmr),
     }
+    payload.topicId = null
+  } else if (values.clearTopic) {
+    // `topicId: null` on update is read as "unchanged" — detaching a topic
+    // needs the explicit flag, which also wins over any topicId in the blob.
+    payload.clearTopic = true
     payload.topicId = null
   } else if (values.topicId != null) {
     payload.topicId = values.topicId

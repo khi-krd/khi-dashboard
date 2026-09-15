@@ -1,4 +1,4 @@
-import api from "@/lib/axios"
+import api, { toUploadProgress, type UploadProgressHandler } from "@/lib/axios"
 import type {
   MediaUploadMultipleResponse,
   MediaUploadResponse,
@@ -11,11 +11,14 @@ const BASE = "/api/v1/media"
 export async function uploadMedia(
   file: File,
   type?: MediaUploadType,
+  onProgress?: UploadProgressHandler,
 ): Promise<MediaUploadResultDto> {
   const fd = new FormData()
   fd.append("file", file)
   if (type) fd.append("type", type)
-  const { data } = await api.post<MediaUploadResponse>(`${BASE}/upload`, fd)
+  const { data } = await api.post<MediaUploadResponse>(`${BASE}/upload`, fd, {
+    onUploadProgress: toUploadProgress(onProgress),
+  })
   if (!data.success || !data.data?.fileUrl) {
     throw new Error(data.message || "Media upload failed")
   }
@@ -25,6 +28,7 @@ export async function uploadMedia(
 export async function uploadMediaMultiple(
   files: File[],
   type?: MediaUploadType,
+  onProgress?: UploadProgressHandler,
 ): Promise<MediaUploadResultDto[]> {
   const fd = new FormData()
   for (const f of files) {
@@ -34,6 +38,7 @@ export async function uploadMediaMultiple(
   const { data } = await api.post<MediaUploadMultipleResponse>(
     `${BASE}/upload/multiple`,
     fd,
+    { onUploadProgress: toUploadProgress(onProgress) },
   )
   if (!data.success || !data.data?.length) {
     throw new Error(data.message || "Media upload failed")

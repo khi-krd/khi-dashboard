@@ -351,6 +351,7 @@ export function ContactForm({
               <h3 className={cn("mb-3", sectionHeading)}>{NS.form.description}</h3>
               {activeLang === "CKB" ? (
                 <TiptapEditor
+                  key="descriptionCkb"
                   stickyToolbar
                   lang="CKB"
                   value={watch("descriptionCkb") ?? ""}
@@ -360,6 +361,7 @@ export function ContactForm({
                 />
               ) : (
                 <TiptapEditor
+                  key="descriptionKmr"
                   stickyToolbar
                   lang="KMR"
                   value={watch("descriptionKmr") ?? ""}

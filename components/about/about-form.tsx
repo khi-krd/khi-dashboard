@@ -720,6 +720,7 @@ export function AboutForm({
                   <h3 className={cn("mb-3", sectionHeading)}>{NS.form.body}</h3>
                   {activeLang === "CKB" ? (
                     <TiptapEditor
+                      key="bodyCkb"
                       stickyToolbar
                       lang="CKB"
                       value={watch("bodyCkb") ?? ""}
@@ -729,6 +730,7 @@ export function AboutForm({
                     />
                   ) : (
                     <TiptapEditor
+                      key="bodyKmr"
                       stickyToolbar
                       lang="KMR"
                       value={watch("bodyKmr") ?? ""}
@@ -852,6 +854,7 @@ export function AboutForm({
               <h3 className={cn("mb-3", sectionHeading)}>{NS.form.body}</h3>
               {activeLang === "CKB" ? (
                 <TiptapEditor
+                  key="bodyCkb"
                   stickyToolbar
                   lang="CKB"
                   value={watch("bodyCkb") ?? ""}
@@ -861,6 +864,7 @@ export function AboutForm({
                 />
               ) : (
                 <TiptapEditor
+                  key="bodyKmr"
                   stickyToolbar
                   lang="KMR"
                   value={watch("bodyKmr") ?? ""}

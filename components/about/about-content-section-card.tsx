@@ -230,6 +230,7 @@ export function AboutContentSectionCard({
           <Label className="text-xs">{NS.form.body}</Label>
           {activeLang === "CKB" ? (
             <Controller
+              key="bodyCkb"
               name="bodyCkb"
               control={control}
               render={({ field }) => (
@@ -243,6 +244,7 @@ export function AboutContentSectionCard({
             />
           ) : (
             <Controller
+              key="bodyKmr"
               name="bodyKmr"
               control={control}
               render={({ field }) => (

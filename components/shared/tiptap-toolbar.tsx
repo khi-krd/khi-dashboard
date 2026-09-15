@@ -29,6 +29,7 @@ import {
 } from "@heroicons/react/24/outline"
 
 import { TIPTAP_NS } from "@/components/shared/tiptap-strings"
+import { UploadProgressLine } from "@/components/shared/upload-progress-line"
 import {
   insertUploadedAudio,
   insertUploadedFile,
@@ -115,6 +116,7 @@ function MediaUploadButton({
   multiple = false,
   label,
   onInsert,
+  onProgressChange,
   children,
 }: {
   editor: Editor
@@ -123,6 +125,8 @@ function MediaUploadButton({
   multiple?: boolean
   label: string
   onInsert: (editor: Editor, results: MediaUploadResultDto[]) => void
+  /** Reports this button's upload percentage; `null` clears it. */
+  onProgressChange?: (pct: number | null) => void
   children: ReactNode
 }) {
   const inputRef = useRef<HTMLInputElement>(null)
@@ -132,15 +136,23 @@ function MediaUploadButton({
     if (!files?.length) return
     const list = Array.from(files)
     setUploading(true)
+    onProgressChange?.(0)
     try {
       const results = multiple
-        ? await uploadMediaMultiple(list, type)
-        : [await uploadMedia(list[0], type)]
+        ? await uploadMediaMultiple(list, type, onProgressChange ?? undefined)
+        : [
+            await uploadMedia(
+              list[0],
+              type,
+              onProgressChange ?? undefined,
+            ),
+          ]
       onInsert(editor, results)
     } catch {
       toast.error(TIPTAP_NS.error.uploadFailed)
     } finally {
       setUploading(false)
+      onProgressChange?.(null)
       if (inputRef.current) inputRef.current.value = ""
     }
   }
@@ -182,11 +194,32 @@ export function TiptapToolbar({
 }) {
   const canUndo = editor.can().chain().focus().undo().run()
   const canRedo = editor.can().chain().focus().redo().run()
+  const [activeUploads, setActiveUploads] = useState<Record<string, number>>({})
+
+  const reportProgress = (key: string) => (pct: number | null) =>
+    setActiveUploads((prev) => {
+      const next = { ...prev }
+      if (pct === null) delete next[key]
+      else next[key] = pct
+      return next
+    })
+  const uploadPct =
+    Object.keys(activeUploads).length > 0
+      ? Math.max(...Object.values(activeUploads))
+      : null
 
   const barClass = cn(
-    "border-border bg-muted/30 flex shrink-0 flex-wrap items-center gap-0.5 border-b px-2 py-1.5",
+    "border-border bg-muted/30 relative flex shrink-0 flex-wrap items-center gap-0.5 border-b px-2 py-1.5",
     sticky &&
       "supports-backdrop-filter:backdrop-blur bg-background/95 sticky top-0 z-10",
+  )
+
+  const progressLine = (
+    <UploadProgressLine
+      compact
+      value={uploadPct}
+      className="pointer-events-none absolute inset-x-0 bottom-0"
+    />
   )
 
   if (variant === "compact" && !preview) {
@@ -348,6 +381,7 @@ export function TiptapToolbar({
           type="image"
           accept="image/*"
           label={TIPTAP_NS.toolbar.image}
+          onProgressChange={reportProgress(TIPTAP_NS.toolbar.image)}
           onInsert={(ed, results) =>
             insertUploadedImage(ed, results[0].fileUrl)
           }
@@ -360,6 +394,7 @@ export function TiptapToolbar({
           accept="image/*"
           multiple
           label={TIPTAP_NS.toolbar.gallery}
+          onProgressChange={reportProgress(TIPTAP_NS.toolbar.gallery)}
           onInsert={(ed, results) =>
             insertUploadedGallery(
               ed,
@@ -374,6 +409,7 @@ export function TiptapToolbar({
           type="video"
           accept="video/*"
           label={TIPTAP_NS.toolbar.video}
+          onProgressChange={reportProgress(TIPTAP_NS.toolbar.video)}
           onInsert={(ed, results) =>
             insertUploadedVideo(ed, results[0].fileUrl)
           }
@@ -385,6 +421,7 @@ export function TiptapToolbar({
           type="audio"
           accept="audio/*"
           label={TIPTAP_NS.toolbar.audio}
+          onProgressChange={reportProgress(TIPTAP_NS.toolbar.audio)}
           onInsert={(ed, results) =>
             insertUploadedAudio(ed, results[0].fileUrl)
           }
@@ -396,6 +433,7 @@ export function TiptapToolbar({
           type="document"
           accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.7z,.txt,.csv,.json"
           label={TIPTAP_NS.toolbar.file}
+          onProgressChange={reportProgress(TIPTAP_NS.toolbar.file)}
           onInsert={(ed, results) =>
             insertUploadedFile(ed, results[0].fileUrl, results[0].fileName)
           }
@@ -471,6 +509,7 @@ export function TiptapToolbar({
             <EyeIcon className="size-4" />
           </ToolbarBtn>
         ) : null}
+        {progressLine}
       </div>
     </TooltipProvider>
   )

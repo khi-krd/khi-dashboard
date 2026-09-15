@@ -1,4 +1,4 @@
-import api from "@/lib/axios"
+import api, { toUploadProgress, type UploadProgressHandler } from "@/lib/axios"
 import {
   normalizeSeriesDetail,
   normalizeTopicDto,
@@ -72,16 +72,24 @@ export async function searchWritingsByKeyword(
   return normalizeWritingPage(data)
 }
 
-export async function createWriting(formData: FormData): Promise<WritingDto> {
-  const { data } = await api.post<unknown>(BASE, formData)
+export async function createWriting(
+  formData: FormData,
+  onProgress?: UploadProgressHandler,
+): Promise<WritingDto> {
+  const { data } = await api.post<unknown>(BASE, formData, {
+    onUploadProgress: toUploadProgress(onProgress),
+  })
   return normalizeWritingDto(data)
 }
 
 export async function updateWriting(
   id: number,
   formData: FormData,
+  onProgress?: UploadProgressHandler,
 ): Promise<WritingDto> {
-  const { data } = await api.put<unknown>(`${BASE}/${id}`, formData)
+  const { data } = await api.put<unknown>(`${BASE}/${id}`, formData, {
+    onUploadProgress: toUploadProgress(onProgress),
+  })
   return normalizeWritingDto(data)
 }
 

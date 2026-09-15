@@ -30,6 +30,7 @@ import { VideoMetadataGrid } from "@/components/videos/video-metadata-grid"
 import { VideoSourceList } from "@/components/videos/video-source-list"
 import { VideoTagInput } from "@/components/videos/video-tag-input"
 import { TiptapEditor } from "@/components/shared/tiptap-editor-lazy"
+import { UploadProgressLine } from "@/components/shared/upload-progress-line"
 import { VideoTopicCombobox } from "@/components/videos/video-topic-combobox"
 import { VideoTypeToggle } from "@/components/videos/video-type-toggle"
 import { VideosErrorState } from "@/components/videos/video-error-state"
@@ -142,6 +143,7 @@ export function VideoForm({
 
   const pending = createMut.isPending || updateMut.isPending
   const submitDisabled = !isDirty || !isValid || pending
+  const [uploadPct, setUploadPct] = useState<number | null>(null)
   const errorCount = countFormErrors(errors)
 
   const langLabel = activeLang === "CKB" ? NS.lang.ckb : NS.lang.kmr
@@ -164,9 +166,13 @@ export function VideoForm({
       mode === "edit" ? videoId : undefined,
       values,
     )
+    setUploadPct(0)
     try {
       if (mode === "create") {
-        const res = await createMut.mutateAsync(fd)
+        const res = await createMut.mutateAsync({
+          formData: fd,
+          onProgress: setUploadPct,
+        })
         if (res.id) {
           toast.success(NS.toast.saved, {
             action: {
@@ -177,12 +183,18 @@ export function VideoForm({
           router.push(`/dashboard/videos/${res.id}`)
         }
       } else if (videoId) {
-        await updateMut.mutateAsync({ id: videoId, formData: fd })
+        await updateMut.mutateAsync({
+          id: videoId,
+          formData: fd,
+          onProgress: setUploadPct,
+        })
         toast.success(NS.toast.saved)
         router.push(`/dashboard/videos/${videoId}`)
       }
     } catch {
       toast.error(NS.validation.generic)
+    } finally {
+      setUploadPct(null)
     }
   }
 
@@ -435,7 +447,11 @@ export function VideoForm({
             />
 
             {activeLang === "CKB" ? (
-              <div className="mt-6 space-y-3">
+              // The branch key remounts every registered input inside —
+              // react-hook-form only writes a value into a field when it
+              // attaches to a new element, so a reused element would keep the
+              // other language's text and overwrite it on the next keystroke.
+              <div key="ckb" className="mt-6 space-y-3">
                 <Input
                   className={borderlessTitleClass}
                   placeholder={NS.field.title_ckb}
@@ -490,7 +506,7 @@ export function VideoForm({
                 />
               </div>
             ) : (
-              <div className="mt-6 space-y-3">
+              <div key="kmr" className="mt-6 space-y-3">
                 <Input
                   dir="ltr"
                   className={borderlessTitleClass}
@@ -591,6 +607,11 @@ export function VideoForm({
             "pb-[max(0.75rem,env(safe-area-inset-bottom))]",
           )}
         >
+          {uploadPct != null ? (
+            <div className="mx-auto max-w-full px-4 pt-3 lg:px-6">
+              <UploadProgressLine value={uploadPct} label={NS.action.saving} />
+            </div>
+          ) : null}
           <div className="mx-auto flex min-h-14 max-w-full items-center justify-between gap-3 px-4 py-3 lg:px-6">
             <div className="flex min-h-10 flex-1 flex-wrap items-center gap-x-4 gap-y-1 text-sm">
               {isDirty ? (

@@ -30,6 +30,7 @@ export function WritingSeriesSection({
   seriesTotalBooks,
   onSeriesTotalBooksChange,
   parentError,
+  excludeId,
 }: {
   seriesMode: SeriesMode
   onSeriesModeChange: (m: SeriesMode) => void
@@ -42,9 +43,11 @@ export function WritingSeriesSection({
   seriesTotalBooks: number | undefined
   onSeriesTotalBooksChange: (n: number | undefined) => void
   parentError?: string
+  /** Book being edited — it can never be its own series parent. */
+  excludeId?: number
 }) {
   const parentsQ = useSeriesParentsQuery()
-  const parents = parentsQ.data ?? []
+  const parents = (parentsQ.data ?? []).filter((p) => p.id !== excludeId)
 
   return (
     <section className="space-y-4">

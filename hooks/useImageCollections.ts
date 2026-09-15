@@ -7,6 +7,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query"
 
+import type { UploadProgressHandler } from "@/lib/axios"
 import { submitCollection } from "@/lib/image-collections-form-data"
 import { collectionKeys } from "@/lib/image-collections-query-keys"
 import type { CollectionFormValues } from "@/lib/validations/image-collections"
@@ -88,8 +89,10 @@ export function useCollectionTopicsQuery() {
 export function useCreateCollection() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (values: CollectionFormValues) =>
-      submitCollection("create", undefined, values),
+    mutationFn: (variables: {
+      values: CollectionFormValues
+      onProgress?: UploadProgressHandler
+    }) => submitCollection("create", undefined, variables.values, variables.onProgress),
     onSuccess: (data) => {
       if (data.id) {
         queryClient.setQueryData(collectionKeys.detail(data.id), data)
@@ -102,8 +105,12 @@ export function useCreateCollection() {
 export function useUpdateCollection() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (variables: { id: number; values: CollectionFormValues }) =>
-      submitCollection("edit", variables.id, variables.values),
+    mutationFn: (variables: {
+      id: number
+      values: CollectionFormValues
+      onProgress?: UploadProgressHandler
+    }) =>
+      submitCollection("edit", variables.id, variables.values, variables.onProgress),
     onSuccess: (data, variables) => {
       if (data.id) {
         queryClient.setQueryData(collectionKeys.detail(variables.id), data)

@@ -4,6 +4,7 @@ import {
   updateCollectionJson,
   updateCollectionMultipart,
 } from "@/services/imageCollectionsService"
+import type { UploadProgressHandler } from "@/lib/axios"
 import type { CollectionDto } from "@/types/image-collections"
 import type { CollectionFormValues } from "@/lib/validations/image-collections"
 
@@ -134,13 +135,14 @@ export async function submitCollection(
   mode: "create" | "edit",
   collectionId: number | undefined,
   values: CollectionFormValues,
+  onProgress?: UploadProgressHandler,
 ): Promise<CollectionDto> {
   if (hasAnyStagedBinary(values)) {
     const fd = collectionFormValuesToMultipart(mode, collectionId, values)
     if (mode === "edit" && collectionId != null) {
-      return updateCollectionMultipart(collectionId, fd)
+      return updateCollectionMultipart(collectionId, fd, onProgress)
     }
-    return createCollectionMultipart(fd)
+    return createCollectionMultipart(fd, onProgress)
   }
 
   const payload = collectionFormValuesToPayload(mode, collectionId, values)

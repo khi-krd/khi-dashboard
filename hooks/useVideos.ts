@@ -7,6 +7,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query"
 
+import type { UploadProgressHandler } from "@/lib/axios"
 import { videoKeys } from "@/lib/videos-query-keys"
 import {
   createTopic,
@@ -104,7 +105,10 @@ export function useVideoTopicsQuery() {
 export function useCreateVideo() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (formData: FormData) => createVideo(formData),
+    mutationFn: (variables: {
+      formData: FormData
+      onProgress?: UploadProgressHandler
+    }) => createVideo(variables.formData, variables.onProgress),
     onSuccess: (data) => {
       if (data.id) {
         queryClient.setQueryData(videoKeys.detail(data.id), data)
@@ -117,8 +121,11 @@ export function useCreateVideo() {
 export function useUpdateVideo() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (variables: { id: number; formData: FormData }) =>
-      updateVideo(variables.id, variables.formData),
+    mutationFn: (variables: {
+      id: number
+      formData: FormData
+      onProgress?: UploadProgressHandler
+    }) => updateVideo(variables.id, variables.formData, variables.onProgress),
     onSuccess: (data, variables) => {
       if (data.id) {
         queryClient.setQueryData(videoKeys.detail(variables.id), data)

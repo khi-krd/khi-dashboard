@@ -57,6 +57,22 @@ Read these before touching a write path — the API is not forgiving.
   donations, so the donations status pill/select are reused.
 - **`mapEmbedUrl` may contain a pasted `<iframe>` tag**, not a URL — extract
   `src` before rendering (see `embedSrc` in `contact-page-preview.tsx`).
+- **Writings create/update are multipart** (`data` JSON blob + file parts
+  `ckbCoverImage`/`kmrCoverImage`/`hoverCoverImage`/`ckbBookFile`/`kmrBookFile`),
+  and the `data` blob **rejects unknown fields** with
+  `400 Unrecognized field "…"`. `PUT` is a *partial merge* — null means
+  "unchanged", not "clear". `seriesId` exists only on the create contract;
+  never send it on update. `clearTopic: true` is the only way to detach a
+  topic (`topicId: null` alone is a no-op), and `parentBookId` can re-link but
+  never un-link (no way to detach a book from its parent). A declared
+  `contentLanguages` entry must carry a non-blank title — enforced in
+  `lib/validations/writings.ts` before the request leaves.
+- **Upload progress**: every multipart/upload service call accepts an
+  `onProgress` (0–100) callback via `toUploadProgress` in `lib/axios.ts`; the
+  shared bar is `components/shared/upload-progress-line.tsx`. Staged-file
+  forms (writings, videos, sounds, collections) show it in the save footer;
+  direct uploads (covers, tiptap toolbar inserts, service gallery) show it
+  inline.
 
 ## Form conventions
 

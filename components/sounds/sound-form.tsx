@@ -30,6 +30,7 @@ import { SoundLanguageToggleChip } from "@/components/sounds/sound-language-chip
 import { SoundStateToggle } from "@/components/sounds/sound-state-toggle"
 import { SoundTagInput } from "@/components/sounds/sound-tag-input"
 import { TiptapEditor } from "@/components/shared/tiptap-editor-lazy"
+import { UploadProgressLine } from "@/components/shared/upload-progress-line"
 import { SoundTopicCombobox } from "@/components/sounds/sound-topic-combobox"
 import { SoundTypeCombobox } from "@/components/sounds/sound-type-combobox"
 import { NS } from "@/components/sounds/sounds-strings"
@@ -142,6 +143,7 @@ export function SoundForm({
 
   const pending = createMut.isPending || updateMut.isPending
   const submitDisabled = !isDirty || !isValid || pending
+  const [uploadPct, setUploadPct] = useState<number | null>(null)
   const errorCount = countFormErrors(errors)
 
   const langLabel = activeLang === "CKB" ? NS.lang.ckb : NS.lang.kmr
@@ -164,9 +166,13 @@ export function SoundForm({
       mode === "edit" ? soundId : undefined,
       values,
     )
+    setUploadPct(0)
     try {
       if (mode === "create") {
-        const res = await createMut.mutateAsync(fd)
+        const res = await createMut.mutateAsync({
+          formData: fd,
+          onProgress: setUploadPct,
+        })
         if (res.id) {
           toast.success(NS.toast.saved, {
             action: {
@@ -177,12 +183,18 @@ export function SoundForm({
           router.push(`/dashboard/sounds/${res.id}`)
         }
       } else if (soundId) {
-        await updateMut.mutateAsync({ id: soundId, formData: fd })
+        await updateMut.mutateAsync({
+          id: soundId,
+          formData: fd,
+          onProgress: setUploadPct,
+        })
         toast.success(NS.toast.saved)
         router.push(`/dashboard/sounds/${soundId}`)
       }
     } catch {
       toast.error(NS.error.validation)
+    } finally {
+      setUploadPct(null)
     }
   }
 
@@ -516,6 +528,11 @@ export function SoundForm({
             "pb-[max(0.75rem,env(safe-area-inset-bottom))]",
           )}
         >
+          {uploadPct != null ? (
+            <div className="mx-auto max-w-full px-4 pt-3 lg:px-6">
+              <UploadProgressLine value={uploadPct} label={NS.action.saving} />
+            </div>
+          ) : null}
           <div className="mx-auto flex min-h-14 max-w-full items-center justify-between gap-3 px-4 py-3 lg:px-6">
             <div className="flex min-h-10 flex-1 flex-wrap items-center gap-x-4 gap-y-1 text-sm">
               {isDirty ? (

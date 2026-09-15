@@ -546,7 +546,11 @@ export function ProjectForm({
             </section>
 
             {activeLang === "CKB" ? (
-              <div className="mt-6 space-y-2">
+              // The branch key remounts every registered input inside —
+              // react-hook-form only writes a value into a field when it
+              // attaches to a new element, so a reused element would keep the
+              // other language's text and overwrite it on the next keystroke.
+              <div key="ckb" className="mt-6 space-y-2">
                 <Input
                   className={borderlessTitleClass}
                   placeholder={NS.field.title_ckb}
@@ -580,7 +584,7 @@ export function ProjectForm({
                 />
               </div>
             ) : (
-              <div className="mt-6 space-y-2">
+              <div key="kmr" className="mt-6 space-y-2">
                 <Input
                   dir="ltr"
                   className={borderlessTitleClass}

@@ -5,6 +5,7 @@ import { useState } from "react"
 import { toast } from "sonner"
 
 import { TIPTAP_NS } from "@/components/shared/tiptap-strings"
+import { UploadProgressLine } from "@/components/shared/upload-progress-line"
 import { Button } from "@/components/ui/button"
 import { FieldError } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
@@ -47,6 +48,7 @@ export function MediaCoverUpload({
   const resolvedMaxSize =
     maxSize ?? (variant === "video" ? DEFAULT_VIDEO_MAX : DEFAULT_IMAGE_MAX)
   const [uploading, setUploading] = useState(false)
+  const [progress, setProgress] = useState<number | null>(null)
   const preview = previewUrl?.trim() || null
 
   const [
@@ -78,13 +80,15 @@ export function MediaCoverUpload({
   async function uploadFile(file: File) {
     clearErrors()
     setUploading(true)
+    setProgress(0)
     try {
-      const result = await uploadMedia(file, mediaTypeFromFile(file))
+      const result = await uploadMedia(file, mediaTypeFromFile(file), setProgress)
       onUrlChange(result.fileUrl)
     } catch {
       toast.error(TIPTAP_NS.error.uploadFailed)
     } finally {
       setUploading(false)
+      setProgress(null)
     }
   }
 
@@ -134,8 +138,9 @@ export function MediaCoverUpload({
           </div>
         )}
         {uploading ? (
-          <div className="bg-background/70 absolute inset-0 flex items-center justify-center text-sm">
-            {TIPTAP_NS.cover.uploading}
+          <div className="bg-background/70 absolute inset-0 flex flex-col items-center justify-center gap-3 px-6 text-sm">
+            <span>{TIPTAP_NS.cover.uploading}</span>
+            <UploadProgressLine value={progress} className="max-w-[240px]" />
           </div>
         ) : null}
       </div>

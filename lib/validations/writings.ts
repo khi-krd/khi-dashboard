@@ -74,6 +74,31 @@ export const writingFormSchema = z
     ckbBookFile: z.instanceof(File).optional().nullable(),
     kmrBookFile: z.instanceof(File).optional().nullable(),
   })
+  .superRefine((values, ctx) => {
+    // The server rejects a declared language whose title is blank — and on the
+    // update path an empty title would silently clear the existing one. Check
+    // per declared language so the failing field gets its own inline error.
+    if (
+      values.contentLanguages.includes("CKB") &&
+      !values.ckbContent?.title?.trim()
+    ) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["ckbContent", "title"],
+        message: NS.validation.titleRequired,
+      })
+    }
+    if (
+      values.contentLanguages.includes("KMR") &&
+      !values.kmrContent?.title?.trim()
+    ) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["kmrContent", "title"],
+        message: NS.validation.titleRequired,
+      })
+    }
+  })
 
 export type WritingFormValues = z.infer<typeof writingFormSchema>
 

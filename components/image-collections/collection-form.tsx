@@ -28,6 +28,7 @@ import { CollectionCreditsInlineRow } from "@/components/image-collections/colle
 import { CollectionErrorState } from "@/components/image-collections/collection-error-state"
 import { CollectionLanguageToggleChip } from "@/components/image-collections/collection-language-chip"
 import { TiptapEditor } from "@/components/shared/tiptap-editor-lazy"
+import { UploadProgressLine } from "@/components/shared/upload-progress-line"
 import { CollectionTopicCombobox } from "@/components/image-collections/collection-topic-combobox"
 import { CollectionTypeToggle } from "@/components/image-collections/collection-type-toggle"
 import { CollectionTagInput } from "@/components/image-collections/collection-tag-input"
@@ -143,6 +144,7 @@ export function CollectionForm({
 
   const pending = createMut.isPending || updateMut.isPending
   const submitDisabled = !isDirty || !isValid || pending
+  const [uploadPct, setUploadPct] = useState<number | null>(null)
   const errorCount = countFormErrors(errors)
   const langLabel = activeLang === "CKB" ? NS.lang.ckb : NS.lang.kmr
 
@@ -161,9 +163,13 @@ export function CollectionForm({
   const totalBytes = imageAlbum.reduce((s, it) => s + (it.fileSizeBytes ?? 0), 0)
 
   async function onSubmit(values: CollectionFormValues) {
+    setUploadPct(0)
     try {
       if (mode === "create") {
-        const res = await createMut.mutateAsync(values)
+        const res = await createMut.mutateAsync({
+          values,
+          onProgress: setUploadPct,
+        })
         if (res.id) {
           toast.success(NS.toast.created, {
             action: {
@@ -175,12 +181,18 @@ export function CollectionForm({
           router.push(`/dashboard/image-collections/${res.id}`)
         }
       } else if (collectionId) {
-        await updateMut.mutateAsync({ id: collectionId, values })
+        await updateMut.mutateAsync({
+          id: collectionId,
+          values,
+          onProgress: setUploadPct,
+        })
         toast.success(NS.toast.updated)
         router.push(`/dashboard/image-collections/${collectionId}`)
       }
     } catch {
       toast.error(NS.error.validation)
+    } finally {
+      setUploadPct(null)
     }
   }
 
@@ -419,7 +431,15 @@ export function CollectionForm({
             />
 
             <div className="mt-6 space-y-1">
+              {/*
+                `key` is load-bearing: the registered name follows the language
+                tab, and react-hook-form only writes a value into an input when
+                it attaches to a new element. Without the remount the field
+                keeps the other language's text and overwrites it on the next
+                keystroke.
+              */}
               <input
+                key={activeLang === "CKB" ? "ckbContent.title" : "kmrContent.title"}
                 type="text"
                 className={borderlessTitleClass}
                 placeholder={
@@ -445,6 +465,7 @@ export function CollectionForm({
             <CollectionCreditsInlineRow activeLang={activeLang} />
 
             <TiptapEditor
+              key={activeLang}
               stickyToolbar
               lang={activeLang}
               placeholder={
@@ -511,6 +532,11 @@ export function CollectionForm({
             "pb-[max(0.75rem,env(safe-area-inset-bottom))]",
           )}
         >
+          {uploadPct != null ? (
+            <div className="mx-auto max-w-full px-4 pt-3 lg:px-6">
+              <UploadProgressLine value={uploadPct} label={NS.action.saving} />
+            </div>
+          ) : null}
           <div className="mx-auto flex min-h-14 max-w-full items-center justify-between gap-3 px-4 py-3 lg:px-6">
             <div className="flex min-h-10 flex-1 flex-wrap items-center gap-x-4 gap-y-1 text-sm">
               {isDirty ? (

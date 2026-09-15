@@ -1,4 +1,4 @@
-import api from "@/lib/axios"
+import api, { toUploadProgress, type UploadProgressHandler } from "@/lib/axios"
 import {
   normalizeSoundDto,
   normalizeSoundPage,
@@ -112,16 +112,24 @@ export async function searchSoundsByKeyword(
   return normalizeSoundPage(data)
 }
 
-export async function createSound(formData: FormData): Promise<SoundDto> {
-  const { data } = await api.post<unknown>(BASE, formData)
+export async function createSound(
+  formData: FormData,
+  onProgress?: UploadProgressHandler,
+): Promise<SoundDto> {
+  const { data } = await api.post<unknown>(BASE, formData, {
+    onUploadProgress: toUploadProgress(onProgress),
+  })
   return normalizeSoundDto(data)
 }
 
 export async function updateSound(
   id: number,
   formData: FormData,
+  onProgress?: UploadProgressHandler,
 ): Promise<SoundDto> {
-  const { data } = await api.put<unknown>(`${BASE}/${id}`, formData)
+  const { data } = await api.put<unknown>(`${BASE}/${id}`, formData, {
+    onUploadProgress: toUploadProgress(onProgress),
+  })
   return normalizeSoundDto(data)
 }
 

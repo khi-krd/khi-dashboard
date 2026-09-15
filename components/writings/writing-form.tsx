@@ -31,6 +31,7 @@ import { WritingLanguageToggleChip } from "@/components/writings/writing-languag
 import { WritingSeriesSection } from "@/components/writings/writing-series-section"
 import { WritingTagInput } from "@/components/writings/writing-tag-input"
 import { TiptapEditor } from "@/components/shared/tiptap-editor-lazy"
+import { UploadProgressLine } from "@/components/shared/upload-progress-line"
 import { WritingTopicCombobox } from "@/components/writings/writing-topic-combobox"
 import { NS } from "@/components/writings/writings-strings"
 import { Button, buttonVariants } from "@/components/ui/button"
@@ -39,11 +40,13 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Spinner } from "@/components/ui/spinner"
 import { useBookGenresQuery } from "@/hooks/useBookGenres"
+import { useServerFormSync } from "@/hooks/use-server-form-sync"
 import {
   useCreateWriting,
   useUpdateWriting,
   useWritingDetailQuery,
 } from "@/hooks/useWritings"
+import { extractApiErrorMessage } from "@/lib/api-error"
 import {
   formatFullTimestampKu,
   formatRelativeTimeKu,
@@ -118,9 +121,14 @@ export function WritingForm({
     formState: { errors, isDirty, isValid },
   } = form
 
-  useEffect(() => {
-    if (editDto) reset(writingDtoToFormValues(editDto))
-  }, [editDto, reset])
+  // Re-seed from the server record whenever it changes — a bare `useEffect`
+  // reset would also re-run on every refetch and wipe in-progress typing.
+  useServerFormSync<WritingFormValues>({
+    signature: editDto ? `${editDto.id}:${editDto.updatedAt ?? ""}` : null,
+    buildValues: () => writingDtoToFormValues(editDto!),
+    reset,
+    isDirty,
+  })
 
   const [activeLang, setActiveLang] = useState<Language>("CKB")
 
@@ -138,6 +146,7 @@ export function WritingForm({
   const pending = createMut.isPending || updateMut.isPending
   const submitDisabled = !isDirty || !isValid || pending
   const errorCount = countFormErrors(errors)
+  const [uploadPct, setUploadPct] = useState<number | null>(null)
 
   const langLabel = activeLang === "CKB" ? NS.lang.ckb : NS.lang.kmr
 
@@ -158,15 +167,25 @@ export function WritingForm({
   }, [errors])
 
   async function onSubmit(values: WritingFormValues) {
+    // A book can never be its own series parent — the picker filters itself
+    // out, but a stale value could still linger from a prior selection.
+    if (values.parentBookId != null && values.parentBookId === writingId) {
+      toast.error(NS.validation.selfParent)
+      return
+    }
     const fd = writingFormValuesToMultipart(
       mode,
       mode === "edit" ? writingId : undefined,
       values,
       genresQ.data,
     )
+    setUploadPct(0)
     try {
       if (mode === "create") {
-        const res = await createMut.mutateAsync(fd)
+        const res = await createMut.mutateAsync({
+          formData: fd,
+          onProgress: setUploadPct,
+        })
         if (res.id) {
           toast.success(NS.toast.saved, {
             action: {
@@ -177,12 +196,18 @@ export function WritingForm({
           router.push(`/dashboard/writings/${res.id}`)
         }
       } else if (writingId) {
-        await updateMut.mutateAsync({ id: writingId, formData: fd })
+        await updateMut.mutateAsync({
+          id: writingId,
+          formData: fd,
+          onProgress: setUploadPct,
+        })
         toast.success(NS.toast.saved)
         router.push(`/dashboard/writings/${writingId}`)
       }
-    } catch {
-      toast.error(NS.error.validation)
+    } catch (err) {
+      toast.error(extractApiErrorMessage(err) ?? NS.error.validation)
+    } finally {
+      setUploadPct(null)
     }
   }
 
@@ -366,6 +391,7 @@ export function WritingForm({
                 onSeriesTotalBooksChange={(n) =>
                   setValue("seriesTotalBooks", n, { shouldDirty: true })
                 }
+                excludeId={editDto?.id}
               />
             </section>
 
@@ -451,7 +477,11 @@ export function WritingForm({
             />
 
             {activeLang === "CKB" ? (
-              <div className="mt-6 space-y-3">
+              // The branch key remounts every registered input inside —
+              // react-hook-form only writes a value into a field when it
+              // attaches to a new element, so a reused element would keep the
+              // other language's text and overwrite it on the next keystroke.
+              <div key="ckb" className="mt-6 space-y-3">
                 <Input
                   className={borderlessTitleClass}
                   placeholder={NS.field.title_ckb}
@@ -493,7 +523,7 @@ export function WritingForm({
                 />
               </div>
             ) : (
-              <div className="mt-6 space-y-3">
+              <div key="kmr" className="mt-6 space-y-3">
                 <Input
                   dir="ltr"
                   className={borderlessTitleClass}
@@ -633,6 +663,11 @@ export function WritingForm({
             "pb-[max(0.75rem,env(safe-area-inset-bottom))]",
           )}
         >
+          {uploadPct != null ? (
+            <div className="mx-auto max-w-full px-4 pt-3 lg:px-6">
+              <UploadProgressLine value={uploadPct} label={NS.action.saving} />
+            </div>
+          ) : null}
           <div className="mx-auto flex min-h-14 max-w-full items-center justify-between gap-3 px-4 py-3 lg:px-6">
             <div className="flex min-h-10 flex-1 flex-wrap items-center gap-x-4 gap-y-1 text-sm">
               {isDirty ? (

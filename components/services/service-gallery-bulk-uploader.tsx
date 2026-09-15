@@ -16,6 +16,7 @@ import {
 import { NS } from "@/components/services/services-strings"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
+import { UploadProgressLine } from "@/components/shared/upload-progress-line"
 import { formatBytes, useFileUpload } from "@/hooks/use-file-upload"
 import { formatCkbDigits } from "@/lib/intl-ckb"
 import { mediaTypeFromFile } from "@/lib/tiptap-media"
@@ -47,6 +48,7 @@ export function ServiceGalleryBulkUploader({
   const { watch, setValue } = useFormContext<ServiceFormValues>()
   const [processingCount, setProcessingCount] = useState(0)
   const [pendingNames, setPendingNames] = useState<string[]>([])
+  const [progress, setProgress] = useState<number | null>(null)
 
   const remainingSlots = Math.max(0, MAX_GALLERY_FILES - slotCount)
 
@@ -60,10 +62,17 @@ export function ServiceGalleryBulkUploader({
 
       const existing = watch("galleryMedia") ?? []
       const newSlots = []
+      const perFileShare = 100 / toProcess.length
+      setProgress(0)
 
-      for (const file of toProcess) {
+      for (const [index, file] of toProcess.entries()) {
+        const base = index * perFileShare
         try {
-          const result = await uploadMedia(file, mediaTypeFromFile(file))
+          const result = await uploadMedia(
+            file,
+            mediaTypeFromFile(file),
+            (pct) => setProgress(base + (pct / 100) * perFileShare),
+          )
           const type = typeFromFile(file)
           newSlots.push({
             ...createEmptyGallerySlot(),
@@ -84,6 +93,7 @@ export function ServiceGalleryBulkUploader({
 
       setProcessingCount(0)
       setPendingNames([])
+      setProgress(null)
     },
     [remainingSlots, setValue, watch],
   )
@@ -133,11 +143,17 @@ export function ServiceGalleryBulkUploader({
       >
         <input {...getInputProps({ disabled })} className="sr-only" />
         {isProcessing ? (
-          <div className="flex items-center gap-3 p-4">
-            <Spinner className="size-5" />
-            <p className="text-muted-foreground text-sm">
-              {NS.gallery.bulkProcessing(formatCkbDigits(processingCount))}
-            </p>
+          <div className="flex w-full flex-col items-center gap-3 p-4">
+            <div className="flex items-center gap-3">
+              <Spinner className="size-5" />
+              <p className="text-muted-foreground text-sm">
+                {NS.gallery.bulkProcessing(formatCkbDigits(processingCount))}
+              </p>
+            </div>
+            <UploadProgressLine
+              value={progress}
+              className="w-full max-w-md"
+            />
           </div>
         ) : (
           <button

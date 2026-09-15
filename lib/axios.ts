@@ -1,4 +1,8 @@
-import axios, { AxiosError, type InternalAxiosRequestConfig } from "axios"
+import axios, {
+  AxiosError,
+  type AxiosProgressEvent,
+  type InternalAxiosRequestConfig,
+} from "axios"
 import { useAuthStore } from "@/store/auth.store"
 
 /**
@@ -76,3 +80,22 @@ api.interceptors.response.use(
 )
 
 export default api
+
+/** Called with the uploaded percentage (0–100) while a request body streams. */
+export type UploadProgressHandler = (percent: number) => void
+
+/**
+ * Adapts axios' `AxiosProgressEvent` to a plain percent callback.
+ * `progress` is absent when the total size is unknown (chunked upload), in
+ * which case the caller gets a clamped estimate instead of silence.
+ */
+export function toUploadProgress(
+  handler?: UploadProgressHandler,
+): ((event: AxiosProgressEvent) => void) | undefined {
+  if (!handler) return undefined
+  return (event) => {
+    const ratio =
+      event.progress ?? (event.total ? event.loaded / event.total : 0)
+    handler(Math.min(100, Math.max(0, Math.round(ratio * 100))))
+  }
+}

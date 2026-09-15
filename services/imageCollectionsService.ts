@@ -1,4 +1,4 @@
-import api from "@/lib/axios"
+import api, { toUploadProgress, type UploadProgressHandler } from "@/lib/axios"
 import { normalizeFeaturedCollectionPage } from "@/lib/featured-overlay"
 import {
   normalizeCollectionDto,
@@ -46,8 +46,11 @@ export async function getCollectionById(id: number): Promise<CollectionDto | nul
 
 export async function createCollectionMultipart(
   formData: FormData,
+  onProgress?: UploadProgressHandler,
 ): Promise<CollectionDto> {
-  const { data } = await api.post<unknown>(BASE, formData)
+  const { data } = await api.post<unknown>(BASE, formData, {
+    onUploadProgress: toUploadProgress(onProgress),
+  })
   return normalizeCollectionDto(unwrapApiData(data))
 }
 
@@ -61,8 +64,11 @@ export async function createCollectionJson(
 export async function updateCollectionMultipart(
   id: number,
   formData: FormData,
+  onProgress?: UploadProgressHandler,
 ): Promise<CollectionDto> {
-  const { data } = await api.put<unknown>(`${BASE}/${id}`, formData)
+  const { data } = await api.put<unknown>(`${BASE}/${id}`, formData, {
+    onUploadProgress: toUploadProgress(onProgress),
+  })
   return normalizeCollectionDto(unwrapApiData(data))
 }
 

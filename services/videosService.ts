@@ -1,4 +1,4 @@
-import api from "@/lib/axios"
+import api, { toUploadProgress, type UploadProgressHandler } from "@/lib/axios"
 import { normalizeFeaturedVideoPage } from "@/lib/featured-overlay"
 import {
   normalizeTopicDto,
@@ -62,16 +62,24 @@ export async function searchVideosByKeyword(
   return normalizeVideoPage(data)
 }
 
-export async function createVideo(formData: FormData): Promise<VideoDto> {
-  const { data } = await api.post<unknown>(BASE, formData)
+export async function createVideo(
+  formData: FormData,
+  onProgress?: UploadProgressHandler,
+): Promise<VideoDto> {
+  const { data } = await api.post<unknown>(BASE, formData, {
+    onUploadProgress: toUploadProgress(onProgress),
+  })
   return normalizeVideoDto(data)
 }
 
 export async function updateVideo(
   id: number,
   formData: FormData,
+  onProgress?: UploadProgressHandler,
 ): Promise<VideoDto> {
-  const { data } = await api.put<unknown>(`${BASE}/${id}`, formData)
+  const { data } = await api.put<unknown>(`${BASE}/${id}`, formData, {
+    onUploadProgress: toUploadProgress(onProgress),
+  })
   return normalizeVideoDto(data)
 }
 
