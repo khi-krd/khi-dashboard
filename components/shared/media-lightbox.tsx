@@ -49,6 +49,16 @@ export function MediaLightbox({
     () => initialIndex,
   )
 
+  // Embla defaults to `direction: "ltr"`. Inside an RTL page that mismatch
+  // translates every slide off-screen, so the viewer opens as a blank
+  // overlay. Measure the direction the overlay actually mounts into — it can
+  // sit inside an LTR subtree (e.g. a KMR preview) on an RTL page — and hand
+  // it to Embla via opts.
+  const [rtl, setRtl] = useState(false)
+  const measureDirection = useCallback((node: HTMLDivElement | null) => {
+    if (node) setRtl(node.matches(":dir(rtl)"))
+  }, [])
+
   useEffect(() => {
     if (!open || !api) return
     api.scrollTo(initialIndex, true)
@@ -67,12 +77,19 @@ export function MediaLightbox({
     if (!open) return
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onOpenChange(false)
-      if (e.key === "ArrowLeft") api?.scrollNext()
-      if (e.key === "ArrowRight") api?.scrollPrev()
+      // In RTL the "forward" arrow points left.
+      if (e.key === "ArrowLeft") {
+        if (rtl) api?.scrollNext()
+        else api?.scrollPrev()
+      }
+      if (e.key === "ArrowRight") {
+        if (rtl) api?.scrollPrev()
+        else api?.scrollNext()
+      }
     }
     window.addEventListener("keydown", onKey)
     return () => window.removeEventListener("keydown", onKey)
-  }, [api, onOpenChange, open])
+  }, [api, onOpenChange, open, rtl])
 
   if (!open || items.length === 0) return null
 
@@ -80,6 +97,7 @@ export function MediaLightbox({
 
   return (
     <div
+      ref={measureDirection}
       className="bg-background/95 fixed inset-0 z-[100] flex flex-col"
       onClick={() => onOpenChange(false)}
     >
@@ -102,6 +120,7 @@ export function MediaLightbox({
       </div>
       <Carousel
         setApi={setApi}
+        opts={{ direction: rtl ? "rtl" : "ltr" }}
         className="flex flex-1 flex-col justify-center px-8"
       >
         <CarouselContent>
