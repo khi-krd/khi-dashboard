@@ -38,6 +38,17 @@ httpOnly `auth_token` cookie as the Bearer token. Backend source and docs live
 in `../khi_backend` (`docs/external` = public reads, `docs/internal` = admin
 writes).
 
+**Exception — multipart uploads go direct to the backend.** Vercel drops any
+request whose body exceeds 4.5MB (`FUNCTION_PAYLOAD_TOO_LARGE`) before the
+proxy function can run, and the cap cannot be raised. The axios interceptor in
+`lib/axios.ts` therefore sends every `FormData` request straight to
+`NEXT_PUBLIC_API_DIRECT_URL` (the backend origin) with a `Bearer` token —
+from the auth store, or recovered via `GET /api/auth/session` after a page
+refresh. This needs the dashboard's origin in the backend's
+`app.cors.allowed-origins` (see `../khi_backend/src/main/resources/application.yaml`,
+which allows up to 1GB multipart). When `NEXT_PUBLIC_API_DIRECT_URL` is unset,
+everything stays on the proxy.
+
 ## Backend contracts that shape the forms
 
 Read these before touching a write path — the API is not forgiving.

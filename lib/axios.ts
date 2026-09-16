@@ -19,6 +19,18 @@ function normalizeApiBaseUrl(raw: string | undefined): string {
   return `https://${trimmed}`
 }
 
+/**
+ * Origin of the real backend, used ONLY for multipart bodies. Vercel drops
+ * any request over 4.5MB (`FUNCTION_PAYLOAD_TOO_LARGE`) before the
+ * `/railway-proxy` function can run — that cap is infrastructural and cannot
+ * be raised — so FormData uploads skip the proxy and go straight to the API,
+ * which accepts up to 1GB. Empty string means "proxy everything" (local dev,
+ * Docker, or anywhere without Vercel's limit in front).
+ */
+const directApiBase = normalizeApiBaseUrl(
+  process.env.NEXT_PUBLIC_API_DIRECT_URL,
+)
+
 const api = axios.create({
   baseURL: normalizeApiBaseUrl(process.env.NEXT_PUBLIC_API_URL),
   headers: {
@@ -32,14 +44,59 @@ const api = axios.create({
   withCredentials: true,
 })
 
+/**
+ * Bearer token for direct-to-backend uploads. The httpOnly `auth_token`
+ * cookie is same-origin only, so a cross-origin request must carry the JWT
+ * itself. The store holds it in memory after login; after a page refresh it
+ * is recovered once from `GET /api/auth/session` and memoized here for the
+ * lifetime of the page.
+ */
+let recoveredToken: string | null = null
+let recoveredTokenPromise: Promise<string | null> | null = null
+
+function getDirectToken(): Promise<string | null> | string | null {
+  const fromStore = useAuthStore.getState().token
+  if (fromStore) return fromStore
+  if (recoveredToken) return recoveredToken
+  if (!recoveredTokenPromise) {
+    recoveredTokenPromise = fetch("/api/auth/session", {
+      credentials: "same-origin",
+    })
+      .then(async (res) => {
+        if (!res.ok) return null
+        const body = (await res.json()) as { token?: unknown }
+        return typeof body.token === "string" && body.token ? body.token : null
+      })
+      .catch(() => null)
+      .then((token) => {
+        recoveredToken = token
+        recoveredTokenPromise = null
+        return token
+      })
+  }
+  return recoveredTokenPromise
+}
+
 api.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => {
-    const token = useAuthStore.getState().token
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`
+  async (config: InternalAxiosRequestConfig) => {
+    const isMultipart =
+      typeof FormData !== "undefined" && config.data instanceof FormData
+
+    if (isMultipart && directApiBase && typeof window !== "undefined") {
+      config.baseURL = directApiBase
+      const directToken = await getDirectToken()
+      if (directToken) {
+        config.headers.Authorization = `Bearer ${directToken}`
+      }
+    } else {
+      const token = useAuthStore.getState().token
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`
+      }
     }
+
     // Defaults set application/json — that breaks multipart: server never sees boundary.
-    if (typeof FormData !== "undefined" && config.data instanceof FormData) {
+    if (isMultipart) {
       config.headers.delete("Content-Type")
     }
     return config
