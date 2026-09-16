@@ -40,10 +40,6 @@ export function TopicCreateDialog({
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!nameCkb.trim() && !nameKmr.trim()) {
-      toast.error(NS.validation.topicNameRequired)
-      return
-    }
     try {
       await createMut.mutateAsync({
         nameCkb: nameCkb.trim() || undefined,

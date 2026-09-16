@@ -1,6 +1,5 @@
 "use client"
 
-import { zodResolver } from "@hookform/resolvers/zod"
 import { CheckIcon } from "@heroicons/react/24/outline"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -56,6 +55,7 @@ import {
   pushInlineCategory,
   pushInlineSubcategory,
 } from "@/lib/news-derived-cache"
+import { permissiveResolver } from "@/lib/permissive-resolver"
 import { newsFormValuesToPayload } from "@/lib/news-form-data"
 import {
   formatFullTimestampKu,
@@ -151,7 +151,7 @@ export function NewsForm({
   )
 
   const formMethods = useForm<NewsFormValues>({
-    resolver: zodResolver(newsFormSchema) as Resolver<NewsFormValues>,
+    resolver: permissiveResolver(newsFormSchema) as Resolver<NewsFormValues>,
     defaultValues: formDefaults ?? defaultNewsFormValues(),
     mode: "onChange",
   })
@@ -163,7 +163,7 @@ export function NewsForm({
     watch,
     reset,
     setValue,
-    formState: { errors, isDirty, isValid },
+    formState: { errors, isDirty },
   } = formMethods
 
   useEffect(() => {
@@ -287,7 +287,7 @@ export function NewsForm({
     )
   }
 
-  const submitDisabled = !isDirty || !isValid || pending
+  const submitDisabled = !isDirty || pending
 
   const bothLangActive =
     contentLanguages.includes("CKB") && contentLanguages.includes("KMR")

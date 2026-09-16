@@ -1,6 +1,5 @@
 "use client"
 
-import { zodResolver } from "@hookform/resolvers/zod"
 import {
   ArrowPathIcon,
   CheckIcon,
@@ -32,6 +31,8 @@ import {
   useCreateContact,
   useUpdateContact,
 } from "@/hooks/useContact"
+import { permissiveResolver } from "@/lib/permissive-resolver"
+import { extractApiErrorText } from "@/lib/api-error"
 import { contactFormValuesToPayload } from "@/lib/contact-form-data"
 import {
   contactDtoToFormValues,
@@ -113,7 +114,7 @@ export function ContactForm({
   const updateMut = useUpdateContact()
 
   const form = useForm<ContactFormValues>({
-    resolver: zodResolver(contactFormSchema) as Resolver<ContactFormValues>,
+    resolver: permissiveResolver(contactFormSchema) as Resolver<ContactFormValues>,
     defaultValues: defaultContactFormValues,
     mode: "onChange",
   })
@@ -124,7 +125,7 @@ export function ContactForm({
     watch,
     setValue,
     reset,
-    formState: { isDirty, isValid },
+    formState: { isDirty },
   } = form
 
   useEffect(() => {
@@ -141,7 +142,7 @@ export function ContactForm({
   }, [contentLanguages, activeLang])
 
   const pending = createMut.isPending || updateMut.isPending
-  const submitDisabled = !isDirty || !isValid || pending
+  const submitDisabled = !isDirty || pending
 
   const titleField = activeLang === "CKB" ? "titleCkb" : "titleKmr"
   const subtitleField = activeLang === "CKB" ? "subtitleCkb" : "subtitleKmr"
@@ -165,8 +166,8 @@ export function ContactForm({
         toast.success(NS.toast.saved)
         router.push("/dashboard/contact")
       }
-    } catch {
-      toast.error(NS.error.validation)
+    } catch (err) {
+      toast.error(extractApiErrorText(err) ?? NS.error.validation)
     }
   }
 
@@ -299,7 +300,6 @@ export function ContactForm({
                 <input
                   key={titleField}
                   type="text"
-                  maxLength={300}
                   placeholder="پەیوەندیمان…"
                   className="placeholder:text-muted-foreground/40 w-full border-0 bg-transparent px-0 text-3xl leading-tight font-bold focus:ring-0 focus-visible:ring-0 md:text-4xl"
                   {...register(titleField)}
@@ -313,7 +313,6 @@ export function ContactForm({
                 <input
                   key={subtitleField}
                   type="text"
-                  maxLength={500}
                   placeholder="ژێرناونیشان…"
                   className="text-muted-foreground placeholder:text-muted-foreground/40 mt-1 w-full border-0 bg-transparent px-0 text-xl leading-snug focus:ring-0 focus-visible:ring-0"
                   {...register(subtitleField)}
@@ -326,7 +325,6 @@ export function ContactForm({
                 </span>
                 <Input
                   key={addressField}
-                  maxLength={500}
                   placeholder="ناونیشانی فیزیکی…"
                   className="mt-1.5"
                   {...register(addressField)}
@@ -339,7 +337,6 @@ export function ContactForm({
                 </span>
                 <Input
                   key={hoursField}
-                  maxLength={300}
                   placeholder="کاتەکانی کار…"
                   className="mt-1.5"
                   {...register(hoursField)}

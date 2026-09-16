@@ -1,6 +1,5 @@
 "use client"
 
-import { zodResolver } from "@hookform/resolvers/zod"
 import {
   CheckIcon,
   ExclamationCircleIcon,
@@ -48,6 +47,7 @@ import {
   formatFullTimestampKu,
   formatRelativeTimeKu,
 } from "@/lib/news-relative-time"
+import { permissiveResolver } from "@/lib/permissive-resolver"
 import { soundFormValuesToMultipart } from "@/lib/sounds-form-data"
 import {
   defaultSoundFormValues,
@@ -103,7 +103,7 @@ export function SoundForm({
   const updateMut = useUpdateSound()
 
   const form = useForm<SoundFormValues>({
-    resolver: zodResolver(soundFormSchema) as Resolver<SoundFormValues>,
+    resolver: permissiveResolver(soundFormSchema) as Resolver<SoundFormValues>,
     defaultValues: defaultSoundFormValues,
     mode: "onChange",
   })
@@ -114,7 +114,7 @@ export function SoundForm({
     watch,
     setValue,
     reset,
-    formState: { errors, isDirty, isValid },
+    formState: { errors, isDirty },
   } = form
 
   useEffect(() => {
@@ -142,7 +142,7 @@ export function SoundForm({
   }, [trackState, attachments.length, setValue])
 
   const pending = createMut.isPending || updateMut.isPending
-  const submitDisabled = !isDirty || !isValid || pending
+  const submitDisabled = !isDirty || pending
   const [uploadPct, setUploadPct] = useState<number | null>(null)
   const errorCount = countFormErrors(errors)
 
@@ -424,7 +424,6 @@ export function SoundForm({
                 <Input
                   className={borderlessTitleClass}
                   placeholder={NS.field.title_ckb}
-                  maxLength={200}
                   value={watch("ckbContent.title") ?? ""}
                   onChange={(e) =>
                     setValue("ckbContent.title", e.target.value, {
@@ -455,7 +454,6 @@ export function SoundForm({
                   dir="ltr"
                   className={borderlessTitleClass}
                   placeholder={NS.field.title_kmr}
-                  maxLength={200}
                   value={watch("kmrContent.title") ?? ""}
                   onChange={(e) =>
                     setValue("kmrContent.title", e.target.value, {

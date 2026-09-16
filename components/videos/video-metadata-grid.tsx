@@ -45,7 +45,6 @@ export function VideoMetadataGrid({
           <div className="flex items-center gap-1">
             <Input
               type="number"
-              min={0}
               className="h-8"
               value={durationSeconds ?? ""}
               onChange={(e) => {
@@ -118,7 +117,6 @@ export function VideoMetadataGrid({
           <div className="flex items-center gap-1">
             <Input
               type="number"
-              min={0}
               step={0.1}
               className="h-8"
               value={fileSizeMb ?? ""}

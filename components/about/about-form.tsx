@@ -1,6 +1,5 @@
 "use client"
 
-import { zodResolver } from "@hookform/resolvers/zod"
 import {
   ArrowPathIcon,
   CheckIcon,
@@ -25,6 +24,7 @@ import {
   dashboardAboutCrumbHref,
 } from "@/components/about/about-breadcrumb"
 import Image from "next/image"
+import { permissiveResolver } from "@/lib/permissive-resolver"
 import { isOptimizableImageSrc } from "@/lib/image-src"
 import { AboutErrorState } from "@/components/about/about-error-state"
 import { AboutFormSidebar } from "@/components/about/about-form-sidebar"
@@ -213,7 +213,7 @@ export function AboutForm({
   const updateMut = useUpdateAbout()
 
   const form = useForm<AboutFormValues>({
-    resolver: zodResolver(aboutFormSchema) as Resolver<AboutFormValues>,
+    resolver: permissiveResolver(aboutFormSchema) as Resolver<AboutFormValues>,
     defaultValues: defaultAboutFormValues,
     mode: "onChange",
   })
@@ -224,7 +224,7 @@ export function AboutForm({
     watch,
     setValue,
     reset,
-    formState: { isDirty, isValid, errors },
+    formState: { isDirty, errors },
   } = form
 
   useEffect(() => {
@@ -283,7 +283,7 @@ export function AboutForm({
   }, [contentLanguages, activeLang])
 
   const pending = createMut.isPending || updateMut.isPending
-  const submitDisabled = !isDirty || !isValid || pending
+  const submitDisabled = !isDirty || pending
 
   const titleField = activeLang === "CKB" ? "titleCkb" : "titleKmr"
   const subtitleField = activeLang === "CKB" ? "subtitleCkb" : "subtitleKmr"
@@ -653,7 +653,6 @@ export function AboutForm({
                   <input
                     key={titleField}
                     type="text"
-                    maxLength={300}
                     placeholder="دەربارەی ئێمە…"
                     className="placeholder:text-muted-foreground/40 w-full rounded-md border border-input bg-background px-3 py-2 text-2xl leading-tight font-bold focus:ring-0 focus-visible:ring-0"
                     {...register(titleField)}
@@ -672,7 +671,6 @@ export function AboutForm({
                   <input
                     key={subtitleField}
                     type="text"
-                    maxLength={300}
                     placeholder="وەسفی کورت…"
                     className="text-muted-foreground placeholder:text-muted-foreground/40 w-full rounded-md border border-input bg-background px-3 py-2 text-lg leading-snug focus:ring-0 focus-visible:ring-0"
                     {...register(subtitleField)}
@@ -690,7 +688,6 @@ export function AboutForm({
                   <Textarea
                     key={seoField}
                     rows={3}
-                    maxLength={2500}
                     placeholder="وەسفی کورت بۆ سێرچ ئەنجین…"
                     className="resize-none"
                     {...register(seoField)}
@@ -784,7 +781,6 @@ export function AboutForm({
                 <input
                   key={titleField}
                   type="text"
-                  maxLength={300}
                   placeholder="دەربارەی ئێمە…"
                   className="placeholder:text-muted-foreground/40 w-full border-0 bg-transparent px-0 text-3xl leading-tight font-bold focus:ring-0 focus-visible:ring-0 md:text-4xl"
                   {...register(titleField)}
@@ -803,7 +799,6 @@ export function AboutForm({
                 <input
                   key={subtitleField}
                   type="text"
-                  maxLength={300}
                   placeholder="وەسفی کورت…"
                   className="text-muted-foreground placeholder:text-muted-foreground/40 w-full border-0 bg-transparent px-0 text-xl leading-snug focus:ring-0 focus-visible:ring-0"
                   {...register(subtitleField)}
@@ -821,7 +816,6 @@ export function AboutForm({
                 <Textarea
                   key={seoField}
                   rows={3}
-                  maxLength={2500}
                   placeholder="وەسفی کورت بۆ سێرچ ئەنجین…"
                   className="resize-none"
                   {...register(seoField)}

@@ -1,6 +1,5 @@
 "use client"
 
-import { zodResolver } from "@hookform/resolvers/zod"
 import {
   CheckIcon,
   ExclamationCircleIcon,
@@ -43,6 +42,8 @@ import {
   useCreateCollection,
   useUpdateCollection,
 } from "@/hooks/useImageCollections"
+import { permissiveResolver } from "@/lib/permissive-resolver"
+import { extractApiErrorText } from "@/lib/api-error"
 import { formatCkbDigits, formatEnDigits } from "@/lib/intl-ckb"
 import {
   formatFullTimestampKu,
@@ -67,18 +68,6 @@ const sectionHeading =
 
 const borderlessTitleClass =
   "w-full border-0 bg-transparent px-0 text-4xl leading-tight font-bold shadow-none placeholder:text-muted-foreground/50 focus:ring-0 focus-visible:ring-0"
-
-function submitErrorMessage(err: unknown): string {
-  const data = (
-    err as {
-      response?: { data?: { details?: { message?: unknown }; message?: unknown } }
-    }
-  )?.response?.data
-  const message = data?.details?.message ?? data?.message
-  return typeof message === "string" && message.trim()
-    ? message
-    : NS.error.validation
-}
 
 function countFormErrors(errors: FieldErrors): number {
   let n = 0
@@ -115,7 +104,7 @@ export function CollectionForm({
   const updateMut = useUpdateCollection()
 
   const form = useForm<CollectionFormValues>({
-    resolver: zodResolver(collectionFormSchema) as Resolver<CollectionFormValues>,
+    resolver: permissiveResolver(collectionFormSchema) as Resolver<CollectionFormValues>,
     defaultValues: defaultCollectionFormValues(),
     mode: "onChange",
   })
@@ -127,7 +116,7 @@ export function CollectionForm({
     watch,
     setValue,
     reset,
-    formState: { errors, isDirty, isValid },
+    formState: { errors, isDirty },
   } = form
 
   useEffect(() => {
@@ -155,7 +144,7 @@ export function CollectionForm({
   }, [collectionType, imageAlbum, setValue])
 
   const pending = createMut.isPending || updateMut.isPending
-  const submitDisabled = !isDirty || !isValid || pending
+  const submitDisabled = !isDirty || pending
   const [uploadPct, setUploadPct] = useState<number | null>(null)
   const errorCount = countFormErrors(errors)
   const langLabel = activeLang === "CKB" ? NS.lang.ckb : NS.lang.kmr
@@ -202,7 +191,7 @@ export function CollectionForm({
         router.push(`/dashboard/image-collections/${collectionId}`)
       }
     } catch (err) {
-      toast.error(submitErrorMessage(err))
+      toast.error(extractApiErrorText(err) ?? NS.error.validation)
     } finally {
       setUploadPct(null)
     }
@@ -457,7 +446,6 @@ export function CollectionForm({
                 placeholder={
                   activeLang === "CKB" ? NS.field.title.ckb : NS.field.title.kmr
                 }
-                maxLength={300}
                 dir={activeLang === "KMR" ? "ltr" : "rtl"}
                 {...register(
                   activeLang === "CKB" ? "ckbContent.title" : "kmrContent.title",

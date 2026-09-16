@@ -1,6 +1,5 @@
 "use client"
 
-import { zodResolver } from "@hookform/resolvers/zod"
 import { useQueryClient } from "@tanstack/react-query"
 import { useForm } from "react-hook-form"
 
@@ -16,6 +15,7 @@ import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
 import { syncCurrentUser } from "@/hooks/use-current-user"
+import { permissiveResolver } from "@/lib/permissive-resolver"
 import { applyApiErrors } from "@/lib/api-errors"
 import {
   profileSchema,
@@ -35,7 +35,7 @@ export function ProfileDetailsForm({ user }: { user: UserResponse }) {
     setError,
     formState: { errors, isSubmitting, isDirty },
   } = useForm<ProfileFormValues>({
-    resolver: zodResolver(profileSchema),
+    resolver: permissiveResolver(profileSchema),
     defaultValues: { name: user.name ?? "", username: user.username ?? "" },
   })
 

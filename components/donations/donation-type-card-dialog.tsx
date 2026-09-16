@@ -1,6 +1,5 @@
 "use client"
 
-import { zodResolver } from "@hookform/resolvers/zod"
 import { StarIcon } from "@heroicons/react/24/solid"
 import { useState } from "react"
 import { Controller, useForm, type Resolver } from "react-hook-form"
@@ -25,6 +24,7 @@ import {
   useCreateDonationTypeCard,
   useUpdateDonationTypeCard,
 } from "@/hooks/useDonationTypeCards"
+import { permissiveResolver } from "@/lib/permissive-resolver"
 import { extractApiErrorMessage } from "@/lib/api-error"
 import { donationTypeCardFormValuesToPayload } from "@/lib/donation-type-card-form-data"
 import { toastError, toastSuccess } from "@/lib/toast"
@@ -125,7 +125,7 @@ function DonationTypeCardDialogBody({
     register,
     formState: { errors },
   } = useForm<DonationTypeCardFormValues>({
-    resolver: zodResolver(
+    resolver: permissiveResolver(
       donationTypeCardSchema,
     ) as Resolver<DonationTypeCardFormValues>,
     defaultValues: card

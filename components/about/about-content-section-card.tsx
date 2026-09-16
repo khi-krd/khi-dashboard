@@ -1,6 +1,5 @@
 "use client"
 
-import { zodResolver } from "@hookform/resolvers/zod"
 import { LinkIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline"
 import { useState } from "react"
 import {
@@ -20,6 +19,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { useServerFormSync } from "@/hooks/use-server-form-sync"
 import { useUpdateAbout } from "@/hooks/useAbout"
+import { permissiveResolver } from "@/lib/permissive-resolver"
 import { aboutPatchToPayload } from "@/lib/about-page-data"
 import { aboutSiteBaseUrl } from "@/lib/about-url-helpers"
 import { extractApiErrorMessage } from "@/lib/api-error"
@@ -46,7 +46,7 @@ export function AboutContentSectionCard({
   const [activeLang, setActiveLang] = useState<Language>("CKB")
 
   const methods = useForm<AboutFormValues>({
-    resolver: zodResolver(aboutFormSchema) as Resolver<AboutFormValues>,
+    resolver: permissiveResolver(aboutFormSchema) as Resolver<AboutFormValues>,
     defaultValues: aboutDtoToFormValues(aboutDto),
     mode: "onChange",
   })
@@ -57,7 +57,7 @@ export function AboutContentSectionCard({
     reset,
     register,
     watch,
-    formState: { isDirty, isValid },
+    formState: { isDirty },
   } = methods
 
   useServerFormSync({
@@ -70,7 +70,7 @@ export function AboutContentSectionCard({
   })
 
   const pending = updateMut.isPending
-  const submitDisabled = pending || !isValid || !isDirty
+  const submitDisabled = pending || !isDirty
 
   const seoField =
     activeLang === "CKB" ? "seoDescriptionCkb" : "seoDescriptionKmr"
@@ -201,7 +201,6 @@ export function AboutContentSectionCard({
           <Textarea
             key={seoField}
             rows={3}
-            maxLength={2500}
             className="resize-none"
             {...register(seoField)}
           />

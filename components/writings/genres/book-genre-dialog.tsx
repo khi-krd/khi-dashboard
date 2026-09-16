@@ -1,6 +1,5 @@
 "use client"
 
-import { zodResolver } from "@hookform/resolvers/zod"
 import { LockClosedIcon } from "@heroicons/react/24/outline"
 import { useState } from "react"
 import { Controller, useForm, type Resolver } from "react-hook-form"
@@ -20,6 +19,7 @@ import { Label } from "@/components/ui/label"
 import { Spinner } from "@/components/ui/spinner"
 import { Switch } from "@/components/ui/switch"
 import { useCreateBookGenre, useUpdateBookGenre } from "@/hooks/useBookGenres"
+import { permissiveResolver } from "@/lib/permissive-resolver"
 import { extractApiErrorMessage } from "@/lib/api-error"
 import { bookGenreFormValuesToPayload } from "@/lib/book-genre-form-data"
 import { toastError, toastSuccess } from "@/lib/toast"
@@ -122,7 +122,7 @@ function BookGenreDialogBody({
     getValues,
     formState: { errors },
   } = useForm<BookGenreFormValues>({
-    resolver: zodResolver(bookGenreSchema) as Resolver<BookGenreFormValues>,
+    resolver: permissiveResolver(bookGenreSchema) as Resolver<BookGenreFormValues>,
     defaultValues: genre
       ? bookGenreDtoToFormValues(genre)
       : defaultBookGenreValues(nextDisplayOrder),
@@ -277,7 +277,6 @@ function BookGenreDialogBody({
             </Label>
             <Input
               type="number"
-              min={0}
               dir="ltr"
               className="h-9 w-24 font-mono text-xs"
               {...register("displayOrder", {

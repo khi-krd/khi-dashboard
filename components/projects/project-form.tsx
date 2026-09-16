@@ -1,6 +1,5 @@
 "use client"
 
-import { zodResolver } from "@hookform/resolvers/zod"
 import {
   CheckIcon,
   ExclamationCircleIcon,
@@ -45,6 +44,7 @@ import {
   mergeProjectsDerivedTypes,
   pushInlineProjectType,
 } from "@/lib/projects-derived-cache"
+import { permissiveResolver } from "@/lib/permissive-resolver"
 import { projectFormValuesToPayload } from "@/lib/projects-form-data"
 import {
   formatFullTimestampKu,
@@ -159,7 +159,7 @@ export function ProjectForm({
   const updateMut = useUpdateProject()
 
   const form = useForm<ProjectFormValues>({
-    resolver: zodResolver(projectFormSchema) as Resolver<ProjectFormValues>,
+    resolver: permissiveResolver(projectFormSchema) as Resolver<ProjectFormValues>,
     defaultValues: defaultProjectFormValues(),
     mode: "onChange",
   })
@@ -171,7 +171,7 @@ export function ProjectForm({
     watch,
     setValue,
     reset,
-    formState: { errors, isDirty, isValid },
+    formState: { errors, isDirty },
   } = form
 
   useEffect(() => {
@@ -191,7 +191,7 @@ export function ProjectForm({
     (existingCoverUrl?.trim() ? existingCoverUrl.trim() : null)
 
   const pending = createMut.isPending || updateMut.isPending
-  const submitDisabled = !isDirty || !isValid || pending
+  const submitDisabled = !isDirty || pending
   const errorCount = countFormErrors(errors)
 
   const langLabel = activeLang === "CKB" ? NS.lang.ckb : NS.lang.kmr
@@ -554,7 +554,6 @@ export function ProjectForm({
                 <Input
                   className={borderlessTitleClass}
                   placeholder={NS.field.title_ckb}
-                  maxLength={255}
                   {...register("ckbContent.title")}
                 />
                 <p className="text-muted-foreground text-xs">
@@ -568,7 +567,6 @@ export function ProjectForm({
                   <Input
                     className={borderlessLocationClass}
                     placeholder={NS.field.location_ckb}
-                    maxLength={255}
                     {...register("ckbContent.location")}
                   />
                 </div>
@@ -589,7 +587,6 @@ export function ProjectForm({
                   dir="ltr"
                   className={borderlessTitleClass}
                   placeholder={NS.field.title_kmr}
-                  maxLength={255}
                   {...register("kmrContent.title")}
                 />
                 <div className="flex items-center gap-2">

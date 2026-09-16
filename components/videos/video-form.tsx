@@ -1,6 +1,5 @@
 "use client"
 
-import { zodResolver } from "@hookform/resolvers/zod"
 import {
   CheckIcon,
   ExclamationCircleIcon,
@@ -49,6 +48,7 @@ import {
   formatFullTimestampKu,
   formatRelativeTimeKu,
 } from "@/lib/news-relative-time"
+import { permissiveResolver } from "@/lib/permissive-resolver"
 import { videoFormValuesToMultipart } from "@/lib/videos-form-data"
 import {
   defaultVideoFormValues,
@@ -109,7 +109,7 @@ export function VideoForm({
   const updateMut = useUpdateVideo()
 
   const form = useForm<VideoFormValues>({
-    resolver: zodResolver(videoFormSchema) as Resolver<VideoFormValues>,
+    resolver: permissiveResolver(videoFormSchema) as Resolver<VideoFormValues>,
     defaultValues: defaultVideoFormValues,
     mode: "onChange",
   })
@@ -121,7 +121,7 @@ export function VideoForm({
     watch,
     setValue,
     reset,
-    formState: { errors, isDirty, isValid },
+    formState: { errors, isDirty },
   } = form
 
   useEffect(() => {
@@ -142,7 +142,7 @@ export function VideoForm({
   }, [contentLanguages, activeLang])
 
   const pending = createMut.isPending || updateMut.isPending
-  const submitDisabled = !isDirty || !isValid || pending
+  const submitDisabled = !isDirty || pending
   const [uploadPct, setUploadPct] = useState<number | null>(null)
   const errorCount = countFormErrors(errors)
 
@@ -455,7 +455,6 @@ export function VideoForm({
                 <Input
                   className={borderlessTitleClass}
                   placeholder={NS.field.title_ckb}
-                  maxLength={300}
                   {...register("ckbContent.title")}
                 />
                 <p className="text-muted-foreground text-xs">
@@ -491,7 +490,6 @@ export function VideoForm({
                   <Input
                     className={borderlessInlineClass}
                     placeholder={NS.field.location}
-                    maxLength={250}
                     {...register("ckbContent.location")}
                   />
                 </div>
@@ -511,7 +509,6 @@ export function VideoForm({
                   dir="ltr"
                   className={borderlessTitleClass}
                   placeholder={NS.field.title_kmr}
-                  maxLength={300}
                   {...register("kmrContent.title")}
                 />
                 <div className="grid gap-2 sm:grid-cols-2">

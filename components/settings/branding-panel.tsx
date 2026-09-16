@@ -1,6 +1,5 @@
 "use client"
 
-import { zodResolver } from "@hookform/resolvers/zod"
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline"
 import Link from "next/link"
 import { useEffect, useRef } from "react"
@@ -17,6 +16,7 @@ import {
   useSiteSettingsQuery,
   useUpdateSiteSettingsMutation,
 } from "@/hooks/useSiteSettings"
+import { permissiveResolver } from "@/lib/permissive-resolver"
 import { extractApiErrorMessage } from "@/lib/api-error"
 import { cn } from "@/lib/utils"
 import {
@@ -27,11 +27,7 @@ import {
   siteSettingsSchema,
   type SiteSettingsFormValues,
 } from "@/lib/validations/site-settings"
-import {
-  MAX_MAX_FEATURED_SLIDES,
-  MIN_MAX_FEATURED_SLIDES,
-  type SiteSettingsDto,
-} from "@/types/site-settings"
+import type { SiteSettingsDto } from "@/types/site-settings"
 
 export function BrandingPanel() {
   const settingsQ = useSiteSettingsQuery()
@@ -99,7 +95,7 @@ function BrandingForm({
     watch,
     formState: { isDirty, errors },
   } = useForm<SiteSettingsFormValues>({
-    resolver: zodResolver(siteSettingsSchema) as Resolver<SiteSettingsFormValues>,
+    resolver: permissiveResolver(siteSettingsSchema) as Resolver<SiteSettingsFormValues>,
     defaultValues: defaultSiteSettingsValues(),
     mode: "onChange",
   })
@@ -213,8 +209,6 @@ function BrandingForm({
                 id="maxFeaturedSlides"
                 type="number"
                 inputMode="numeric"
-                min={MIN_MAX_FEATURED_SLIDES}
-                max={MAX_MAX_FEATURED_SLIDES}
                 value={Number.isFinite(field.value) ? field.value : ""}
                 // Kept as a number in form state so the zod `int()` rule sees a
                 // number rather than a numeric string. An emptied box becomes

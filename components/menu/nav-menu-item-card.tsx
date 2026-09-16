@@ -1,6 +1,5 @@
 "use client"
 
-import { zodResolver } from "@hookform/resolvers/zod"
 import {
   CheckIcon,
   ChevronDownIcon,
@@ -28,6 +27,7 @@ import {
   useCreateNavMenuItem,
   useUpdateNavMenuItem,
 } from "@/hooks/useNavMenu"
+import { permissiveResolver } from "@/lib/permissive-resolver"
 import { extractApiErrorMessage } from "@/lib/api-error"
 import { formatCkbDigits } from "@/lib/intl-ckb"
 import { navMenuFormValuesToPayload } from "@/lib/nav-menu-form-data"
@@ -86,7 +86,7 @@ export function NavMenuItemCard({
   const bootstrapped = useRef(false)
 
   const methods = useForm<NavMenuItemFormValues>({
-    resolver: zodResolver(navMenuItemSchema) as Resolver<NavMenuItemFormValues>,
+    resolver: permissiveResolver(navMenuItemSchema) as Resolver<NavMenuItemFormValues>,
     defaultValues: defaultNavMenuItemValues(nextDisplayOrder),
     mode: "onChange",
   })
@@ -293,7 +293,6 @@ export function NavMenuItemCard({
                 </Label>
                 <Input
                   type="number"
-                  min={0}
                   dir="ltr"
                   className="font-mono text-xs"
                   {...register("displayOrder", {

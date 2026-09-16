@@ -120,7 +120,6 @@ export function WritingSeriesSection({
               onChange={(e) => onSeriesNameChange(e.target.value)}
               placeholder={NS.field.series_name}
               className="h-9"
-              maxLength={300}
             />
           </div>
 
@@ -129,7 +128,6 @@ export function WritingSeriesSection({
               <Label className="text-xs">{NS.field.series_order}</Label>
               <Input
                 type="number"
-                min={1}
                 className="h-9"
                 value={seriesOrder}
                 onChange={(e) =>
@@ -144,7 +142,6 @@ export function WritingSeriesSection({
               <Label className="text-xs">{NS.field.series_total}</Label>
               <Input
                 type="number"
-                min={1}
                 className="h-9"
                 value={seriesTotalBooks ?? ""}
                 onChange={(e) => {

@@ -1,6 +1,5 @@
 "use client"
 
-import { zodResolver } from "@hookform/resolvers/zod"
 import { CheckIcon } from "@heroicons/react/24/outline"
 import { Controller, useForm, type Resolver } from "react-hook-form"
 import { toast } from "sonner"
@@ -14,6 +13,7 @@ import { Spinner } from "@/components/ui/spinner"
 import { Textarea } from "@/components/ui/textarea"
 import { useServerFormSync } from "@/hooks/use-server-form-sync"
 import { useCreateAbout, useUpdateAbout } from "@/hooks/useAbout"
+import { permissiveResolver } from "@/lib/permissive-resolver"
 import { heroFormValuesToAboutPayload } from "@/lib/about-page-data"
 import { extractApiErrorMessage } from "@/lib/api-error"
 import {
@@ -44,7 +44,7 @@ export function AboutPageHeroEditor({
     reset,
     formState: { isDirty },
   } = useForm<AboutPageHeroFormValues>({
-    resolver: zodResolver(aboutPageHeroSchema) as Resolver<AboutPageHeroFormValues>,
+    resolver: permissiveResolver(aboutPageHeroSchema) as Resolver<AboutPageHeroFormValues>,
     defaultValues: defaultAboutPageHeroValues(),
     mode: "onChange",
   })
@@ -68,14 +68,6 @@ export function AboutPageHeroEditor({
     // A fully blank hero must stay savable — lib/about-page-data.ts
     // auto-fills the "derbare" slug so the payload is always valid.
     const payload = heroFormValuesToAboutPayload(values, aboutDto)
-
-    // `AboutService.validateContent` rejects a record with no title in either
-    // language with a bare 400 whose message is generic. Say what is actually
-    // wrong instead of surfacing "داواکاری هەڵەیە".
-    if (!payload.ckbContent?.title && !payload.kmrContent?.title) {
-      toastError(NS.validation.titleRequired)
-      return
-    }
 
     const onSuccess = () => {
       toast(NS.toast.heroSaved)

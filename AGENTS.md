@@ -1,5 +1,28 @@
 # khi-dashboard — working notes
 
+## Validation is OFF (testing mode)
+
+Client-side validation is intentionally disabled dashboard-wide — whatever the
+editor typed is sent, and the backend's response (surfaced via the error
+toasts) is the only judge. Concretely:
+
+- Every `useForm` uses `permissiveResolver` (`lib/permissive-resolver.ts`),
+  which runs the zod schema for its `.default()`/`.trim()` transforms but
+  always returns `errors: {}`. The zod schemas in `lib/validations/` are
+  unchanged — they just can't block a submit anymore.
+- `!isValid` was removed from every `submitDisabled` gate (only `isDirty` /
+  `pending` remain), and imperative pre-submit guards were deleted (the
+  services "empty contents"/"no title" checks, the about-hero title check, the
+  writing self-parent check, and the topic-create empty-name check).
+- Native HTML gates were stripped: `required`, `minLength`, `maxLength`,
+  `pattern`, `min`/`max` on inputs, and `type="email"`/`type="url"` (now
+  `type="text"`). `type="number"`/`"date"`/`"file"` and range-slider bounds
+  were kept.
+
+To re-enable validation: swap each `permissiveResolver(schema)` back to
+`zodResolver(schema)` from `@hookform/resolvers/zod`, and restore the removed
+`!isValid` terms / guards / input attributes from git history.
+
 ## Verify changes with
 
 ```bash

@@ -80,7 +80,7 @@ export function ContactFormSidebar({
               {NS.form.email}
             </span>
             <Input
-              type="email"
+              type="text"
               {...register("email")}
               className="h-9"
               dir="ltr"

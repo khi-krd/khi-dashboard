@@ -6,6 +6,7 @@ type ApiErrorBody = {
   messageEn?: string
   messageKu?: string
   details?: Record<string, string>
+  fieldErrors?: { field?: string; message?: string }[]
 }
 
 /**
@@ -29,6 +30,37 @@ export function extractApiErrorReason(error: unknown): string | undefined {
   const axiosErr = error as AxiosError<ApiErrorBody>
   const reason = axiosErr.response?.data?.details?.reason
   return reason?.trim() || undefined
+}
+
+/**
+ * `VALIDATION_ERROR` bodies carry per-field failures in a top-level
+ * `fieldErrors` array rather than in `details`.
+ */
+export function extractApiFieldErrors(error: unknown): string | undefined {
+  const axiosErr = error as AxiosError<ApiErrorBody>
+  const parts = (axiosErr.response?.data?.fieldErrors ?? [])
+    .map((fe) =>
+      [fe.field?.trim(), fe.message?.trim()].filter(Boolean).join(": "),
+    )
+    .filter(Boolean)
+  return parts.length > 0 ? parts.join(" · ") : undefined
+}
+
+/**
+ * The most actionable human-readable text on the body, for toasts: the
+ * `details.reason` sentence where one exists, then `details.message`
+ * (image-collection errors carry it there), then per-field errors, then the
+ * generic message chain.
+ */
+export function extractApiErrorText(error: unknown): string | undefined {
+  const axiosErr = error as AxiosError<ApiErrorBody>
+  const detailsMessage = axiosErr.response?.data?.details?.message
+  return (
+    extractApiErrorReason(error) ??
+    (detailsMessage?.trim() || undefined) ??
+    extractApiFieldErrors(error) ??
+    extractApiErrorMessage(error)
+  )
 }
 
 export function extractApiErrorMessage(error: unknown): string | undefined {

@@ -1,12 +1,10 @@
 "use client"
 
-import { zodResolver } from "@hookform/resolvers/zod"
 import { CheckIcon, TrashIcon } from "@heroicons/react/24/outline"
 import {
   Controller,
   FormProvider,
   useForm,
-  useWatch,
   type Resolver,
 } from "react-hook-form"
 import { toast } from "sonner"
@@ -23,6 +21,7 @@ import {
   useCreateService,
   useUpdateService,
 } from "@/hooks/useServices"
+import { permissiveResolver } from "@/lib/permissive-resolver"
 import { serviceFormValuesToPayload } from "@/lib/services-form-data"
 import { extractApiErrorMessage } from "@/lib/api-error"
 import { formatCkbDigits } from "@/lib/intl-ckb"
@@ -169,7 +168,7 @@ export function ServiceSectionCard({
   const updateMut = useUpdateService()
 
   const methods = useForm<ServiceFormValues>({
-    resolver: zodResolver(serviceFormSchema) as Resolver<ServiceFormValues>,
+    resolver: permissiveResolver(serviceFormSchema) as Resolver<ServiceFormValues>,
     defaultValues: defaultServiceFormValues(),
     mode: "onChange",
   })
@@ -178,7 +177,7 @@ export function ServiceSectionCard({
     control,
     handleSubmit,
     reset,
-    formState: { isDirty, isValid },
+    formState: { isDirty },
   } = methods
 
   // `updatedAt` in the signature is what lets a saved card show what the
@@ -200,30 +199,14 @@ export function ServiceSectionCard({
     isDirty,
   })
 
-  /**
-   * A section with no title in either language is accepted by the backend
-   * (`validateContents` returns early on an empty array) and then renders as
-   * a nameless block on the public site and an unidentifiable card here —
-   * which is how stray, seemingly-duplicate sections appeared. Block it in
-   * the editor instead.
-   */
-  const titles = useWatch({ control, name: "contents" })
-  const hasTitle = (titles ?? []).some((row) => row?.title?.trim())
-
   const pending = createMut.isPending || updateMut.isPending
-  const submitDisabled =
-    pending || !isValid || !hasTitle || (mode === "edit" && !isDirty)
+  const submitDisabled = pending || (mode === "edit" && !isDirty)
 
   const onSubmit = handleSubmit(
     (values) => {
       const payload = serviceFormValuesToPayload(mode, serviceId, values, {
         sortOrder,
       })
-
-      if (payload.contents.length === 0) {
-        toastError(NS.validation.titleRequired)
-        return
-      }
 
       const onSuccess = (res: { success?: boolean }) => {
         if (!res.success) {

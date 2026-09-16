@@ -1,6 +1,5 @@
 "use client"
 
-import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, FormProvider, useForm, type Resolver } from "react-hook-form"
 import { toast } from "sonner"
 
@@ -12,6 +11,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { useServerFormSync } from "@/hooks/use-server-form-sync"
 import { useUpdateAbout } from "@/hooks/useAbout"
+import { permissiveResolver } from "@/lib/permissive-resolver"
 import { aboutPatchToPayload } from "@/lib/about-page-data"
 import { extractApiErrorMessage } from "@/lib/api-error"
 import { toastError } from "@/lib/toast"
@@ -35,7 +35,7 @@ export function AboutFounderSectionCard({
   const updateMut = useUpdateAbout()
 
   const methods = useForm<AboutFormValues>({
-    resolver: zodResolver(aboutFormSchema) as Resolver<AboutFormValues>,
+    resolver: permissiveResolver(aboutFormSchema) as Resolver<AboutFormValues>,
     defaultValues: aboutDtoToFormValues(aboutDto),
     mode: "onChange",
   })
@@ -45,7 +45,7 @@ export function AboutFounderSectionCard({
     handleSubmit,
     reset,
     register,
-    formState: { isDirty, isValid, errors },
+    formState: { isDirty, errors },
   } = methods
 
   useServerFormSync({
@@ -58,7 +58,7 @@ export function AboutFounderSectionCard({
   })
 
   const pending = updateMut.isPending
-  const submitDisabled = pending || !isValid || !isDirty
+  const submitDisabled = pending || !isDirty
 
   const onSubmit = handleSubmit(
     (values) => {

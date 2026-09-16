@@ -117,7 +117,6 @@ export function MediaGalleryEditor<T extends FieldValues>({
                     <Label className="text-xs">ڕیزبندی</Label>
                     <Input
                       type="number"
-                      min={0}
                       className="mt-1 h-9 font-mono"
                       {...register(`${name}.${index}.sortOrder` as Path<T>, {
                         valueAsNumber: true,

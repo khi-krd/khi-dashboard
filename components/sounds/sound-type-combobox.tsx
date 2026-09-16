@@ -37,7 +37,6 @@ export function SoundTypeCombobox({
           placeholder={NS.field.sound_type_helper}
           className={cn("h-9", error && "border-destructive")}
           list="sound-type-suggestions"
-          maxLength={100}
         />
         <datalist id="sound-type-suggestions">
           {suggestions.map((s) => (

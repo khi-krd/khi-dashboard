@@ -1,6 +1,5 @@
 "use client"
 
-import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 
 import { Button } from "@/components/ui/button"
@@ -14,6 +13,7 @@ import {
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
+import { permissiveResolver } from "@/lib/permissive-resolver"
 import { applyApiErrors } from "@/lib/api-errors"
 import {
   passwordSchema,
@@ -30,7 +30,7 @@ export function PasswordForm() {
     setError,
     formState: { errors, isSubmitting },
   } = useForm<PasswordFormValues>({
-    resolver: zodResolver(passwordSchema),
+    resolver: permissiveResolver(passwordSchema),
     defaultValues: {
       currentPassword: "",
       newPassword: "",

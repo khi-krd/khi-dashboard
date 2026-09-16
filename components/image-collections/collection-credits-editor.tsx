@@ -33,7 +33,6 @@ export function CollectionCreditsInlineRow({ activeLang }: { activeLang: Languag
           type="text"
           className={inlineFieldClass}
           placeholder={NS.credits.collected_by_placeholder}
-          maxLength={250}
           {...register(collectedByField)}
         />
       </label>
@@ -44,7 +43,6 @@ export function CollectionCreditsInlineRow({ activeLang }: { activeLang: Languag
           type="text"
           className={inlineFieldClass}
           placeholder={NS.credits.location_placeholder}
-          maxLength={250}
           {...register(locationField)}
         />
       </label>

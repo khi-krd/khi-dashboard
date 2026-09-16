@@ -1,6 +1,5 @@
 "use client"
 
-import { zodResolver } from "@hookform/resolvers/zod"
 import {
   CheckIcon,
   ExclamationCircleIcon,
@@ -46,6 +45,7 @@ import {
   useUpdateWriting,
   useWritingDetailQuery,
 } from "@/hooks/useWritings"
+import { permissiveResolver } from "@/lib/permissive-resolver"
 import { extractApiErrorMessage } from "@/lib/api-error"
 import {
   formatFullTimestampKu,
@@ -106,7 +106,7 @@ export function WritingForm({
   const updateMut = useUpdateWriting()
 
   const form = useForm<WritingFormValues>({
-    resolver: zodResolver(writingFormSchema) as Resolver<WritingFormValues>,
+    resolver: permissiveResolver(writingFormSchema) as Resolver<WritingFormValues>,
     defaultValues: defaultWritingFormValues,
     mode: "onChange",
   })
@@ -118,7 +118,7 @@ export function WritingForm({
     watch,
     setValue,
     reset,
-    formState: { errors, isDirty, isValid },
+    formState: { errors, isDirty },
   } = form
 
   // Re-seed from the server record whenever it changes — a bare `useEffect`
@@ -144,7 +144,7 @@ export function WritingForm({
   }, [contentLanguages, activeLang])
 
   const pending = createMut.isPending || updateMut.isPending
-  const submitDisabled = !isDirty || !isValid || pending
+  const submitDisabled = !isDirty || pending
   const errorCount = countFormErrors(errors)
   const [uploadPct, setUploadPct] = useState<number | null>(null)
 
@@ -167,12 +167,6 @@ export function WritingForm({
   }, [errors])
 
   async function onSubmit(values: WritingFormValues) {
-    // A book can never be its own series parent — the picker filters itself
-    // out, but a stale value could still linger from a prior selection.
-    if (values.parentBookId != null && values.parentBookId === writingId) {
-      toast.error(NS.validation.selfParent)
-      return
-    }
     const fd = writingFormValuesToMultipart(
       mode,
       mode === "edit" ? writingId : undefined,
@@ -485,7 +479,6 @@ export function WritingForm({
                 <Input
                   className={borderlessTitleClass}
                   placeholder={NS.field.title_ckb}
-                  maxLength={300}
                   {...register("ckbContent.title")}
                 />
                 <p className="text-muted-foreground text-xs">
@@ -498,7 +491,6 @@ export function WritingForm({
                   <Label className="text-xs">{NS.section.writer}</Label>
                   <Input
                     placeholder={NS.field.writer_ckb}
-                    maxLength={200}
                     {...register("ckbContent.writer")}
                   />
                 </div>
@@ -508,7 +500,6 @@ export function WritingForm({
                   </Label>
                   <Input
                     placeholder={NS.field.editorial_genre_ckb}
-                    maxLength={150}
                     {...register("ckbContent.genre")}
                   />
                 </div>
@@ -528,7 +519,6 @@ export function WritingForm({
                   dir="ltr"
                   className={borderlessTitleClass}
                   placeholder={NS.field.title_kmr}
-                  maxLength={300}
                   {...register("kmrContent.title")}
                 />
                 {errors.kmrContent?.title ? (
@@ -539,7 +529,6 @@ export function WritingForm({
                   <Input
                     dir="ltr"
                     placeholder={NS.field.writer_kmr}
-                    maxLength={200}
                     {...register("kmrContent.writer")}
                   />
                 </div>
@@ -550,7 +539,6 @@ export function WritingForm({
                   <Input
                     dir="ltr"
                     placeholder={NS.field.editorial_genre_kmr}
-                    maxLength={150}
                     {...register("kmrContent.genre")}
                   />
                 </div>

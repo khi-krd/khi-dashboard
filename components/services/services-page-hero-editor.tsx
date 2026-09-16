@@ -1,6 +1,5 @@
 "use client"
 
-import { zodResolver } from "@hookform/resolvers/zod"
 import { CheckIcon } from "@heroicons/react/24/outline"
 import { Controller, useForm, type Resolver } from "react-hook-form"
 import { toast } from "sonner"
@@ -14,6 +13,7 @@ import { Spinner } from "@/components/ui/spinner"
 import { Textarea } from "@/components/ui/textarea"
 import { useServerFormSync } from "@/hooks/use-server-form-sync"
 import { useCreateService, useUpdateService } from "@/hooks/useServices"
+import { permissiveResolver } from "@/lib/permissive-resolver"
 import { extractApiErrorMessage } from "@/lib/api-error"
 import {
   heroFormValuesToServicePayload,
@@ -46,7 +46,7 @@ export function ServicesPageHeroEditor({
     reset,
     formState: { isDirty },
   } = useForm<ServicesPageHeroFormValues>({
-    resolver: zodResolver(servicesPageHeroSchema) as Resolver<ServicesPageHeroFormValues>,
+    resolver: permissiveResolver(servicesPageHeroSchema) as Resolver<ServicesPageHeroFormValues>,
     defaultValues: defaultServicesPageHeroValues(),
     mode: "onChange",
   })

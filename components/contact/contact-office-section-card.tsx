@@ -1,6 +1,5 @@
 "use client"
 
-import { zodResolver } from "@hookform/resolvers/zod"
 import { LinkIcon, TrashIcon } from "@heroicons/react/24/outline"
 import {
   Controller,
@@ -23,6 +22,7 @@ import {
   useUpdateContact,
 } from "@/hooks/useContact"
 import { useServerFormSync } from "@/hooks/use-server-form-sync"
+import { permissiveResolver } from "@/lib/permissive-resolver"
 import { contactFormValuesToPayload } from "@/lib/contact-form-data"
 import { contactDisplayTitle } from "@/lib/contact-normalize"
 import { extractApiErrorMessage } from "@/lib/api-error"
@@ -105,7 +105,7 @@ export function ContactOfficeSectionCard({
   const updateMut = useUpdateContact()
 
   const methods = useForm<ContactFormValues>({
-    resolver: zodResolver(contactFormSchema) as Resolver<ContactFormValues>,
+    resolver: permissiveResolver(contactFormSchema) as Resolver<ContactFormValues>,
     defaultValues: defaultContactFormValues,
     mode: "onChange",
   })
@@ -117,7 +117,7 @@ export function ContactOfficeSectionCard({
     register,
     watch,
     setValue,
-    formState: { isDirty, isValid },
+    formState: { isDirty },
   } = methods
 
   // Re-seed whenever the server record changes (`id:updatedAt`), unless the
@@ -140,7 +140,7 @@ export function ContactOfficeSectionCard({
 
   const pending = createMut.isPending || updateMut.isPending
   const submitDisabled =
-    pending || !isValid || (mode === "edit" && !isDirty)
+    pending || (mode === "edit" && !isDirty)
 
   const contentLanguages = watch("contentLanguages")
 
@@ -312,7 +312,7 @@ export function ContactOfficeSectionCard({
               dir="ltr"
             />
             <Input
-              type="email"
+              type="text"
               {...register("email")}
               placeholder={`${NS.form.email} *`}
               dir="ltr"

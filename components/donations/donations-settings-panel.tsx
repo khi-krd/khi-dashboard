@@ -1,6 +1,5 @@
 "use client"
 
-import { zodResolver } from "@hookform/resolvers/zod"
 import { CheckIcon } from "@heroicons/react/24/outline"
 import { useEffect, useMemo, useRef } from "react"
 import { Controller, useForm, type Resolver } from "react-hook-form"
@@ -20,6 +19,7 @@ import {
   useDonationSettingsQuery,
   useUpdateDonationSettingsMutation,
 } from "@/hooks/useDonations"
+import { permissiveResolver } from "@/lib/permissive-resolver"
 import { toastError } from "@/lib/toast"
 import {
   defaultDonationSettingsValues,
@@ -75,7 +75,7 @@ function DonationsSettingsForm({
     watch,
     formState: { isDirty },
   } = useForm<DonationSettingsFormValues>({
-    resolver: zodResolver(donationSettingsSchema) as Resolver<DonationSettingsFormValues>,
+    resolver: permissiveResolver(donationSettingsSchema) as Resolver<DonationSettingsFormValues>,
     defaultValues: defaultDonationSettingsValues(),
     mode: "onChange",
   })

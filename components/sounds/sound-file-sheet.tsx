@@ -116,7 +116,6 @@ export function SoundFileSheet({
                 <div className="flex items-center gap-1">
                   <Input
                     type="number"
-                    min={0}
                     className="h-8"
                     value={draft.durationSeconds ?? ""}
                     onChange={(e) => {
@@ -134,7 +133,6 @@ export function SoundFileSheet({
                 <Label className="text-xs">{NS.field.size}</Label>
                 <Input
                   type="number"
-                  min={0}
                   className="h-8"
                   value={draft.sizeBytes ?? ""}
                   onChange={(e) => {
@@ -193,8 +191,6 @@ export function SoundFileSheet({
                 <Label className="text-xs">{NS.field.publishment_year}</Label>
                 <Input
                   type="number"
-                  min={1900}
-                  max={2100}
                   className="h-8"
                   value={draft.publishmentYear ?? ""}
                   onChange={(e) => {

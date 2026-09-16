@@ -230,7 +230,6 @@ export function WritingBookFileUploader({
           <Label className="text-xs">{NS.field.page_count}</Label>
           <Input
             type="number"
-            min={1}
             className="h-9"
             placeholder={NS.field.page_count_placeholder}
             value={content.pageCount ?? ""}

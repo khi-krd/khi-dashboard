@@ -1,11 +1,11 @@
 "use client"
 
-import { zodResolver } from "@hookform/resolvers/zod"
 import { isAxiosError } from "axios"
 import { useRouter } from "next/navigation"
 import { useCallback, useState } from "react"
 import { useForm } from "react-hook-form"
 
+import { permissiveResolver } from "@/lib/permissive-resolver"
 import { toastError } from "@/lib/toast"
 import { loginSchema, type LoginFormValues } from "@/lib/schemas/login.schema"
 import { getMe, login } from "@/services/auth.service"
@@ -46,7 +46,7 @@ export function useLogin() {
   const [serverError, setServerError] = useState<string | null>(null)
 
   const form = useForm<LoginFormValues>({
-    resolver: zodResolver(loginSchema),
+    resolver: permissiveResolver(loginSchema),
     defaultValues: { username: "", password: "" },
   })
 

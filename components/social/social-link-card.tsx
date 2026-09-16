@@ -1,6 +1,5 @@
 "use client"
 
-import { zodResolver } from "@hookform/resolvers/zod"
 import {
   ArrowTopRightOnSquareIcon,
   CheckIcon,
@@ -29,6 +28,7 @@ import {
 import { Spinner } from "@/components/ui/spinner"
 import { Switch } from "@/components/ui/switch"
 import { useCreateSocialLink, useUpdateSocialLink } from "@/hooks/useSocialLinks"
+import { permissiveResolver } from "@/lib/permissive-resolver"
 import { extractApiErrorMessage } from "@/lib/api-error"
 import { formatCkbDigits } from "@/lib/intl-ckb"
 import { socialLinkFormValuesToPayload } from "@/lib/social-links-form-data"
@@ -98,7 +98,7 @@ export function SocialLinkCard({
     watch,
     formState: { isDirty, errors },
   } = useForm<SocialLinkFormValues>({
-    resolver: zodResolver(socialLinkSchema) as Resolver<SocialLinkFormValues>,
+    resolver: permissiveResolver(socialLinkSchema) as Resolver<SocialLinkFormValues>,
     defaultValues: defaultSocialLinkValues(nextDisplayOrder),
     mode: "onChange",
   })
@@ -317,7 +317,6 @@ export function SocialLinkCard({
             </Label>
             <Input
               type="number"
-              min={0}
               dir="ltr"
               className="h-9 font-mono text-xs"
               {...register("displayOrder", {
