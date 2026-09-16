@@ -14,6 +14,12 @@ export function guessBookFormatFromFilename(
   return "OTHER"
 }
 
+export function writingUrlPublic(id: number) {
+  const base = (process.env.NEXT_PUBLIC_SITE_URL ?? "").replace(/\/+$/, "")
+  if (!base) return ""
+  return `${base}/writings/${id}`
+}
+
 export function urlBasename(url: string | null | undefined): string {
   if (!url?.trim()) return ""
   try {
