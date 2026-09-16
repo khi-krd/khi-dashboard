@@ -15,6 +15,7 @@ import type {
 import type { FeaturedPayload } from "@/types/featured"
 
 const BASE = "/api/v1/image-collections"
+const TOPICS_BASE = "/api/v1/topics"
 
 export async function getCollectionsList(
   page: number,
@@ -72,14 +73,6 @@ export async function updateCollectionMultipart(
   return normalizeCollectionDto(unwrapApiData(data))
 }
 
-export async function updateCollectionJson(
-  id: number,
-  payload: Record<string, unknown>,
-): Promise<CollectionDto> {
-  const { data } = await api.put<unknown>(`${BASE}/${id}`, payload)
-  return normalizeCollectionDto(unwrapApiData(data))
-}
-
 export async function deleteCollection(id: number): Promise<void> {
   await api.delete(`${BASE}/${id}`)
 }
@@ -109,13 +102,13 @@ export async function getTopics(): Promise<TopicDto[]> {
 }
 
 export async function createTopic(payload: NewTopicPayload): Promise<TopicDto> {
-  const { data } = await api.post<unknown>(`${BASE}/topics`, {
-    ...payload,
-    entityType: "IMAGE",
+  const { data } = await api.post<unknown>(`${TOPICS_BASE}/IMAGE`, {
+    nameCkb: payload.nameCkb ?? null,
+    nameKmr: payload.nameKmr ?? null,
   })
   return normalizeTopicDto(unwrapApiData(data))
 }
 
 export async function deleteTopic(topicId: number): Promise<void> {
-  await api.delete(`${BASE}/topics/${topicId}`)
+  await api.delete(`${TOPICS_BASE}/${topicId}`)
 }

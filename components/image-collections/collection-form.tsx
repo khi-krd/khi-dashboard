@@ -68,6 +68,18 @@ const sectionHeading =
 const borderlessTitleClass =
   "w-full border-0 bg-transparent px-0 text-4xl leading-tight font-bold shadow-none placeholder:text-muted-foreground/50 focus:ring-0 focus-visible:ring-0"
 
+function submitErrorMessage(err: unknown): string {
+  const data = (
+    err as {
+      response?: { data?: { details?: { message?: unknown }; message?: unknown } }
+    }
+  )?.response?.data
+  const message = data?.details?.message ?? data?.message
+  return typeof message === "string" && message.trim()
+    ? message
+    : NS.error.validation
+}
+
 function countFormErrors(errors: FieldErrors): number {
   let n = 0
   for (const value of Object.values(errors)) {
@@ -189,8 +201,8 @@ export function CollectionForm({
         toast.success(NS.toast.updated)
         router.push(`/dashboard/image-collections/${collectionId}`)
       }
-    } catch {
-      toast.error(NS.error.validation)
+    } catch (err) {
+      toast.error(submitErrorMessage(err))
     } finally {
       setUploadPct(null)
     }

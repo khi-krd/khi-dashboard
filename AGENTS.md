@@ -67,6 +67,15 @@ Read these before touching a write path — the API is not forgiving.
   never un-link (no way to detach a book from its parent). A declared
   `contentLanguages` entry must carry a non-blank title — enforced in
   `lib/validations/writings.ts` before the request leaves.
+- **`PUT /api/v1/image-collections/{id}` is multipart-only** — a JSON body
+  answers `500 INTERNAL_ERROR` (unmapped `HttpMediaTypeNotSupportedException`),
+  so every edit goes through `updateCollectionMultipart`, even text-only ones.
+  Only create has a `/json` route. The PUT is a partial merge where `""` still
+  overwrites, so the edit payload omits blank content keys
+  (`editContentPayload` in `lib/image-collections-form-data.ts`). The backend
+  pairs the i-th `images` part with `imageAlbum[i]`, so items carrying a
+  staged file must lead the array — `orderedAlbumItems` partitions them first
+  and `sortOrder` carries the original form position.
 - **Upload progress**: every multipart/upload service call accepts an
   `onProgress` (0–100) callback via `toUploadProgress` in `lib/axios.ts`; the
   shared bar is `components/shared/upload-progress-line.tsx`. Staged-file

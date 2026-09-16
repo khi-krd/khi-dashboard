@@ -16,6 +16,7 @@ import type {
 } from "@/types/sounds"
 
 const BASE = "/api/v1/sound-tracks"
+const TOPICS_BASE = "/api/v1/topics"
 
 export async function getSoundsList(
   page: number,
@@ -160,10 +161,13 @@ export async function getTopics(): Promise<TopicDto[]> {
 }
 
 export async function createTopic(payload: NewTopicPayload): Promise<TopicDto> {
-  const { data } = await api.post<unknown>(`${BASE}/topics`, payload)
+  const { data } = await api.post<unknown>(`${TOPICS_BASE}/SOUND`, {
+    nameCkb: payload.nameCkb ?? null,
+    nameKmr: payload.nameKmr ?? null,
+  })
   return normalizeTopicDto(data)
 }
 
 export async function deleteTopic(topicId: number): Promise<void> {
-  await api.delete(`${BASE}/topics/${topicId}`)
+  await api.delete(`${TOPICS_BASE}/${topicId}`)
 }
