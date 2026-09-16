@@ -20,6 +20,10 @@ import {
   dashboardSoundsCrumbHref,
 } from "@/components/sounds/sound-breadcrumb"
 import { isOptimizableImageSrc } from "@/lib/image-src"
+import {
+  MediaLightbox,
+  useLightbox,
+} from "@/components/shared/media-lightbox"
 import { useSyncedState } from "@/hooks/use-synced-state"
 import { SoundDeleteDialog } from "@/components/sounds/sound-delete-dialog"
 import { SoundDetailFilesList } from "@/components/sounds/sound-detail-files-list"
@@ -136,6 +140,7 @@ function SoundDetailLoaded({
 }) {
   const file = activeFile ?? sound.files?.[0] ?? null
   const cover = sound.ckbCoverUrl?.trim()
+  const lightbox = useLightbox()
   const langs = sound.contentLanguages ?? []
   const hasCkb = langs.includes("CKB")
   const hasKmr = langs.includes("KMR")
@@ -364,18 +369,31 @@ function SoundDetailLoaded({
           <div className="flex flex-col gap-6 md:flex-row md:items-start">
             <div className="bg-muted relative mx-auto size-[280px] shrink-0 overflow-hidden rounded-lg md:mx-0">
               {cover ? (
-                <Image
-                  src={cover}
-                  alt=""
-                  fill
-                  className="object-cover"
-                  unoptimized={!isOptimizableImageSrc(cover)}
-                />
+                <button
+                  type="button"
+                  aria-label={sound.ckbContent?.title ?? undefined}
+                  onClick={() => lightbox.openAt(0)}
+                  className="absolute inset-0 cursor-zoom-in focus-visible:ring-2"
+                >
+                  <Image
+                    src={cover}
+                    alt=""
+                    fill
+                    className="object-cover"
+                    unoptimized={!isOptimizableImageSrc(cover)}
+                  />
+                </button>
               ) : (
                 <div className="text-muted-foreground flex size-full flex-col items-center justify-center gap-2 text-sm">
                   {NS.empty.no_cover}
                 </div>
               )}
+              <MediaLightbox
+                open={lightbox.open}
+                onOpenChange={lightbox.onOpenChange}
+                items={cover ? [{ src: cover }] : []}
+                initialIndex={lightbox.index}
+              />
             </div>
             <div className="min-w-0 flex-1">
               <h1 className="text-4xl leading-tight font-bold">

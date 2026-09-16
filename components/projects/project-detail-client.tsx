@@ -27,6 +27,10 @@ import {
   dashboardProjectsCrumbHref,
 } from "@/components/projects/project-breadcrumb"
 import { isOptimizableImageSrc } from "@/lib/image-src"
+import {
+  MediaLightbox,
+  useLightbox,
+} from "@/components/shared/media-lightbox"
 import { ProjectDeleteDialog } from "@/components/projects/project-delete-dialog"
 import { ProjectDetailSkeleton } from "@/components/projects/project-detail-skeleton"
 import { ProjectLanguageChipRow } from "@/components/projects/project-language-chip"
@@ -186,6 +190,8 @@ export function ProjectDetailClient({ projectId }: { projectId: number }) {
   const q = useProjectDetailQuery(projectId)
   const [deleteDlg, setDeleteDlg] = useState(false)
   const deleteMut = useDeleteProjectMutation()
+  const coverLightbox = useLightbox()
+  const galleryLightbox = useLightbox()
   const { copyToClipboard } = useCopyToClipboard({
     onCopy: () => toast.success(NS.toast.copied),
   })
@@ -239,6 +245,12 @@ export function ProjectDetailClient({ projectId }: { projectId: number }) {
     ...(dto.tagsCkb ?? []).map((t) => ({ lang: "ckb" as const, v: t })),
     ...(dto.tagsKmr ?? []).map((t) => ({ lang: "kmr" as const, v: t })),
   ]
+  // Audio entries stay inline (nothing visual to zoom); images and videos
+  // share one index space so the lightbox counter matches the grid.
+  const galleryMedia = (dto.mediaGallery ?? []).filter(
+    (it) => it.kind !== "AUDIO",
+  )
+
   const kwItems = [
     ...(dto.keywordsCkb ?? []).map((t) => ({ lang: "ckb" as const, v: t })),
     ...(dto.keywordsKmr ?? []).map((t) => ({ lang: "kmr" as const, v: t })),
@@ -509,18 +521,25 @@ export function ProjectDetailClient({ projectId }: { projectId: number }) {
               <div className="relative mt-6 aspect-[21/9] overflow-hidden rounded-xl">
                 {dto.coverUrl ? (
                   <>
-                    <Image
-                      src={
-                        dto.coverMediaType === "VIDEO" || dto.coverMediaType === "AUDIO"
-                          ? dto.coverThumbnailUrl || dto.coverUrl
-                          : dto.coverUrl
-                      }
-                      alt=""
-                      fill
-                      className="object-cover"
-                      unoptimized={!isOptimizableImageSrc(dto.coverUrl)}
-                      priority
-                    />
+                    <button
+                      type="button"
+                      aria-label={titleCkb || titleKmr || undefined}
+                      onClick={() => coverLightbox.openAt(0)}
+                      className="absolute inset-0 cursor-zoom-in focus-visible:ring-2"
+                    >
+                      <Image
+                        src={
+                          dto.coverMediaType === "VIDEO" || dto.coverMediaType === "AUDIO"
+                            ? dto.coverThumbnailUrl || dto.coverUrl
+                            : dto.coverUrl
+                        }
+                        alt=""
+                        fill
+                        className="object-cover"
+                        unoptimized={!isOptimizableImageSrc(dto.coverUrl)}
+                        priority
+                      />
+                    </button>
                     {dto.coverMediaType && dto.coverMediaType !== "IMAGE" ? (
                       <span className="bg-background/80 absolute start-3 top-3 rounded-md px-2 py-1 text-xs font-medium">
                         {NS.coverKind[dto.coverMediaType]}
@@ -609,7 +628,18 @@ export function ProjectDetailClient({ projectId }: { projectId: number }) {
                             <audio src={item.url} controls className="w-full" />
                           </div>
                         ) : (
-                          <div className="relative aspect-video">
+                          <button
+                            type="button"
+                            aria-label={
+                              item.captionCkb?.trim() ||
+                              item.captionKmr?.trim() ||
+                              undefined
+                            }
+                            onClick={() =>
+                              galleryLightbox.openAt(galleryMedia.indexOf(item))
+                            }
+                            className="relative block aspect-video w-full cursor-zoom-in focus-visible:ring-2"
+                          >
                             <Image
                               src={item.url}
                               alt=""
@@ -617,7 +647,7 @@ export function ProjectDetailClient({ projectId }: { projectId: number }) {
                               className="object-cover"
                               unoptimized={!isOptimizableImageSrc(item.url)}
                             />
-                          </div>
+                          </button>
                         )}
                         {(item.captionCkb?.trim() || item.captionKmr?.trim()) ? (
                           <figcaption className="text-muted-foreground p-2 text-xs">
@@ -627,6 +657,17 @@ export function ProjectDetailClient({ projectId }: { projectId: number }) {
                       </figure>
                     ))}
                   </div>
+                  <MediaLightbox
+                    open={galleryLightbox.open}
+                    onOpenChange={galleryLightbox.onOpenChange}
+                    items={galleryMedia.map((it) => ({
+                      src: it.url,
+                      type: it.kind === "VIDEO" ? "VIDEO" : "IMAGE",
+                      caption:
+                        it.captionCkb?.trim() || it.captionKmr?.trim() || null,
+                    }))}
+                    initialIndex={galleryLightbox.index}
+                  />
                 </section>
               ) : null}
 
@@ -634,6 +675,29 @@ export function ProjectDetailClient({ projectId }: { projectId: number }) {
           </main>
 
         </div>
+
+        <MediaLightbox
+          open={coverLightbox.open}
+          onOpenChange={coverLightbox.onOpenChange}
+          items={
+            dto.coverUrl
+              ? [
+                  {
+                    src:
+                      dto.coverMediaType === "VIDEO"
+                        ? dto.coverUrl
+                        : dto.coverMediaType === "AUDIO"
+                          ? dto.coverThumbnailUrl || dto.coverUrl
+                          : dto.coverUrl,
+                    type: dto.coverMediaType === "VIDEO" ? "VIDEO" : "IMAGE",
+                    posterUrl: dto.coverThumbnailUrl,
+                    caption: titleCkb || titleKmr || null,
+                  },
+                ]
+              : []
+          }
+          initialIndex={coverLightbox.index}
+        />
 
         <ProjectDeleteDialog
           open={deleteDlg}

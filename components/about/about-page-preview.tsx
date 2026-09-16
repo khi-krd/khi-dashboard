@@ -6,6 +6,10 @@ import {
 } from "@/hooks/useAbout"
 import Image from "next/image"
 import { isOptimizableImageSrc } from "@/lib/image-src"
+import {
+  MediaLightbox,
+  useLightbox,
+} from "@/components/shared/media-lightbox"
 import { aboutDisplayTitle } from "@/lib/about-normalize"
 import { formatCkbDigits } from "@/lib/intl-ckb"
 import { cn } from "@/lib/utils"
@@ -17,21 +21,37 @@ function stripHtml(html: string): string {
 }
 
 function ThumbnailGrid({ urls }: { urls: string[] }) {
+  const lightbox = useLightbox()
   const thumbs = urls.filter((u) => u.trim()).slice(0, 6)
   if (thumbs.length === 0) return null
 
   return (
-    <ul className="mt-4 grid grid-cols-4 gap-2 sm:grid-cols-6">
-      {thumbs.map((url, i) => (
-        <li
-          key={`${url}-${i}`}
-          className="relative aspect-square overflow-hidden rounded-md bg-muted"
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={url} alt="" className="size-full object-cover" />
-        </li>
-      ))}
-    </ul>
+    <>
+      <ul className="mt-4 grid grid-cols-4 gap-2 sm:grid-cols-6">
+        {thumbs.map((url, i) => (
+          <li
+            key={`${url}-${i}`}
+            className="relative aspect-square overflow-hidden rounded-md bg-muted"
+          >
+            <button
+              type="button"
+              aria-label="وێنە"
+              onClick={() => lightbox.openAt(i)}
+              className="size-full cursor-zoom-in focus-visible:ring-2"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={url} alt="" className="size-full object-cover" />
+            </button>
+          </li>
+        ))}
+      </ul>
+      <MediaLightbox
+        open={lightbox.open}
+        onOpenChange={lightbox.onOpenChange}
+        items={thumbs.map((src) => ({ src }))}
+        initialIndex={lightbox.index}
+      />
+    </>
   )
 }
 
@@ -67,6 +87,7 @@ function SectionPreview({
 }
 
 function HeroPreview({ about }: { about: AboutDto }) {
+  const lightbox = useLightbox()
   const image = about.heroPosterUrl?.trim()
   const title = aboutDisplayTitle(about)
   const subtitle =
@@ -90,15 +111,22 @@ function HeroPreview({ about }: { about: AboutDto }) {
       >
         {image ? (
           <>
-            <Image
-              src={image}
-              alt=""
-              fill
-              sizes="100vw"
-              className="object-cover brightness-[0.72]"
-              unoptimized={!isOptimizableImageSrc(image)}
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+            <button
+              type="button"
+              aria-label={title || undefined}
+              onClick={() => lightbox.openAt(0)}
+              className="absolute inset-0 cursor-zoom-in focus-visible:ring-2"
+            >
+              <Image
+                src={image}
+                alt=""
+                fill
+                sizes="100vw"
+                className="object-cover brightness-[0.72]"
+                unoptimized={!isOptimizableImageSrc(image)}
+              />
+            </button>
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
           </>
         ) : null}
         <div
@@ -120,6 +148,12 @@ function HeroPreview({ about }: { about: AboutDto }) {
           ) : null}
         </div>
       </div>
+      <MediaLightbox
+        open={lightbox.open}
+        onOpenChange={lightbox.onOpenChange}
+        items={image ? [{ src: image }] : []}
+        initialIndex={lightbox.index}
+      />
     </section>
   )
 }

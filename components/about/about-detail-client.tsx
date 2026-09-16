@@ -21,6 +21,10 @@ import {
 } from "@/components/about/about-breadcrumb"
 import Image from "next/image"
 import { isOptimizableImageSrc } from "@/lib/image-src"
+import {
+  MediaLightbox,
+  useLightbox,
+} from "@/components/shared/media-lightbox"
 import { AboutDeleteDialog } from "@/components/about/about-delete-dialog"
 import { AboutDetailSidebar } from "@/components/about/about-detail-sidebar"
 import { AboutDetailSkeleton } from "@/components/about/about-detail-skeleton"
@@ -57,6 +61,8 @@ export function AboutDetailClient({ aboutId }: { aboutId: number }) {
   const [activeLang, setActiveLang] = useState<Language>("CKB")
   const teamQ = useAboutTeamMembersQuery()
   const partnersQ = useAboutPartnersQuery()
+  const founderLightbox = useLightbox()
+  const heroPosterLightbox = useLightbox()
 
   if (isLoading) return <AboutDetailSkeleton />
   if (isError) return <AboutErrorState onRetry={() => void refetch()} />
@@ -275,12 +281,23 @@ export function AboutDetailClient({ aboutId }: { aboutId: number }) {
                   </div>
                 </div>
                 {about.founderImageUrl?.trim() ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={about.founderImageUrl}
-                    alt=""
-                    className="border-border aspect-square w-full max-w-[220px] rounded-lg border object-cover"
-                  />
+                  <button
+                    type="button"
+                    aria-label={
+                      about.founderNameCkb?.trim() ||
+                      about.founderNameKmr?.trim() ||
+                      undefined
+                    }
+                    onClick={() => founderLightbox.openAt(0)}
+                    className="cursor-zoom-in focus-visible:ring-2"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={about.founderImageUrl}
+                      alt=""
+                      className="border-border aspect-square w-full max-w-[220px] rounded-lg border object-cover"
+                    />
+                  </button>
                 ) : null}
               </div>
             </section>
@@ -306,12 +323,19 @@ export function AboutDetailClient({ aboutId }: { aboutId: number }) {
                   </div>
                 )}
                 {about.heroPosterUrl?.trim() ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={about.heroPosterUrl}
-                    alt=""
-                    className="border-border aspect-video w-full rounded-lg border object-cover"
-                  />
+                  <button
+                    type="button"
+                    aria-label={NS.detail.hero_poster}
+                    onClick={() => heroPosterLightbox.openAt(0)}
+                    className="block w-full cursor-zoom-in focus-visible:ring-2"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={about.heroPosterUrl}
+                      alt=""
+                      className="border-border aspect-video w-full rounded-lg border object-cover"
+                    />
+                  </button>
                 ) : (
                   <div className="border-border bg-muted/20 text-muted-foreground flex aspect-video items-center justify-center rounded-lg border text-sm">
                     {NS.detail.hero_poster}: —
@@ -403,6 +427,25 @@ export function AboutDetailClient({ aboutId }: { aboutId: number }) {
           </div>
         </article>
       </div>
+
+      <MediaLightbox
+        open={founderLightbox.open}
+        onOpenChange={founderLightbox.onOpenChange}
+        items={
+          about.founderImageUrl?.trim()
+            ? [{ src: about.founderImageUrl }]
+            : []
+        }
+        initialIndex={founderLightbox.index}
+      />
+      <MediaLightbox
+        open={heroPosterLightbox.open}
+        onOpenChange={heroPosterLightbox.onOpenChange}
+        items={
+          about.heroPosterUrl?.trim() ? [{ src: about.heroPosterUrl }] : []
+        }
+        initialIndex={heroPosterLightbox.index}
+      />
 
       <AboutDeleteDialog
         open={deleteOpen}

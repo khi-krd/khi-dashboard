@@ -29,6 +29,10 @@ import {
   NewsBreadcrumbBar,
 } from "@/components/news/news-breadcrumb"
 import Image from "next/image"
+import {
+  MediaLightbox,
+  useLightbox,
+} from "@/components/shared/media-lightbox"
 import { isOptimizableImageSrc } from "@/lib/image-src"
 import { NewsDeleteDialog } from "@/components/news/news-delete-dialog"
 import { NewsDetailSkeleton } from "@/components/news/news-detail-skeleton"
@@ -221,6 +225,8 @@ export function NewsDetailClient({ newsId }: { newsId: number }) {
   const q = useNewsDetailQuery(newsId)
   const [deleteDlg, setDeleteDlg] = useState(false)
   const deleteMut = useDeleteNewsMutation()
+  const coverLightbox = useLightbox()
+  const galleryLightbox = useLightbox()
   const { copyToClipboard } = useCopyToClipboard({
     onCopy: () => toast.success(NS.toast.copied),
   })
@@ -322,6 +328,12 @@ export function NewsDetailClient({ newsId }: { newsId: number }) {
     ...ckbKw.map((t) => ({ lang: "ckb" as const, kw: t })),
     ...kmrKw.map((t) => ({ lang: "kmr" as const, kw: t })),
   ]
+
+  // Audio entries stay inline (there is nothing visual to zoom); images and
+  // videos share one index space so the lightbox counter matches the grid.
+  const galleryMedia = (dto.mediaGallery ?? []).filter(
+    (it) => it.kind !== "AUDIO",
+  )
 
   return (
     <TooltipProvider delay={250}>
@@ -430,14 +442,21 @@ export function NewsDetailClient({ newsId }: { newsId: number }) {
               <div className="relative mt-5 aspect-[21/9] w-full overflow-hidden rounded-xl border border-border/60 bg-muted">
                 {dto.coverUrl ? (
                   <>
-                    <Image
-                      src={coverDisplayUrl ?? dto.coverUrl}
-                      alt=""
-                      fill
-                      sizes="(max-width: 860px) 100vw, 860px"
-                      className="object-cover"
-                      unoptimized={!isOptimizableImageSrc(coverDisplayUrl)}
-                    />
+                    <button
+                      type="button"
+                      aria-label={dto.ckbContent?.title ?? undefined}
+                      onClick={() => coverLightbox.openAt(0)}
+                      className="absolute inset-0 cursor-zoom-in focus-visible:ring-2"
+                    >
+                      <Image
+                        src={coverDisplayUrl ?? dto.coverUrl}
+                        alt=""
+                        fill
+                        sizes="(max-width: 860px) 100vw, 860px"
+                        className="object-cover"
+                        unoptimized={!isOptimizableImageSrc(coverDisplayUrl)}
+                      />
+                    </button>
                     {dto.coverMediaType && dto.coverMediaType !== "IMAGE" ? (
                       <span className="bg-background/80 absolute start-3 top-3 rounded-md px-2 py-1 text-xs font-medium">
                         {NS.coverKind[dto.coverMediaType]}
@@ -505,12 +524,25 @@ export function NewsDetailClient({ newsId }: { newsId: number }) {
                             <audio src={item.url} controls className="w-full" />
                           </div>
                         ) : (
-                          /* eslint-disable-next-line @next/next/no-img-element */
-                          <img
-                            src={item.url}
-                            alt=""
-                            className="aspect-video w-full object-cover"
-                          />
+                          <button
+                            type="button"
+                            aria-label={
+                              item.captionCkb?.trim() ||
+                              item.captionKmr?.trim() ||
+                              undefined
+                            }
+                            onClick={() =>
+                              galleryLightbox.openAt(galleryMedia.indexOf(item))
+                            }
+                            className="block w-full cursor-zoom-in focus-visible:ring-2"
+                          >
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={item.url}
+                              alt=""
+                              className="aspect-video w-full object-cover"
+                            />
+                          </button>
                         )}
                         {(item.captionCkb?.trim() || item.captionKmr?.trim()) ? (
                           <figcaption className="text-muted-foreground p-2 text-xs">
@@ -520,8 +552,44 @@ export function NewsDetailClient({ newsId }: { newsId: number }) {
                       </figure>
                     ))}
                   </div>
+                  <MediaLightbox
+                    open={galleryLightbox.open}
+                    onOpenChange={galleryLightbox.onOpenChange}
+                    items={galleryMedia.map((it) => ({
+                      src: it.url,
+                      type: it.kind === "VIDEO" ? "VIDEO" : "IMAGE",
+                      caption:
+                        it.captionCkb?.trim() || it.captionKmr?.trim() || null,
+                    }))}
+                    initialIndex={galleryLightbox.index}
+                  />
                 </section>
               ) : null}
+
+              <MediaLightbox
+                open={coverLightbox.open}
+                onOpenChange={coverLightbox.onOpenChange}
+                items={
+                  dto.coverUrl
+                    ? [
+                        {
+                          src:
+                            dto.coverMediaType === "VIDEO"
+                              ? dto.coverUrl
+                              : (coverDisplayUrl ?? dto.coverUrl),
+                          type:
+                            dto.coverMediaType === "VIDEO" ? "VIDEO" : "IMAGE",
+                          posterUrl: dto.coverThumbnailUrl,
+                          caption:
+                            dto.ckbContent?.title?.trim() ||
+                            dto.kmrContent?.title?.trim() ||
+                            null,
+                        },
+                      ]
+                    : []
+                }
+                initialIndex={coverLightbox.index}
+              />
 
               {tagItems.length > 0 || kwItems.length > 0 ? (
                 <Fragment>

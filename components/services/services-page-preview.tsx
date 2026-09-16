@@ -3,6 +3,11 @@
 import { PlayIcon } from "@heroicons/react/24/outline"
 
 import Image from "next/image"
+import {
+  MediaLightbox,
+  useLightbox,
+  type LightboxItem,
+} from "@/components/shared/media-lightbox"
 import { isOptimizableImageSrc } from "@/lib/image-src"
 import { NS } from "@/components/services/services-strings"
 import { formatCkbDigits } from "@/lib/intl-ckb"
@@ -35,6 +40,13 @@ function SectionPreview({
   const title = ckb?.title?.trim() || kmr?.title?.trim() || NS.section.unnamed
   const body = stripHtml(ckb?.description?.trim() || kmr?.description?.trim() || "")
   const gallery = (section.galleryMedia ?? []).filter((g) => g.url?.trim())
+  const lightbox = useLightbox()
+  const lightboxItems: LightboxItem[] = gallery.map((slot) => ({
+    src: slot.url!.trim(),
+    alt: slot.alt,
+    type: slot.type === "VIDEO" ? "VIDEO" : "IMAGE",
+    posterUrl: slot.posterUrl,
+  }))
 
   return (
     <article className="border-border rounded-lg border bg-card p-4">
@@ -58,17 +70,35 @@ function SectionPreview({
           {gallery.slice(0, 6).map((slot, i) => {
             const thumb = galleryThumb(slot)
             if (!thumb) return null
+            const extra = i === 5 ? gallery.length - 6 : 0
             return (
               <li
                 key={`${slot.url}-${i}`}
                 className="relative aspect-square overflow-hidden rounded-md bg-muted"
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={thumb} alt="" className="size-full object-cover" />
+                <button
+                  type="button"
+                  aria-label={slot.alt ?? NS.section.media}
+                  onClick={() => lightbox.openAt(i)}
+                  className="size-full cursor-zoom-in focus-visible:ring-2"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={thumb} alt="" className="size-full object-cover" />
+                </button>
                 {slot.type === "VIDEO" ? (
                   <span className="absolute start-1 top-1 rounded bg-black/60 p-0.5 text-white">
                     <PlayIcon className="size-3" />
                   </span>
+                ) : null}
+                {extra > 0 ? (
+                  <button
+                    type="button"
+                    aria-label={NS.section.media}
+                    onClick={() => lightbox.openAt(i)}
+                    className="absolute inset-0 flex items-center justify-center bg-black/60 text-sm font-semibold text-white"
+                  >
+                    +{formatCkbDigits(extra)}
+                  </button>
                 ) : null}
               </li>
             )
@@ -77,11 +107,18 @@ function SectionPreview({
       ) : (
         <p className="text-muted-foreground mt-3 text-xs">{NS.gallery.empty}</p>
       )}
+      <MediaLightbox
+        open={lightbox.open}
+        onOpenChange={lightbox.onOpenChange}
+        items={lightboxItems}
+        initialIndex={lightbox.index}
+      />
     </article>
   )
 }
 
 function HeroPreview({ hero }: { hero?: ServiceDto }) {
+  const lightbox = useLightbox()
   const data = hero ? serviceDtoToHeroFormValues(hero) : null
   const image = data?.heroImageUrl?.trim()
   const title = data?.titleCkb?.trim() || data?.titleKmr?.trim()
@@ -106,20 +143,27 @@ function HeroPreview({ hero }: { hero?: ServiceDto }) {
       >
         {image ? (
           <>
-            <Image
-              src={image}
-              alt=""
-              fill
-              sizes="100vw"
-              className="object-cover brightness-[0.72]"
-              unoptimized={!isOptimizableImageSrc(image)}
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+            <button
+              type="button"
+              aria-label={title ?? undefined}
+              onClick={() => lightbox.openAt(0)}
+              className="absolute inset-0 cursor-zoom-in focus-visible:ring-2"
+            >
+              <Image
+                src={image}
+                alt=""
+                fill
+                sizes="100vw"
+                className="object-cover brightness-[0.72]"
+                unoptimized={!isOptimizableImageSrc(image)}
+              />
+            </button>
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
           </>
         ) : null}
         <div
           className={cn(
-            "relative flex min-h-[220px] flex-col justify-end p-6",
+            "pointer-events-none relative flex min-h-[220px] flex-col justify-end p-6",
             image && "min-h-[280px] text-white",
           )}
         >
@@ -141,6 +185,12 @@ function HeroPreview({ hero }: { hero?: ServiceDto }) {
           ) : null}
         </div>
       </div>
+      <MediaLightbox
+        open={lightbox.open}
+        onOpenChange={lightbox.onOpenChange}
+        items={image ? [{ src: image }] : []}
+        initialIndex={lightbox.index}
+      />
     </section>
   )
 }

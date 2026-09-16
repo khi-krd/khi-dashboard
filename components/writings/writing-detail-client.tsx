@@ -19,6 +19,10 @@ import {
   dashboardWritingsCrumbHref,
 } from "@/components/writings/writing-breadcrumb"
 import { isOptimizableImageSrc } from "@/lib/image-src"
+import {
+  MediaLightbox,
+  useLightbox,
+} from "@/components/shared/media-lightbox"
 import { WritingDeleteDialog } from "@/components/writings/writing-delete-dialog"
 import { WritingDetailSkeleton } from "@/components/writings/writing-detail-skeleton"
 import { WritingGenrePill } from "@/components/writings/writing-genre-pill"
@@ -156,6 +160,7 @@ function WritingDetailLoaded({
     writing.kmrCoverUrl?.trim() ||
     writing.hoverCoverUrl?.trim() ||
     null
+  const lightbox = useLightbox()
 
   const activeContent = tab === "CKB" ? writing.ckbContent : writing.kmrContent
   const activeDesc = activeContent?.description ?? ""
@@ -462,18 +467,31 @@ function WritingDetailLoaded({
           <div className="flex flex-col gap-6 md:flex-row md:items-start">
             <div className="bg-muted relative mx-auto aspect-[2/3] w-[240px] shrink-0 overflow-hidden rounded-lg md:mx-0">
               {cover ? (
-                <Image
-                  src={cover}
-                  alt=""
-                  fill
-                  className="object-cover"
-                  unoptimized={!isOptimizableImageSrc(cover)}
-                />
+                <button
+                  type="button"
+                  aria-label={writing.ckbContent?.title ?? undefined}
+                  onClick={() => lightbox.openAt(0)}
+                  className="absolute inset-0 cursor-zoom-in focus-visible:ring-2"
+                >
+                  <Image
+                    src={cover}
+                    alt=""
+                    fill
+                    className="object-cover"
+                    unoptimized={!isOptimizableImageSrc(cover)}
+                  />
+                </button>
               ) : (
                 <div className="text-muted-foreground flex size-full flex-col items-center justify-center gap-2 text-sm">
                   {NS.empty.no_cover}
                 </div>
               )}
+              <MediaLightbox
+                open={lightbox.open}
+                onOpenChange={lightbox.onOpenChange}
+                items={cover ? [{ src: cover }] : []}
+                initialIndex={lightbox.index}
+              />
             </div>
             <div className="min-w-0 flex-1">
               <h1 className="text-4xl leading-tight font-bold">

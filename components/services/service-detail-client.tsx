@@ -25,6 +25,10 @@ import { ServiceDetailSkeleton } from "@/components/services/service-detail-skel
 import { ServiceLanguageChipRow } from "@/components/services/service-language-chip"
 import { ServicePartnersDisplay } from "@/components/services/service-partners-display"
 import {
+  MediaLightbox,
+  useLightbox,
+} from "@/components/shared/media-lightbox"
+import {
   ServiceStatusPillSidebar,
   serviceStatusContextLine,
   serviceStatusInlineWord,
@@ -136,6 +140,7 @@ export function ServiceDetailClient({ serviceId }: { serviceId: number }) {
   const deleteMut = useDeleteServiceMutation()
   const toggleMut = useToggleServiceActiveMutation()
   const [deleteDlg, setDeleteDlg] = useState(false)
+  const lightbox = useLightbox()
 
   const dto = detailQuery.data?.success ? detailQuery.data.data : undefined
 
@@ -539,16 +544,34 @@ export function ServiceDetailClient({ serviceId }: { serviceId: number }) {
                           />
                         </div>
                       ) : (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
+                        <button
                           key={`${slot.url}-${index}`}
-                          src={slot.url}
-                          alt={slot.alt ?? ""}
-                          className="border-border aspect-video w-full rounded-lg border object-cover"
-                        />
+                          type="button"
+                          aria-label={slot.alt ?? NS.section.media}
+                          onClick={() => lightbox.openAt(index)}
+                          className="cursor-zoom-in focus-visible:ring-2"
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={slot.url}
+                            alt={slot.alt ?? ""}
+                            className="border-border aspect-video w-full rounded-lg border object-cover"
+                          />
+                        </button>
                       ),
                     )}
                   </div>
+                  <MediaLightbox
+                    open={lightbox.open}
+                    onOpenChange={lightbox.onOpenChange}
+                    items={(dto.galleryMedia ?? []).map((slot) => ({
+                      src: slot.url,
+                      alt: slot.alt,
+                      type: slot.type === "VIDEO" ? "VIDEO" : "IMAGE",
+                      posterUrl: slot.posterUrl,
+                    }))}
+                    initialIndex={lightbox.index}
+                  />
                 </section>
               )}
 
