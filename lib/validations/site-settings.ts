@@ -26,16 +26,9 @@ const brandingUrl = z
     message: "دەبێت بە https:// دەست پێ بکات",
   })
 
-/** Display label for an uploaded typeface — plain text, no URL rules. */
-const fontName = z.string().trim().max(200)
-
 export const siteSettingsSchema = z.object({
   logoUrl: brandingUrl,
   donateImageUrl: brandingUrl,
-  ckbFontUrl: brandingUrl,
-  ckbFontName: fontName,
-  kmrFontUrl: brandingUrl,
-  kmrFontName: fontName,
   // Optional: an emptied box (NaN from `valueAsNumber`) means "leave the
   // stored value alone" and is omitted from the payload, not a validation
   // failure. The range rules still apply to anything actually typed.
@@ -60,10 +53,6 @@ export function defaultSiteSettingsValues(): SiteSettingsFormValues {
   return {
     logoUrl: "",
     donateImageUrl: "",
-    ckbFontUrl: "",
-    ckbFontName: "",
-    kmrFontUrl: "",
-    kmrFontName: "",
     maxFeaturedSlides: DEFAULT_MAX_FEATURED_SLIDES,
   }
 }
@@ -74,10 +63,6 @@ export function siteSettingsDtoToFormValues(
   return {
     logoUrl: dto.logoUrl ?? "",
     donateImageUrl: dto.donateImageUrl ?? "",
-    ckbFontUrl: dto.ckbFontUrl ?? "",
-    ckbFontName: dto.ckbFontName ?? "",
-    kmrFontUrl: dto.kmrFontUrl ?? "",
-    kmrFontName: dto.kmrFontName ?? "",
     maxFeaturedSlides: dto.maxFeaturedSlides,
   }
 }
@@ -93,10 +78,6 @@ export function formValuesToSiteSettingsPayload(
   const payload: SiteSettingsPayload = {
     logoUrl: values.logoUrl.trim(),
     donateImageUrl: values.donateImageUrl.trim(),
-    ckbFontUrl: values.ckbFontUrl.trim(),
-    ckbFontName: values.ckbFontName.trim(),
-    kmrFontUrl: values.kmrFontUrl.trim(),
-    kmrFontName: values.kmrFontName.trim(),
   }
   if (typeof values.maxFeaturedSlides === "number") {
     payload.maxFeaturedSlides = values.maxFeaturedSlides

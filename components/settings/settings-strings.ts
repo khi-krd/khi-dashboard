@@ -46,28 +46,32 @@ export const NS = {
   },
   fonts: {
     title: "فۆنتەکانی ماڵپەڕ",
-    hint: "فۆنتێک بۆ هەر زمانێک باربکە — کاتێک پاشەکەوتی بکەیت ماڵپەڕ هەمان فۆنت بەکاردەهێنێت. فۆرماتی woff2 باشترینە؛ ttf و otf و woffیش ڕێگەپێدراون.",
-    /** Which site language the slot feeds. */
+    hint: "فۆنتەکان باربکە و یەکێکیان چالاک بکە بۆ هەر زمانێک — ماڵپەڕ هەمان فۆنتی چالاککراو بەکاردەهێنێت. فۆرماتی woff2 باشترینە؛ ttf و otf و woffیش ڕێگەپێدراون.",
+    /** Which site language each column feeds. */
     ckb: {
-      label: "فۆنتی سۆرانی (CKB)",
+      label: "سۆرانی (CKB)",
       /** Sample sentence rendered in the uploaded face. */
-      sample: "سڵاو لە جیهان — دەقی نموونەیی بە کوردی سۆرانی ١٢٣٤٥٦٧٨٩٠ ڕڵێۆڤچپگژھ",
+      sample: "سڵاو لە جیهان — دەقی نموونەیی بە کوردی سۆرانی",
     },
     kmr: {
-      label: "فۆنتی کورمانجی (KMR)",
-      sample: "Silav li cîhanê — deqa nimûneyî bi kurmancî ÇçÊêÎîŞşÛû 0123456789",
+      label: "کورمانجی (KMR)",
+      sample: "Silav li cîhanê — deqa nimûneyî bi kurmancî",
     },
-    nameLabel: "ناوی فۆنت",
-    namePlaceholder: "بۆ نموونە: Rabar",
-    nameHint: "تەنها لە داشبۆرددا دەرکەوت بۆ ئەوەی بیزانیت کام فایلە چالاکە.",
     upload: "بارکردنی فۆنت",
-    replace: "گۆڕین",
     uploading: "باردەکرێت…",
-    clear: "لابردن",
+    activate: "چالاککردن",
+    active: "چالاک",
+    deactivate: "ناچالاککردن",
+    remove: "سڕینەوە",
     formats: "woff2 · woff · ttf · otf",
-    empty: "فۆنت دانەنراوە — فۆنتی بنچینەیی ماڵپەڕ بەکاردێت.",
-    offHost: "لینکەکە لە کۆگای ماڵپەڕەکە نییە — لەوانەیە ماڵپەڕ نەیخوێنێتەوە.",
+    empty: "هیچ فۆنتێک بۆ ئەم زمانە دانەنراوە — فۆنتی بنەڕەتی ماڵپەڕ بەکاردێت.",
     uploadFailed: "بارکردنی فۆنتەکە سەرکەوتوو نەبوو.",
+    toast: {
+      added: "فۆنتەکە زیادکرا بۆ کۆگا",
+      activated: "فۆنتەکە چالاککرا",
+      deactivated: "فۆنتەکە ناچالاککرا",
+      removed: "فۆنتەکە سڕایەوە",
+    },
   },
   offHost:
     "ئەم لینکە لە کۆگای ماڵپەڕەکە نییە — تا دابەزاندنێکی نوێی ماڵپەڕ نەکرێت دەرناکەوێت.",

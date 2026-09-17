@@ -2,19 +2,12 @@
 
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline"
 import Link from "next/link"
-import { useRef, useState } from "react"
-import {
-  Controller,
-  useForm,
-  type Control,
-  type Resolver,
-  type UseFormSetValue,
-} from "react-hook-form"
+import { Controller, useForm, type Resolver } from "react-hook-form"
 import { toast } from "sonner"
 
 import { NS } from "@/components/settings/settings-strings"
+import { FontLibrary } from "@/components/settings/font-library"
 import { MediaCoverUpload } from "@/components/shared/media-cover-upload"
-import { UploadProgressLine } from "@/components/shared/upload-progress-line"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -24,7 +17,6 @@ import {
   useSiteSettingsQuery,
   useUpdateSiteSettingsMutation,
 } from "@/hooks/useSiteSettings"
-import { uploadMedia } from "@/services/mediaService"
 import { permissiveResolver } from "@/lib/permissive-resolver"
 import { extractApiErrorMessage } from "@/lib/api-error"
 import { cn } from "@/lib/utils"
@@ -99,8 +91,6 @@ function BrandingForm({
     control,
     handleSubmit,
     reset,
-    setValue,
-    getValues,
     watch,
     formState: { isDirty, errors },
   } = useForm<SiteSettingsFormValues>({
@@ -197,33 +187,9 @@ function BrandingForm({
         />
       </section>
 
-      <section className="border-border/60 bg-card/50 space-y-4 rounded-xl border p-5 shadow-xs">
-        <div>
-          <h2 className="inline-flex items-center gap-2 text-base font-semibold before:h-4 before:w-1 before:rounded-full before:bg-primary/70 before:content-['']">{NS.fonts.title}</h2>
-          <p className="text-muted-foreground text-sm">{NS.fonts.hint}</p>
-        </div>
-
-        <div className="grid gap-4 lg:grid-cols-2">
-          <FontSlot
-            lang="ckb"
-            title={NS.fonts.ckb.label}
-            sample={NS.fonts.ckb.sample}
-            dir="rtl"
-            control={control}
-            setValue={setValue}
-            getName={() => getValues("ckbFontName")}
-          />
-          <FontSlot
-            lang="kmr"
-            title={NS.fonts.kmr.label}
-            sample={NS.fonts.kmr.sample}
-            dir="ltr"
-            control={control}
-            setValue={setValue}
-            getName={() => getValues("kmrFontName")}
-          />
-        </div>
-      </section>
+      {/* The typeface library manages itself — activation writes site-settings
+          directly, so it lives outside this form's save button. */}
+      <FontLibrary />
 
       <section className="border-border/60 bg-card/50 space-y-4 rounded-xl border p-5 shadow-xs">
         <div>
@@ -358,182 +324,12 @@ function DonateBandPreview({ url }: { url: string }) {
   )
 }
 
-/** Font families for the live previews — fixed, never user-derived. */
-const PREVIEW_FAMILY = { ckb: "khi-preview-ckb", kmr: "khi-preview-kmr" } as const
-
-const FONT_ACCEPT = ".woff2,.woff,.ttf,.otf"
-const FONT_FORMATS: Record<string, string> = {
-  woff2: "woff2",
-  woff: "woff",
-  ttf: "truetype",
-  otf: "opentype",
-}
-
-function fontFormatHint(url: string): string {
-  const ext = url.split(/[?#]/)[0].split(".").pop()?.toLowerCase() ?? ""
-  return FONT_FORMATS[ext] ? ` format("${FONT_FORMATS[ext]}")` : ""
-}
-
-/**
- * One language slot of the site-fonts card: pick a font file → it uploads
- * through the normal media pipeline → the URL lands in the hidden form field
- * and a live preview renders via the same-origin font proxy (the bucket sends
- * no CORS headers and CSP is `font-src 'self'`).
- */
-function FontSlot({
-  lang,
-  title,
-  sample,
-  dir,
-  control,
-  setValue,
-  getName,
-}: {
-  lang: "ckb" | "kmr"
-  title: string
-  sample: string
-  dir: "rtl" | "ltr"
-  control: Control<SiteSettingsFormValues>
-  setValue: UseFormSetValue<SiteSettingsFormValues>
-  getName: () => string
-}) {
-  const urlField = `${lang}FontUrl` as const
-  const nameField = `${lang}FontName` as const
-  const fileRef = useRef<HTMLInputElement>(null)
-  const [progress, setProgress] = useState<number | null>(null)
-
-  async function handleFile(file: File) {
-    setProgress(0)
-    try {
-      const result = await uploadMedia(file, "document", setProgress)
-      setValue(urlField, result.fileUrl, { shouldDirty: true })
-      if (!getName().trim()) {
-        setValue(nameField, file.name.replace(/\.[^.]+$/, ""), {
-          shouldDirty: true,
-        })
-      }
-    } catch (err) {
-      toast.error(extractApiErrorMessage(err) ?? NS.fonts.uploadFailed)
-    } finally {
-      setProgress(null)
-      if (fileRef.current) fileRef.current.value = ""
-    }
-  }
-
-  return (
-    <Controller
-      control={control}
-      name={urlField}
-      render={({ field }) => {
-        const url = field.value.trim()
-        const faceCss = url
-          ? `@font-face{font-family:"${PREVIEW_FAMILY[lang]}";src:url("/api/site-font?src=${encodeURIComponent(url)}")${fontFormatHint(url)};font-weight:100 900;font-display:swap}`
-          : null
-        return (
-          <div className="border-border/60 space-y-3 rounded-lg border p-4">
-            <div className="flex items-center justify-between gap-2">
-              <Label className="text-sm font-medium">{title}</Label>
-              <span className="text-muted-foreground text-[11px]">
-                {NS.fonts.formats}
-              </span>
-            </div>
-
-            <input
-              ref={fileRef}
-              type="file"
-              accept={FONT_ACCEPT}
-              className="hidden"
-              onChange={(e) => {
-                const file = e.target.files?.[0]
-                if (file) void handleFile(file)
-              }}
-            />
-
-            <div className="flex flex-wrap items-center gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={progress != null}
-                onClick={() => fileRef.current?.click()}
-              >
-                {progress != null
-                  ? NS.fonts.uploading
-                  : url
-                    ? NS.fonts.replace
-                    : NS.fonts.upload}
-              </Button>
-              {url ? (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-                  onClick={() => {
-                    setValue(urlField, "", { shouldDirty: true })
-                    setValue(nameField, "", { shouldDirty: true })
-                  }}
-                >
-                  {NS.fonts.clear}
-                </Button>
-              ) : null}
-            </div>
-            <UploadProgressLine value={progress} compact />
-
-            {url ? (
-              <>
-                {faceCss ? (
-                  <style dangerouslySetInnerHTML={{ __html: faceCss }} />
-                ) : null}
-                <div
-                  dir={dir}
-                  lang={lang === "ckb" ? "ckb" : "ku"}
-                  className="border-border/60 bg-muted/30 rounded-md border px-3 py-2.5 text-lg leading-relaxed"
-                  style={{ fontFamily: `"${PREVIEW_FAMILY[lang]}"` }}
-                >
-                  {sample}
-                </div>
-
-                <Controller
-                  control={control}
-                  name={nameField}
-                  render={({ field: nameF }) => (
-                    <div className="space-y-1">
-                      <Label
-                        htmlFor={nameField}
-                        className="text-muted-foreground text-xs"
-                      >
-                        {NS.fonts.nameLabel}
-                      </Label>
-                      <Input
-                        id={nameField}
-                        value={nameF.value}
-                        onChange={nameF.onChange}
-                        onBlur={nameF.onBlur}
-                        placeholder={NS.fonts.namePlaceholder}
-                        className="h-8 text-sm"
-                      />
-                    </div>
-                  )}
-                />
-              </>
-            ) : (
-              <p className="text-muted-foreground text-xs">{NS.fonts.empty}</p>
-            )}
-            <OffHostNote url={url} fallback={NS.fonts.offHost} />
-          </div>
-        )
-      }}
-    />
-  )
-}
-
 /** The API stores an off-bucket URL happily; the website will not show it yet. */
-function OffHostNote({ url, fallback }: { url: string; fallback?: string }) {
+function OffHostNote({ url }: { url: string }) {
   if (!isOffSiteMediaHost(url)) return null
   return (
     <p className="text-xs leading-relaxed text-amber-600 dark:text-amber-400">
-      {fallback ?? NS.offHost}
+      {NS.offHost}
     </p>
   )
 }
