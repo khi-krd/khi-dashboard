@@ -47,7 +47,16 @@ from the auth store, or recovered via `GET /api/auth/session` after a page
 refresh. This needs the dashboard's origin in the backend's
 `app.cors.allowed-origins` (see `../khi_backend/src/main/resources/application.yaml`,
 which allows up to 1GB multipart). When `NEXT_PUBLIC_API_DIRECT_URL` is unset,
-everything stays on the proxy.
+everything stays on the proxy. `connect-src` in `lib/csp.ts` includes that
+origin, otherwise the CSP would block the direct upload.
+
+- **Site fonts**: `site_settings` carries `ckbFontName/Url` and
+  `kmrFontName/Url` — one uploaded typeface per site language, managed on the
+  branding screen. Files go through `uploadMedia(file, "document")` like any
+  other upload; the bucket sends no CORS and CSP is `font-src 'self'`, so the
+  live preview loads the file through `app/api/site-font` — a host-allowlisted
+  same-origin proxy. The website has its own copy of that route and applies
+  the fonts via generated `@font-face` + `--font-app-*` overrides.
 
 ## Backend contracts that shape the forms
 

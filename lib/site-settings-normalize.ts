@@ -30,6 +30,10 @@ export function normalizeSiteSettingsDto(raw: unknown): SiteSettingsDto {
     logoUrl: coerceStr(o.logoUrl) ?? coerceStr(o.logo_url),
     donateImageUrl:
       coerceStr(o.donateImageUrl) ?? coerceStr(o.donate_image_url),
+    ckbFontUrl: coerceStr(o.ckbFontUrl) ?? coerceStr(o.ckb_font_url),
+    ckbFontName: coerceStr(o.ckbFontName) ?? coerceStr(o.ckb_font_name),
+    kmrFontUrl: coerceStr(o.kmrFontUrl) ?? coerceStr(o.kmr_font_url),
+    kmrFontName: coerceStr(o.kmrFontName) ?? coerceStr(o.kmr_font_name),
     // Falls back rather than defaulting to 0: the cap drives the featured
     // budget meter, and a zero there would read as "no slides allowed".
     maxFeaturedSlides:

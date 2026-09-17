@@ -36,9 +36,15 @@ export function buildCsp(nonce: string, isDev: boolean): string {
 
     "font-src": ["'self'", "data:"],
 
-    // Same-origin only — every API call goes through /railway-proxy. ws: is
-    // Turbopack's dev HMR socket.
-    "connect-src": ["'self'", ...(isDev ? ["ws:", "wss:"] : [])],
+    // Same-origin for every API call through /railway-proxy, plus the backend
+    // origin itself: multipart uploads go straight to it (FormData requests
+    // bypass the proxy — Vercel refuses bodies over ~4.5MB before the route
+    // runs). ws:/wss: are Turbopack's dev HMR socket.
+    "connect-src": [
+      "'self'",
+      ...apiOrigin(),
+      ...(isDev ? ["ws:", "wss:"] : []),
+    ],
 
     // Deliberately broad. Three iframe sources have to work: S3-hosted PDF
     // previews, YouTube/Vimeo players, and `mapEmbedUrl`, which is arbitrary
@@ -58,4 +64,19 @@ export function buildCsp(nonce: string, isDev: boolean): string {
     .join("; ")
 
   return isDev ? serialized : `${serialized}; upgrade-insecure-requests`
+}
+
+/** Origin the browser uploads multipart bodies to directly (Vercel payload cap). */
+function apiOrigin(): string[] {
+  const raw = (
+    process.env.NEXT_PUBLIC_API_DIRECT_URL ??
+    process.env.API_PROXY_TARGET ??
+    ""
+  ).trim()
+  if (!raw) return []
+  try {
+    return [new URL(raw).origin]
+  } catch {
+    return []
+  }
 }

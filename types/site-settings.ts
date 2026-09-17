@@ -12,6 +12,15 @@ export type SiteSettingsDto = {
   logoUrl: string | null
   /** Donate band photograph. `null` → the band renders on plain dark ground. */
   donateImageUrl: string | null
+  /**
+   * Uploaded typeface for the Sorani pages. `null` → Vazirmatn keeps
+   * rendering. `ckbFontName` is only the display label ("Rabar", "NRT").
+   */
+  ckbFontUrl: string | null
+  ckbFontName: string | null
+  /** Same pair for the Kurmanji (Latin-script) pages. `null` → Archivo. */
+  kmrFontUrl: string | null
+  kmrFontName: string | null
   /** Homepage carousel cap, `1`–`20`. Defaults to `7`. */
   maxFeaturedSlides: number
   updatedAt: string | null
@@ -26,6 +35,10 @@ export type SiteSettingsDto = {
 export type SiteSettingsPayload = {
   logoUrl?: string
   donateImageUrl?: string
+  ckbFontUrl?: string
+  ckbFontName?: string
+  kmrFontUrl?: string
+  kmrFontName?: string
   maxFeaturedSlides?: number
 }
 
