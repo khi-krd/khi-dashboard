@@ -2,7 +2,12 @@
 
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline"
 import Link from "next/link"
-import { Controller, useForm, type Resolver } from "react-hook-form"
+import {
+  Controller,
+  useForm,
+  type Control,
+  type Resolver,
+} from "react-hook-form"
 import { toast } from "sonner"
 
 import { NS } from "@/components/settings/settings-strings"
@@ -91,6 +96,7 @@ function BrandingForm({
     control,
     handleSubmit,
     reset,
+    setValue,
     watch,
     formState: { isDirty, errors },
   } = useForm<SiteSettingsFormValues>({
@@ -185,6 +191,60 @@ function BrandingForm({
             </div>
           )}
         />
+      </section>
+
+      <section className="border-border/60 bg-card/50 space-y-4 rounded-xl border p-5 shadow-xs">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h2 className="inline-flex items-center gap-2 text-base font-semibold before:h-4 before:w-1 before:rounded-full before:bg-primary/70 before:content-['']">{NS.colors.title}</h2>
+            <p className="text-muted-foreground text-sm">{NS.colors.hint}</p>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="shrink-0"
+            onClick={() => {
+              for (const name of [
+                "bodyColor",
+                "navbarColor",
+                "footerColor",
+                "collectionColor",
+              ] as const) {
+                setValue(name, "", { shouldDirty: true })
+              }
+            }}
+          >
+            {NS.colors.resetAll}
+          </Button>
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-2">
+          <ColorField
+            control={control}
+            name="bodyColor"
+            label={NS.colors.body}
+            defaultHex="#F7F4EC"
+          />
+          <ColorField
+            control={control}
+            name="navbarColor"
+            label={NS.colors.navbar}
+            defaultHex="#F7F4EC"
+          />
+          <ColorField
+            control={control}
+            name="footerColor"
+            label={NS.colors.footer}
+            defaultHex="#0F2A1C"
+          />
+          <ColorField
+            control={control}
+            name="collectionColor"
+            label={NS.colors.collection}
+            defaultHex="#1A1813"
+          />
+        </div>
       </section>
 
       {/* The typeface library manages itself — activation writes site-settings
@@ -321,6 +381,76 @@ function DonateBandPreview({ url }: { url: string }) {
         {NS.donate.preview.sharp} + {NS.donate.preview.blurred}
       </p>
     </div>
+  )
+}
+
+/**
+ * One surface color row: a native color-picker swatch plus a hex text box.
+ * Empty = the website's bundled token renders (the reset state).
+ */
+function ColorField({
+  control,
+  name,
+  label,
+  defaultHex,
+}: {
+  control: Control<SiteSettingsFormValues>
+  name: "bodyColor" | "navbarColor" | "footerColor" | "collectionColor"
+  label: string
+  defaultHex: string
+}) {
+  return (
+    <Controller
+      control={control}
+      name={name}
+      render={({ field }) => {
+        const value = field.value.trim()
+        // input[type=color] only understands #rrggbb — anything else (blank,
+        // shorthand, a typo mid-edit) shows the surface's default swatch.
+        const swatch = /^#[0-9a-f]{6}$/i.test(value) ? value : defaultHex
+        return (
+          <div className="border-border/60 space-y-2 rounded-lg border p-3">
+            <div className="flex items-center justify-between gap-2">
+              <Label htmlFor={name} className="text-sm font-medium">
+                {label}
+              </Label>
+              <span className="text-muted-foreground text-[11px]">
+                {value ? NS.colors.custom : NS.colors.defaultTag}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="color"
+                value={swatch}
+                onChange={(e) => field.onChange(e.target.value)}
+                className="border-border h-9 w-12 shrink-0 cursor-pointer rounded-md border bg-transparent p-1"
+                aria-label={label}
+              />
+              <Input
+                id={name}
+                dir="ltr"
+                value={value}
+                onChange={field.onChange}
+                onBlur={field.onBlur}
+                placeholder={defaultHex}
+                className="h-9 font-mono text-sm uppercase"
+              />
+              {value ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 shrink-0 text-xs"
+                  onClick={() => field.onChange("")}
+                >
+                  {NS.colors.resetField}
+                </Button>
+              ) : null}
+            </div>
+          </div>
+        )
+      }}
+    />
   )
 }
 

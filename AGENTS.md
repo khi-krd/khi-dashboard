@@ -61,6 +61,12 @@ origin, otherwise the CSP would block the direct upload.
   host-allowlisted same-origin proxy. The website has its own copy of that
   route and applies the fonts via generated `@font-face` + `--font-app-*`
   overrides.
+- **Site colors**: `site_settings` also carries `bodyColor`, `navbarColor`,
+  `footerColor`, `collectionColor` — hex strings edited on the branding form
+  (native color picker + hex box, reset = clear to ""). The website maps them
+  onto `--color-background`, `--site-header-bg`, `--site-footer-bg`,
+  `--site-collection-bg` in injected `:root` overrides; unset fields fall back
+  to the bundled tokens.
 
 ## Backend contracts that shape the forms
 

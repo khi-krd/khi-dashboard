@@ -21,6 +21,15 @@ export type SiteSettingsDto = {
   /** Same pair for the Kurmanji (Latin-script) pages. `null` → Archivo. */
   kmrFontUrl: string | null
   kmrFontName: string | null
+  /**
+   * Admin-picked surface colors as hex strings. `null` → the website's
+   * bundled token renders — which is also the reset path: clearing a field
+   * restores the default look for that surface.
+   */
+  bodyColor: string | null
+  navbarColor: string | null
+  footerColor: string | null
+  collectionColor: string | null
   /** Homepage carousel cap, `1`–`20`. Defaults to `7`. */
   maxFeaturedSlides: number
   updatedAt: string | null
@@ -39,6 +48,10 @@ export type SiteSettingsPayload = {
   ckbFontName?: string
   kmrFontUrl?: string
   kmrFontName?: string
+  bodyColor?: string
+  navbarColor?: string
+  footerColor?: string
+  collectionColor?: string
   maxFeaturedSlides?: number
 }
 

@@ -26,9 +26,16 @@ const brandingUrl = z
     message: "دەبێت بە https:// دەست پێ بکات",
   })
 
+/** Surface colors — free text in the form, hex sanitized on the website. */
+const colorField = z.string().trim().max(20)
+
 export const siteSettingsSchema = z.object({
   logoUrl: brandingUrl,
   donateImageUrl: brandingUrl,
+  bodyColor: colorField,
+  navbarColor: colorField,
+  footerColor: colorField,
+  collectionColor: colorField,
   // Optional: an emptied box (NaN from `valueAsNumber`) means "leave the
   // stored value alone" and is omitted from the payload, not a validation
   // failure. The range rules still apply to anything actually typed.
@@ -53,6 +60,10 @@ export function defaultSiteSettingsValues(): SiteSettingsFormValues {
   return {
     logoUrl: "",
     donateImageUrl: "",
+    bodyColor: "",
+    navbarColor: "",
+    footerColor: "",
+    collectionColor: "",
     maxFeaturedSlides: DEFAULT_MAX_FEATURED_SLIDES,
   }
 }
@@ -63,6 +74,10 @@ export function siteSettingsDtoToFormValues(
   return {
     logoUrl: dto.logoUrl ?? "",
     donateImageUrl: dto.donateImageUrl ?? "",
+    bodyColor: dto.bodyColor ?? "",
+    navbarColor: dto.navbarColor ?? "",
+    footerColor: dto.footerColor ?? "",
+    collectionColor: dto.collectionColor ?? "",
     maxFeaturedSlides: dto.maxFeaturedSlides,
   }
 }
@@ -78,6 +93,10 @@ export function formValuesToSiteSettingsPayload(
   const payload: SiteSettingsPayload = {
     logoUrl: values.logoUrl.trim(),
     donateImageUrl: values.donateImageUrl.trim(),
+    bodyColor: values.bodyColor.trim(),
+    navbarColor: values.navbarColor.trim(),
+    footerColor: values.footerColor.trim(),
+    collectionColor: values.collectionColor.trim(),
   }
   if (typeof values.maxFeaturedSlides === "number") {
     payload.maxFeaturedSlides = values.maxFeaturedSlides
