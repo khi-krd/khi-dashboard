@@ -65,8 +65,9 @@ origin, otherwise the CSP would block the direct upload.
   `footerColor`, `collectionColor` — hex strings edited on the branding form
   (native color picker + hex box, reset = clear to ""). The website maps them
   onto `--color-background`, `--site-header-bg`, `--site-footer-bg`,
-  `--site-collection-bg` in injected `:root` overrides; unset fields fall back
-  to the bundled tokens.
+  `--site-band-bg` in injected `:root` overrides — `collectionColor` drives
+  EVERY dark home band (film + sound sections, image-collection tray), not
+  just the collection. Unset fields fall back to the bundled tokens.
 
 ## Backend contracts that shape the forms
 

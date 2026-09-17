@@ -80,7 +80,8 @@ export const NS = {
     body: "پاشبنەمای پەڕەکان",
     navbar: "بانێڵی سەرەوە",
     footer: "فووتەر",
-    collection: "سندوقی کۆمەڵە وێنەکان لە ماڵەوە",
+    /** Drives every dark home band: film + sound sections, image-collection tray. */
+    collection: "بەشە تاریکەکانی ماڵەوە",
     resetField: "بنەڕەت",
     resetAll: "گەڕانەوە بۆ ڕەنگی بنەڕەتی",
     custom: "دیاریکراو",
