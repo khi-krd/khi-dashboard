@@ -506,10 +506,10 @@ function ColorField({
 }
 
 /**
- * One type-scale row: a Word-style size dropdown (the editor picks a px size
- * for the group's base token; it is stored as the percent of that base) plus
- * a live preview line sized at the choice. Empty = the website's bundled
- * size renders — the reset path.
+ * One type-scale row: a Word-style size combo — a box showing the px size
+ * with a dropdown of sizes to pick, and free typing allowed (like Word's
+ * font-size box). The form holds px; conversion to the API's percent lives
+ * in the payload builder. Empty = the website's bundled size (the reset).
  */
 function ScaleField({
   control,
@@ -521,22 +521,19 @@ function ScaleField({
   control: Control<SiteSettingsFormValues>
   name: "titleFontScale" | "bodyFontScale" | "captionFontScale"
   label: string
-  /** The group's bundled base size in px — the 100% mark. */
+  /** The group's bundled base size in px — what "default" means. */
   basePx: number
   /** Pickable px sizes, Word-style. */
   options: readonly number[]
 }) {
+  const listId = `${name}-size-list`
   return (
     <Controller
       control={control}
       name={name}
       render={({ field }) => {
         const value = field.value.trim()
-        const percent = /^\d{2,3}$/.test(value) ? Number(value) : 100
-        // A percent stored out-of-band (e.g. written through the API) still
-        // gets a row so the select never shows a phantom selection.
-        const known = options.some((px) => Math.round((px / basePx) * 100) === percent)
-        const choicePercent = value && known ? String(percent) : value
+        const px = /^\d{1,3}$/.test(value) ? Number(value) : basePx
         return (
           <div className="border-border/60 space-y-2 rounded-lg border p-3">
             <div className="flex items-center justify-between gap-2">
@@ -544,31 +541,27 @@ function ScaleField({
                 {label}
               </Label>
               <span className="text-muted-foreground text-[11px]">
-                {value ? `${percent}٪` : NS.sizes.defaultTag}
+                {value ? `${px}px` : NS.sizes.defaultTag}
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <select
+              <Input
                 id={name}
                 dir="ltr"
-                value={choicePercent}
-                onChange={(e) => field.onChange(e.target.value)}
+                inputMode="numeric"
+                list={listId}
+                value={value}
+                placeholder={String(basePx)}
+                onChange={field.onChange}
                 onBlur={field.onBlur}
-                className="border-input bg-background ring-offset-background focus-visible:ring-ring h-9 w-full rounded-md border px-2 font-mono text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
-              >
-                <option value="">{NS.sizes.defaultTag}</option>
-                {options.map((px) => (
-                  <option
-                    key={px}
-                    value={String(Math.round((px / basePx) * 100))}
-                  >
-                    {px}px
-                  </option>
+                className="h-9 font-mono text-sm"
+              />
+              <datalist id={listId}>
+                {options.map((size) => (
+                  <option key={size} value={size} />
                 ))}
-                {value && !known ? (
-                  <option value={value}>{percent}٪</option>
-                ) : null}
-              </select>
+              </datalist>
+              <span className="text-muted-foreground shrink-0 text-xs">px</span>
               {value ? (
                 <Button
                   type="button"
@@ -582,8 +575,8 @@ function ScaleField({
               ) : null}
             </div>
             <p
-              className="text-foreground truncate leading-snug"
-              style={{ fontSize: `${Math.max(10, (percent / 100) * 16)}px` }}
+              className="text-foreground overflow-hidden leading-snug whitespace-nowrap"
+              style={{ fontSize: `${Math.min(34, Math.max(10, px))}px` }}
               aria-hidden
             >
               {NS.sizes.preview}

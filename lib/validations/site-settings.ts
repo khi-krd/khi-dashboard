@@ -30,16 +30,40 @@ const brandingUrl = z
 const colorField = z.string().trim().max(20)
 
 /**
- * Type scale as a percent string ("115" = 115% of the bundled size). Empty
- * clears — the website then renders its bundled scale, the reset path.
- * `100` is "same as default" and stores fine.
+ * The website's bundled base size for each scale group, in px. The form
+ * holds px values Word-style; the API stores the percent of this base.
+ */
+export const SCALE_BASE_PX = {
+  titleFontScale: 28,
+  bodyFontScale: 17,
+  captionFontScale: 14,
+} as const
+
+/** px typed in the form ("18") → percent string stored by the API ("106"). */
+function pxToScale(px: string, basePx: number): string {
+  const num = Number(px.trim())
+  if (px.trim() === "" || !Number.isFinite(num)) return ""
+  const percent = Math.round((num / basePx) * 100)
+  return String(Math.min(200, Math.max(50, percent)))
+}
+
+/** Percent string from the API ("106") → px shown in the form ("18"). */
+function scaleToPx(scale: string | null, basePx: number): string {
+  const percent = Number(scale?.trim() ?? "")
+  if (!scale?.trim() || !Number.isFinite(percent)) return ""
+  return String(Math.round((percent / 100) * basePx))
+}
+
+/**
+ * Type size in px — the Word-style combo value. Empty clears; the website
+ * then renders its bundled size, the reset path.
  */
 const scaleField = z
   .string()
   .trim()
   .max(10)
-  .refine((v) => v === "" || (/^\d{2,3}$/.test(v) && +v >= 50 && +v <= 200), {
-    message: "لە نێوان ٥٠ بۆ ٢٠٠٪ بنووسە",
+  .refine((v) => v === "" || /^\d{1,3}$/.test(v), {
+    message: "ژمارەیەک بنووسە",
   })
 
 export const siteSettingsSchema = z.object({
@@ -97,9 +121,12 @@ export function siteSettingsDtoToFormValues(
     navbarColor: dto.navbarColor ?? "",
     footerColor: dto.footerColor ?? "",
     collectionColor: dto.collectionColor ?? "",
-    titleFontScale: dto.titleFontScale ?? "",
-    bodyFontScale: dto.bodyFontScale ?? "",
-    captionFontScale: dto.captionFontScale ?? "",
+    titleFontScale: scaleToPx(dto.titleFontScale, SCALE_BASE_PX.titleFontScale),
+    bodyFontScale: scaleToPx(dto.bodyFontScale, SCALE_BASE_PX.bodyFontScale),
+    captionFontScale: scaleToPx(
+      dto.captionFontScale,
+      SCALE_BASE_PX.captionFontScale,
+    ),
     maxFeaturedSlides: dto.maxFeaturedSlides,
   }
 }
@@ -119,9 +146,12 @@ export function formValuesToSiteSettingsPayload(
     navbarColor: values.navbarColor.trim(),
     footerColor: values.footerColor.trim(),
     collectionColor: values.collectionColor.trim(),
-    titleFontScale: values.titleFontScale.trim(),
-    bodyFontScale: values.bodyFontScale.trim(),
-    captionFontScale: values.captionFontScale.trim(),
+    titleFontScale: pxToScale(values.titleFontScale, SCALE_BASE_PX.titleFontScale),
+    bodyFontScale: pxToScale(values.bodyFontScale, SCALE_BASE_PX.bodyFontScale),
+    captionFontScale: pxToScale(
+      values.captionFontScale,
+      SCALE_BASE_PX.captionFontScale,
+    ),
   }
   if (typeof values.maxFeaturedSlides === "number") {
     payload.maxFeaturedSlides = values.maxFeaturedSlides
