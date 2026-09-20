@@ -153,7 +153,7 @@ export function ContactForm({
   const titleLen = watch(titleField)?.length ?? 0
 
   async function onSubmit(values: ContactFormValues) {
-    const payload = contactFormValuesToPayload(values)
+    const payload = contactFormValuesToPayload(values, editDto)
     try {
       if (mode === "create") {
         const res = await createMut.mutateAsync(payload)

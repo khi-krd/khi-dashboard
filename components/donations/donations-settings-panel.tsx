@@ -115,8 +115,8 @@ function DonationsSettingsForm({
   // form; it just saves the editor a scroll to the bottom.
   const sectionSave = (
     <SectionSaveButton
-      disabled={!canSave || isLoading}
-      pending={pending}
+      disabled={!canSave || !!isLoading}
+      pending={!!pending}
       label={NS.settings.save}
     />
   )

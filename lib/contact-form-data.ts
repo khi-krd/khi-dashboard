@@ -1,4 +1,5 @@
 import type { ContactFormValues } from "@/lib/validations/contact"
+import type { ContactDto } from "@/types/contact"
 
 function trimOrUndef(s: string | null | undefined) {
   const t = s?.trim()
@@ -42,6 +43,7 @@ function anyNonBlank(...fields: (string | null | undefined)[]): boolean {
 
 export function contactFormValuesToPayload(
   values: ContactFormValues,
+  existing?: ContactDto | null,
 ): ContactWritePayload {
   // A language block is sent when the toggle is on *or* anything was typed in
   // it — `contentLanguages` only reflects what the record already had, so
@@ -65,8 +67,16 @@ export function contactFormValuesToPayload(
       values.descriptionKmr,
     )
 
+  // slugCkb, phone and email are @NotBlank (@Email too) on the API — a blank
+  // submit is a guaranteed 400. They can't be cleared server-side anyway, so
+  // fall back to the stored value rather than emit a payload built to fail.
+  const slugCkb =
+    values.slugCkb.trim() || existing?.slugCkb?.trim() || ""
+  const phone = trimOrUndef(values.phone) ?? trimOrUndef(existing?.phone)
+  const email = trimOrUndef(values.email) ?? trimOrUndef(existing?.email)
+
   return {
-    slugCkb: values.slugCkb.trim(),
+    slugCkb,
     slugKmr: trimOrUndef(values.slugKmr) ?? null,
     active: values.active,
     displayOrder: values.displayOrder ?? undefined,
@@ -88,9 +98,9 @@ export function contactFormValuesToPayload(
           description: values.descriptionKmr ?? undefined,
         }
       : undefined,
-    phone: trimOrUndef(values.phone),
+    phone,
     secondaryPhone: trimOrUndef(values.secondaryPhone),
-    email: trimOrUndef(values.email),
+    email,
     mapEmbedUrl: trimOrUndef(values.mapEmbedUrl),
     latitude: Number.isFinite(values.latitude) ? values.latitude! : undefined,
     longitude: Number.isFinite(values.longitude)
