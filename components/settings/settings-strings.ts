@@ -90,10 +90,11 @@ export const NS = {
   sizes: {
     title: "گەورەیی فۆنتەکان",
     hint: "قەبارەی دەقەکانی ماڵپەڕ هەڵبژێرە بە پیکسل — وەک لە وۆرد. بەتاڵی واتە قەبارەی بنەڕەتی ماڵپەڕ.",
-    /** The three text groups the website lets admins rescale. */
+    /** The text groups the website lets admins rescale. */
     titleField: "ناونیشانەکان",
     bodyField: "دەق و باسەکان",
     captionField: "سەردێڕ و کێشەکان",
+    navField: "ڕێنیشاندەری سەرەوە (بانێڵ)",
     resetField: "بنەڕەت",
     resetAll: "گەڕانەوە بۆ قەبارەی بنەڕەتی",
     custom: "دیاریکراو",

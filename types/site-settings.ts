@@ -39,6 +39,8 @@ export type SiteSettingsDto = {
   titleFontScale: string | null
   bodyFontScale: string | null
   captionFontScale: string | null
+  /** Same percent convention — drives the navbar's text size. */
+  navFontScale: string | null
   /** Homepage carousel cap, `1`–`20`. Defaults to `7`. */
   maxFeaturedSlides: number
   updatedAt: string | null
@@ -64,6 +66,7 @@ export type SiteSettingsPayload = {
   titleFontScale?: string
   bodyFontScale?: string
   captionFontScale?: string
+  navFontScale?: string
   maxFeaturedSlides?: number
 }
 

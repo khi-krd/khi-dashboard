@@ -45,6 +45,8 @@ export function normalizeSiteSettingsDto(raw: unknown): SiteSettingsDto {
       coerceStr(o.bodyFontScale) ?? coerceStr(o.body_font_scale),
     captionFontScale:
       coerceStr(o.captionFontScale) ?? coerceStr(o.caption_font_scale),
+    navFontScale:
+      coerceStr(o.navFontScale) ?? coerceStr(o.nav_font_scale),
     // Falls back rather than defaulting to 0: the cap drives the featured
     // budget meter, and a zero there would read as "no slides allowed".
     maxFeaturedSlides:

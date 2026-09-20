@@ -37,6 +37,7 @@ export const SCALE_BASE_PX = {
   titleFontScale: 28,
   bodyFontScale: 17,
   captionFontScale: 14,
+  navFontScale: 17,
 } as const
 
 /** px typed in the form ("18") → percent string stored by the API ("106"). */
@@ -76,6 +77,7 @@ export const siteSettingsSchema = z.object({
   titleFontScale: scaleField,
   bodyFontScale: scaleField,
   captionFontScale: scaleField,
+  navFontScale: scaleField,
   // Optional: an emptied box (NaN from `valueAsNumber`) means "leave the
   // stored value alone" and is omitted from the payload, not a validation
   // failure. The range rules still apply to anything actually typed.
@@ -107,6 +109,7 @@ export function defaultSiteSettingsValues(): SiteSettingsFormValues {
     titleFontScale: "",
     bodyFontScale: "",
     captionFontScale: "",
+    navFontScale: "",
     maxFeaturedSlides: DEFAULT_MAX_FEATURED_SLIDES,
   }
 }
@@ -127,6 +130,7 @@ export function siteSettingsDtoToFormValues(
       dto.captionFontScale,
       SCALE_BASE_PX.captionFontScale,
     ),
+    navFontScale: scaleToPx(dto.navFontScale, SCALE_BASE_PX.navFontScale),
     maxFeaturedSlides: dto.maxFeaturedSlides,
   }
 }
@@ -152,6 +156,7 @@ export function formValuesToSiteSettingsPayload(
       values.captionFontScale,
       SCALE_BASE_PX.captionFontScale,
     ),
+    navFontScale: pxToScale(values.navFontScale, SCALE_BASE_PX.navFontScale),
   }
   if (typeof values.maxFeaturedSlides === "number") {
     payload.maxFeaturedSlides = values.maxFeaturedSlides

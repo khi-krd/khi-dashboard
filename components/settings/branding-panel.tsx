@@ -263,6 +263,7 @@ function BrandingForm({
                 "titleFontScale",
                 "bodyFontScale",
                 "captionFontScale",
+                "navFontScale",
               ] as const) {
                 setValue(name, "", { shouldDirty: true })
               }
@@ -272,7 +273,7 @@ function BrandingForm({
           </Button>
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <ScaleField
             control={control}
             name="titleFontScale"
@@ -293,6 +294,13 @@ function BrandingForm({
             label={NS.sizes.captionField}
             basePx={14}
             options={[10, 11, 12, 13, 14, 15, 16, 18]}
+          />
+          <ScaleField
+            control={control}
+            name="navFontScale"
+            label={NS.sizes.navField}
+            basePx={17}
+            options={[14, 15, 16, 17, 18, 19, 20, 22, 24]}
           />
         </div>
         <p className="text-muted-foreground text-[11px]">{NS.sizes.rangeHint}</p>
@@ -519,7 +527,11 @@ function ScaleField({
   options,
 }: {
   control: Control<SiteSettingsFormValues>
-  name: "titleFontScale" | "bodyFontScale" | "captionFontScale"
+  name:
+    | "titleFontScale"
+    | "bodyFontScale"
+    | "captionFontScale"
+    | "navFontScale"
   label: string
   /** The group's bundled base size in px — what "default" means. */
   basePx: number
