@@ -29,6 +29,19 @@ const brandingUrl = z
 /** Surface colors — free text in the form, hex sanitized on the website. */
 const colorField = z.string().trim().max(20)
 
+/**
+ * Type scale as a percent string ("115" = 115% of the bundled size). Empty
+ * clears — the website then renders its bundled scale, the reset path.
+ * `100` is "same as default" and stores fine.
+ */
+const scaleField = z
+  .string()
+  .trim()
+  .max(10)
+  .refine((v) => v === "" || (/^\d{2,3}$/.test(v) && +v >= 50 && +v <= 200), {
+    message: "لە نێوان ٥٠ بۆ ٢٠٠٪ بنووسە",
+  })
+
 export const siteSettingsSchema = z.object({
   logoUrl: brandingUrl,
   donateImageUrl: brandingUrl,
@@ -36,6 +49,9 @@ export const siteSettingsSchema = z.object({
   navbarColor: colorField,
   footerColor: colorField,
   collectionColor: colorField,
+  titleFontScale: scaleField,
+  bodyFontScale: scaleField,
+  captionFontScale: scaleField,
   // Optional: an emptied box (NaN from `valueAsNumber`) means "leave the
   // stored value alone" and is omitted from the payload, not a validation
   // failure. The range rules still apply to anything actually typed.
@@ -64,6 +80,9 @@ export function defaultSiteSettingsValues(): SiteSettingsFormValues {
     navbarColor: "",
     footerColor: "",
     collectionColor: "",
+    titleFontScale: "",
+    bodyFontScale: "",
+    captionFontScale: "",
     maxFeaturedSlides: DEFAULT_MAX_FEATURED_SLIDES,
   }
 }
@@ -78,6 +97,9 @@ export function siteSettingsDtoToFormValues(
     navbarColor: dto.navbarColor ?? "",
     footerColor: dto.footerColor ?? "",
     collectionColor: dto.collectionColor ?? "",
+    titleFontScale: dto.titleFontScale ?? "",
+    bodyFontScale: dto.bodyFontScale ?? "",
+    captionFontScale: dto.captionFontScale ?? "",
     maxFeaturedSlides: dto.maxFeaturedSlides,
   }
 }
@@ -97,6 +119,9 @@ export function formValuesToSiteSettingsPayload(
     navbarColor: values.navbarColor.trim(),
     footerColor: values.footerColor.trim(),
     collectionColor: values.collectionColor.trim(),
+    titleFontScale: values.titleFontScale.trim(),
+    bodyFontScale: values.bodyFontScale.trim(),
+    captionFontScale: values.captionFontScale.trim(),
   }
   if (typeof values.maxFeaturedSlides === "number") {
     payload.maxFeaturedSlides = values.maxFeaturedSlides

@@ -87,6 +87,23 @@ export const NS = {
     custom: "دیاریکراو",
     defaultTag: "بنەڕەت",
   },
+  sizes: {
+    title: "گەورەیی فۆنتەکان",
+    hint: "قەبارەی دەقەکانی ماڵپەڕ لە ئاستی بنەڕەتی بگۆڕە بە سەدا — بەتاڵی واتە قەبارەی بنەڕەتی (١٠٠٪).",
+    /** The three text groups the website lets admins rescale. */
+    titleField: "ناونیشانەکان",
+    bodyField: "دەق و باسەکان",
+    captionField: "سەردێڕ و کێشەکان",
+    resetField: "بنەڕەت",
+    resetAll: "گەڕانەوە بۆ قەبارەی بنەڕەتی",
+    custom: "دیاریکراو",
+    defaultTag: "بنەڕەت (١٠٠٪)",
+    /** Shown after the number, e.g. "115%". */
+    percent: "٪",
+    rangeHint: "لە نێوان ٥٠ بۆ ٢٠٠٪",
+    /** The line rendered at the picked scale inside each field card. */
+    preview: "نموونەی قەبارەی دەق",
+  },
   offHost:
     "ئەم لینکە لە کۆگای ماڵپەڕەکە نییە — تا دابەزاندنێکی نوێی ماڵپەڕ نەکرێت دەرناکەوێت.",
   emptyOk: "بەتاڵ هێشتنەوەی هەردوو وێنەکە ڕێگەپێدراوە.",

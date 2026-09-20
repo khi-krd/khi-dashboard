@@ -30,6 +30,15 @@ export type SiteSettingsDto = {
   navbarColor: string | null
   footerColor: string | null
   collectionColor: string | null
+  /**
+   * Type scales as percent strings (`"115"` = 115% of the bundled size).
+   * `null` → the website's bundled scale renders — the reset path, same as
+   * the colors. Title covers display/h1/h2/h3, body covers body/lead,
+   * caption covers small/label.
+   */
+  titleFontScale: string | null
+  bodyFontScale: string | null
+  captionFontScale: string | null
   /** Homepage carousel cap, `1`–`20`. Defaults to `7`. */
   maxFeaturedSlides: number
   updatedAt: string | null
@@ -52,6 +61,9 @@ export type SiteSettingsPayload = {
   navbarColor?: string
   footerColor?: string
   collectionColor?: string
+  titleFontScale?: string
+  bodyFontScale?: string
+  captionFontScale?: string
   maxFeaturedSlides?: number
 }
 

@@ -247,6 +247,51 @@ function BrandingForm({
         </div>
       </section>
 
+      <section className="border-border/60 bg-card/50 space-y-4 rounded-xl border p-5 shadow-xs">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h2 className="inline-flex items-center gap-2 text-base font-semibold before:h-4 before:w-1 before:rounded-full before:bg-primary/70 before:content-['']">{NS.sizes.title}</h2>
+            <p className="text-muted-foreground text-sm">{NS.sizes.hint}</p>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="shrink-0"
+            onClick={() => {
+              for (const name of [
+                "titleFontScale",
+                "bodyFontScale",
+                "captionFontScale",
+              ] as const) {
+                setValue(name, "", { shouldDirty: true })
+              }
+            }}
+          >
+            {NS.sizes.resetAll}
+          </Button>
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-3">
+          <ScaleField
+            control={control}
+            name="titleFontScale"
+            label={NS.sizes.titleField}
+          />
+          <ScaleField
+            control={control}
+            name="bodyFontScale"
+            label={NS.sizes.bodyField}
+          />
+          <ScaleField
+            control={control}
+            name="captionFontScale"
+            label={NS.sizes.captionField}
+          />
+        </div>
+        <p className="text-muted-foreground text-[11px]">{NS.sizes.rangeHint}</p>
+      </section>
+
       {/* The typeface library manages itself — activation writes site-settings
           directly, so it lives outside this form's save button. */}
       <FontLibrary />
@@ -447,6 +492,76 @@ function ColorField({
                 </Button>
               ) : null}
             </div>
+          </div>
+        )
+      }}
+    />
+  )
+}
+
+/**
+ * One type-scale row: a percent box (50–200) plus a live preview line sized
+ * at the chosen scale. Empty = the website's bundled size renders (reset).
+ */
+function ScaleField({
+  control,
+  name,
+  label,
+}: {
+  control: Control<SiteSettingsFormValues>
+  name: "titleFontScale" | "bodyFontScale" | "captionFontScale"
+  label: string
+}) {
+  return (
+    <Controller
+      control={control}
+      name={name}
+      render={({ field }) => {
+        const value = field.value.trim()
+        const percent = /^\d{2,3}$/.test(value) ? Number(value) : 100
+        return (
+          <div className="border-border/60 space-y-2 rounded-lg border p-3">
+            <div className="flex items-center justify-between gap-2">
+              <Label htmlFor={name} className="text-sm font-medium">
+                {label}
+              </Label>
+              <span className="text-muted-foreground text-[11px]">
+                {value ? NS.sizes.custom : NS.sizes.defaultTag}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Input
+                id={name}
+                dir="ltr"
+                inputMode="numeric"
+                value={value}
+                onChange={field.onChange}
+                onBlur={field.onBlur}
+                placeholder="100"
+                className="h-9 font-mono text-sm"
+              />
+              <span className="text-muted-foreground shrink-0 text-sm">
+                {NS.sizes.percent}
+              </span>
+              {value ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 shrink-0 text-xs"
+                  onClick={() => field.onChange("")}
+                >
+                  {NS.sizes.resetField}
+                </Button>
+              ) : null}
+            </div>
+            <p
+              className="text-foreground truncate leading-snug"
+              style={{ fontSize: `${Math.max(10, (percent / 100) * 16)}px` }}
+              aria-hidden
+            >
+              {NS.sizes.preview}
+            </p>
           </div>
         )
       }}
