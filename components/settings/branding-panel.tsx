@@ -13,6 +13,7 @@ import { toast } from "sonner"
 import { NS } from "@/components/settings/settings-strings"
 import { FontLibrary } from "@/components/settings/font-library"
 import { MediaCoverUpload } from "@/components/shared/media-cover-upload"
+import { SectionSaveButton } from "@/components/shared/section-save-button"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -122,6 +123,18 @@ function BrandingForm({
 
   const canSave = isDirty && !pending
 
+  // Every card is one site-settings form behind a full-replace PUT, so a
+  // section button just submits the whole form — it saves a scroll to the
+  // bottom after touching one card.
+  const sectionSave = (
+    <SectionSaveButton
+      disabled={!canSave}
+      pending={pending}
+      label={NS.action.save}
+      pendingLabel={NS.action.saving}
+    />
+  )
+
   const onSubmit = handleSubmit((values) => {
     onSave(formValuesToSiteSettingsPayload(values))
     reset(values)
@@ -130,9 +143,12 @@ function BrandingForm({
   return (
     <form onSubmit={onSubmit} className="space-y-8">
       <section className="border-border/60 bg-card/50 space-y-4 rounded-xl border p-5 shadow-xs">
-        <div>
-          <h2 className="inline-flex items-center gap-2 text-base font-semibold before:h-4 before:w-1 before:rounded-full before:bg-primary/70 before:content-['']">{NS.logo.label}</h2>
-          <p className="text-muted-foreground text-sm">{NS.logo.hint}</p>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h2 className="inline-flex items-center gap-2 text-base font-semibold before:h-4 before:w-1 before:rounded-full before:bg-primary/70 before:content-['']">{NS.logo.label}</h2>
+            <p className="text-muted-foreground text-sm">{NS.logo.hint}</p>
+          </div>
+          {sectionSave}
         </div>
 
         <p className="flex gap-2 text-xs leading-relaxed text-amber-600 dark:text-amber-400">
@@ -162,9 +178,12 @@ function BrandingForm({
       </section>
 
       <section className="border-border/60 bg-card/50 space-y-4 rounded-xl border p-5 shadow-xs">
-        <div>
-          <h2 className="inline-flex items-center gap-2 text-base font-semibold before:h-4 before:w-1 before:rounded-full before:bg-primary/70 before:content-['']">{NS.donate.label}</h2>
-          <p className="text-muted-foreground text-sm">{NS.donate.hint}</p>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h2 className="inline-flex items-center gap-2 text-base font-semibold before:h-4 before:w-1 before:rounded-full before:bg-primary/70 before:content-['']">{NS.donate.label}</h2>
+            <p className="text-muted-foreground text-sm">{NS.donate.hint}</p>
+          </div>
+          {sectionSave}
         </div>
 
         <p className="flex gap-2 text-xs leading-relaxed text-amber-600 dark:text-amber-400">
@@ -199,24 +218,26 @@ function BrandingForm({
             <h2 className="inline-flex items-center gap-2 text-base font-semibold before:h-4 before:w-1 before:rounded-full before:bg-primary/70 before:content-['']">{NS.colors.title}</h2>
             <p className="text-muted-foreground text-sm">{NS.colors.hint}</p>
           </div>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="shrink-0"
-            onClick={() => {
-              for (const name of [
-                "bodyColor",
-                "navbarColor",
-                "footerColor",
-                "collectionColor",
-              ] as const) {
-                setValue(name, "", { shouldDirty: true })
-              }
-            }}
-          >
-            {NS.colors.resetAll}
-          </Button>
+          <div className="flex shrink-0 items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                for (const name of [
+                  "bodyColor",
+                  "navbarColor",
+                  "footerColor",
+                  "collectionColor",
+                ] as const) {
+                  setValue(name, "", { shouldDirty: true })
+                }
+              }}
+            >
+              {NS.colors.resetAll}
+            </Button>
+            {sectionSave}
+          </div>
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2">
@@ -253,24 +274,26 @@ function BrandingForm({
             <h2 className="inline-flex items-center gap-2 text-base font-semibold before:h-4 before:w-1 before:rounded-full before:bg-primary/70 before:content-['']">{NS.sizes.title}</h2>
             <p className="text-muted-foreground text-sm">{NS.sizes.hint}</p>
           </div>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="shrink-0"
-            onClick={() => {
-              for (const name of [
-                "titleFontScale",
-                "bodyFontScale",
-                "captionFontScale",
-                "navFontScale",
-              ] as const) {
-                setValue(name, "", { shouldDirty: true })
-              }
-            }}
-          >
-            {NS.sizes.resetAll}
-          </Button>
+          <div className="flex shrink-0 items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                for (const name of [
+                  "titleFontScale",
+                  "bodyFontScale",
+                  "captionFontScale",
+                  "navFontScale",
+                ] as const) {
+                  setValue(name, "", { shouldDirty: true })
+                }
+              }}
+            >
+              {NS.sizes.resetAll}
+            </Button>
+            {sectionSave}
+          </div>
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -311,9 +334,12 @@ function BrandingForm({
       <FontLibrary />
 
       <section className="border-border/60 bg-card/50 space-y-4 rounded-xl border p-5 shadow-xs">
-        <div>
-          <h2 className="inline-flex items-center gap-2 text-base font-semibold before:h-4 before:w-1 before:rounded-full before:bg-primary/70 before:content-['']">{NS.slides.label}</h2>
-          <p className="text-muted-foreground text-sm">{NS.slides.hint}</p>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h2 className="inline-flex items-center gap-2 text-base font-semibold before:h-4 before:w-1 before:rounded-full before:bg-primary/70 before:content-['']">{NS.slides.label}</h2>
+            <p className="text-muted-foreground text-sm">{NS.slides.hint}</p>
+          </div>
+          {sectionSave}
         </div>
 
         <Controller
