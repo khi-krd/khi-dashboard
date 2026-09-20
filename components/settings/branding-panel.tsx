@@ -277,16 +277,22 @@ function BrandingForm({
             control={control}
             name="titleFontScale"
             label={NS.sizes.titleField}
+            basePx={28}
+            options={[20, 22, 24, 26, 28, 32, 36, 40, 44, 48]}
           />
           <ScaleField
             control={control}
             name="bodyFontScale"
             label={NS.sizes.bodyField}
+            basePx={17}
+            options={[14, 15, 16, 17, 18, 19, 20, 22, 24]}
           />
           <ScaleField
             control={control}
             name="captionFontScale"
             label={NS.sizes.captionField}
+            basePx={14}
+            options={[10, 11, 12, 13, 14, 15, 16, 18]}
           />
         </div>
         <p className="text-muted-foreground text-[11px]">{NS.sizes.rangeHint}</p>
@@ -500,17 +506,25 @@ function ColorField({
 }
 
 /**
- * One type-scale row: a percent box (50–200) plus a live preview line sized
- * at the chosen scale. Empty = the website's bundled size renders (reset).
+ * One type-scale row: a Word-style size dropdown (the editor picks a px size
+ * for the group's base token; it is stored as the percent of that base) plus
+ * a live preview line sized at the choice. Empty = the website's bundled
+ * size renders — the reset path.
  */
 function ScaleField({
   control,
   name,
   label,
+  basePx,
+  options,
 }: {
   control: Control<SiteSettingsFormValues>
   name: "titleFontScale" | "bodyFontScale" | "captionFontScale"
   label: string
+  /** The group's bundled base size in px — the 100% mark. */
+  basePx: number
+  /** Pickable px sizes, Word-style. */
+  options: readonly number[]
 }) {
   return (
     <Controller
@@ -519,6 +533,10 @@ function ScaleField({
       render={({ field }) => {
         const value = field.value.trim()
         const percent = /^\d{2,3}$/.test(value) ? Number(value) : 100
+        // A percent stored out-of-band (e.g. written through the API) still
+        // gets a row so the select never shows a phantom selection.
+        const known = options.some((px) => Math.round((px / basePx) * 100) === percent)
+        const choicePercent = value && known ? String(percent) : value
         return (
           <div className="border-border/60 space-y-2 rounded-lg border p-3">
             <div className="flex items-center justify-between gap-2">
@@ -526,23 +544,31 @@ function ScaleField({
                 {label}
               </Label>
               <span className="text-muted-foreground text-[11px]">
-                {value ? NS.sizes.custom : NS.sizes.defaultTag}
+                {value ? `${percent}٪` : NS.sizes.defaultTag}
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <Input
+              <select
                 id={name}
                 dir="ltr"
-                inputMode="numeric"
-                value={value}
-                onChange={field.onChange}
+                value={choicePercent}
+                onChange={(e) => field.onChange(e.target.value)}
                 onBlur={field.onBlur}
-                placeholder="100"
-                className="h-9 font-mono text-sm"
-              />
-              <span className="text-muted-foreground shrink-0 text-sm">
-                {NS.sizes.percent}
-              </span>
+                className="border-input bg-background ring-offset-background focus-visible:ring-ring h-9 w-full rounded-md border px-2 font-mono text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+              >
+                <option value="">{NS.sizes.defaultTag}</option>
+                {options.map((px) => (
+                  <option
+                    key={px}
+                    value={String(Math.round((px / basePx) * 100))}
+                  >
+                    {px}px
+                  </option>
+                ))}
+                {value && !known ? (
+                  <option value={value}>{percent}٪</option>
+                ) : null}
+              </select>
               {value ? (
                 <Button
                   type="button"
