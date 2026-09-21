@@ -168,6 +168,7 @@ export function normalizeCollectionDto(raw: unknown): CollectionDto {
     imageAlbum: album.sort(
       (a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0),
     ),
+    sortOrder: coerceNum(o.sortOrder) ?? coerceNum(o.sort_order) ?? undefined,
     createdAt: coerceStr(o.createdAt) ?? coerceStr(o.created_at) ?? undefined,
     updatedAt: coerceStr(o.updatedAt) ?? coerceStr(o.updated_at) ?? undefined,
     createdBy: coerceStr(o.createdBy) ?? coerceStr(o.created_by),

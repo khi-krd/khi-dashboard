@@ -1,6 +1,8 @@
 "use client"
 
-import { TrashIcon } from "@heroicons/react/24/outline"
+import { Bars2Icon, TrashIcon } from "@heroicons/react/24/outline"
+import { useSortable } from "@dnd-kit/sortable"
+import { CSS } from "@dnd-kit/utilities"
 import { useFormContext } from "react-hook-form"
 
 import { NS } from "@/components/sounds/sounds-strings"
@@ -27,12 +29,17 @@ const ATTACHMENT_TYPES: AttachmentType[] = [
 ]
 
 export function SoundAttachmentRow({
+  id,
   index,
   onRemove,
 }: {
+  id: string
   index: number
   onRemove: () => void
 }) {
+  const { attributes, listeners, setNodeRef, transform, transition } =
+    useSortable({ id })
+  const style = { transform: CSS.Transform.toString(transform), transition }
   const { register, setValue, watch } = useFormContext<SoundFormValues>()
   const attachment = watch(`attachments.${index}`)
   const base = `attachments.${index}` as const
@@ -63,7 +70,11 @@ export function SoundAttachmentRow({
     NS.attachment.no_title
 
   return (
-    <li className="border-border grid gap-3 rounded-lg border p-3 sm:grid-cols-[1fr_auto_auto] sm:items-end">
+    <li
+      ref={setNodeRef}
+      style={style}
+      className="border-border bg-background grid gap-3 rounded-lg border p-3 sm:grid-cols-[1fr_auto_auto_auto] sm:items-end"
+    >
       <div className="space-y-2 sm:col-span-1">
         <div className="space-y-1">
           <Label className="text-xs">{NS.col.title}</Label>
@@ -123,6 +134,15 @@ export function SoundAttachmentRow({
         aria-label={NS.attachment.delete}
       >
         <TrashIcon className="size-4" />
+      </button>
+      <button
+        type="button"
+        className="text-muted-foreground cursor-grab justify-self-end p-2"
+        {...attributes}
+        {...listeners}
+        aria-label={NS.action.reorder}
+      >
+        <Bars2Icon className="size-4" />
       </button>
     </li>
   )

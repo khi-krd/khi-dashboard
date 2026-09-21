@@ -1,12 +1,13 @@
 "use client"
 
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react"
-import { useQueryClient } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import type { PaginationState, SortingState } from "@tanstack/react-table"
 import { toast } from "sonner"
 import {
+  Bars2Icon,
   Bars3Icon,
   Cog6ToothIcon,
   MagnifyingGlassIcon,
@@ -37,6 +38,12 @@ import {
   useCollectionsListQuery,
   useDeleteCollectionMutation,
 } from "@/hooks/useImageCollections"
+import { RecordReorderPanel } from "@/components/shared/record-reorder-panel"
+import { fetchAllPages } from "@/lib/paged-fetch"
+import {
+  getCollectionsList,
+  reorderCollections,
+} from "@/services/imageCollectionsService"
 import { collectionKeys } from "@/lib/image-collections-query-keys"
 import {
   getStoredViewMode,
@@ -122,6 +129,10 @@ function CollectionsListClientInner() {
   const [deleteTarget, setDeleteTarget] =
     useState<CollectionAdminTableRow | null>(null)
 
+  // Reorder mode swaps the paged grid for a flat drag list of every record —
+  // ordering is a global operation, so filters and pagination don't apply here.
+  const [reordering, setReordering] = useState(false)
+
 
   const listQuery = useCollectionsListQuery({
     page: pagination.pageIndex,
@@ -133,6 +144,43 @@ function CollectionsListClientInner() {
 
   const topicsQuery = useCollectionTopicsQuery()
   const topics = topicsQuery.data ?? []
+
+  const reorderQuery = useQuery({
+    queryKey: [...collectionKeys.lists(), "reorder-all"],
+    queryFn: () => fetchAllPages((p, s) => getCollectionsList(p, s)),
+    enabled: reordering,
+    staleTime: 0,
+  })
+
+  const reorderItems = useMemo(
+    () =>
+      (reorderQuery.data ?? [])
+        .filter((c) => c.id != null)
+        .map((c) => ({
+          id: c.id!,
+          title:
+            c.ckbContent?.title?.trim() ||
+            c.kmrContent?.title?.trim() ||
+            NS.item.no_title,
+          subtitle: c.topicNameCkb || null,
+          coverUrl: c.ckbCoverUrl || c.kmrCoverUrl || c.hoverCoverUrl || null,
+        })),
+    [reorderQuery.data],
+  )
+
+  const onSaveOrder = useCallback(
+    async (orderedIds: number[]) => {
+      try {
+        await reorderCollections(orderedIds)
+        void queryClient.invalidateQueries({ queryKey: collectionKeys.lists() })
+        toast.success(NS.toast.order_saved)
+      } catch {
+        toastError(NS.error.generic)
+        throw new Error("reorder failed")
+      }
+    },
+    [queryClient],
+  )
 
   const rawRows = useMemo(
     () => listQuery.data?.content ?? [],
@@ -238,6 +286,15 @@ function CollectionsListClientInner() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
+          <Button
+            type="button"
+            variant={reordering ? "default" : "outline"}
+            size="sm"
+            onClick={() => setReordering((v) => !v)}
+          >
+            <Bars2Icon className="size-4" aria-hidden />
+            {reordering ? NS.action.done : NS.action.reorder}
+          </Button>
           <Link
             href="/dashboard/featured"
             className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 text-xs transition-colors"
@@ -265,6 +322,16 @@ function CollectionsListClientInner() {
         </div>
       </header>
 
+      {reordering ? (
+        <RecordReorderPanel
+          items={reorderItems}
+          isLoading={reorderQuery.isLoading}
+          isSaving={reorderQuery.isFetching}
+          onReorder={onSaveOrder}
+          dragLabel={NS.action.reorder}
+        />
+      ) : (
+        <>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="bg-muted/50 inline-flex rounded-lg p-1">
           <button
@@ -378,6 +445,8 @@ function CollectionsListClientInner() {
           onEdit={onEdit}
           onDeleteOne={setDeleteTarget}
         />
+      )}
+        </>
       )}
 
       <CollectionDeleteDialog

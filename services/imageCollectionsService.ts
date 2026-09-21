@@ -73,6 +73,14 @@ export async function updateCollectionMultipart(
   return normalizeCollectionDto(unwrapApiData(data))
 }
 
+/**
+ * Bulk list order — `orderedIds[i]` becomes sortOrder = i on the backend.
+ * Unlisted collections keep their existing order and render after the listed ones.
+ */
+export async function reorderCollections(orderedIds: number[]): Promise<void> {
+  await api.put(`${BASE}/order`, { orderedIds })
+}
+
 export async function deleteCollection(id: number): Promise<void> {
   await api.delete(`${BASE}/${id}`)
 }

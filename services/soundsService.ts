@@ -138,6 +138,14 @@ export async function deleteSound(id: number): Promise<void> {
   await api.delete(`${BASE}/${id}`)
 }
 
+/**
+ * Bulk list order — `orderedIds[i]` becomes sortOrder = i on the backend.
+ * Unlisted tracks keep their existing order and render after the listed ones.
+ */
+export async function reorderSounds(orderedIds: number[]): Promise<void> {
+  await api.put(`${BASE}/order`, { orderedIds })
+}
+
 export async function patchSoundFeatured(
   id: number,
   payload: FeaturedPayload,

@@ -1,5 +1,14 @@
 "use client"
 
+import {
+  DndContext,
+  closestCenter,
+  type DragEndEvent,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core"
+import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable"
 import { PlusIcon } from "@heroicons/react/24/outline"
 import { useFieldArray, useFormContext } from "react-hook-form"
 
@@ -13,10 +22,23 @@ import {
 
 export function SoundAttachmentsList() {
   const { control } = useFormContext<SoundFormValues>()
-  const { fields, append, remove } = useFieldArray({
+  const { fields, append, remove, move } = useFieldArray({
     control,
     name: "attachments",
   })
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+  )
+
+  function onDragEnd(e: DragEndEvent) {
+    const { active, over } = e
+    if (!over || active.id === over.id) return
+    const oldIndex = fields.findIndex((f) => f.id === active.id)
+    const newIndex = fields.findIndex((f) => f.id === over.id)
+    if (oldIndex < 0 || newIndex < 0) return
+    move(oldIndex, newIndex)
+  }
 
   return (
     <section className="mt-12 space-y-4 border-t border-border/60 pt-6">
@@ -38,15 +60,27 @@ export function SoundAttachmentsList() {
           {NS.attachment.empty}
         </p>
       ) : (
-        <ul className="space-y-3">
-          {fields.map((field, index) => (
-            <SoundAttachmentRow
-              key={field.id}
-              index={index}
-              onRemove={() => remove(index)}
-            />
-          ))}
-        </ul>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={onDragEnd}
+        >
+          <SortableContext
+            items={fields.map((f) => f.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            <ul className="space-y-3">
+              {fields.map((field, index) => (
+                <SoundAttachmentRow
+                  key={field.id}
+                  id={field.id}
+                  index={index}
+                  onRemove={() => remove(index)}
+                />
+              ))}
+            </ul>
+          </SortableContext>
+        </DndContext>
       )}
     </section>
   )

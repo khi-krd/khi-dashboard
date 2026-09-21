@@ -172,6 +172,7 @@ export function normalizeSoundDto(raw: unknown): SoundDto {
     id: coerceNum(o.id) ?? undefined,
     featured: coerceBool(o.featured),
     featuredOrder: coerceNum(o.featuredOrder) ?? coerceNum(o.featured_order),
+    sortOrder: coerceNum(o.sortOrder) ?? coerceNum(o.sort_order) ?? undefined,
     trackState,
     soundType: coerceStr(o.soundType) ?? coerceStr(o.sound_type),
     topicId: coerceNum(o.topicId) ?? coerceNum(o.topic_id),

@@ -87,6 +87,14 @@ export async function deleteVideo(id: number): Promise<void> {
   await api.delete(`${BASE}/${id}`)
 }
 
+/**
+ * Bulk list order — `orderedIds[i]` becomes sortOrder = i on the backend.
+ * Unlisted videos keep their existing order and render after the listed ones.
+ */
+export async function reorderVideos(orderedIds: number[]): Promise<void> {
+  await api.put(`${BASE}/order`, { orderedIds })
+}
+
 export async function patchVideoFeatured(
   id: number,
   payload: FeaturedPayload,

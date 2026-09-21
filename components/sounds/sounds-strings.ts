@@ -94,6 +94,8 @@ export const NS = {
     download_all: "داگرتنی هەموو پارچەکان",
     view_on_site: "بینین لە سایت",
     use_url_instead: "یان لینکی URL بەکاربهێنە",
+    reorder: "ڕیزکردن",
+    done: "تەواو",
   },
   state: {
     single: "تاک",
@@ -292,6 +294,7 @@ export const NS = {
     reklam_deleted: "ڤیدیۆی ریکلام سڕایەوە",
     copied: "لەبەرگیرایەوە",
     view_action: "بینین",
+    order_saved: "ڕیزکردن بەسەرکەوتوویی پاشەکەوتکرا",
   },
   dialog: {
     delete: {

@@ -59,6 +59,8 @@ export type CollectionDto = {
   updatedBy?: string | null
   featured?: boolean
   featuredOrder?: number | null
+  /** Manual list position set by the reorder endpoint; lower renders first. */
+  sortOrder?: number | null
   /** Hero picture for the homepage carousel; falls back to the cover when unset. */
   featureImageUrl?: string | null
 }

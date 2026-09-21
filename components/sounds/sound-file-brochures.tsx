@@ -1,8 +1,22 @@
 "use client"
 
-import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline"
+import {
+  DndContext,
+  closestCenter,
+  type DragEndEvent,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core"
+import {
+  SortableContext,
+  arrayMove,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable"
+import { CSS } from "@dnd-kit/utilities"
+import { Bars2Icon, PlusIcon, TrashIcon } from "@heroicons/react/24/outline"
 import Image from "next/image"
-import { useEffect, useState } from "react"
 
 import { useObjectUrl } from "@/hooks/use-object-url"
 import { NS } from "@/components/sounds/sounds-strings"
@@ -22,6 +36,10 @@ export function SoundFileBrochures({
   brochures: BrochureFormValues[]
   onChange: (next: BrochureFormValues[]) => void
 }) {
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+  )
+
   function patchAt(i: number, patch: Partial<BrochureFormValues>) {
     const next = brochures.map((b, idx) => (idx === i ? { ...b, ...patch } : b))
     onChange(next)
@@ -44,6 +62,15 @@ export function SoundFileBrochures({
     ])
   }
 
+  function onDragEnd(e: DragEndEvent) {
+    const { active, over } = e
+    if (!over || active.id === over.id) return
+    const oldIndex = brochures.findIndex((b) => b.clientKey === active.id)
+    const newIndex = brochures.findIndex((b) => b.clientKey === over.id)
+    if (oldIndex < 0 || newIndex < 0) return
+    onChange(arrayMove(brochures, oldIndex, newIndex))
+  }
+
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
@@ -58,30 +85,47 @@ export function SoundFileBrochures({
       {brochures.length === 0 ? (
         <p className="text-muted-foreground text-xs">{NS.brochure.empty}</p>
       ) : (
-        <ul className="space-y-3">
-          {brochures.map((b, i) => (
-            <BrochureRow
-              key={b.clientKey}
-              brochure={b}
-              onPatch={(p) => patchAt(i, p)}
-              onRemove={() => removeAt(i)}
-            />
-          ))}
-        </ul>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={onDragEnd}
+        >
+          <SortableContext
+            items={brochures.map((b) => b.clientKey)}
+            strategy={verticalListSortingStrategy}
+          >
+            <ul className="space-y-3">
+              {brochures.map((b, i) => (
+                <BrochureRow
+                  key={b.clientKey}
+                  id={b.clientKey}
+                  brochure={b}
+                  onPatch={(p) => patchAt(i, p)}
+                  onRemove={() => removeAt(i)}
+                />
+              ))}
+            </ul>
+          </SortableContext>
+        </DndContext>
       )}
     </div>
   )
 }
 
 function BrochureRow({
+  id,
   brochure,
   onPatch,
   onRemove,
 }: {
+  id: string
   brochure: BrochureFormValues
   onPatch: (p: Partial<BrochureFormValues>) => void
   onRemove: () => void
 }) {
+  const { attributes, listeners, setNodeRef, transform, transition } =
+    useSortable({ id })
+  const style = { transform: CSS.Transform.toString(transform), transition }
   const blob = useObjectUrl(brochure.stagedImageFile)
 
 
@@ -101,7 +145,11 @@ function BrochureRow({
   })
 
   return (
-    <li className="border-border flex gap-3 rounded-lg border p-3">
+    <li
+      ref={setNodeRef}
+      style={style}
+      className="border-border bg-background flex gap-3 rounded-lg border p-3"
+    >
       <div className="relative size-16 shrink-0 overflow-hidden rounded-md border">
         <input {...getInputProps()} className="sr-only" />
         {preview ? (
@@ -132,6 +180,15 @@ function BrochureRow({
       </div>
       <button type="button" className="text-muted-foreground hover:text-destructive shrink-0" onClick={onRemove}>
         <TrashIcon className="size-4" />
+      </button>
+      <button
+        type="button"
+        className="text-muted-foreground cursor-grab shrink-0"
+        {...attributes}
+        {...listeners}
+        aria-label={NS.action.reorder}
+      >
+        <Bars2Icon className="size-4" />
       </button>
     </li>
   )

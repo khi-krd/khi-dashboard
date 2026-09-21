@@ -102,6 +102,8 @@ export const NS = {
     use_url_instead: "یان لینکی URL بەکاربهێنە",
     auto_embed: "خۆکار وەربگرە بۆ Embed",
     remove_cover: "سڕینەوە",
+    reorder: "ڕیزکردن",
+    done: "تەواو",
   },
   filter: {
     search_placeholder: "گەڕان لە ناونیشان، تاگ، یان کلیلەوشە",
@@ -303,6 +305,7 @@ export const NS = {
     reklam_deleted: "ڤیدیۆی پاشبنەما سڕایەوە",
     copied: "لەبەرگیرایەوە",
     view_action: "بینین",
+    order_saved: "ڕیزکردن بەسەرکەوتوویی پاشەکەوتکرا",
   },
   dialog: {
     delete: {

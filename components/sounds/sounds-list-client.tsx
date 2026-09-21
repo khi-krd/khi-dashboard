@@ -1,12 +1,13 @@
 "use client"
 
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react"
-import { useQueryClient } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import type { PaginationState, SortingState } from "@tanstack/react-table"
 import { toast } from "sonner"
 import {
+  Bars2Icon,
   Cog6ToothIcon,
   FilmIcon,
   MagnifyingGlassIcon,
@@ -34,6 +35,9 @@ import {
   useSoundTopicsQuery,
   useSoundsListQuery,
 } from "@/hooks/useSounds"
+import { RecordReorderPanel } from "@/components/shared/record-reorder-panel"
+import { fetchAllPages } from "@/lib/paged-fetch"
+import { getSoundsList, reorderSounds } from "@/services/soundsService"
 import { soundKeys } from "@/lib/sounds-query-keys"
 import { formatCkbDigits } from "@/lib/intl-ckb"
 import { cn } from "@/lib/utils"
@@ -114,6 +118,10 @@ function SoundsListClientInner() {
     null,
   )
 
+  // Reorder mode swaps the paged grid for a flat drag list of every record —
+  // ordering is a global operation, so filters and pagination don't apply here.
+  const [reordering, setReordering] = useState(false)
+
 
   const listQuery = useSoundsListQuery({
     page: pagination.pageIndex,
@@ -127,6 +135,43 @@ function SoundsListClientInner() {
 
   const topicsQuery = useSoundTopicsQuery()
   const topics = topicsQuery.data ?? []
+
+  const reorderQuery = useQuery({
+    queryKey: [...soundKeys.lists(), "reorder-all"],
+    queryFn: () => fetchAllPages((p, s) => getSoundsList(p, s)),
+    enabled: reordering,
+    staleTime: 0,
+  })
+
+  const reorderItems = useMemo(
+    () =>
+      (reorderQuery.data ?? [])
+        .filter((s) => s.id != null)
+        .map((s) => ({
+          id: s.id!,
+          title:
+            s.ckbContent?.title?.trim() ||
+            s.kmrContent?.title?.trim() ||
+            NS.file.no_title,
+          subtitle: s.topicNameCkb || s.soundType || null,
+          coverUrl: s.ckbCoverUrl || s.kmrCoverUrl || s.hoverCoverUrl || null,
+        })),
+    [reorderQuery.data],
+  )
+
+  const onSaveOrder = useCallback(
+    async (orderedIds: number[]) => {
+      try {
+        await reorderSounds(orderedIds)
+        void queryClient.invalidateQueries({ queryKey: soundKeys.lists() })
+        toast.success(NS.toast.order_saved)
+      } catch {
+        toastError(NS.error.generic)
+        throw new Error("reorder failed")
+      }
+    },
+    [queryClient],
+  )
 
   const rawRows = useMemo(
     () => listQuery.data?.content ?? [],
@@ -232,6 +277,15 @@ function SoundsListClientInner() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
+          <Button
+            type="button"
+            variant={reordering ? "default" : "outline"}
+            size="sm"
+            onClick={() => setReordering((v) => !v)}
+          >
+            <Bars2Icon className="size-4" aria-hidden />
+            {reordering ? NS.action.done : NS.action.reorder}
+          </Button>
           <Link
             href="/dashboard/featured"
             className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 text-xs transition-colors"
@@ -266,24 +320,34 @@ function SoundsListClientInner() {
         </div>
       </header>
 
-      <SoundsFiltersToolbar
-        search={searchRaw}
-        onSearchChange={setSearchRaw}
-        stateFilter={stateFilter}
-        onStateChange={setStateFilter}
-        typeFilter={typeFilter}
-        typeOptions={typeOptions}
-        onTypeChange={setTypeFilter}
-        topicId={topicId}
-        topics={topics}
-        onTopicChange={setTopicId}
-        language={language}
-        onLanguageChange={setLanguage}
-        showReset={showReset}
-        onReset={onResetFilters}
-      />
+      {reordering ? (
+        <RecordReorderPanel
+          items={reorderItems}
+          isLoading={reorderQuery.isLoading}
+          isSaving={reorderQuery.isFetching}
+          onReorder={onSaveOrder}
+          dragLabel={NS.action.reorder}
+        />
+      ) : (
+        <>
+          <SoundsFiltersToolbar
+            search={searchRaw}
+            onSearchChange={setSearchRaw}
+            stateFilter={stateFilter}
+            onStateChange={setStateFilter}
+            typeFilter={typeFilter}
+            typeOptions={typeOptions}
+            onTypeChange={setTypeFilter}
+            topicId={topicId}
+            topics={topics}
+            onTopicChange={setTopicId}
+            language={language}
+            onLanguageChange={setLanguage}
+            showReset={showReset}
+            onReset={onResetFilters}
+          />
 
-      {listQuery.isError ? (
+          {listQuery.isError ? (
         <SoundsErrorState onRetry={() => void listQuery.refetch()} />
       ) : !isLoading && gridRows.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -346,6 +410,8 @@ function SoundsListClientInner() {
           onEdit={onEdit}
           onDeleteOne={(row) => setDeleteTarget(row)}
         />
+      )}
+        </>
       )}
 
       <SoundDeleteDialog

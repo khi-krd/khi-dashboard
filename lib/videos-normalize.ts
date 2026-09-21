@@ -180,6 +180,7 @@ export function normalizeVideoDto(raw: unknown): VideoDto {
       : Array.isArray(o.keywords_kmr)
         ? o.keywords_kmr.map(String)
         : [],
+    sortOrder: coerceNum(o.sortOrder) ?? coerceNum(o.sort_order) ?? undefined,
     createdAt: coerceStr(o.createdAt) ?? coerceStr(o.created_at) ?? undefined,
     updatedAt: coerceStr(o.updatedAt) ?? coerceStr(o.updated_at) ?? undefined,
     createdBy: coerceStr(o.createdBy) ?? coerceStr(o.created_by),

@@ -1,13 +1,23 @@
 "use client"
 
 import {
+  DndContext,
+  closestCenter,
+  type DragEndEvent,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core"
+import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable"
+import { CSS } from "@dnd-kit/utilities"
+import {
   Bars2Icon,
   PencilSquareIcon,
   PlusIcon,
   TrashIcon,
 } from "@heroicons/react/24/outline"
 import Image from "next/image"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { useFieldArray, useFormContext } from "react-hook-form"
 
 import { isOptimizableImageSrc } from "@/lib/image-src"
@@ -35,12 +45,25 @@ export function AlbumStoryEditor({ showKmrFields }: { showKmrFields?: boolean })
     watch,
     formState: { errors },
   } = useFormContext<CollectionFormValues>()
-  const { fields, append, remove, update } = useFieldArray({
+  const { fields, append, remove, move, update } = useFieldArray({
     control,
     name: "imageAlbum",
   })
   const [sheetIdx, setSheetIdx] = useState<number | null>(null)
   const albumErrors = errors.imageAlbum
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+  )
+
+  function onDragEnd(e: DragEndEvent) {
+    const { active, over } = e
+    if (!over || active.id === over.id) return
+    const oldIndex = fields.findIndex((f) => f.id === active.id)
+    const newIndex = fields.findIndex((f) => f.id === over.id)
+    if (oldIndex < 0 || newIndex < 0) return
+    move(oldIndex, newIndex)
+  }
 
   const sheetItem = sheetIdx != null ? watch(`imageAlbum.${sheetIdx}`) : null
 
@@ -68,21 +91,33 @@ export function AlbumStoryEditor({ showKmrFields }: { showKmrFields?: boolean })
           {NS.story.empty}
         </p>
       ) : (
-        <ol className="space-y-4">
-          {fields.map((field, idx) => (
-            <StoryEditorCard
-              key={field.id}
-              index={idx}
-              total={fields.length}
-              item={watch(`imageAlbum.${idx}`)}
-              onEdit={() => setSheetIdx(idx)}
-              onRemove={() => {
-                remove(idx)
-                if (sheetIdx === idx) setSheetIdx(null)
-              }}
-            />
-          ))}
-        </ol>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={onDragEnd}
+        >
+          <SortableContext
+            items={fields.map((f) => f.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            <ol className="space-y-4">
+              {fields.map((field, idx) => (
+                <StoryEditorCard
+                  key={field.id}
+                  id={field.id}
+                  index={idx}
+                  total={fields.length}
+                  item={watch(`imageAlbum.${idx}`)}
+                  onEdit={() => setSheetIdx(idx)}
+                  onRemove={() => {
+                    remove(idx)
+                    if (sheetIdx === idx) setSheetIdx(null)
+                  }}
+                />
+              ))}
+            </ol>
+          </SortableContext>
+        </DndContext>
       )}
 
       <FieldError>
@@ -110,18 +145,23 @@ export function AlbumStoryEditor({ showKmrFields }: { showKmrFields?: boolean })
 }
 
 function StoryEditorCard({
+  id,
   index,
   total,
   item,
   onEdit,
   onRemove,
 }: {
+  id: string
   index: number
   total: number
   item: ImageItemFormValues
   onEdit: () => void
   onRemove: () => void
 }) {
+  const { attributes, listeners, setNodeRef, transform, transition } =
+    useSortable({ id })
+  const style = { transform: CSS.Transform.toString(transform), transition }
   const preview = useItemPreview(item)
   const stepLabel = NS.step.label(
     formatCkbDigits(index + 1),
@@ -129,7 +169,11 @@ function StoryEditorCard({
   )
 
   return (
-    <li className="border-border flex gap-4 rounded-xl border p-4">
+    <li
+      ref={setNodeRef}
+      style={style}
+      className="border-border bg-background flex gap-4 rounded-xl border p-4"
+    >
       <div className="bg-muted relative size-24 shrink-0 overflow-hidden rounded-lg">
         {preview ? (
           <Image
@@ -165,9 +209,15 @@ function StoryEditorCard({
         >
           <TrashIcon className="size-4" />
         </button>
-        <span className="text-muted-foreground cursor-grab p-1">
+        <button
+          type="button"
+          className="text-muted-foreground cursor-grab rounded p-1 hover:bg-muted"
+          {...attributes}
+          {...listeners}
+          aria-label={NS.action.reorder}
+        >
           <Bars2Icon className="size-4" />
-        </span>
+        </button>
       </div>
     </li>
   )

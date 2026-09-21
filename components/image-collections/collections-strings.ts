@@ -71,6 +71,8 @@ export const NS = {
     download_all: "داگرتنی هەموو وێنەکان",
     view_on_site: "بینین لە سایت",
     use_url_instead: "یان لینکی URL بەکاربهێنە",
+    reorder: "ڕیزکردن",
+    done: "تەواو",
   },
   type: {
     single: "تاک وێنە",
@@ -178,6 +180,7 @@ export const NS = {
     auto_tooltip: "زانیاری بە شێوەی خۆکار دۆزراوەتەوە لە کاتی بارکردندا.",
   },
   item: {
+    no_title: "بێ ناونیشان",
     no_caption: "بێ نووسە",
     no_source: "بێ سەرچاوە",
     sheet_title: (n: string) => `دەستکاری وێنە #${n}`,
@@ -243,6 +246,7 @@ export const NS = {
     topic_deleted: "بابەت سڕایەوە",
     copied: "لەبەرگیرایەوە",
     view_action: "بینین",
+    order_saved: "ڕیزکردن بەسەرکەوتوویی پاشەکەوتکرا",
   },
   dialog: {
     delete: {

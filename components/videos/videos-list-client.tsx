@@ -1,12 +1,13 @@
 "use client"
 
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react"
-import { useQueryClient } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import type { PaginationState, SortingState } from "@tanstack/react-table"
 import { toast } from "sonner"
 import {
+  Bars2Icon,
   Cog6ToothIcon,
   FilmIcon,
   MagnifyingGlassIcon,
@@ -33,6 +34,9 @@ import {
   useVideoTopicsQuery,
   useVideosListQuery,
 } from "@/hooks/useVideos"
+import { RecordReorderPanel } from "@/components/shared/record-reorder-panel"
+import { fetchAllPages } from "@/lib/paged-fetch"
+import { getVideosList, reorderVideos } from "@/services/videosService"
 import { videoKeys } from "@/lib/videos-query-keys"
 import { formatCkbDigits } from "@/lib/intl-ckb"
 import { cn } from "@/lib/utils"
@@ -123,6 +127,10 @@ function VideosListClientInner() {
     null,
   )
 
+  // Reorder mode swaps the paged grid for a flat drag list of every record —
+  // ordering is a global operation, so filters and pagination don't apply here.
+  const [reordering, setReordering] = useState(false)
+
 
 
   const searchMode = urlTag?.trim()
@@ -148,6 +156,43 @@ function VideosListClientInner() {
 
   const topicsQuery = useVideoTopicsQuery()
   const topics = topicsQuery.data ?? []
+
+  const reorderQuery = useQuery({
+    queryKey: [...videoKeys.lists(), "reorder-all"],
+    queryFn: () => fetchAllPages((p, s) => getVideosList({ page: p, size: s })),
+    enabled: reordering,
+    staleTime: 0,
+  })
+
+  const reorderItems = useMemo(
+    () =>
+      (reorderQuery.data ?? [])
+        .filter((v) => v.id != null)
+        .map((v) => ({
+          id: v.id!,
+          title:
+            v.ckbContent?.title?.trim() ||
+            v.kmrContent?.title?.trim() ||
+            NS.clip.no_title,
+          subtitle: v.topicNameCkb || v.videoType || null,
+          coverUrl: v.ckbCoverUrl || v.kmrCoverUrl || v.hoverCoverUrl || null,
+        })),
+    [reorderQuery.data],
+  )
+
+  const onSaveOrder = useCallback(
+    async (orderedIds: number[]) => {
+      try {
+        await reorderVideos(orderedIds)
+        void queryClient.invalidateQueries({ queryKey: videoKeys.lists() })
+        toast.success(NS.toast.order_saved)
+      } catch {
+        toastError(NS.error.generic)
+        throw new Error("reorder failed")
+      }
+    },
+    [queryClient],
+  )
 
   const rawRows = useMemo(
     () => listQuery.data?.content ?? [],
@@ -280,6 +325,15 @@ function VideosListClientInner() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
+          <Button
+            type="button"
+            variant={reordering ? "default" : "outline"}
+            size="sm"
+            onClick={() => setReordering((v) => !v)}
+          >
+            <Bars2Icon className="size-4" aria-hidden />
+            {reordering ? NS.action.done : NS.action.reorder}
+          </Button>
           <Link
             href="/dashboard/featured"
             className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 text-xs transition-colors"
@@ -314,21 +368,31 @@ function VideosListClientInner() {
         </div>
       </header>
 
-      <VideosFiltersToolbar
-        search={searchRaw}
-        onSearchChange={onSearchChange}
-        typeFilter={typeFilter}
-        onTypeChange={setTypeFilter}
-        topicId={topicId}
-        topics={topics}
-        onTopicChange={setTopicId}
-        language={language}
-        onLanguageChange={setLanguage}
-        showReset={showReset}
-        onReset={onResetFilters}
-      />
+      {reordering ? (
+        <RecordReorderPanel
+          items={reorderItems}
+          isLoading={reorderQuery.isLoading}
+          isSaving={reorderQuery.isFetching}
+          onReorder={onSaveOrder}
+          dragLabel={NS.action.reorder}
+        />
+      ) : (
+        <>
+          <VideosFiltersToolbar
+            search={searchRaw}
+            onSearchChange={onSearchChange}
+            typeFilter={typeFilter}
+            onTypeChange={setTypeFilter}
+            topicId={topicId}
+            topics={topics}
+            onTopicChange={setTopicId}
+            language={language}
+            onLanguageChange={setLanguage}
+            showReset={showReset}
+            onReset={onResetFilters}
+          />
 
-      {listQuery.isError ? (
+          {listQuery.isError ? (
         <VideosErrorState onRetry={() => void listQuery.refetch()} />
       ) : !isLoading && gridRows.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -390,6 +454,8 @@ function VideosListClientInner() {
           onEdit={onEdit}
           onDeleteOne={(row) => setDeleteTarget(row)}
         />
+      )}
+        </>
       )}
 
       <VideoDeleteDialog
