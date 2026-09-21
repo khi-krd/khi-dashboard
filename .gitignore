@@ -37,6 +37,12 @@ pnpm-debug.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# vercel
+.vercel
+
+# editors
+.idea/
+
 #API Documentation
 API/**
 docs/**
