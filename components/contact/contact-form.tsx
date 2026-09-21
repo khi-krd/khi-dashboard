@@ -32,8 +32,10 @@ import {
   useUpdateContact,
 } from "@/hooks/useContact"
 import { permissiveResolver } from "@/lib/permissive-resolver"
-import { extractApiErrorText } from "@/lib/api-error"
-import { contactFormValuesToPayload } from "@/lib/contact-form-data"
+import {
+  contactFormValuesToPayload,
+  contactSaveErrorText,
+} from "@/lib/contact-form-data"
 import {
   contactDtoToFormValues,
   contactFormSchema,
@@ -167,7 +169,7 @@ export function ContactForm({
         router.push("/dashboard/contact")
       }
     } catch (err) {
-      toast.error(extractApiErrorText(err) ?? NS.error.validation)
+      toast.error(contactSaveErrorText(err))
     }
   }
 

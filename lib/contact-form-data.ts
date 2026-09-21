@@ -1,3 +1,8 @@
+import { NS } from "@/components/contact/contact-strings"
+import {
+  extractApiErrorReason,
+  extractApiErrorText,
+} from "@/lib/api-error"
 import type { ContactFormValues } from "@/lib/validations/contact"
 import type { ContactDto } from "@/types/contact"
 
@@ -113,4 +118,28 @@ export function contactFormValuesToPayload(
     badgeCkb: trimOrUndef(values.badgeCkb),
     badgeKmr: trimOrUndef(values.badgeKmr),
   }
+}
+
+/**
+ * The backend's slug rejections arrive as English `details.reason` strings
+ * ("KMR slug already exists: X") — translate the known patterns so the toast
+ * tells the editor which slug to change instead of showing English.
+ */
+export function contactSaveErrorText(error: unknown): string {
+  const reason = extractApiErrorReason(error)
+  if (reason) {
+    const exists = /^(CKB|KMR) slug already exists: (.+)$/.exec(reason)
+    if (exists) {
+      return exists[1] === "KMR"
+        ? NS.error.slugKmrExists(exists[2])
+        : NS.error.slugCkbExists(exists[2])
+    }
+    if (reason.startsWith("CKB slug and KMR slug must be different")) {
+      return NS.validation.slugsMustDiffer
+    }
+    if (reason.startsWith("CKB slug is required")) {
+      return NS.validation.slugCkbRequired
+    }
+  }
+  return extractApiErrorText(error) ?? NS.error.validation
 }

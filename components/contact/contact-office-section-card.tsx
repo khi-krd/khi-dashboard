@@ -23,9 +23,11 @@ import {
 } from "@/hooks/useContact"
 import { useServerFormSync } from "@/hooks/use-server-form-sync"
 import { permissiveResolver } from "@/lib/permissive-resolver"
-import { contactFormValuesToPayload } from "@/lib/contact-form-data"
+import {
+  contactFormValuesToPayload,
+  contactSaveErrorText,
+} from "@/lib/contact-form-data"
 import { contactDisplayTitle } from "@/lib/contact-normalize"
-import { extractApiErrorText } from "@/lib/api-error"
 import { toastError } from "@/lib/toast"
 import { cn } from "@/lib/utils"
 import {
@@ -152,11 +154,10 @@ export function ContactOfficeSectionCard({
         onSaved()
       }
       const onError = (err: unknown) => {
-        // extractApiErrorText reaches details.reason / fieldErrors — the
-        // backend's 400 carries the actual cause there ("CKB slug is
-        // required", "email: must be well-formed"), while `message` is just
-        // the generic localized "bad request" the user kept seeing.
-        toastError(extractApiErrorText(err) ?? NS.error.validation)
+        // The backend's 400 carries the actual cause in details.reason /
+        // fieldErrors — the slug rejections get translated to Kurdish, the
+        // rest surface as-is rather than the generic "bad request".
+        toastError(contactSaveErrorText(err))
       }
 
       if (mode === "create") {
