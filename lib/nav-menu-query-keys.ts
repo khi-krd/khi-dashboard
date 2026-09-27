@@ -3,6 +3,4 @@ export const navMenuKeys = {
   lists: () => [...navMenuKeys.all, "list"] as const,
   list: (includeInactive: boolean) =>
     [...navMenuKeys.lists(), { includeInactive }] as const,
-  details: () => [...navMenuKeys.all, "detail"] as const,
-  detail: (id: number) => [...navMenuKeys.details(), id] as const,
 }

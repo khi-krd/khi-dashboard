@@ -111,6 +111,12 @@ Read these before touching a write path — the API is not forgiving.
   donations, so the donations status pill/select are reused.
 - **`mapEmbedUrl` may contain a pasted `<iframe>` tag**, not a URL — extract
   `src` before rendering (see `embedSrc` in `contact-page-preview.tsx`).
+- **`PUT /api/v1/nav-menu/{id}` is image-only** (`{imageUrl, active?}`): the
+  website owns the section list, labels, hrefs and secondary links from its
+  static nav config, and a CMS row only overlays the background photo for a
+  matching `itemKey`. There is no create/delete — rows are fixed per section.
+  `labelCkb`/`href` in the response are read-only display data, never sent
+  back. `imageUrl: null` clears the photo; `active` omitted leaves it alone.
 - **Writings create/update are multipart** (`data` JSON blob + file parts
   `ckbCoverImage`/`kmrCoverImage`/`hoverCoverImage`/`ckbBookFile`/`kmrBookFile`),
   and the `data` blob **rejects unknown fields** with

@@ -1,9 +1,7 @@
 "use client"
 
-import { PlusIcon } from "@heroicons/react/24/outline"
-import { useMemo, useRef, useState } from "react"
+import { useMemo } from "react"
 
-import { NavMenuDeleteDialog } from "@/components/menu/nav-menu-delete-dialog"
 import { NavMenuErrorState } from "@/components/menu/nav-menu-error-state"
 import { NavMenuItemCard } from "@/components/menu/nav-menu-item-card"
 import { NM } from "@/components/menu/nav-menu-strings"
@@ -11,13 +9,10 @@ import {
   ServiceBreadcrumbBar,
   dashboardServicesCrumbHref,
 } from "@/components/services/service-breadcrumb"
-import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
-import { useDeleteNavMenuItem, useNavMenuListQuery } from "@/hooks/useNavMenu"
+import { useNavMenuListQuery } from "@/hooks/useNavMenu"
 import { extractApiErrorMessage } from "@/lib/api-error"
 import { formatCkbDigits } from "@/lib/intl-ckb"
-import { toastError, toastSuccess } from "@/lib/toast"
-import type { NavMenuItemDto } from "@/types/nav-menu"
 
 function ListSkeleton() {
   return (
@@ -29,46 +24,15 @@ function ListSkeleton() {
   )
 }
 
+/**
+ * The menu's links listed flat — the website owns the section set and its
+ * labels, so there is no add/delete here; each row only takes a background
+ * photo.
+ */
 export function NavMenuListClient() {
-  // The dashboard always wants hidden rows too, so they stay editable (§3.3).
+  // The dashboard always wants hidden rows too, so their images stay editable.
   const listQuery = useNavMenuListQuery(true)
-  const deleteMut = useDeleteNavMenuItem()
-  // Drafts carry stable ids rather than being an index range: keying them by
-  // position makes discarding the first of two wipe the second one's content,
-  // because React reuses the surviving key's state.
-  const [drafts, setDrafts] = useState<number[]>([])
-  const draftSeq = useRef(0)
-  const [deleteTarget, setDeleteTarget] = useState<NavMenuItemDto | null>(null)
-
-  const addDraft = () => {
-    draftSeq.current += 1
-    const id = draftSeq.current
-    setDrafts((d) => [...d, id])
-  }
-  const removeDraft = (id: number) =>
-    setDrafts((d) => d.filter((x) => x !== id))
-
   const items = useMemo(() => listQuery.data ?? [], [listQuery.data])
-
-  const nextDisplayOrder = useMemo(() => {
-    if (items.length === 0) return 0
-    return Math.max(...items.map((i) => i.displayOrder ?? 0)) + 1
-  }, [items])
-
-  function handleConfirmDelete() {
-    const id = deleteTarget?.id
-    if (!id) return
-    deleteMut.mutate(id, {
-      onSuccess: () => {
-        toastSuccess(NM.toast.deleted)
-        setDeleteTarget(null)
-      },
-      onError: (err) => {
-        toastError(extractApiErrorMessage(err) ?? NM.error.generic)
-        setDeleteTarget(null)
-      },
-    })
-  }
 
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 pb-16" dir="rtl">
@@ -79,17 +43,11 @@ export function NavMenuListClient() {
         ]}
       />
 
-      <header className="flex flex-wrap items-start justify-between gap-4">
-        <div className="space-y-1">
-          <h1 className="text-2xl font-semibold tracking-tight">
-            {NM.page.title}
-          </h1>
-          <p className="text-muted-foreground text-sm">{NM.page.subtitle}</p>
-        </div>
-        <Button type="button" className="shrink-0" onClick={addDraft}>
-          <PlusIcon className="size-4 rtl:rotate-180" />
-          {NM.action.new}
-        </Button>
+      <header className="space-y-1">
+        <h1 className="text-2xl font-semibold tracking-tight">
+          {NM.page.title}
+        </h1>
+        <p className="text-muted-foreground text-sm">{NM.page.subtitle}</p>
       </header>
 
       {listQuery.isError ? (
@@ -104,9 +62,7 @@ export function NavMenuListClient() {
           <div>
             <h2 className="text-base font-semibold">{NM.page.itemsTitle}</h2>
             <p className="text-muted-foreground text-xs">
-              {NM.page.totalCount(
-                formatCkbDigits(items.length + drafts.length),
-              )}
+              {NM.page.totalCount(formatCkbDigits(items.length))}
             </p>
           </div>
 
@@ -114,7 +70,7 @@ export function NavMenuListClient() {
             <ListSkeleton />
           ) : (
             <div className="space-y-3">
-              {items.length === 0 && drafts.length === 0 ? (
+              {items.length === 0 ? (
                 <p className="text-muted-foreground/70 py-8 text-center text-sm">
                   {NM.page.empty}
                 </p>
@@ -122,54 +78,19 @@ export function NavMenuListClient() {
 
               {items.map((item, index) => (
                 <NavMenuItemCard
-                  key={item.id ?? `row-${index}`}
+                  // `imageUrl` in the key remounts the card when the server
+                  // value changes, so the staged URL re-seeds without an
+                  // effect (React Compiler forbids setState-in-effect).
+                  key={`${item.id ?? `row-${index}`}:${item.imageUrl ?? ""}`}
                   index={index}
                   dto={item}
-                  nextDisplayOrder={item.displayOrder}
                   onSaved={() => void listQuery.refetch()}
-                  onDelete={
-                    item.id ? () => setDeleteTarget(item) : undefined
-                  }
                 />
               ))}
-
-              {drafts.map((draftId, i) => (
-                <NavMenuItemCard
-                  key={`draft-${draftId}`}
-                  index={items.length + i}
-                  nextDisplayOrder={nextDisplayOrder + i}
-                  defaultOpen
-                  onSaved={() => {
-                    removeDraft(draftId)
-                    void listQuery.refetch()
-                  }}
-                  onDiscard={() => removeDraft(draftId)}
-                />
-              ))}
-
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full gap-2"
-                onClick={addDraft}
-              >
-                <PlusIcon className="size-4 rtl:rotate-180" />
-                {NM.action.new}
-              </Button>
             </div>
           )}
         </div>
       )}
-
-      <NavMenuDeleteDialog
-        open={deleteTarget != null}
-        onOpenChange={(v) => {
-          if (!v) setDeleteTarget(null)
-        }}
-        target={deleteTarget}
-        onConfirm={handleConfirmDelete}
-        isPending={deleteMut.isPending}
-      />
     </div>
   )
 }
