@@ -176,6 +176,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           url: "/dashboard/settings/branding",
           icon: <HugeiconsIcon icon={PaintBoardIcon} strokeWidth={2} />,
         },
+        {
+          title: "دەقە ستاتیکەکان",
+          url: "/dashboard/texts",
+          icon: <HugeiconsIcon icon={Tag01Icon} strokeWidth={2} />,
+        },
       ],
     },
   ]
