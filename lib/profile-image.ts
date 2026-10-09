@@ -5,7 +5,7 @@ type AvatarFields = Pick<UserResponse, "imageUrl" | "profileImage">
 /**
  * Resolve a usable avatar `src`. OAuth `imageUrl` is already absolute; a local
  * `profileImage` is a server-relative path (e.g. `/uploads/avatars/x.png`) and
- * must be prefixed with the API base (the same-origin `/railway-proxy` or a
+ * must be prefixed with the API base (the same-origin `/api-proxy` or a
  * full API URL) so it resolves to the backend rather than the dashboard origin.
  */
 export function resolveAvatarSrc(user: AvatarFields | null | undefined): string {

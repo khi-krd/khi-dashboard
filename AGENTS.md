@@ -29,11 +29,11 @@ To re-enable validation: swap each `permissiveResolver(schema)` back to
 npm run typecheck   # tsc --noEmit
 npm run lint        # eslint (React Compiler rules are errors, e.g. no ref access during render)
 npm run build       # next build
-npm run dev         # localhost:3000, proxies the API through /railway-proxy
+npm run dev         # localhost:3000, proxies the API through /api-proxy
 ```
 
-Browser calls go to `NEXT_PUBLIC_API_URL=/railway-proxy`, which
-`app/railway-proxy/[[...path]]/route.ts` forwards to `API_PROXY_TARGET` with the
+Browser calls go to `NEXT_PUBLIC_API_URL=/api-proxy`, which
+`app/api-proxy/[[...path]]/route.ts` forwards to `API_PROXY_TARGET` with the
 httpOnly `auth_token` cookie as the Bearer token. Backend source and docs live
 in `../khi_backend` (`docs/external` = public reads, `docs/internal` = admin
 writes).

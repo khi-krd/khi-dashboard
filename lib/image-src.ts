@@ -28,7 +28,7 @@ export function isOptimizableImageSrc(src: string | null | undefined): boolean {
   const s = src?.trim()
   if (!s) return false
 
-  // Relative paths (including the same-origin `/railway-proxy` API base) are
+  // Relative paths (including the same-origin `/api-proxy` API base) are
   // served by this app and always optimizable.
   if (s.startsWith("/")) return true
 

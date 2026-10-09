@@ -7,7 +7,7 @@ import { useAuthStore } from "@/store/auth.store"
 
 /**
  * - Full URL: used as-is (trim trailing slash).
- * - Path starting with `/`: same-origin base (e.g. `/railway-proxy` for Next rewrites).
+ * - Path starting with `/`: same-origin base (e.g. `/api-proxy` for Next rewrites).
  * - Host without scheme: browser would treat it as a path on the current origin — prepend https/http.
  */
 function normalizeApiBaseUrl(raw: string | undefined): string {
@@ -22,7 +22,7 @@ function normalizeApiBaseUrl(raw: string | undefined): string {
 /**
  * Origin of the real backend, used ONLY for multipart bodies. Vercel drops
  * any request over 4.5MB (`FUNCTION_PAYLOAD_TOO_LARGE`) before the
- * `/railway-proxy` function can run — that cap is infrastructural and cannot
+ * `/api-proxy` function can run — that cap is infrastructural and cannot
  * be raised — so FormData uploads skip the proxy and go straight to the API,
  * which accepts up to 1GB. Empty string means "proxy everything" (local dev,
  * Docker, or anywhere without Vercel's limit in front).

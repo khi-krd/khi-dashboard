@@ -38,7 +38,7 @@ The app runs at http://localhost:3000 and redirects to `/login`.
 
 ## How requests reach the API
 
-The browser never calls the backend directly. `NEXT_PUBLIC_API_URL` is set to `/railway-proxy`, a catch-all route handler (`app/railway-proxy/[[...path]]/route.ts`) that forwards to `API_PROXY_TARGET`.
+The browser never calls the backend directly. `NEXT_PUBLIC_API_URL` is set to `/api-proxy`, a catch-all route handler (`app/api-proxy/[[...path]]/route.ts`) that forwards to `API_PROXY_TARGET`.
 
 This buys three things: no CORS configuration, the correct `Host` header upstream, and authentication via an httpOnly cookie instead of a browser-readable token.
 
@@ -49,7 +49,7 @@ This buys three things: no CORS configuration, the correct `Host` header upstrea
 Build the image, passing the `NEXT_PUBLIC_*` values as build args — they are inlined into the client bundle at build time and cannot be changed afterwards without rebuilding:
 
 ```bash
-docker build --build-arg NEXT_PUBLIC_API_URL=/railway-proxy --build-arg NEXT_PUBLIC_SITE_URL=https://khi.krd --build-arg NEXT_PUBLIC_SITE_LABEL=KHI -t khi-dashboard .
+docker build --build-arg NEXT_PUBLIC_API_URL=/api-proxy --build-arg NEXT_PUBLIC_SITE_URL=https://khi.krd --build-arg NEXT_PUBLIC_SITE_LABEL=KHI -t khi-dashboard .
 ```
 
 Run it, passing the server-side variable at runtime:

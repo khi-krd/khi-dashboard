@@ -105,7 +105,7 @@ async function proxy(req: NextRequest, pathSegments: string[]) {
   } catch (err) {
     const ms = Math.round(performance.now() - start)
     console.error(
-      `[railway-proxy] ${req.method} /${subPath} FAILED after ${ms}ms`,
+      `[api-proxy] ${req.method} /${subPath} FAILED after ${ms}ms`,
       err,
     )
     throw err

@@ -52,7 +52,7 @@ export const useAuthStore = create<AuthState & AuthActions>()(
       // The JWT itself stays in memory: persisting it to LocalStorage made it
       // readable by any injected script, and it is redundant anyway. Requests
       // authenticate via the httpOnly `auth_token` cookie, which the proxy at
-      // `app/railway-proxy/[[...path]]/route.ts` prefers over any client-sent
+      // `app/api-proxy/[[...path]]/route.ts` prefers over any client-sent
       // Authorization header. Keeping `expiresAt` is what lets the session
       // guard still expire the session correctly after a page refresh.
       partialize: (state) => ({

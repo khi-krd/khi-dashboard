@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
  * Returns the session JWT so browser JS can send it as a Bearer header.
  *
  * Exists for one reason: Vercel rejects any request whose body exceeds 4.5MB
- * (`FUNCTION_PAYLOAD_TOO_LARGE`) before the `/railway-proxy` function ever
+ * (`FUNCTION_PAYLOAD_TOO_LARGE`) before the `/api-proxy` function ever
  * runs, so multipart uploads go straight to the backend instead. The httpOnly
  * cookie cannot cross origins, and the Zustand copy of the token is
  * memory-only — after a page refresh this endpoint is the only way to

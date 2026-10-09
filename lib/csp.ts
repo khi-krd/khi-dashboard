@@ -36,7 +36,7 @@ export function buildCsp(nonce: string, isDev: boolean): string {
 
     "font-src": ["'self'", "data:"],
 
-    // Same-origin for every API call through /railway-proxy, plus the backend
+    // Same-origin for every API call through /api-proxy, plus the backend
     // origin itself: multipart uploads go straight to it (FormData requests
     // bypass the proxy — Vercel refuses bodies over ~4.5MB before the route
     // runs). ws:/wss: are Turbopack's dev HMR socket.

@@ -114,6 +114,6 @@ export const config = {
    * Dashboard routes never contain a dot, so nothing authenticated slips past.
    */
   matcher: [
-    "/((?!api|_next/static|_next/image|railway-proxy|.*\\.[\\w]+$).*)",
+    "/((?!api|_next/static|_next/image|api-proxy|.*\\.[\\w]+$).*)",
   ],
 }
