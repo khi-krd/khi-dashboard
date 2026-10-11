@@ -4,7 +4,9 @@ import { PlayIcon } from "@heroicons/react/24/solid"
 import Image from "next/image"
 import Link from "next/link"
 
+import { VideoUrlPreview } from "@/components/shared/video-url-preview"
 import { isOptimizableImageSrc } from "@/lib/image-src"
+import { classifyVideoUrl } from "@/lib/video-embed"
 import { NS } from "@/components/videos/videos-strings"
 import {
   detectProvider,
@@ -55,6 +57,10 @@ export function VideoPlayerBlock({
   }
 
   if (file) {
+    // A `url` field may carry a watch-page link (YouTube, Vimeo) rather than a
+    // file — VideoUrlPreview embeds it properly instead of dead-ending a
+    // <video> element on an HTML page.
+    const link = classifyVideoUrl(file)
     return (
       <div
         className={cn(
@@ -62,14 +68,18 @@ export function VideoPlayerBlock({
           className,
         )}
       >
-        <video
-          controls
-          poster={posterUrl || undefined}
-          className="size-full"
-          preload="metadata"
-        >
-          <source src={file} type={mimeFromFormat(source.fileFormat)} />
-        </video>
+        {link && link.kind !== "file" ? (
+          <VideoUrlPreview url={file} poster={posterUrl} />
+        ) : (
+          <video
+            controls
+            poster={posterUrl || undefined}
+            className="size-full"
+            preload="metadata"
+          >
+            <source src={file} type={mimeFromFormat(source.fileFormat)} />
+          </video>
+        )}
       </div>
     )
   }

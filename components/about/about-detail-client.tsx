@@ -51,6 +51,7 @@ import {
 import { cn } from "@/lib/utils"
 import { aboutContentLanguages } from "@/types/about-ui"
 import type { Language } from "@/types/about"
+import { VideoUrlPreview } from "@/components/shared/video-url-preview"
 
 export function AboutDetailClient({ aboutId }: { aboutId: number }) {
   const router = useRouter()
@@ -309,13 +310,12 @@ export function AboutDetailClient({ aboutId }: { aboutId: number }) {
               <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                 {about.heroVideoUrl?.trim() ? (
                   <div className="border-border overflow-hidden rounded-lg border">
-                    <video
-                      src={about.heroVideoUrl}
-                      controls
-                      playsInline
-                      poster={about.heroPosterUrl?.trim() || undefined}
-                      className="aspect-video w-full bg-black object-cover"
-                    />
+                    <div className="aspect-video w-full bg-black">
+                      <VideoUrlPreview
+                        url={about.heroVideoUrl}
+                        poster={about.heroPosterUrl?.trim() || null}
+                      />
+                    </div>
                   </div>
                 ) : (
                   <div className="border-border bg-muted/20 text-muted-foreground flex aspect-video items-center justify-center rounded-lg border text-sm">

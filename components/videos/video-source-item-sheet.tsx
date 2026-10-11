@@ -38,6 +38,7 @@ import { applyVideoFileMeta } from "@/lib/video-file-utils"
 import { watchToEmbedUrl } from "@/lib/video-url-helpers"
 import { cn } from "@/lib/utils"
 import type { VideoFormValues } from "@/lib/validations/videos"
+import { VideoUrlPreview } from "@/components/shared/video-url-preview"
 
 const MAX_VIDEO_FILE_BYTES = 500 * 1024 * 1024
 
@@ -195,10 +196,9 @@ export function VideoSourceItemSheet({
               >
                 <input {...getInputProps()} className="sr-only" />
                 {playbackUrl ? (
-                  <video
-                    src={playbackUrl}
-                    controls
-                    className="size-full rounded-xl object-contain"
+                  <VideoUrlPreview
+                    url={playbackUrl}
+                    className="rounded-xl"
                   />
                 ) : (
                   <button

@@ -18,6 +18,7 @@ import {
   type CarouselApi,
 } from "@/components/ui/carousel"
 import { formatCkbDigits } from "@/lib/intl-ckb"
+import { VideoUrlPreview } from "@/components/shared/video-url-preview"
 
 export type LightboxItem = {
   src: string
@@ -133,10 +134,9 @@ export function MediaLightbox({
               >
                 <div onClick={(e) => e.stopPropagation()}>
                   {it.type === "VIDEO" ? (
-                    <video
-                      src={it.src}
-                      poster={it.posterUrl?.trim() || undefined}
-                      controls
+                    <VideoUrlPreview
+                      url={it.src}
+                      poster={it.posterUrl?.trim() || null}
                       className="mx-auto max-h-[80vh] w-auto rounded-lg"
                     />
                   ) : (

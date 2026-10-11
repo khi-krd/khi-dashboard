@@ -64,6 +64,7 @@ import { cn } from "@/lib/utils"
 import type { Language, ProjectDto } from "@/types/projects"
 import { normalizeProjectStatus } from "@/types/projects"
 import { useQueryClient } from "@tanstack/react-query"
+import { VideoUrlPreview } from "@/components/shared/video-url-preview"
 
 function escapeHtml(text: string) {
   return text
@@ -618,11 +619,9 @@ export function ProjectDetailClient({ projectId }: { projectId: number }) {
                         className="overflow-hidden rounded-lg border border-border bg-muted/20"
                       >
                         {item.kind === "VIDEO" ? (
-                          <video
-                            src={item.url}
-                            controls
-                            className="aspect-video w-full bg-black object-contain"
-                          />
+                          <div className="aspect-video w-full bg-black">
+                            <VideoUrlPreview url={item.url} />
+                          </div>
                         ) : item.kind === "AUDIO" ? (
                           <div className="flex aspect-video items-center justify-center p-4">
                             <audio src={item.url} controls className="w-full" />

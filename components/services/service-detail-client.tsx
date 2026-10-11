@@ -60,6 +60,7 @@ import { formatNewsDateLong, formatNewsDateShort, formatCkbDigits } from "@/lib/
 import { cn } from "@/lib/utils"
 import type { Language, ServiceDto } from "@/types/services"
 import { getServiceContent } from "@/types/services-ui"
+import { VideoUrlPreview } from "@/components/shared/video-url-preview"
 
 const sectionDivider =
   "mt-6 border-t border-border/60 pt-6 [&:first-child]:mt-0 [&:first-child]:border-t-0 [&:first-child]:pt-0"
@@ -536,12 +537,9 @@ export function ServiceDetailClient({ serviceId }: { serviceId: number }) {
                           <p className="text-muted-foreground text-[10px]">
                             {NS.gallery.typeVideo}
                           </p>
-                          <video
-                            src={slot.url}
-                            poster={slot.posterUrl ?? undefined}
-                            controls
-                            className="border-border aspect-video w-full rounded-lg border object-cover"
-                          />
+                          <div className="border-border aspect-video w-full overflow-hidden rounded-lg border">
+                            <VideoUrlPreview url={slot.url} poster={slot.posterUrl} />
+                          </div>
                         </div>
                       ) : (
                         <button

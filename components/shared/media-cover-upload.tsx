@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useFileUpload } from "@/hooks/use-file-upload"
 import { mediaTypeFromFile } from "@/lib/tiptap-media"
+import { VideoUrlPreview } from "@/components/shared/video-url-preview"
 import { uploadMedia } from "@/services/mediaService"
 import { cn } from "@/lib/utils"
 
@@ -156,12 +157,7 @@ export function MediaCoverUpload({
         <input {...getInputProps()} className="sr-only" />
         {preview ? (
           variant === "video" ? (
-            <video
-              src={preview}
-              controls
-              className="size-full object-cover"
-              playsInline
-            />
+            <VideoUrlPreview url={preview} />
           ) : variant === "audio" ? (
             <div className="text-muted-foreground flex size-full flex-col items-center justify-center gap-3 p-4">
               <SpeakerWaveIcon className="size-10 opacity-40" />
