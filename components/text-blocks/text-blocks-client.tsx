@@ -115,21 +115,30 @@ export function TextBlocksClient() {
     return counts
   }, [rows])
 
-  /** When searching we ignore the page tabs and show every matching key. */
+  /**
+   * Search across the key AND both locales' text. The query may be a single
+   * word, a sentence, or any combination of words — every word must appear
+   * somewhere in the row, in any order. Arabic-script lookalikes are
+   * normalized so ي/ی and ك/ک match either way.
+   */
+  const normalize = useCallback(
+    (s: string) =>
+      s.toLowerCase().replace(/ي/g, "ی").replace(/ك/g, "ک").replace(/\s+/g, " "),
+    [],
+  )
   const searching = search.trim().length > 0
   const visibleRows = useMemo(() => {
-    const q = search.trim().toLowerCase()
+    const words = normalize(search).split(" ").filter(Boolean)
     return rows.filter((r) => {
-      if (q) {
-        return (
-          r.key.toLowerCase().includes(q) ||
-          (effectiveDrafts[r.key]?.ckb ?? "").toLowerCase().includes(q) ||
-          (effectiveDrafts[r.key]?.ku ?? "").toLowerCase().includes(q)
+      if (words.length) {
+        const haystack = normalize(
+          `${r.key} ${effectiveDrafts[r.key]?.ckb ?? ""} ${effectiveDrafts[r.key]?.ku ?? ""}`,
         )
+        return words.every((w) => haystack.includes(w))
       }
       return pageOf(r) === page
     })
-  }, [rows, effectiveDrafts, search, page, searching])
+  }, [rows, effectiveDrafts, search, page, normalize])
 
   const grouped = useMemo(() => {
     const bySection = new Map<string, TextBlockRow[]>()
@@ -239,7 +248,7 @@ export function TextBlocksClient() {
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="گەڕان لە هەموو لاپەڕەکان…"
+            placeholder="گەڕان بە وشە یان ڕستە لە هەموو دەقەکان…"
             className="w-64"
           />
           <Button onClick={handleSave} disabled={saving || dirtyKeys.length === 0}>
@@ -299,6 +308,14 @@ export function TextBlocksClient() {
           کلیل زیاد بکە
         </Button>
       </div>
+
+      {/* Search result count */}
+      {searching && (
+        <p className="text-sm text-muted-foreground">
+          {visibleRows.length} دەق دۆزرایەوە — دەستکارییەکانی ئێرە پاشەکەوت
+          دەکرێن.
+        </p>
+      )}
 
       {/* Sections */}
       {grouped.map(([section, sectionRows]) => (
