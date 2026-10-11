@@ -15,12 +15,18 @@ import {
 } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import { PlayIcon, XMarkIcon } from "@heroicons/react/24/outline"
+import { useState } from "react"
 import { useFieldArray, useFormContext } from "react-hook-form"
 
 import { ServiceGalleryBulkUploader } from "@/components/services/service-gallery-bulk-uploader"
 import { NS } from "@/components/services/services-strings"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
+import { createEmptyGallerySlot } from "@/lib/validations/services"
 import type { ServiceFormValues } from "@/lib/validations/services"
+
+const MAX_GALLERY_SLOTS = 24
 
 type GallerySlot = ServiceFormValues["galleryMedia"][number]
 
@@ -33,12 +39,30 @@ function previewUrl(slot: GallerySlot | undefined): string | null {
 
 export function ServiceGalleryEditor() {
   const { control, watch } = useFormContext<ServiceFormValues>()
-  const { fields, remove, move } = useFieldArray({
+  const { fields, remove, move, append } = useFieldArray({
     control,
     name: "galleryMedia",
   })
 
   const slots = watch("galleryMedia") ?? []
+  const [urlDraft, setUrlDraft] = useState("")
+  const [urlType, setUrlType] = useState<"IMAGE" | "VIDEO">("IMAGE")
+  const [posterDraft, setPosterDraft] = useState("")
+
+  const full = slots.length >= MAX_GALLERY_SLOTS
+
+  function addUrlSlot() {
+    const url = urlDraft.trim()
+    if (!url || full) return
+    append({
+      ...createEmptyGallerySlot(),
+      type: urlType,
+      url,
+      posterUrl: urlType === "VIDEO" ? posterDraft.trim() : "",
+    })
+    setUrlDraft("")
+    setPosterDraft("")
+  }
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -58,6 +82,63 @@ export function ServiceGalleryEditor() {
   return (
     <div className="space-y-3">
       <ServiceGalleryBulkUploader slotCount={slots.length} compact />
+
+      {/* Add by URL — image or video link, with an optional video poster */}
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="border-border flex overflow-hidden rounded-md border">
+          {(["IMAGE", "VIDEO"] as const).map((t) => (
+            <button
+              key={t}
+              type="button"
+              onClick={() => setUrlType(t)}
+              className={cn(
+                "px-3 py-1.5 text-xs font-medium transition-colors",
+                urlType === t
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:bg-muted/60",
+              )}
+            >
+              {t === "VIDEO" ? NS.gallery.typeVideo : NS.gallery.typeImage}
+            </button>
+          ))}
+        </div>
+        <Input
+          dir="ltr"
+          value={urlDraft}
+          onChange={(e) => setUrlDraft(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault()
+              addUrlSlot()
+            }
+          }}
+          placeholder={
+            urlType === "VIDEO" ? "https://…video.mp4" : "https://…image.jpg"
+          }
+          className="min-w-[220px] flex-1 font-mono text-xs"
+        />
+        {urlType === "VIDEO" ? (
+          <Input
+            dir="ltr"
+            value={posterDraft}
+            onChange={(e) => setPosterDraft(e.target.value)}
+            placeholder={`${NS.gallery.posterUrl} — https://…`}
+            className="min-w-[180px] flex-1 font-mono text-xs"
+          />
+        ) : null}
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          disabled={!urlDraft.trim() || full}
+          onClick={addUrlSlot}
+        >
+          {NS.gallery.addSlot}
+        </Button>
+      </div>
+      {full ? (
+        <p className="text-destructive text-xs">{NS.gallery.bulkMax("24")}</p>
+      ) : null}
 
       {fields.length > 0 ? (
         <DndContext

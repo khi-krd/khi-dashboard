@@ -1,6 +1,11 @@
 "use client"
 
-import { ArrowUpTrayIcon, PhotoIcon, VideoCameraIcon } from "@heroicons/react/24/outline"
+import {
+  ArrowUpTrayIcon,
+  PhotoIcon,
+  SpeakerWaveIcon,
+  VideoCameraIcon,
+} from "@heroicons/react/24/outline"
 import { useState } from "react"
 import { toast } from "sonner"
 
@@ -17,8 +22,43 @@ import { cn } from "@/lib/utils"
 
 const DEFAULT_IMAGE_ACCEPT = "image/jpeg,image/png,image/webp,image/gif"
 const DEFAULT_VIDEO_ACCEPT = "video/mp4,video/webm,video/quicktime,video/*"
+const DEFAULT_AUDIO_ACCEPT = "audio/mpeg,audio/wav,audio/ogg,audio/*"
 const DEFAULT_IMAGE_MAX = 20 * 1024 * 1024
 const DEFAULT_VIDEO_MAX = 500 * 1024 * 1024
+const DEFAULT_AUDIO_MAX = 200 * 1024 * 1024
+
+type MediaVariant = "image" | "video" | "audio"
+
+const VARIANT_ACCEPT: Record<MediaVariant, string> = {
+  image: DEFAULT_IMAGE_ACCEPT,
+  video: DEFAULT_VIDEO_ACCEPT,
+  audio: DEFAULT_AUDIO_ACCEPT,
+}
+const VARIANT_MAX: Record<MediaVariant, number> = {
+  image: DEFAULT_IMAGE_MAX,
+  video: DEFAULT_VIDEO_MAX,
+  audio: DEFAULT_AUDIO_MAX,
+}
+const VARIANT_TEXTS: Record<
+  MediaVariant,
+  { dropHint: string; upload: string; urlLabel: string }
+> = {
+  image: {
+    dropHint: TIPTAP_NS.cover.dropHint,
+    upload: TIPTAP_NS.cover.upload,
+    urlLabel: TIPTAP_NS.cover.urlLabel,
+  },
+  video: {
+    dropHint: TIPTAP_NS.video.dropHint,
+    upload: TIPTAP_NS.video.upload,
+    urlLabel: TIPTAP_NS.video.urlLabel,
+  },
+  audio: {
+    dropHint: TIPTAP_NS.audio.dropHint,
+    upload: TIPTAP_NS.audio.upload,
+    urlLabel: TIPTAP_NS.audio.urlLabel,
+  },
+}
 
 export function MediaCoverUpload({
   label,
@@ -41,12 +81,11 @@ export function MediaCoverUpload({
   maxSize?: number
   aspectClass?: string
   helperText?: string
-  variant?: "image" | "video"
+  variant?: MediaVariant
 }) {
-  const resolvedAccept =
-    accept ?? (variant === "video" ? DEFAULT_VIDEO_ACCEPT : DEFAULT_IMAGE_ACCEPT)
-  const resolvedMaxSize =
-    maxSize ?? (variant === "video" ? DEFAULT_VIDEO_MAX : DEFAULT_IMAGE_MAX)
+  const resolvedAccept = accept ?? VARIANT_ACCEPT[variant]
+  const resolvedMaxSize = maxSize ?? VARIANT_MAX[variant]
+  const texts = VARIANT_TEXTS[variant]
   const [uploading, setUploading] = useState(false)
   const [progress, setProgress] = useState<number | null>(null)
   const preview = previewUrl?.trim() || null
@@ -123,6 +162,11 @@ export function MediaCoverUpload({
               className="size-full object-cover"
               playsInline
             />
+          ) : variant === "audio" ? (
+            <div className="text-muted-foreground flex size-full flex-col items-center justify-center gap-3 p-4">
+              <SpeakerWaveIcon className="size-10 opacity-40" />
+              <audio src={preview} controls className="w-full" />
+            </div>
           ) : (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={preview} alt="" className="size-full object-cover" />
@@ -131,10 +175,12 @@ export function MediaCoverUpload({
           <div className="text-muted-foreground flex size-full flex-col items-center justify-center gap-2 p-6 text-center text-sm">
             {variant === "video" ? (
               <VideoCameraIcon className="size-10 opacity-40" />
+            ) : variant === "audio" ? (
+              <SpeakerWaveIcon className="size-10 opacity-40" />
             ) : (
               <PhotoIcon className="size-10 opacity-40" />
             )}
-            <span>{helperText ?? TIPTAP_NS.cover.dropHint}</span>
+            <span>{helperText ?? texts.dropHint}</span>
           </div>
         )}
         {uploading ? (
@@ -153,7 +199,7 @@ export function MediaCoverUpload({
           onClick={openFileDialog}
         >
           <ArrowUpTrayIcon className="size-4" />
-          {TIPTAP_NS.cover.upload}
+          {texts.upload}
         </Button>
         {preview ? (
           <Button
@@ -168,7 +214,7 @@ export function MediaCoverUpload({
       </div>
       <div className="space-y-1">
         <Label className="text-muted-foreground text-xs">
-          {TIPTAP_NS.cover.urlLabel}
+          {texts.urlLabel}
         </Label>
         <Input
           dir="ltr"

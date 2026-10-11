@@ -43,6 +43,18 @@ const KIND_LABELS: Record<MediaKind, string> = {
   AUDIO: "دەنگ",
 }
 
+const KIND_URL_LABELS: Record<MediaKind, string> = {
+  IMAGE: "لینکی وێنە",
+  VIDEO: "لینکی ڤیدیۆ",
+  AUDIO: "لینکی دەنگ",
+}
+
+const KIND_VARIANT: Record<MediaKind, "image" | "video" | "audio"> = {
+  IMAGE: "image",
+  VIDEO: "video",
+  AUDIO: "audio",
+}
+
 type MediaGalleryEditorProps<T extends FieldValues> = {
   name: Path<T>
   title?: string
@@ -227,7 +239,7 @@ function SortableGalleryRow<T extends FieldValues>({
       </div>
 
       <MediaCoverUpload
-        label="URL ی میدیا"
+        label={KIND_URL_LABELS[kind ?? "IMAGE"]}
         previewUrl={url?.trim() || null}
         urlValue={url ?? ""}
         onUrlChange={(s) =>
@@ -235,6 +247,7 @@ function SortableGalleryRow<T extends FieldValues>({
             shouldDirty: true,
           })
         }
+        variant={KIND_VARIANT[kind ?? "IMAGE"]}
         accept={
           kind === "VIDEO"
             ? "video/*"

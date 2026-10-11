@@ -461,6 +461,13 @@ export function ProjectForm({
             </div>
 
             <MediaCoverUpload
+              variant={
+                coverMediaType === "VIDEO"
+                  ? "video"
+                  : coverMediaType === "AUDIO"
+                    ? "audio"
+                    : "image"
+              }
               previewUrl={coverPreviewUrl}
               urlValue={coverUrl ?? ""}
               onUrlChange={(v) => {

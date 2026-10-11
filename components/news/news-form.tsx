@@ -497,6 +497,13 @@ export function NewsForm({
                   control={control}
                   render={({ field }) => (
                     <MediaCoverUpload
+                      variant={
+                        coverMediaType === "VIDEO"
+                          ? "video"
+                          : coverMediaType === "AUDIO"
+                            ? "audio"
+                            : "image"
+                      }
                       previewUrl={coverPreviewUrl}
                       urlValue={field.value ?? ""}
                       urlError={

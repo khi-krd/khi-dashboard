@@ -55,4 +55,14 @@ export const TIPTAP_NS = {
     remove: "لابردن",
     urlLabel: "ناونیشانی URL",
   },
+  video: {
+    dropHint: "ڤیدیۆ ڕاکێشە یان کلیک بکە بۆ بارکردن",
+    upload: "بارکردنی ڤیدیۆ",
+    urlLabel: "لینکی ڤیدیۆ",
+  },
+  audio: {
+    dropHint: "دەنگ ڕاکێشە یان کلیک بکە بۆ بارکردن",
+    upload: "بارکردنی دەنگ",
+    urlLabel: "لینکی دەنگ",
+  },
 } as const
