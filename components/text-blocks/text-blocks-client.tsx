@@ -19,7 +19,51 @@ type Locale = (typeof LOCALES)[number]
 
 const QUERY_KEY = ["text-blocks"]
 
-/** The current draft text for one (key, locale) cell. */
+/**
+ * Website pages → the message sections that feed them. A key lands on the
+ * first page whose section list contains its top-level segment; anything
+ * unmatched (including admin-added custom keys) falls into "other".
+ */
+const PAGES = [
+  { id: "home", label: "سەرەکی", sections: ["Home", "Hero", "LatestUpdates"] },
+  { id: "news", label: "هەواڵ", sections: ["News"] },
+  { id: "projects", label: "پڕۆژە", sections: ["Projects", "ProjectsPage"] },
+  { id: "gallery", label: "گەلەری", sections: ["Gallery", "ImageCollection"] },
+  { id: "sound", label: "دەنگ", sections: ["Sound", "Audio"] },
+  { id: "writings", label: "نووسین", sections: ["Writings"] },
+  { id: "video", label: "ڤیدیۆ", sections: ["Video"] },
+  { id: "about", label: "دەربارە", sections: ["About"] },
+  { id: "services", label: "خزمەتگوزاری", sections: ["Services"] },
+  { id: "contact", label: "پەیوەندی", sections: ["Contact"] },
+  { id: "donate", label: "بەخشین", sections: ["Donate"] },
+  { id: "search", label: "گەڕان", sections: ["Search"] },
+  { id: "archive", label: "ئەرشیڤ", sections: ["Archive"] },
+  {
+    id: "layout",
+    label: "مێنیو و فوتەر",
+    sections: ["Nav", "Footer", "LanguageSwitcher"],
+  },
+  {
+    id: "other",
+    label: "ئاخر",
+    sections: ["Ui", "Common", "ErrorBoundary", "NotFound"],
+  },
+] as const
+
+type PageId = (typeof PAGES)[number]["id"]
+
+const SECTION_TO_PAGE = new Map<string, PageId>()
+for (const page of PAGES) {
+  for (const section of page.sections) {
+    SECTION_TO_PAGE.set(section, page.id)
+  }
+}
+
+function pageOf(row: TextBlockRow): PageId {
+  const section = row.section ?? row.key.split(".")[0]
+  return SECTION_TO_PAGE.get(section) ?? "other"
+}
+
 type Drafts = Record<string, Record<Locale, string>>
 
 function toDrafts(rows: TextBlockRow[]): Drafts {
@@ -35,21 +79,23 @@ function toDrafts(rows: TextBlockRow[]): Drafts {
 
 export function TextBlocksClient() {
   const queryClient = useQueryClient()
-  const { data: rows = [], isLoading, error } = useQuery({
-    queryKey: QUERY_KEY,
-    queryFn: getTextBlocks,
-  })
+  const {
+    data: rows = [],
+    isLoading,
+    error,
+  } = useQuery({ queryKey: QUERY_KEY, queryFn: getTextBlocks })
 
   const [drafts, setDrafts] = useState<Drafts | null>(null)
   const [search, setSearch] = useState("")
+  const [page, setPage] = useState<PageId>("home")
   const [newKey, setNewKey] = useState("")
   const [saving, setSaving] = useState(false)
 
-  // Seed drafts once rows arrive — local edits must survive refetches.
-  const effectiveDrafts = useMemo<Drafts>(() => {
-    if (drafts) return drafts
-    return toDrafts(rows)
-  }, [drafts, rows])
+  // Local edits must survive background refetches — keep a draft overlay.
+  const effectiveDrafts = useMemo<Drafts>(
+    () => drafts ?? toDrafts(rows),
+    [drafts, rows],
+  )
 
   const dirtyKeys = useMemo(() => {
     const orig = toDrafts(rows)
@@ -60,34 +106,48 @@ export function TextBlocksClient() {
     )
   }, [effectiveDrafts, rows])
 
-  const grouped = useMemo(() => {
+  const pageCounts = useMemo(() => {
+    const counts = new Map<PageId, number>()
+    for (const row of rows) {
+      const p = pageOf(row)
+      counts.set(p, (counts.get(p) ?? 0) + 1)
+    }
+    return counts
+  }, [rows])
+
+  /** When searching we ignore the page tabs and show every matching key. */
+  const searching = search.trim().length > 0
+  const visibleRows = useMemo(() => {
     const q = search.trim().toLowerCase()
-    const filtered = rows.filter(
-      (r) =>
-        !q ||
-        r.key.toLowerCase().includes(q) ||
-        effectiveDrafts[r.key]?.ckb?.toLowerCase().includes(q) ||
-        effectiveDrafts[r.key]?.ku?.toLowerCase().includes(q),
-    )
+    return rows.filter((r) => {
+      if (q) {
+        return (
+          r.key.toLowerCase().includes(q) ||
+          (effectiveDrafts[r.key]?.ckb ?? "").toLowerCase().includes(q) ||
+          (effectiveDrafts[r.key]?.ku ?? "").toLowerCase().includes(q)
+        )
+      }
+      return pageOf(r) === page
+    })
+  }, [rows, effectiveDrafts, search, page, searching])
+
+  const grouped = useMemo(() => {
     const bySection = new Map<string, TextBlockRow[]>()
-    for (const r of filtered) {
+    for (const r of visibleRows) {
       const section = r.section ?? r.key.split(".")[0]
       const list = bySection.get(section) ?? []
       list.push(r)
       bySection.set(section, list)
     }
     return [...bySection.entries()].sort((a, b) => a[0].localeCompare(b[0]))
-  }, [rows, effectiveDrafts, search])
+  }, [visibleRows])
 
-  const setValue = useCallback((key: string, locale: Locale, value: string) => {
-    setDrafts((prev) => {
-      const base = prev ?? {}
-      return {
-        ...base,
-        [key]: { ...(base[key] ?? { ckb: "", ku: "" }), [locale]: value },
-      }
-    })
-  }, [])
+  const setValue = useCallback(
+    (key: string, locale: Locale, value: string) => {
+      setDrafts({ ...effectiveDrafts, [key]: { ...effectiveDrafts[key], [locale]: value } })
+    },
+    [effectiveDrafts],
+  )
 
   const handleSave = useCallback(async () => {
     const entries = dirtyKeys.flatMap((key) =>
@@ -97,7 +157,7 @@ export function TextBlocksClient() {
         value: effectiveDrafts[key]?.[locale] ?? "",
       })),
     )
-    if (entries.length === 0) return
+    if (!entries.length) return
     setSaving(true)
     try {
       await saveTextBlocks(entries)
@@ -157,18 +217,21 @@ export function TextBlocksClient() {
   if (error) {
     return (
       <div className="p-8 text-destructive">
-        نەتوانرا دەقەکان بهێنرێت — تەواوی مافەکان پێویستە (ADMIN).
+        نەتوانرا دەقەکان بهێنرێت — مافی ADMIN پێویستە.
       </div>
     )
   }
 
+  const activePage = PAGES.find((p) => p.id === page) ?? PAGES[0]
+
   return (
-    <div className="flex flex-col gap-6 p-6" dir="rtl">
+    <div className="flex flex-col gap-5 p-6" dir="rtl">
+      {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">دەقە ستاتیکەکان</h1>
           <p className="text-sm text-muted-foreground">
-            دەقەکانی ماڵپەڕ لێرە دەگۆڕدرێن — گۆڕانکارییەکان ڕاستەوخۆ لەسەر
+            دەقەکانی هەر لاپەڕێکی ماڵپەڕ — گۆڕانکارییەکان ڕاستەوخۆ لەسەر
             ماڵپەڕ دەردەخەن.
           </p>
         </div>
@@ -176,25 +239,55 @@ export function TextBlocksClient() {
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="گەڕان بە کلیل یان دەق…"
+            placeholder="گەڕان لە هەموو لاپەڕەکان…"
             className="w-64"
           />
-          <Button
-            onClick={handleSave}
-            disabled={saving || dirtyKeys.length === 0}
-          >
-            {saving
-              ? "پاشەکەوت دەکرێت…"
-              : `پاشەکەوت (${dirtyKeys.length})`}
+          <Button onClick={handleSave} disabled={saving || dirtyKeys.length === 0}>
+            {saving ? "پاشەکەوت دەکرێت…" : `پاشەکەوت (${dirtyKeys.length})`}
           </Button>
         </div>
       </div>
 
-      <div className="flex items-center gap-2 rounded-lg border p-3">
+      {/* Page tabs */}
+      <div className="flex flex-wrap gap-2 border-b pb-3">
+        {PAGES.map((p) => {
+          const count = pageCounts.get(p.id) ?? 0
+          const active = !searching && p.id === page
+          return (
+            <button
+              key={p.id}
+              type="button"
+              onClick={() => {
+                setPage(p.id)
+                setSearch("")
+              }}
+              className={
+                "rounded-full border px-4 py-1.5 text-sm transition-colors " +
+                (active
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-border bg-muted/40 text-foreground hover:bg-muted")
+              }
+            >
+              {p.label}
+              <span
+                className={
+                  "ms-2 rounded-full px-1.5 text-xs " +
+                  (active ? "bg-primary-foreground/20" : "bg-muted")
+                }
+              >
+                {count}
+              </span>
+            </button>
+          )
+        })}
+      </div>
+
+      {/* Add key — lands on the active page's first section by default */}
+      <div className="flex items-center gap-2">
         <Input
           value={newKey}
           onChange={(e) => setNewKey(e.target.value)}
-          placeholder="کلیلی نوێ — بۆ نموونە Home.Hero.subtitle"
+          placeholder={`کلیلی نوێ — بۆ نموونە ${activePage.sections[0]}.fieldName`}
           className="max-w-md font-mono"
           dir="ltr"
         />
@@ -207,17 +300,20 @@ export function TextBlocksClient() {
         </Button>
       </div>
 
+      {/* Sections */}
       {grouped.map(([section, sectionRows]) => (
         <section key={section} className="flex flex-col gap-2">
-          <h2 className="text-lg font-semibold text-primary">{section}</h2>
-          <div className="rounded-lg border">
+          <h2 className="text-base font-semibold text-primary" dir="ltr">
+            {section}
+          </h2>
+          <div className="overflow-hidden rounded-lg border bg-card">
             {sectionRows.map((row) => (
               <div
                 key={row.key}
-                className="grid grid-cols-[minmax(180px,280px)_1fr_1fr_auto] items-start gap-3 border-b p-3 last:border-b-0"
+                className="grid grid-cols-[minmax(160px,240px)_1fr_1fr_auto] items-start gap-3 border-b p-3 last:border-b-0"
               >
                 <div
-                  className="break-all pt-2 font-mono text-xs text-muted-foreground"
+                  className="break-all pt-2 font-mono text-xs leading-5 text-muted-foreground"
                   dir="ltr"
                 >
                   {row.key}
@@ -225,7 +321,7 @@ export function TextBlocksClient() {
                 {LOCALES.map((locale) => (
                   <div key={locale} className="flex flex-col gap-1">
                     <span className="text-xs font-medium text-muted-foreground">
-                      {locale === "ckb" ? "کوردی (سۆرانی)" : "کوردی (کورمانجی)"}
+                      {locale === "ckb" ? "سۆرانی" : "کورمانجی"}
                     </span>
                     <Textarea
                       value={effectiveDrafts[row.key]?.[locale] ?? ""}
@@ -239,7 +335,7 @@ export function TextBlocksClient() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="text-destructive"
+                  className="mt-6 text-destructive"
                   onClick={() => handleDelete(row)}
                   disabled={saving}
                 >
@@ -252,8 +348,10 @@ export function TextBlocksClient() {
       ))}
 
       {grouped.length === 0 && (
-        <p className="p-6 text-center text-muted-foreground">
-          هیچ دەقێک نەدۆزرایەوە.
+        <p className="p-8 text-center text-muted-foreground">
+          {searching
+            ? "هیچ دەقێک بۆ ئەم گەڕانە نەدۆزرایەوە."
+            : "هیچ دەقێک لەم لاپەڕەدا نییە — کلیلێک زیاد بکە."}
         </p>
       )}
     </div>
