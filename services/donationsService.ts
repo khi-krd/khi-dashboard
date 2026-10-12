@@ -100,3 +100,11 @@ export async function updateFinancialDonationStatus(
   })
   return normalizeFinancialDonationDto(unwrapApiData(data))
 }
+
+export async function deleteArchiveDonation(id: number): Promise<void> {
+  await api.delete(`${BASE}/archive/${id}`)
+}
+
+export async function deleteFinancialDonation(id: number): Promise<void> {
+  await api.delete(`${BASE}/financial/${id}`)
+}

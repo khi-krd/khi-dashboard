@@ -4,6 +4,7 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   EyeIcon,
+  TrashIcon,
 } from "@heroicons/react/24/outline"
 
 import { DonationStatusPill } from "@/components/donations/donation-status-pill"
@@ -27,6 +28,7 @@ export function DonationsFinancialTable({
   totalElements,
   onPageChange,
   onView,
+  onDelete,
 }: {
   rows: FinancialDonationRow[]
   pageIndex: number
@@ -34,6 +36,7 @@ export function DonationsFinancialTable({
   totalElements: number
   onPageChange: (page: number) => void
   onView: (row: FinancialDonationRow) => void
+  onDelete?: (row: FinancialDonationRow) => void
 }) {
   const totalPages = Math.max(1, Math.ceil(totalElements / pageSize))
   const from = totalElements === 0 ? 0 : pageIndex * pageSize + 1
@@ -61,7 +64,7 @@ export function DonationsFinancialTable({
               <th className="w-32 py-2.5 text-start">{NS.financial.paymentMethod}</th>
               <th className="w-24 py-2.5 text-start">{NS.table.status}</th>
               <th className="w-28 py-2.5 text-start">{NS.table.date}</th>
-              <th className="w-16 py-2.5 text-start" />
+              <th className="w-20 py-2.5 text-start" />
             </tr>
           </thead>
           <tbody className="divide-border/60 divide-y">
@@ -101,22 +104,42 @@ export function DonationsFinancialTable({
                   {row.createdAt ? formatRelativeTimeKu(row.createdAt) : "—"}
                 </td>
                 <td className="py-3">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className={cn(
-                      "size-7",
-                      "opacity-100 md:opacity-0 md:group-hover:opacity-100",
-                    )}
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      onView(row)
-                    }}
-                    aria-label={NS.action.view}
-                  >
-                    <EyeIcon className="size-4" />
-                  </Button>
+                  <div className="flex items-center gap-0.5">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className={cn(
+                        "size-7",
+                        "opacity-100 md:opacity-0 md:group-hover:opacity-100",
+                      )}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onView(row)
+                      }}
+                      aria-label={NS.action.view}
+                    >
+                      <EyeIcon className="size-4" />
+                    </Button>
+                    {onDelete ? (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className={cn(
+                          "text-destructive hover:text-destructive size-7",
+                          "opacity-100 md:opacity-0 md:group-hover:opacity-100",
+                        )}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          onDelete(row)
+                        }}
+                        aria-label={NS.action.delete}
+                      >
+                        <TrashIcon className="size-4" />
+                      </Button>
+                    ) : null}
+                  </div>
                 </td>
               </tr>
             ))}

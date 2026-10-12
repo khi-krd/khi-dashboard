@@ -11,6 +11,7 @@ import {
 } from "@/components/donations/donations-breadcrumb"
 import { DonationsArchiveSheet } from "@/components/donations/donations-archive-sheet"
 import { DonationsArchiveTable } from "@/components/donations/donations-archive-table"
+import { DonationDeleteDialog } from "@/components/donations/donation-delete-dialog"
 import { DonationsErrorState } from "@/components/donations/donations-error-state"
 import { DonationsFinancialSheet } from "@/components/donations/donations-financial-sheet"
 import { DonationsFinancialTable } from "@/components/donations/donations-financial-table"
@@ -20,8 +21,12 @@ import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useDebouncedValue } from "@/hooks/useDebouncedValue"
+import { toast } from "sonner"
+
 import {
   useArchiveDonationsListQuery,
+  useDeleteArchiveDonationMutation,
+  useDeleteFinancialDonationMutation,
   useFinancialDonationsListQuery,
 } from "@/hooks/useDonations"
 import { formatCkbDigits } from "@/lib/intl-ckb"
@@ -83,6 +88,35 @@ function DonationsListInner() {
   )
   const [financialSheetRow, setFinancialSheetRow] =
     useState<FinancialDonationRow | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<{
+    kind: "archive" | "financial"
+    id: number
+    name: string
+  } | null>(null)
+
+  const deleteArchiveM = useDeleteArchiveDonationMutation()
+  const deleteFinancialM = useDeleteFinancialDonationMutation()
+  const deletePending =
+    deleteArchiveM.isPending || deleteFinancialM.isPending
+
+  function confirmDelete() {
+    if (!deleteTarget) return
+    const mutation =
+      deleteTarget.kind === "archive" ? deleteArchiveM : deleteFinancialM
+    mutation.mutate(deleteTarget.id, {
+      onSuccess: () => {
+        toast.success(NS.toast.deleted)
+        if (deleteTarget.kind === "archive") {
+          if (archiveSheetRow?.id === deleteTarget.id) setArchiveSheetRow(null)
+        } else {
+          if (financialSheetRow?.id === deleteTarget.id)
+            setFinancialSheetRow(null)
+        }
+        setDeleteTarget(null)
+      },
+      onError: () => toast.error(NS.toast.deleteFailed),
+    })
+  }
 
   const archiveQ = useArchiveDonationsListQuery({
     page: pageIndex,
@@ -228,6 +262,13 @@ function DonationsListInner() {
                   totalElements={archiveTotal}
                   onPageChange={setPageIndex}
                   onView={setArchiveSheetRow}
+                  onDelete={(row) =>
+                    setDeleteTarget({
+                      kind: "archive",
+                      id: row.id,
+                      name: row.donorName?.trim() ?? "",
+                    })
+                  }
                 />
               )}
             </>
@@ -256,6 +297,13 @@ function DonationsListInner() {
                   totalElements={financialTotal}
                   onPageChange={setPageIndex}
                   onView={setFinancialSheetRow}
+                  onDelete={(row) =>
+                    setDeleteTarget({
+                      kind: "financial",
+                      id: row.id,
+                      name: row.donorName?.trim() ?? "",
+                    })
+                  }
                 />
               )}
             </>
@@ -279,6 +327,16 @@ function DonationsListInner() {
         }}
         row={financialSheetRow}
         onStatusUpdated={() => void financialQ.refetch()}
+      />
+
+      <DonationDeleteDialog
+        open={deleteTarget != null}
+        onOpenChange={(open) => {
+          if (!open && !deletePending) setDeleteTarget(null)
+        }}
+        name={deleteTarget?.name}
+        isPending={deletePending}
+        onConfirm={confirmDelete}
       />
     </div>
   )

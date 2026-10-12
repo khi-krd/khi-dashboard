@@ -12,6 +12,8 @@ import {
   type DonationListQueryKeyParts,
 } from "@/lib/donations-query-keys"
 import {
+  deleteArchiveDonation,
+  deleteFinancialDonation,
   getArchiveDonationsList,
   getDonationSettings,
   getDonationTypes,
@@ -94,3 +96,23 @@ export function useUpdateFinancialDonationStatusMutation() {
 }
 
 export type { DonationPage, DonationSettingsDto }
+
+export function useDeleteArchiveDonationMutation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (id: number) => deleteArchiveDonation(id),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: donationKeys.archiveLists() })
+    },
+  })
+}
+
+export function useDeleteFinancialDonationMutation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (id: number) => deleteFinancialDonation(id),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: donationKeys.financialLists() })
+    },
+  })
+}

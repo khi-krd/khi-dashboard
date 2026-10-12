@@ -122,9 +122,17 @@ export const NS = {
   toast: {
     statusUpdated: "دۆخ نوێکرایەوە.",
     copied: "لە کلیپبۆرددا کۆپی کرا.",
+    deleted: "تۆمارەکە سڕایەوە.",
+    deleteFailed: "سڕینەوە سەرکەوتوو نەبوو. دووبارە هەوڵبدەرەوە.",
   },
   action: {
     view: "بینین",
     openAttachment: "کردنەوەی هاوپێچ",
+    delete: "سڕینەوە",
+    cancel: "هەڵوەشاندنەوە",
+  },
+  deleteDialog: {
+    title: "سڕینەوەی تۆمار",
+    body: "دڵنیایت لە سڕینەوەی ئەم تۆمارە؟ ئەم کردارە ناگەڕێتەوە.",
   },
 } as const
