@@ -49,7 +49,7 @@ export const NS = {
       body: "ئەم کردارە ناتوانرێت بگەڕێندرێتەوە. بەشی فیلم لەسەر پاشبنەمایەکی تاریکی سادە دەردەکەوێت.",
     },
     meta: {
-      size: "قەبارە",
+      size: "Size",
       mime: "جۆری فایل",
     },
   },
@@ -167,7 +167,7 @@ export const NS = {
     sheet_title: (n: string) => `دەستکاری سەرچاوە #${n}`,
     delete: "سڕینەوەی سەرچاوە",
     label_field: "ناونیشانی سەرچاوە",
-    label_placeholder: "بەشی ١، 1080p…",
+    label_placeholder: "بەشی 1، 1080p…",
     main_label: "سەرچاوەی سەرەکی",
     main_helper: "ئەم سەرچاوەیە وەک سەرەکی لە لیستدا دەردەکەوێت",
     metadata_manual: "ئەم زانیارییە بە دەستی پڕ دەکرێتەوە",
@@ -226,7 +226,7 @@ export const NS = {
     duration_unit: "چرکە",
     resolution: "پاژەکی",
     format: "فۆڕمات",
-    size: "قەبارە",
+    size: "Size",
     size_unit: "MB",
     publish_date_helper: "بەرواری بڵاوکردنەوەی ڤیدیۆکە",
     topic_helper:

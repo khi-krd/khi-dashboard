@@ -125,7 +125,7 @@ export const NS = {
     map_embed_url: "لینکی نەخشە (embed)",
     latitude: "پانی",
     longitude: "درێژی",
-    display_order: "ڕیزبەندی",
+    display_order: "Display Order",
     hero_image: "وێنەی نووسینگە",
     hero_image_hint:
       "پێشنیارکراو: ڕێژەی ١٦:١٠ — ١٦٠٠×١٠٠٠ پیکسل، JPEG یان WebP، کەمتر لە ٤٠٠ کیلۆبایت. لاکانی وێنەکە لەسەر مۆبایل دەبڕدرێن، بۆیە بەشە گرنگەکە لە ناوەڕاست دابنێ.",

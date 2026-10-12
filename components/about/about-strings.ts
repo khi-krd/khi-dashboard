@@ -149,7 +149,7 @@ export const NS = {
     team_empty: "هیچ ئەندامێک زیاد نەکراوە",
     team_image: "وێنەی ئەندام",
     team_office: "ئۆفیس",
-    team_display_order: "ڕیزبەندی",
+    team_display_order: "Display Order",
     partners: "هاوبەشەکان",
     partner_add: "زیادکردنی هاوبەش",
     partner_edit: "دەستکاری هاوبەش",

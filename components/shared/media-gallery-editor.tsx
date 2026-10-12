@@ -227,7 +227,7 @@ function SortableGalleryRow<T extends FieldValues>({
           </Select>
         </div>
         <div>
-          <Label className="text-xs">ڕیزبندی</Label>
+          <Label className="text-xs">Sort Order</Label>
           <Input
             type="number"
             className="mt-1 h-9 font-mono"

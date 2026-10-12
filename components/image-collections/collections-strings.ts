@@ -175,7 +175,7 @@ export const NS = {
   meta: {
     dimensions: "پاژەکی",
     aspect_ratio: "ڕێژەی ڕووکار",
-    size: "قەبارە",
+    size: "Size",
     mime_type: "جۆری فایل",
     auto_tooltip: "زانیاری بە شێوەی خۆکار دۆزراوەتەوە لە کاتی بارکردندا.",
   },
@@ -209,10 +209,10 @@ export const NS = {
     name_kmr: "ناوی کورمانجی",
   },
   summary: {
-    image_count: "ژمارەی وێنە",
+    image_count: "Image Count",
     uploaded: "وێنە بارکراوەکان",
     external: "لینکی دەرەکی",
-    total_size: "کۆی قەبارە",
+    total_size: "Total Size",
   },
   total: {
     count: (count: string) => `کۆی ${count} کۆکراوە`,

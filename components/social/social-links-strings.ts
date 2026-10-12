@@ -45,7 +45,7 @@ export const SL = {
     labelCkb: "ناونیشان (سۆرانی)",
     labelKmr: "ناونیشان (کورمانجی)",
     labelHint: "ئارەزوومەندانەیە — بەتاڵ بهێڵەرەوە ئەگەر پێویست نییە.",
-    displayOrder: "ڕیزبەندی",
+    displayOrder: "Display Order",
     displayOrderHint: "ژمارەی بچووکتر پێشتر دەردەکەوێت.",
     active: "چالاک",
     activeHint:

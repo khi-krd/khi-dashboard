@@ -150,7 +150,7 @@ export const NS = {
     generic: "هەڵەیەک ڕوویدا. دووبارە هەوڵ بدەرەوە",
   },
   retryLabel: "دووبارە هەوڵبدەرەوە",
-  order: "ڕیز",
+  order: "Order",
 } as const
 
 /**
