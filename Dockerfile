@@ -5,7 +5,7 @@
 #
 # Build:
 #   docker build \
-#     --build-arg NEXT_PUBLIC_API_URL=/railway-proxy \
+#     --build-arg NEXT_PUBLIC_API_URL=/api-proxy \
 #     --build-arg NEXT_PUBLIC_SITE_URL=https://khi.krd \
 #     --build-arg NEXT_PUBLIC_SITE_LABEL=KHI \
 #     -t khi-dashboard .
@@ -34,7 +34,7 @@ FROM base AS builder
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-ARG NEXT_PUBLIC_API_URL=/railway-proxy
+ARG NEXT_PUBLIC_API_URL=/api-proxy
 ARG NEXT_PUBLIC_API_DIRECT_URL
 ARG NEXT_PUBLIC_SITE_URL
 ARG NEXT_PUBLIC_SITE_LABEL
