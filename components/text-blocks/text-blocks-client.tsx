@@ -131,14 +131,17 @@ export function TextBlocksClient() {
     const words = normalize(search).split(" ").filter(Boolean)
     return rows.filter((r) => {
       if (words.length) {
+        // Match the SAVED values, not the live drafts — otherwise a row
+        // vanishes from the results the moment an edit stops containing
+        // the query, right while the admin is typing in it.
         const haystack = normalize(
-          `${r.key} ${effectiveDrafts[r.key]?.ckb ?? ""} ${effectiveDrafts[r.key]?.ku ?? ""}`,
+          `${r.key} ${r.values?.ckb?.value ?? ""} ${r.values?.ku?.value ?? ""}`,
         )
         return words.every((w) => haystack.includes(w))
       }
       return pageOf(r) === page
     })
-  }, [rows, effectiveDrafts, search, page, normalize])
+  }, [rows, search, page, normalize])
 
   const grouped = useMemo(() => {
     const bySection = new Map<string, TextBlockRow[]>()
