@@ -32,7 +32,7 @@ export function isVimeoUrl(url: string | undefined | null): boolean {
 
 export function watchToEmbedUrl(watchUrl: string): string | null {
   const yt = extractYoutubeId(watchUrl)
-  if (yt) return `https://www.youtube.com/embed/${yt}`
+  if (yt) return `https://www.youtube-nocookie.com/embed/${yt}`
   const vm = extractVimeoId(watchUrl)
   if (vm) return `https://player.vimeo.com/video/${vm}`
   return null

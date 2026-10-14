@@ -35,15 +35,17 @@ export function toVideoEmbedUrl(rawUrl: string | null | undefined): string | nul
     const url = new URL(/^https?:\/\//i.test(raw) ? raw : `https://${raw}`)
 
     if (YOUTUBE_HOSTS.test(host)) {
+      // youtube-nocookie: the privacy-mode player — no tracking cookies, so the
+      // cross-site GPS/YSC cookie rejections never fire in the console.
       if (host.endsWith("youtu.be")) {
         const id = url.pathname.replace(/^\//, "").split("/")[0]
-        return id ? `https://www.youtube.com/embed/${id}` : null
+        return id ? `https://www.youtube-nocookie.com/embed/${id}` : null
       }
       // youtube.com/embed/ID and /shorts/ID and /live/ID already carry the id in the path.
       const pathId =
         url.pathname.match(/^\/(embed|shorts|live)\/([^/?#]+)/)?.[2] ?? null
       const id = url.searchParams.get("v") ?? pathId
-      return id ? `https://www.youtube.com/embed/${id}` : null
+      return id ? `https://www.youtube-nocookie.com/embed/${id}` : null
     }
 
     if (VIMEO_HOSTS.test(host)) {
