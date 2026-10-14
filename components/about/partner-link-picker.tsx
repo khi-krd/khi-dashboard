@@ -1,6 +1,7 @@
 "use client"
 
 import { useQuery } from "@tanstack/react-query"
+import { useState } from "react"
 
 import { getCollectionsList } from "@/services/imageCollectionsService"
 import { getNewsList } from "@/services/newsService"
@@ -20,10 +21,10 @@ import {
 } from "@/components/ui/select"
 
 /** One option the partner card can link to. */
-export type LinkTarget = { url: string; label: string }
-type TargetGroup = { label: string; items: LinkTarget[] }
+type LinkTarget = { url: string; label: string }
+type TargetGroup = { key: string; label: string; items: LinkTarget[] }
 
-/** Static routes every partner can point at without picking a record. */
+/** Static routes a partner can point at without picking a record. */
 const PAGE_TARGETS: LinkTarget[] = [
   { url: "/", label: "سەرەکی" },
   { url: "/about", label: "دەربارە" },
@@ -62,6 +63,13 @@ function pickLabel(record: Record<string, unknown>): string {
   return found?.trim() ?? `#${record.id}`
 }
 
+function contentOf(resp: unknown): Record<string, unknown>[] {
+  const data = (resp as { data?: { content?: unknown[] } })?.data
+  return Array.isArray(data?.content)
+    ? (data.content as Record<string, unknown>[])
+    : []
+}
+
 function toItems(
   records: Record<string, unknown>[],
   urlFor: (record: Record<string, unknown>) => string | null,
@@ -72,8 +80,9 @@ function toItems(
   })
 }
 
+/** Every linkable thing, grouped by where it lives on the site. */
 async function loadTargetGroups(): Promise<TargetGroup[]> {
-  const groups: TargetGroup[] = [{ label: "پەڕە گشتییەکان", items: PAGE_TARGETS }]
+  const groups: TargetGroup[] = []
 
   const settled = await Promise.allSettled([
     getServicesList(0, 100),
@@ -87,17 +96,10 @@ async function loadTargetGroups(): Promise<TargetGroup[]> {
   const [services, news, writings, videos, collections, projects, sounds] =
     settled.map((r) => (r.status === "fulfilled" ? r.value : null))
 
-  const content = (resp: unknown): Record<string, unknown>[] => {
-    const data = (resp as { data?: { content?: unknown[] } })?.data
-    return Array.isArray(data?.content)
-      ? (data.content as Record<string, unknown>[])
-      : []
-  }
-
   // Service sections land on /services#<anchor> — the website renders each
-  // section with id = navAnchorId ?? id, so the same fallback builds the
-  // link. Their title lives inside per-language `contents`, not a flat field.
-  const serviceItems = content(services).flatMap((s) => {
+  // section with id = navAnchorId ?? id. Their title lives inside per-language
+  // `contents`, not a flat field.
+  const serviceItems = contentOf(services).flatMap((s) => {
     const anchor =
       (typeof s.navAnchorId === "string" && s.navAnchorId.trim()) ||
       (s.id != null ? String(s.id) : "")
@@ -110,15 +112,24 @@ async function loadTargetGroups(): Promise<TargetGroup[]> {
       `خزمەتگوزاری ${anchor}`
     return [{ url: `/services#${anchor}`, label }]
   })
-
   if (serviceItems.length) {
-    groups.push({ label: "بەشەکانی خزمەتگوزاری", items: serviceItems })
+    groups.push({
+      key: "service-sections",
+      label: "بەشەکانی خزمەتگوزاری",
+      items: serviceItems,
+    })
   }
 
-  const simpleGroups: [string, unknown, (r: Record<string, unknown>) => string][] = [
-    ["هەواڵەکان", news, (r) => `/news/${r.id}`],
-    ["نووسینەکان", writings, (r) => `/writings/${r.id}`],
+  const simpleGroups: [
+    string,
+    string,
+    unknown,
+    (r: Record<string, unknown>) => string,
+  ][] = [
+    ["news", "هەواڵەکان", news, (r) => `/news/${r.id}`],
+    ["writings", "نووسینەکان", writings, (r) => `/writings/${r.id}`],
     [
+      "videos",
       "ڤیدیۆکان",
       videos,
       (r) =>
@@ -126,14 +137,14 @@ async function loadTargetGroups(): Promise<TargetGroup[]> {
           ? `/videos/shortfilms/${r.id}`
           : `/videos/${r.id}`,
     ],
-    ["گەلەرییەکان", collections, (r) => `/gallery/${r.id}`],
-    ["پڕۆژەکان", projects, (r) => `/projects/${r.id}`],
-    ["دەنگەکان", sounds, (r) => `/audio/${r.id}`],
+    ["gallery", "گەلەرییەکان", collections, (r) => `/gallery/${r.id}`],
+    ["projects", "پڕۆژەکان", projects, (r) => `/projects/${r.id}`],
+    ["sounds", "دەنگەکان", sounds, (r) => `/audio/${r.id}`],
   ]
 
-  for (const [label, resp, urlFor] of simpleGroups) {
-    const items = toItems(content(resp), urlFor)
-    if (items.length) groups.push({ label, items })
+  for (const [key, label, resp, urlFor] of simpleGroups) {
+    const items = toItems(contentOf(resp), urlFor)
+    if (items.length) groups.push({ key, label, items })
   }
 
   return groups
@@ -145,10 +156,11 @@ type PartnerLinkPickerProps = {
 }
 
 /**
- * Lets the editor point a partner card at an existing page/record instead of
- * typing a URL — grouped list of static pages, service sections, and every
- * content entity. The picked URL lands in the normal website field, so it can
- * still be edited or replaced by a manual/external link afterwards.
+ * Two-step target picker for a partner card: the first select chooses WHERE
+ * the link goes — a static page directly, or a content group (service
+ * sections, news, writings…); choosing a group opens the second select to
+ * pick the exact item. The picked URL lands in the normal website field, so
+ * it can still be edited or replaced by a manual/external link afterwards.
  */
 export function PartnerLinkPicker({ value, onPick }: PartnerLinkPickerProps) {
   const { data: groups = [], isLoading } = useQuery({
@@ -157,31 +169,40 @@ export function PartnerLinkPicker({ value, onPick }: PartnerLinkPickerProps) {
     staleTime: 60_000,
   })
 
-  const total = groups.reduce((n, g) => n + g.items.length, 0)
-  const matched = groups.some((g) => g.items.some((i) => i.url === value))
+  // Which group the second select lists — reset when the first select moves
+  // to a page or a different group.
+  const [groupKey, setGroupKey] = useState("")
+  const group = groups.find((g) => g.key === groupKey)
 
   return (
-    <Select
-      value={matched ? value : ""}
-      onValueChange={(url) => {
-        if (url) onPick(url)
-      }}
-      disabled={isLoading || total === 0}
-    >
-      <SelectTrigger className="w-full" dir="rtl">
-        <SelectValue
-          placeholder={
-            isLoading ? "چاوەڕێ بکە…" : "هەڵبژاردنی پەڕە یان ناوەندێک…"
+    <div className="flex flex-col gap-2">
+      <Select
+        value=""
+        onValueChange={(v) => {
+          if (!v) return
+          // Group headers are prefixed so they can't collide with a real URL.
+          if (v.startsWith("group:")) {
+            setGroupKey(v.slice("group:".length))
+          } else {
+            setGroupKey("")
+            onPick(v)
           }
-        />
-      </SelectTrigger>
-      <SelectContent dir="rtl" className="max-h-80">
-        {groups.map((group) => (
-          <SelectGroup key={group.label}>
+        }}
+        disabled={isLoading}
+      >
+        <SelectTrigger className="w-full" dir="rtl">
+          <SelectValue
+            placeholder={
+              isLoading ? "چاوەڕێ بکە…" : "١. هەڵبژاردنی پەڕە یان جۆر…"
+            }
+          />
+        </SelectTrigger>
+        <SelectContent dir="rtl" className="max-h-80">
+          <SelectGroup>
             <SelectLabel className="text-xs text-muted-foreground">
-              {group.label}
+              پەڕە گشتییەکان
             </SelectLabel>
-            {group.items.map((item) => (
+            {PAGE_TARGETS.map((item) => (
               <SelectItem key={item.url} value={item.url}>
                 <span className="flex-1 truncate">{item.label}</span>
                 <span
@@ -193,8 +214,52 @@ export function PartnerLinkPicker({ value, onPick }: PartnerLinkPickerProps) {
               </SelectItem>
             ))}
           </SelectGroup>
-        ))}
-      </SelectContent>
-    </Select>
+          {groups.length > 0 && (
+            <SelectGroup>
+              <SelectLabel className="text-xs text-muted-foreground">
+                ناوەندی لاپەڕەکان — بەش/بابەت هەڵبژێرە
+              </SelectLabel>
+              {groups.map((g) => (
+                <SelectItem key={g.key} value={`group:${g.key}`}>
+                  <span className="flex-1 truncate">
+                    {g.label}
+                    <span className="ms-2 text-[11px] text-muted-foreground">
+                      ({g.items.length})
+                    </span>
+                  </span>
+                  <span className="shrink-0 text-muted-foreground">←</span>
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          )}
+        </SelectContent>
+      </Select>
+
+      {group ? (
+        <Select
+          value={group.items.some((i) => i.url === value) ? value : ""}
+          onValueChange={(v) => {
+            if (v) onPick(v)
+          }}
+        >
+          <SelectTrigger className="w-full" dir="rtl">
+            <SelectValue placeholder={`٢. ${group.label} هەڵبژێرە…`} />
+          </SelectTrigger>
+          <SelectContent dir="rtl" className="max-h-80">
+            {group.items.map((item) => (
+              <SelectItem key={item.url} value={item.url}>
+                <span className="flex-1 truncate">{item.label}</span>
+                <span
+                  className="ms-3 shrink-0 font-mono text-[11px] text-muted-foreground"
+                  dir="ltr"
+                >
+                  {item.url}
+                </span>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      ) : null}
+    </div>
   )
 }
