@@ -169,22 +169,33 @@ export function PartnerLinkPicker({ value, onPick }: PartnerLinkPickerProps) {
     staleTime: 60_000,
   })
 
-  // Which group the second select lists — reset when the first select moves
-  // to a page or a different group.
-  const [groupKey, setGroupKey] = useState("")
-  const group = groups.find((g) => g.key === groupKey)
+  // The second select lists whichever group was last chosen — or the group
+  // the saved URL already belongs to, so an existing link shows its group and
+  // item instead of two blank boxes.
+  const [pickedGroupKey, setPickedGroupKey] = useState("")
+  const valueGroup = groups.find((g) => g.items.some((i) => i.url === value))
+  const group =
+    groups.find((g) => g.key === pickedGroupKey) ?? valueGroup ?? null
+
+  // Select 1 echoes the saved URL: a page label when it is a static page, the
+  // group name when it points inside a content group, placeholder otherwise.
+  const firstValue = PAGE_TARGETS.some((i) => i.url === value)
+    ? value
+    : group
+      ? `group:${group.key}`
+      : ""
 
   return (
     <div className="flex flex-col gap-2">
       <Select
-        value=""
+        value={firstValue}
         onValueChange={(v) => {
           if (!v) return
           // Group headers are prefixed so they can't collide with a real URL.
           if (v.startsWith("group:")) {
-            setGroupKey(v.slice("group:".length))
+            setPickedGroupKey(v.slice("group:".length))
           } else {
-            setGroupKey("")
+            setPickedGroupKey("")
             onPick(v)
           }
         }}
