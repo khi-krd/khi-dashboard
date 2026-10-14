@@ -570,7 +570,7 @@ export function AboutForm({
                 {...sectionSaveProps}
               >
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                  <MediaCoverUpload
+                  <MediaCoverUpload entity="about"
                     label={NS.form.hero_video}
                     variant="video"
                     previewUrl={heroVideoUrl.trim() || null}
@@ -587,7 +587,7 @@ export function AboutForm({
                         : undefined
                     }
                   />
-                  <MediaCoverUpload
+                  <MediaCoverUpload entity="about"
                     label={NS.form.hero_poster}
                     previewUrl={heroPosterUrl.trim() || null}
                     urlValue={heroPosterUrl}
@@ -717,7 +717,7 @@ export function AboutForm({
                 <div>
                   <h3 className={cn("mb-3", sectionHeading)}>{NS.form.body}</h3>
                   {activeLang === "CKB" ? (
-                    <TiptapEditor
+                    <TiptapEditor entity="about"
                       key="bodyCkb"
                       stickyToolbar
                       lang="CKB"
@@ -727,7 +727,7 @@ export function AboutForm({
                       }
                     />
                   ) : (
-                    <TiptapEditor
+                    <TiptapEditor entity="about"
                       key="bodyKmr"
                       stickyToolbar
                       lang="KMR"
@@ -848,7 +848,7 @@ export function AboutForm({
             <section className={cn("mt-10", sectionCard)}>
               <h3 className={cn("mb-3", sectionHeading)}>{NS.form.body}</h3>
               {activeLang === "CKB" ? (
-                <TiptapEditor
+                <TiptapEditor entity="about"
                   key="bodyCkb"
                   stickyToolbar
                   lang="CKB"
@@ -858,7 +858,7 @@ export function AboutForm({
                   }
                 />
               ) : (
-                <TiptapEditor
+                <TiptapEditor entity="about"
                   key="bodyKmr"
                   stickyToolbar
                   lang="KMR"
@@ -903,7 +903,7 @@ export function AboutForm({
                     />
                   </div>
                 </div>
-                <MediaCoverUpload
+                <MediaCoverUpload entity="about"
                   label={NS.form.founder_image}
                   previewUrl={founderImageUrl.trim() || null}
                   urlValue={founderImageUrl}
@@ -951,7 +951,7 @@ export function AboutForm({
                 </div>
               </div>
               <div className="mt-6">
-                <MediaCoverUpload
+                <MediaCoverUpload entity="about"
                   label={NS.form.founder_image}
                   previewUrl={founderImageUrl.trim() || null}
                   urlValue={founderImageUrl}
@@ -976,7 +976,7 @@ export function AboutForm({
             <section className={cn("mt-10", sectionCard)}>
               <h3 className={cn("mb-4", sectionHeading)}>{NS.form.hero}</h3>
               <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                <MediaCoverUpload
+                <MediaCoverUpload entity="about"
                   label={NS.form.hero_video}
                   variant="video"
                   previewUrl={heroVideoUrl.trim() || null}
@@ -993,7 +993,7 @@ export function AboutForm({
                       : undefined
                   }
                 />
-                <MediaCoverUpload
+                <MediaCoverUpload entity="about"
                   label={NS.form.hero_poster}
                   previewUrl={heroPosterUrl.trim() || null}
                   urlValue={heroPosterUrl}
@@ -1361,7 +1361,7 @@ export function AboutForm({
               </div>
             </div>
             <Separator />
-            <MediaCoverUpload
+            <MediaCoverUpload entity="about"
               label={NS.form.team_image}
               previewUrl={teamForm.imageUrl.trim() || null}
               urlValue={teamForm.imageUrl}
@@ -1439,7 +1439,7 @@ export function AboutForm({
               </div>
             </div>
             <Separator />
-            <MediaCoverUpload
+            <MediaCoverUpload entity="about"
               label={NS.form.partner_logo}
               previewUrl={partnerForm.logoUrl.trim() || null}
               urlValue={partnerForm.logoUrl}

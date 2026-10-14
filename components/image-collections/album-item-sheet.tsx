@@ -83,7 +83,7 @@ export function AlbumItemSheet({
 
           <div className="space-y-2">
             <Label className="text-xs">{NS.lang.ckb} — وەسف</Label>
-            <TiptapEditor
+            <TiptapEditor entity="galleries"
               lang="CKB"
               contentMinHeightClass="min-h-[160px]"
               value={draft.descriptionCkb ?? ""}
@@ -95,7 +95,7 @@ export function AlbumItemSheet({
           {showKmrFields ? (
             <div className="space-y-2">
               <Label className="text-xs">{NS.lang.kmr} — vekolîn</Label>
-              <TiptapEditor
+              <TiptapEditor entity="galleries"
                 lang="KMR"
                 contentMinHeightClass="min-h-[160px]"
                 value={draft.descriptionKmr ?? ""}

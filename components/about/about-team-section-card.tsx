@@ -261,7 +261,7 @@ export function AboutTeamSectionCard({ index }: { index: number }) {
               </div>
             </div>
             <Separator />
-            <MediaCoverUpload
+            <MediaCoverUpload entity="about"
               label={NS.form.team_image}
               previewUrl={form.imageUrl.trim() || null}
               urlValue={form.imageUrl}

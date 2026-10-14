@@ -113,6 +113,7 @@ function MediaUploadButton({
   editor,
   accept,
   type,
+  entity,
   multiple = false,
   label,
   onInsert,
@@ -122,6 +123,8 @@ function MediaUploadButton({
   editor: Editor
   accept: string
   type: MediaUploadType
+  /** Owning entity for the R2 folder layout; falls back to `type`. */
+  entity?: string
   multiple?: boolean
   label: string
   onInsert: (editor: Editor, results: MediaUploadResultDto[]) => void
@@ -135,15 +138,16 @@ function MediaUploadButton({
   async function handleFiles(files: FileList | null) {
     if (!files?.length) return
     const list = Array.from(files)
+    const hint = entity ?? type
     setUploading(true)
     onProgressChange?.(0)
     try {
       const results = multiple
-        ? await uploadMediaMultiple(list, type, onProgressChange ?? undefined)
+        ? await uploadMediaMultiple(list, hint, onProgressChange ?? undefined)
         : [
             await uploadMedia(
               list[0],
-              type,
+              hint,
               onProgressChange ?? undefined,
             ),
           ]
@@ -185,12 +189,15 @@ export function TiptapToolbar({
   preview,
   onPreviewToggle,
   sticky = false,
+  entity,
 }: {
   editor: Editor
   variant?: "full" | "compact"
   preview?: boolean
   onPreviewToggle?: () => void
   sticky?: boolean
+  /** Owning entity for the R2 folder layout ("news" → news/images/…). */
+  entity?: string
 }) {
   const canUndo = editor.can().chain().focus().undo().run()
   const canRedo = editor.can().chain().focus().redo().run()
@@ -379,6 +386,7 @@ export function TiptapToolbar({
         <MediaUploadButton
           editor={editor}
           type="image"
+          entity={entity}
           accept="image/*"
           label={TIPTAP_NS.toolbar.image}
           onProgressChange={reportProgress(TIPTAP_NS.toolbar.image)}
@@ -391,6 +399,7 @@ export function TiptapToolbar({
         <MediaUploadButton
           editor={editor}
           type="image"
+          entity={entity}
           accept="image/*"
           multiple
           label={TIPTAP_NS.toolbar.gallery}
@@ -407,6 +416,7 @@ export function TiptapToolbar({
         <MediaUploadButton
           editor={editor}
           type="video"
+          entity={entity}
           accept="video/*"
           label={TIPTAP_NS.toolbar.video}
           onProgressChange={reportProgress(TIPTAP_NS.toolbar.video)}
@@ -419,6 +429,7 @@ export function TiptapToolbar({
         <MediaUploadButton
           editor={editor}
           type="audio"
+          entity={entity}
           accept="audio/*"
           label={TIPTAP_NS.toolbar.audio}
           onProgressChange={reportProgress(TIPTAP_NS.toolbar.audio)}
@@ -431,6 +442,7 @@ export function TiptapToolbar({
         <MediaUploadButton
           editor={editor}
           type="document"
+          entity={entity}
           accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.7z,.txt,.csv,.json"
           label={TIPTAP_NS.toolbar.file}
           onProgressChange={reportProgress(TIPTAP_NS.toolbar.file)}

@@ -233,7 +233,7 @@ export function AboutContentSectionCard({
               name="bodyCkb"
               control={control}
               render={({ field }) => (
-                <TiptapEditor
+                <TiptapEditor entity="about"
                   stickyToolbar
                   lang="CKB"
                   value={field.value ?? ""}
@@ -247,7 +247,7 @@ export function AboutContentSectionCard({
               name="bodyKmr"
               control={control}
               render={({ field }) => (
-                <TiptapEditor
+                <TiptapEditor entity="about"
                   stickyToolbar
                   lang="KMR"
                   value={field.value ?? ""}

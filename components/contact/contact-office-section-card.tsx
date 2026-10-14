@@ -79,7 +79,7 @@ function LangBlock({
         name={descField}
         control={control}
         render={({ field }) => (
-          <TiptapEditor
+          <TiptapEditor entity="contact"
             lang={lang}
             value={field.value ?? ""}
             onChange={field.onChange}
@@ -283,7 +283,7 @@ export function ContactOfficeSectionCard({
             control={control}
             name="heroImageUrl"
             render={({ field, fieldState }) => (
-              <MediaCoverUpload
+              <MediaCoverUpload entity="contact"
                 previewUrl={field.value?.trim() || null}
                 urlValue={field.value ?? ""}
                 onUrlChange={field.onChange}

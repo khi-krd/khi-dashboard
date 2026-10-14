@@ -123,7 +123,7 @@ export function AboutPageHeroEditor({
           name="heroPosterUrl"
           control={control}
           render={({ field }) => (
-            <MediaCoverUpload
+            <MediaCoverUpload entity="about"
               label={NS.page.heroImage}
               variant="image"
               previewUrl={field.value?.trim() || null}
@@ -138,7 +138,7 @@ export function AboutPageHeroEditor({
           name="heroVideoUrl"
           control={control}
           render={({ field }) => (
-            <MediaCoverUpload
+            <MediaCoverUpload entity="about"
               label={NS.form.hero_video}
               variant="video"
               previewUrl={field.value?.trim() || null}

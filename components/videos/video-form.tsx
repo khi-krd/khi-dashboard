@@ -493,7 +493,7 @@ export function VideoForm({
                     {...register("ckbContent.location")}
                   />
                 </div>
-                <TiptapEditor
+                <TiptapEditor entity="videos"
                   stickyToolbar
                   lang="CKB"
                   placeholder={NS.field.body_ckb}
@@ -544,7 +544,7 @@ export function VideoForm({
                     {...register("kmrContent.location")}
                   />
                 </div>
-                <TiptapEditor
+                <TiptapEditor entity="videos"
                   stickyToolbar
                   lang="KMR"
                   placeholder={NS.field.body_kmr}

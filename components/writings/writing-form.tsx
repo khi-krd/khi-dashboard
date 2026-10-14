@@ -503,7 +503,7 @@ export function WritingForm({
                     {...register("ckbContent.genre")}
                   />
                 </div>
-                <TiptapEditor
+                <TiptapEditor entity="writings"
                   stickyToolbar
                   lang="CKB"
                   placeholder={NS.field.body_ckb}
@@ -542,7 +542,7 @@ export function WritingForm({
                     {...register("kmrContent.genre")}
                   />
                 </div>
-                <TiptapEditor
+                <TiptapEditor entity="writings"
                   stickyToolbar
                   lang="KMR"
                   placeholder={NS.field.body_kmr}

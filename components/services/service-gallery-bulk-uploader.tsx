@@ -19,7 +19,6 @@ import { Spinner } from "@/components/ui/spinner"
 import { UploadProgressLine } from "@/components/shared/upload-progress-line"
 import { formatBytes, useFileUpload } from "@/hooks/use-file-upload"
 import { formatCkbDigits } from "@/lib/intl-ckb"
-import { mediaTypeFromFile } from "@/lib/tiptap-media"
 import { cn } from "@/lib/utils"
 import {
   createEmptyGallerySlot,
@@ -70,7 +69,7 @@ export function ServiceGalleryBulkUploader({
         try {
           const result = await uploadMedia(
             file,
-            mediaTypeFromFile(file),
+            "services",
             (pct) => setProgress(base + (pct / 100) * perFileShare),
           )
           const type = typeFromFile(file)

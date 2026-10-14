@@ -214,6 +214,7 @@ export function FeaturedSortableRow({
       {onFeatureImageChange && imageOpen ? (
         <div className="mt-3 border-t pt-3">
           <MediaCoverUpload
+            entity="featured"
             label={imageLabel}
             aspectClass="aspect-video"
             helperText={imageHint}

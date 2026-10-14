@@ -72,6 +72,7 @@ export function MediaCoverUpload({
   aspectClass = "aspect-[21/9]",
   helperText,
   variant = "image",
+  entity,
 }: {
   label?: string
   previewUrl: string | null
@@ -83,6 +84,8 @@ export function MediaCoverUpload({
   aspectClass?: string
   helperText?: string
   variant?: MediaVariant
+  /** Owning entity for the R2 folder layout ("news" → news/images/…). */
+  entity?: string
 }) {
   const resolvedAccept = accept ?? VARIANT_ACCEPT[variant]
   const resolvedMaxSize = maxSize ?? VARIANT_MAX[variant]
@@ -122,7 +125,11 @@ export function MediaCoverUpload({
     setUploading(true)
     setProgress(0)
     try {
-      const result = await uploadMedia(file, mediaTypeFromFile(file), setProgress)
+      const result = await uploadMedia(
+        file,
+        entity ?? mediaTypeFromFile(file),
+        setProgress,
+      )
       onUrlChange(result.fileUrl)
     } catch {
       toast.error(TIPTAP_NS.error.uploadFailed)

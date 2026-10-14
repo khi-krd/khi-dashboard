@@ -247,7 +247,7 @@ export function VideoClipItemSheet({
                 onChange={(e) => patch({ titleCkb: e.target.value })}
                 placeholder={NS.field.title_ckb}
               />
-              <TiptapEditor
+              <TiptapEditor entity="videos"
                 lang="CKB"
                 contentMinHeightClass="min-h-[160px]"
                 placeholder={NS.field.body_ckb}
@@ -262,7 +262,7 @@ export function VideoClipItemSheet({
                 onChange={(e) => patch({ titleKmr: e.target.value })}
                 placeholder={NS.field.title_kmr}
               />
-              <TiptapEditor
+              <TiptapEditor entity="videos"
                 lang="KMR"
                 contentMinHeightClass="min-h-[160px]"
                 placeholder={NS.field.body_kmr}

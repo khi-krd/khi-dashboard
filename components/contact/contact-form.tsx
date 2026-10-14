@@ -349,7 +349,7 @@ export function ContactForm({
             <section className={cn("mt-10", sectionCard)}>
               <h3 className={cn("mb-3", sectionHeading)}>{NS.form.description}</h3>
               {activeLang === "CKB" ? (
-                <TiptapEditor
+                <TiptapEditor entity="contact"
                   key="descriptionCkb"
                   stickyToolbar
                   lang="CKB"
@@ -359,7 +359,7 @@ export function ContactForm({
                   }
                 />
               ) : (
-                <TiptapEditor
+                <TiptapEditor entity="contact"
                   key="descriptionKmr"
                   stickyToolbar
                   lang="KMR"

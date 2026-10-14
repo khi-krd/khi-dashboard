@@ -141,7 +141,7 @@ function DonationsSettingsForm({
           control={control}
           name="heroImageUrl"
           render={({ field, fieldState }) => (
-            <MediaCoverUpload
+            <MediaCoverUpload entity="donations"
               label={NS.settings.heroImage}
               helperText={NS.settings.heroImageHelper}
               previewUrl={field.value?.trim() || null}

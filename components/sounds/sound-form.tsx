@@ -438,7 +438,7 @@ export function SoundForm({
                 {errors.ckbContent?.title ? (
                   <FieldError>{errors.ckbContent.title.message}</FieldError>
                 ) : null}
-                <TiptapEditor
+                <TiptapEditor entity="sounds"
                   stickyToolbar
                   lang="CKB"
                   placeholder={NS.field.body_ckb}
@@ -465,7 +465,7 @@ export function SoundForm({
                 {errors.kmrContent?.title ? (
                   <FieldError>{errors.kmrContent.title.message}</FieldError>
                 ) : null}
-                <TiptapEditor
+                <TiptapEditor entity="sounds"
                   stickyToolbar
                   lang="KMR"
                   placeholder={NS.field.body_kmr}

@@ -259,7 +259,7 @@ export function FeaturedCatalogRow({
 
       {canPickImage && pickerOpen ? (
         <div className="mt-3 border-t pt-3">
-          <MediaCoverUpload
+          <MediaCoverUpload entity="featured"
             label={imageStrings.label}
             // A service's thumbnail is cropped to 4:3, not to a slide's 16:9 —
             // previewing it wide would frame a shot that the rail then cuts.

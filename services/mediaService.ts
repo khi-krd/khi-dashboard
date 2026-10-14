@@ -3,14 +3,19 @@ import type {
   MediaUploadMultipleResponse,
   MediaUploadResponse,
   MediaUploadResultDto,
-  MediaUploadType,
 } from "@/types/media"
 
 const BASE = "/api/v1/media"
 
+/**
+ * `type` is the folder hint sent to the backend — either a media type
+ * ("image" | "video" | "audio" | "document") or an entity name
+ * ("news", "services", "about", …) which stores the file under
+ * "<entity>/<media-type>/" in the bucket.
+ */
 export async function uploadMedia(
   file: File,
-  type?: MediaUploadType,
+  type?: string,
   onProgress?: UploadProgressHandler,
 ): Promise<MediaUploadResultDto> {
   const fd = new FormData()
@@ -27,7 +32,7 @@ export async function uploadMedia(
 
 export async function uploadMediaMultiple(
   files: File[],
-  type?: MediaUploadType,
+  type?: string,
   onProgress?: UploadProgressHandler,
 ): Promise<MediaUploadResultDto[]> {
   const fd = new FormData()

@@ -42,6 +42,8 @@ export type TiptapEditorProps = {
    * preview modal itself so the nested viewer cannot spawn another modal.
    */
   previewModal?: boolean
+  /** Owning entity for the R2 folder layout ("news" → news/images/…). */
+  entity?: string
   className?: string
 }
 
@@ -120,6 +122,7 @@ export function TiptapEditor({
   layout = "bordered",
   stickyToolbar,
   previewModal = true,
+  entity,
   className,
 }: TiptapEditorProps) {
   const [mode, setMode] = useState<EditorMode>(editable ? "edit" : "preview")
@@ -302,6 +305,7 @@ export function TiptapEditor({
               editor={editor}
               variant={toolbar}
               sticky={pinToolbar}
+              entity={entity}
             />
           ) : null}
           <div className={cn(isSourceMode && "hidden")}>

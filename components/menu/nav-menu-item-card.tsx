@@ -89,7 +89,7 @@ export function NavMenuItemCard({
       </div>
 
       <div className="mt-4">
-        <MediaCoverUpload
+        <MediaCoverUpload entity="nav"
           label={NM.field.image}
           previewUrl={imageUrl || null}
           urlValue={imageUrl}

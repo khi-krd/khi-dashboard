@@ -496,7 +496,7 @@ export function NewsForm({
                   name="coverUrl"
                   control={control}
                   render={({ field }) => (
-                    <MediaCoverUpload
+                    <MediaCoverUpload entity="news"
                       variant={
                         coverMediaType === "VIDEO"
                           ? "video"
@@ -560,7 +560,7 @@ export function NewsForm({
                     name="coverThumbnailUrl"
                     control={control}
                     render={({ field }) => (
-                      <MediaCoverUpload
+                      <MediaCoverUpload entity="news"
                         label={NS.field.cover_thumbnail}
                         previewUrl={
                           field.value?.trim() ||
@@ -585,7 +585,7 @@ export function NewsForm({
               </section>
 
               <section className={cn(sectionCard)}>
-                <MediaGalleryEditor<NewsFormValues>
+                <MediaGalleryEditor<NewsFormValues> entity="news"
                   name="mediaGallery"
                   title={NS.section.media_gallery}
                   addLabel={NS.action.add_gallery_item}
@@ -818,7 +818,7 @@ function CkbLangFields({
         </div>
       </div>
 
-      <TiptapEditor
+      <TiptapEditor entity="news"
         lang="CKB"
         label={undefined}
         error={errors.ckbContent?.description?.message}
@@ -907,7 +907,7 @@ function KmrLangFields({
         </div>
       </div>
 
-      <TiptapEditor
+      <TiptapEditor entity="news"
         lang="KMR"
         label={undefined}
         error={errors.kmrContent?.description?.message}

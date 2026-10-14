@@ -60,6 +60,8 @@ type MediaGalleryEditorProps<T extends FieldValues> = {
   title?: string
   addLabel?: string
   emptyLabel?: string
+  /** Owning entity for the R2 folder layout ("news" → news/images/…). */
+  entity?: string
 }
 
 export function MediaGalleryEditor<T extends FieldValues>({
@@ -67,6 +69,7 @@ export function MediaGalleryEditor<T extends FieldValues>({
   title = "گالەری میدیا",
   addLabel = "زیادکردنی میدیا",
   emptyLabel = "هیچ میدیایەک زیاد نەکراوە",
+  entity,
 }: MediaGalleryEditorProps<T>) {
   const { control, setValue, getValues } = useFormContext<T>()
   const { fields, append, remove, move } = useFieldArray({
@@ -132,6 +135,7 @@ export function MediaGalleryEditor<T extends FieldValues>({
                   fieldId={field.id}
                   index={index}
                   name={name}
+                  entity={entity}
                   onRemove={() => remove(index)}
                 />
               ))}
@@ -147,11 +151,13 @@ function SortableGalleryRow<T extends FieldValues>({
   fieldId,
   index,
   name,
+  entity,
   onRemove,
 }: {
   fieldId: string
   index: number
   name: Path<T>
+  entity?: string
   onRemove: () => void
 }) {
   const { register, setValue, watch } = useFormContext<T>()
@@ -242,6 +248,7 @@ function SortableGalleryRow<T extends FieldValues>({
         label={KIND_URL_LABELS[kind ?? "IMAGE"]}
         previewUrl={url?.trim() || null}
         urlValue={url ?? ""}
+        entity={entity}
         onUrlChange={(s) =>
           setValue(`${name}.${index}.url` as Path<T>, s as never, {
             shouldDirty: true,

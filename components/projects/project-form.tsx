@@ -460,7 +460,7 @@ export function ProjectForm({
               })}
             </div>
 
-            <MediaCoverUpload
+            <MediaCoverUpload entity="projects"
               variant={
                 coverMediaType === "VIDEO"
                   ? "video"
@@ -519,7 +519,7 @@ export function ProjectForm({
                   name="coverThumbnailUrl"
                   control={control}
                   render={({ field }) => (
-                    <MediaCoverUpload
+                    <MediaCoverUpload entity="projects"
                       label={NS.field.cover_thumbnail}
                       previewUrl={
                         field.value?.trim() ||
@@ -544,7 +544,7 @@ export function ProjectForm({
             </section>
 
             <section className={cn("mt-6", sectionCard)}>
-              <MediaGalleryEditor<ProjectFormValues>
+              <MediaGalleryEditor<ProjectFormValues> entity="projects"
                 name="mediaGallery"
                 title={NS.section.media_gallery}
                 addLabel={NS.field.caption_add}
@@ -577,7 +577,7 @@ export function ProjectForm({
                     {...register("ckbContent.location")}
                   />
                 </div>
-                <TiptapEditor
+                <TiptapEditor entity="projects"
                   stickyToolbar
                   lang="CKB"
                   className="mt-6"
@@ -605,7 +605,7 @@ export function ProjectForm({
                     {...register("kmrContent.location")}
                   />
                 </div>
-                <TiptapEditor
+                <TiptapEditor entity="projects"
                   stickyToolbar
                   lang="KMR"
                   className="mt-6"

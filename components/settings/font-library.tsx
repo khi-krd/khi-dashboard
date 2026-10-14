@@ -140,7 +140,7 @@ function FontLangColumn({
   async function handleFile(file: File) {
     setProgress(0)
     try {
-      const uploaded = await uploadMedia(file, "document", setProgress)
+      const uploaded = await uploadMedia(file, "site", setProgress)
       const font = await createMut.mutateAsync({
         language: lang,
         name: file.name.replace(/\.[^.]+$/, ""),

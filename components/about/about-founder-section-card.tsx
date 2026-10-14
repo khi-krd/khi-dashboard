@@ -145,7 +145,7 @@ export function AboutFounderSectionCard({
           name="founderImageUrl"
           control={control}
           render={({ field }) => (
-            <MediaCoverUpload
+            <MediaCoverUpload entity="about"
               label={NS.form.founder_image}
               previewUrl={field.value?.trim() || null}
               urlValue={field.value ?? ""}

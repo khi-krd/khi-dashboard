@@ -464,7 +464,7 @@ export function CollectionForm({
 
             <CollectionCreditsInlineRow activeLang={activeLang} />
 
-            <TiptapEditor
+            <TiptapEditor entity="galleries"
               key={activeLang}
               stickyToolbar
               lang={activeLang}
