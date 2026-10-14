@@ -157,3 +157,20 @@ Read these before touching a write path — the API is not forgiving.
 - Bilingual payload builders must be driven by what was typed, not by a
   `contentLanguages` flag derived from what the record already had — that is
   how a Sorani-only record became impossible to translate.
+
+## Server nginx contract (`deploy/nginx-khi.conf`)
+
+`178.105.80.251:8443` proxies `/api/` straight to the backend (`:8080`) so
+multipart uploads skip the Next proxy — but two paths are THIS app's own
+routes and must never reach the backend:
+
+- `POST/GET/DELETE /api/auth/session` — the httpOnly-cookie setter/getter.
+  If nginx sends it to the backend, the backend 404s and **login silently
+  fails** even with correct credentials.
+- `GET /api/site-font` — host-allowlisted font proxy.
+
+Both are pinned with `location =` exact-match blocks BEFORE the `/api/`
+block. If you ever add another `app/api/*/route.ts`, add a matching
+`location =` line or it will be proxied away. The live file is
+`/etc/nginx/sites-enabled/khi.conf`; keep `deploy/nginx-khi.conf` in sync
+whenever it changes.
