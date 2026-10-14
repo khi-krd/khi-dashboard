@@ -174,3 +174,17 @@ block. If you ever add another `app/api/*/route.ts`, add a matching
 `location =` line or it will be proxied away. The live file is
 `/etc/nginx/sites-enabled/khi.conf`; keep `deploy/nginx-khi.conf` in sync
 whenever it changes.
+
+## R2 storage layout — per-entity folders
+
+Every upload carries an `entity` hint so objects land in
+`khi-web-folders/<entity>/<media-type>/` (media-type ∈
+images|videos|sounds|documents). `uploadMedia(file, hint)` accepts either
+an entity name — `about, news, projects, writings, videos, sounds,
+galleries, services, contact, donations, brandings, nav, site, featured,
+users, content` — or a legacy media type (`image|video|audio|document`)
+which keeps the old flat folders. Pass `entity="…"` on `MediaCoverUpload`,
+`MediaGalleryEditor` and `TiptapEditor` in every new form; the staged
+multipart services (writings/videos/sounds/collections/profile) are
+entity-scoped server-side already. Archive bucket follows the same
+entity-first layout (`khi-archive-platform-folders/<entity>/<code>/`).
