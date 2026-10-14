@@ -30,6 +30,7 @@ import { AboutErrorState } from "@/components/about/about-error-state"
 import { AboutFormSidebar } from "@/components/about/about-form-sidebar"
 
 import { NS } from "@/components/about/about-strings"
+import { PartnerLinkPicker } from "@/components/about/partner-link-picker"
 import { MediaCoverUpload } from "@/components/shared/media-cover-upload"
 import { TiptapEditor } from "@/components/shared/tiptap-editor-lazy"
 import { SeoCountChip } from "@/components/about/seo-count-chip"
@@ -1446,6 +1447,14 @@ export function AboutForm({
               onUrlChange={(v) => setPartnerForm((p) => ({ ...p, logoUrl: v }))}
             />
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+              <div className="md:col-span-2">
+                <PartnerLinkPicker
+                  value={partnerForm.websiteUrl}
+                  onPick={(url) =>
+                    setPartnerForm((p) => ({ ...p, websiteUrl: url }))
+                  }
+                />
+              </div>
               <Input
                 dir="ltr"
                 placeholder={NS.form.partner_website}

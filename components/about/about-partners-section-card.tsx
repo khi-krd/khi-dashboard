@@ -12,6 +12,7 @@ import Image from "next/image"
 import { isOptimizableImageSrc } from "@/lib/image-src"
 import { AboutSectionCardShell } from "@/components/about/about-section-card-shell"
 import { NS } from "@/components/about/about-strings"
+import { PartnerLinkPicker } from "@/components/about/partner-link-picker"
 import { MediaCoverUpload } from "@/components/shared/media-cover-upload"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -250,6 +251,14 @@ export function AboutPartnersSectionCard({ index }: { index: number }) {
               onUrlChange={(v) => setForm((p) => ({ ...p, logoUrl: v }))}
             />
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+              <div className="md:col-span-2">
+                <PartnerLinkPicker
+                  value={form.websiteUrl}
+                  onPick={(url) =>
+                    setForm((p) => ({ ...p, websiteUrl: url }))
+                  }
+                />
+              </div>
               <Input
                 dir="ltr"
                 placeholder={NS.form.partner_website}
