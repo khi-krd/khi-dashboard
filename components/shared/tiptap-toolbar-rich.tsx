@@ -33,6 +33,7 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuRadioGroup,
@@ -660,19 +661,23 @@ export function TableMenu({ editor }: { editor: Editor }) {
               {T.toggleHeaderCol}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuLabel className="text-xs">{T.style}</DropdownMenuLabel>
-            <DropdownMenuRadioGroup
-              value={tableStyle}
-              onValueChange={(v) =>
-                editor.chain().focus().setTableStyle(v as TableStyle).run()
-              }
-            >
-              {TABLE_STYLES.map((s) => (
-                <DropdownMenuRadioItem key={s} value={s}>
-                  {T.styleLabel[s]}
-                </DropdownMenuRadioItem>
-              ))}
-            </DropdownMenuRadioGroup>
+            <DropdownMenuGroup>
+              <DropdownMenuLabel className="text-xs">
+                {T.style}
+              </DropdownMenuLabel>
+              <DropdownMenuRadioGroup
+                value={tableStyle}
+                onValueChange={(v) =>
+                  editor.chain().focus().setTableStyle(v as TableStyle).run()
+                }
+              >
+                {TABLE_STYLES.map((s) => (
+                  <DropdownMenuRadioItem key={s} value={s}>
+                    {T.styleLabel[s]}
+                  </DropdownMenuRadioItem>
+                ))}
+              </DropdownMenuRadioGroup>
+            </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               variant="destructive"
