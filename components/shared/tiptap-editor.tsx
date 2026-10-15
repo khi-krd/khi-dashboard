@@ -6,7 +6,11 @@ import { EyeIcon } from "@heroicons/react/24/outline"
 import { marked } from "marked"
 
 import { tiptapContentType } from "@/components/shared/tiptap-content"
-import { getEditorMarkdown } from "@/components/shared/tiptap-markdown"
+import {
+  getEditorHtml,
+  getEditorMarkdown,
+} from "@/components/shared/tiptap-markdown"
+import { SiteFontFaces } from "@/components/shared/site-font-faces"
 import { createTiptapExtensions } from "@/components/shared/tiptap-extensions"
 import { TIPTAP_NS } from "@/components/shared/tiptap-strings"
 import { TiptapToolbar } from "@/components/shared/tiptap-toolbar"
@@ -21,7 +25,8 @@ import { cn } from "@/lib/utils"
 
 export type TiptapEditorProps = {
   value: string
-  onChange?: (markdown: string) => void
+  /** Receives the document as HTML (legacy values may still be Markdown). */
+  onChange?: (html: string) => void
   editable?: boolean
   label?: string
   error?: string | null | boolean
@@ -127,14 +132,20 @@ export function TiptapEditor({
 }: TiptapEditorProps) {
   const [mode, setMode] = useState<EditorMode>(editable ? "edit" : "preview")
   const [previewOpen, setPreviewOpen] = useState(false)
-  const [previewContent, setPreviewContent] = useState("")
+  const [previewContent, setPreviewContent] = useState<{
+    html: string
+    markdown: string
+  }>({ html: "", markdown: "" })
   const [previewPane, setPreviewPane] = useState<PreviewPane>("preview")
   /** Draft of the open source pane. `emitted` marks text the user just typed
    * there (vs. a seed), so an incoming `value` equal to it is recognized as
-   * this pane's own echo rather than an external change. */
+   * this pane's own echo rather than an external change. `seed` is the text
+   * the pane opened with — if it is unchanged on exit the doc is left alone,
+   * so a lossy Markdown view never overwrites rich formatting. */
   const [sourceEdit, setSourceEdit] = useState<{
     mode: SourceMode
     text: string
+    seed: string
     emitted: boolean
   } | null>(null)
   const [appliedValue, setAppliedValue] = useState(value)
@@ -168,7 +179,7 @@ export function TiptapEditor({
       },
     },
     onUpdate({ editor: ed }) {
-      onChange?.(getEditorMarkdown(ed))
+      onChange?.(getEditorHtml(ed))
     },
   })
 
@@ -185,7 +196,8 @@ export function TiptapEditor({
     setAppliedValue(value)
     if (isSourceMode && !isOwnSourceEcho) {
       const m = activeMode as SourceMode
-      setSourceEdit({ mode: m, text: seedFromValue(m, value ?? ""), emitted: false })
+      const seed = seedFromValue(m, value ?? "")
+      setSourceEdit({ mode: m, text: seed, seed, emitted: false })
     }
   }
 
@@ -198,21 +210,21 @@ export function TiptapEditor({
     // typed, even if `onChange` plumbing did not round-trip the value back.
     if (
       (mode === "markdown" || mode === "html") &&
-      sourceEdit?.mode === mode
+      sourceEdit?.mode === mode &&
+      sourceEdit.text !== sourceEdit.seed
     ) {
       editor.commands.setContent(sourceEdit.text, {
         emitUpdate: false,
         contentType: tiptapContentType(sourceEdit.text),
       })
+      onChange?.(getEditorHtml(editor))
     }
     if (next === "markdown") {
-      setSourceEdit({
-        mode: "markdown",
-        text: getEditorMarkdown(editor),
-        emitted: false,
-      })
+      const seed = getEditorMarkdown(editor)
+      setSourceEdit({ mode: "markdown", text: seed, seed, emitted: false })
     } else if (next === "html") {
-      setSourceEdit({ mode: "html", text: editor.getHTML(), emitted: false })
+      const seed = getEditorHtml(editor)
+      setSourceEdit({ mode: "html", text: seed, seed, emitted: false })
     }
     setMode(next)
   }
@@ -221,7 +233,9 @@ export function TiptapEditor({
     // Snapshot the live doc — unsaved edits and media nodes included — even
     // when `onChange` has not round-tripped the value back to the form.
     setPreviewContent(
-      editor && !editor.isDestroyed ? getEditorMarkdown(editor) : (value ?? ""),
+      editor && !editor.isDestroyed
+        ? { html: getEditorHtml(editor), markdown: getEditorMarkdown(editor) }
+        : { html: value ?? "", markdown: value ?? "" },
     )
     setPreviewPane("preview")
     setPreviewOpen(true)
@@ -229,7 +243,12 @@ export function TiptapEditor({
 
   function handleSourceChange(text: string) {
     if (!isSourceMode) return
-    setSourceEdit({ mode: activeMode as SourceMode, text, emitted: true })
+    setSourceEdit((prev) => ({
+      mode: activeMode as SourceMode,
+      text,
+      seed: prev?.mode === activeMode ? prev.seed : "",
+      emitted: true,
+    }))
     onChange?.(text)
   }
 
@@ -246,7 +265,7 @@ export function TiptapEditor({
     ) {
       return
     }
-    if (incoming !== getEditorMarkdown(editor)) {
+    if (incoming !== getEditorHtml(editor)) {
       editor.commands.setContent(incoming || "", {
         emitUpdate: false,
         contentType: tiptapContentType(incoming),
@@ -265,6 +284,7 @@ export function TiptapEditor({
 
   const editorChrome = (
     <div className="space-y-1.5">
+      <SiteFontFaces />
       <div
         role="tablist"
         aria-label={TIPTAP_NS.modes.label}
@@ -359,20 +379,20 @@ export function TiptapEditor({
               </div>
             </DialogHeader>
             <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
-              {!previewContent.trim() ? (
+              {!previewContent.html.trim() ? (
                 <p className="text-muted-foreground text-sm">
                   {TIPTAP_NS.modes.empty}
                 </p>
               ) : previewPane === "preview" ? (
-                <PreviewDocument content={previewContent} lang={lang} />
+                <PreviewDocument content={previewContent.html} lang={lang} />
               ) : (
                 <pre
                   dir="ltr"
                   className="bg-muted/50 overflow-x-auto rounded-lg p-4 text-left font-mono text-xs leading-relaxed whitespace-pre-wrap"
                 >
                   {previewPane === "markdown"
-                    ? previewContent
-                    : seedFromValue("html", previewContent)}
+                    ? previewContent.markdown
+                    : previewContent.html}
                 </pre>
               )}
             </div>
@@ -400,7 +420,7 @@ export function TiptapEditor({
 }
 
 export type TiptapViewerProps = {
-  /** Stored Markdown (or legacy HTML). */
+  /** Stored HTML (or legacy Markdown). */
   html: string | null | undefined
   lang?: "CKB" | "KMR"
   contentMinHeightClass?: string

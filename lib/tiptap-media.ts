@@ -11,13 +11,9 @@ export function mediaTypeFromFile(file: File): MediaUploadType {
   return "document"
 }
 
-/** Insert a single image as Markdown (`![](url)`). */
+/** Insert a single image as an `imageFigure` (image + caption + placement). */
 export function insertUploadedImage(editor: Editor, fileUrl: string) {
-  editor
-    .chain()
-    .focus()
-    .insertContent(`![](${fileUrl})`, { contentType: "markdown" })
-    .run()
+  editor.chain().focus().insertImageFigure({ src: fileUrl }).run()
 }
 
 /** Insert an uploaded video as a `video` node. */

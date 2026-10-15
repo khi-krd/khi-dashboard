@@ -6,9 +6,11 @@ import { toast } from "sonner"
 import {
   ArrowUturnLeftIcon,
   ArrowUturnRightIcon,
+  BackspaceIcon,
   Bars3BottomLeftIcon,
   Bars3BottomRightIcon,
   Bars3Icon,
+  Bars4Icon,
   BoldIcon,
   ChatBubbleLeftRightIcon,
   CodeBracketSquareIcon,
@@ -19,22 +21,30 @@ import {
   MinusIcon,
   MusicalNoteIcon,
   NumberedListIcon,
+  PaintBrushIcon,
   PaperClipIcon,
   PhotoIcon,
   RectangleGroupIcon,
   StrikethroughIcon,
-  TableCellsIcon,
+  SwatchIcon,
   UnderlineIcon,
   VideoCameraIcon,
 } from "@heroicons/react/24/outline"
 
 import { TIPTAP_NS } from "@/components/shared/tiptap-strings"
+import {
+  ColorPicker,
+  ColumnsMenu,
+  FontFamilySelect,
+  FontSizeSelect,
+  ImageInsertDialog,
+  TableMenu,
+} from "@/components/shared/tiptap-toolbar-rich"
 import { UploadProgressLine } from "@/components/shared/upload-progress-line"
 import {
   insertUploadedAudio,
   insertUploadedFile,
   insertUploadedGallery,
-  insertUploadedImage,
   insertUploadedVideo,
 } from "@/lib/tiptap-media"
 import { uploadMedia, uploadMediaMultiple } from "@/services/mediaService"
@@ -202,6 +212,14 @@ export function TiptapToolbar({
   const canUndo = editor.can().chain().focus().undo().run()
   const canRedo = editor.can().chain().focus().redo().run()
   const [activeUploads, setActiveUploads] = useState<Record<string, number>>({})
+  const [imageOpen, setImageOpen] = useState(false)
+  const inTable = editor.isActive("table")
+  const textColor = editor.getAttributes("textStyle").color as string | undefined
+  const highlightColor = editor.getAttributes("highlight").color as
+    | string
+    | undefined
+  const cellColor = (editor.getAttributes("tableCell").backgroundColor ??
+    editor.getAttributes("tableHeader").backgroundColor) as string | undefined
 
   const reportProgress = (key: string) => (pct: number | null) =>
     setActiveUploads((prev) => {
@@ -314,6 +332,17 @@ export function TiptapToolbar({
         >
           <span className="font-mono text-xs">H3</span>
         </ToolbarBtn>
+        <ToolbarBtn
+          label={TIPTAP_NS.toolbar.h4}
+          pressed={editor.isActive("heading", { level: 4 })}
+          onClick={() => editor.chain().focus().toggleHeading({ level: 4 }).run()}
+        >
+          <span className="font-mono text-xs">H4</span>
+        </ToolbarBtn>
+        <ToolbarSep />
+
+        <FontFamilySelect editor={editor} />
+        <FontSizeSelect editor={editor} />
         <ToolbarSep />
 
         <ToolbarBtn
@@ -343,6 +372,48 @@ export function TiptapToolbar({
           onClick={() => editor.chain().focus().toggleStrike().run()}
         >
           <StrikethroughIcon className="size-4" />
+        </ToolbarBtn>
+        <ToolbarBtn
+          label={TIPTAP_NS.toolbar.subscript}
+          pressed={editor.isActive("subscript")}
+          onClick={() => editor.chain().focus().toggleSubscript().run()}
+        >
+          <span className="font-mono text-xs">
+            X<sub className="text-[9px]">2</sub>
+          </span>
+        </ToolbarBtn>
+        <ToolbarBtn
+          label={TIPTAP_NS.toolbar.superscript}
+          pressed={editor.isActive("superscript")}
+          onClick={() => editor.chain().focus().toggleSuperscript().run()}
+        >
+          <span className="font-mono text-xs">
+            X<sup className="text-[9px]">2</sup>
+          </span>
+        </ToolbarBtn>
+        <ColorPicker
+          label={TIPTAP_NS.toolbar.textColor}
+          value={textColor}
+          onPick={(c) => editor.chain().focus().setColor(c).run()}
+          onClear={() => editor.chain().focus().unsetColor().run()}
+        >
+          <SwatchIcon className="size-4" />
+        </ColorPicker>
+        <ColorPicker
+          label={TIPTAP_NS.toolbar.highlight}
+          value={highlightColor}
+          onPick={(c) => editor.chain().focus().setHighlight({ color: c }).run()}
+          onClear={() => editor.chain().focus().unsetHighlight().run()}
+        >
+          <PaintBrushIcon className="size-4" />
+        </ColorPicker>
+        <ToolbarBtn
+          label={TIPTAP_NS.toolbar.clearFormatting}
+          onClick={() =>
+            editor.chain().focus().unsetAllMarks().clearNodes().run()
+          }
+        >
+          <BackspaceIcon className="size-4 rtl:rotate-180" />
         </ToolbarBtn>
         <ToolbarSep />
 
@@ -383,19 +454,19 @@ export function TiptapToolbar({
         >
           <LinkIcon className="size-4 rtl:rotate-180" />
         </ToolbarBtn>
-        <MediaUploadButton
-          editor={editor}
-          type="image"
-          entity={entity}
-          accept="image/*"
-          label={TIPTAP_NS.toolbar.image}
-          onProgressChange={reportProgress(TIPTAP_NS.toolbar.image)}
-          onInsert={(ed, results) =>
-            insertUploadedImage(ed, results[0].fileUrl)
-          }
+        <ToolbarBtn
+          label={TIPTAP_NS.toolbar.imageInsert}
+          pressed={editor.isActive("imageFigure")}
+          onClick={() => setImageOpen(true)}
         >
           <PhotoIcon className="size-4" />
-        </MediaUploadButton>
+        </ToolbarBtn>
+        <ImageInsertDialog
+          editor={editor}
+          entity={entity}
+          open={imageOpen}
+          onOpenChange={setImageOpen}
+        />
         <MediaUploadButton
           editor={editor}
           type="image"
@@ -458,18 +529,18 @@ export function TiptapToolbar({
         >
           <MinusIcon className="size-4" />
         </ToolbarBtn>
-        <ToolbarBtn
-          label={TIPTAP_NS.toolbar.table}
-          onClick={() =>
-            editor
-              .chain()
-              .focus()
-              .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
-              .run()
-          }
-        >
-          <TableCellsIcon className="size-4" />
-        </ToolbarBtn>
+        <TableMenu editor={editor} />
+        {inTable ? (
+          <ColorPicker
+            label={TIPTAP_NS.table.cellColor}
+            value={cellColor}
+            onPick={(c) => editor.chain().focus().setCellBackground(c).run()}
+            onClear={() => editor.chain().focus().setCellBackground(null).run()}
+          >
+            <SwatchIcon className="size-4 opacity-70" />
+          </ColorPicker>
+        ) : null}
+        <ColumnsMenu editor={editor} />
         <ToolbarSep />
 
         <ToolbarBtn
@@ -492,6 +563,35 @@ export function TiptapToolbar({
           onClick={() => editor.chain().focus().setTextAlign("left").run()}
         >
           <Bars3BottomLeftIcon className="size-4" />
+        </ToolbarBtn>
+        <ToolbarBtn
+          label={TIPTAP_NS.toolbar.alignJustify}
+          pressed={editor.isActive({ textAlign: "justify" })}
+          onClick={() => editor.chain().focus().setTextAlign("justify").run()}
+        >
+          <Bars4Icon className="size-4" />
+        </ToolbarBtn>
+        <ToolbarBtn
+          label={TIPTAP_NS.toolbar.dirRtl}
+          pressed={editor.isActive({ dir: "rtl" })}
+          onClick={() =>
+            editor.isActive({ dir: "rtl" })
+              ? editor.chain().focus().unsetTextDirection().run()
+              : editor.chain().focus().setTextDirection("rtl").run()
+          }
+        >
+          <span className="font-mono text-[10px]">RTL</span>
+        </ToolbarBtn>
+        <ToolbarBtn
+          label={TIPTAP_NS.toolbar.dirLtr}
+          pressed={editor.isActive({ dir: "ltr" })}
+          onClick={() =>
+            editor.isActive({ dir: "ltr" })
+              ? editor.chain().focus().unsetTextDirection().run()
+              : editor.chain().focus().setTextDirection("ltr").run()
+          }
+        >
+          <span className="font-mono text-[10px]">LTR</span>
         </ToolbarBtn>
         <ToolbarSep />
 

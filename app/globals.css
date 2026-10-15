@@ -252,3 +252,256 @@ audio {
   object-fit: cover;
   margin: 0;
 }
+
+/* --- Word-like rich-text layout (shared by editor, previews and the public
+   site's .prose — keep the selectors in sync with khi-webiste globals.css) --- */
+
+/* Image figure: placement + width presets. */
+.rt-figure {
+  position: relative;
+  margin: 1.25rem 0;
+  --rt-w: 100%;
+}
+.rt-figure[data-width="25"] { --rt-w: 25%; }
+.rt-figure[data-width="33"] { --rt-w: 33.333%; }
+.rt-figure[data-width="50"] { --rt-w: 50%; }
+.rt-figure[data-width="66"] { --rt-w: 66.666%; }
+.rt-figure[data-width="75"] { --rt-w: 75%; }
+.rt-figure img,
+.ProseMirror .rt-figure img {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  max-height: none;
+  height: auto;
+  margin: 0;
+  border-radius: var(--radius-md);
+}
+.rt-figure[data-align="center"] {
+  width: var(--rt-w);
+  margin-inline: auto;
+}
+.rt-figure[data-align="full"] {
+  width: 100%;
+}
+.rt-figure[data-align="left"] {
+  float: left;
+  width: var(--rt-w);
+  margin: 0.25rem 1.25rem 0.75rem 0;
+}
+.rt-figure[data-align="right"] {
+  float: right;
+  width: var(--rt-w);
+  margin: 0.25rem 0 0.75rem 1.25rem;
+}
+.rt-figure[data-align="full"] { --rt-w: 100%; }
+.rt-figure[data-align="behind"] {
+  width: var(--rt-w);
+  margin-inline: auto;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+}
+.rt-figure[data-align="behind"] figcaption {
+  position: absolute;
+  inset: auto 0 0 0;
+  margin: 0;
+  padding: 1.25rem 1rem 0.9rem;
+  color: #fff;
+  background: linear-gradient(to top, rgb(0 0 0 / 0.72), rgb(0 0 0 / 0));
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: center;
+}
+.rt-figure figcaption {
+  margin-top: 0.4rem;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--muted-foreground);
+  text-align: center;
+}
+.rt-figure figcaption:empty {
+  display: none;
+}
+/* Floats must not leak past the document end or into the next block type. */
+.ProseMirror::after,
+.prose::after {
+  content: "";
+  display: block;
+  clear: both;
+}
+.rt-columns,
+.rt-table,
+.ProseMirror hr,
+.prose hr {
+  clear: both;
+}
+
+/* Editor-only figure chrome. */
+.ProseMirror .rt-figure-media {
+  position: relative;
+}
+.ProseMirror .rt-figure-selected {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+  border-radius: var(--radius-md);
+}
+.ProseMirror .rt-figure-bar {
+  position: absolute;
+  top: 0.5rem;
+  inset-inline-start: 50%;
+  translate: -50% 0;
+  z-index: 5;
+}
+[dir="rtl"] .ProseMirror .rt-figure-bar {
+  translate: 50% 0;
+}
+.rt-caption-input {
+  display: block;
+  width: 100%;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px dashed var(--border);
+  padding: 0.2rem 0.4rem;
+  font: inherit;
+  color: var(--muted-foreground);
+  text-align: center;
+  outline: none;
+}
+.rt-caption-input:focus {
+  border-bottom-color: var(--ring);
+}
+.rt-caption-input::placeholder {
+  opacity: 0.6;
+}
+.rt-figure[data-align="behind"] .rt-caption-input {
+  color: #fff;
+  border-bottom-color: rgb(255 255 255 / 0.5);
+}
+.rt-figure[data-align="behind"] .rt-caption-input::placeholder {
+  color: rgb(255 255 255 / 0.7);
+}
+
+/* Columns: equal grid, stacked on narrow screens. */
+.rt-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.5rem;
+  margin: 1rem 0;
+}
+.rt-columns[data-cols="3"] {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.rt-column > * + * {
+  margin-top: 0.75rem;
+}
+.rt-column > :first-child {
+  margin-top: 0;
+}
+.ProseMirror .rt-columns {
+  outline: 1px dashed color-mix(in oklab, var(--border), transparent 20%);
+  outline-offset: 4px;
+  border-radius: var(--radius-sm);
+}
+.ProseMirror .rt-column {
+  min-height: 2.5rem;
+  min-width: 0;
+}
+@media (max-width: 640px) {
+  .rt-columns,
+  .rt-columns[data-cols="3"] {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Tables: presets via data-style; caption under the table. */
+.rt-table,
+.tableWrapper {
+  margin: 1.25rem 0;
+  overflow-x: auto;
+}
+.rt-table table,
+.ProseMirror table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  margin: 0;
+  font-size: 0.9375rem;
+}
+.rt-table th,
+.rt-table td,
+.ProseMirror th,
+.ProseMirror td {
+  position: relative;
+  border: 1px solid var(--border);
+  padding: 0.5rem 0.75rem;
+  vertical-align: top;
+  min-width: 3rem;
+}
+.rt-table th,
+.ProseMirror th {
+  background: var(--muted);
+  font-weight: 600;
+  text-align: start;
+}
+.rt-table td > p,
+.rt-table th > p,
+.ProseMirror td > p,
+.ProseMirror th > p {
+  margin: 0;
+}
+table[data-style="striped"] tbody tr:nth-child(even) td {
+  background: color-mix(in oklab, var(--muted), transparent 50%);
+}
+table[data-style="borderless"] th,
+table[data-style="borderless"] td {
+  border: 0;
+}
+table[data-style="minimal"] th,
+table[data-style="minimal"] td {
+  border: 0;
+  border-bottom: 1px solid var(--border);
+}
+table[data-style="minimal"] th {
+  background: transparent;
+}
+.rt-table > figcaption,
+.rt-table-caption {
+  margin-top: 0.4rem;
+  font-size: 0.8125rem;
+  color: var(--muted-foreground);
+  text-align: center;
+}
+.rt-table > figcaption:empty {
+  display: none;
+}
+/* prosemirror-tables chrome */
+.ProseMirror .selectedCell::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: color-mix(in oklab, var(--primary), transparent 85%);
+  pointer-events: none;
+}
+.ProseMirror .column-resize-handle {
+  position: absolute;
+  top: 0;
+  bottom: -2px;
+  right: -2px;
+  width: 4px;
+  background: var(--primary);
+  pointer-events: none;
+}
+.ProseMirror.resize-cursor {
+  cursor: col-resize;
+}
+
+/* Inline marks. */
+.ProseMirror mark,
+.prose mark {
+  padding-inline: 0.1em;
+  border-radius: 2px;
+}
+.ProseMirror sub,
+.ProseMirror sup {
+  font-size: 0.75em;
+}
