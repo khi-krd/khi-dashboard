@@ -153,6 +153,14 @@ export function ImageFigureView({
   getPos,
 }: NodeViewProps) {
   const [moreOpen, setMoreOpen] = useState(false)
+  /** The layout panel opens only from its button (Word's "Layout Options"
+   * arc icon) — never automatically on selection. */
+  const [panelOpen, setPanelOpen] = useState(false)
+  const [wasSelected, setWasSelected] = useState(selected)
+  if (wasSelected !== selected) {
+    setWasSelected(selected)
+    if (!selected) setPanelOpen(false)
+  }
   const src = (node.attrs.src as string | null) ?? ""
   const alt = (node.attrs.alt as string) ?? ""
   const caption = (node.attrs.caption as string) ?? ""
@@ -242,18 +250,28 @@ export function ImageFigureView({
                 type="button"
                 title={TIPTAP_NS.figure.align}
                 aria-label={TIPTAP_NS.figure.align}
-                className="hover:bg-accent flex size-7 items-center justify-center rounded-md"
+                aria-pressed={panelOpen}
+                className={cn(
+                  "hover:bg-accent flex size-7 items-center justify-center rounded-md",
+                  panelOpen && "bg-accent",
+                )}
                 onClick={() => {
                   const pos = getPos()
                   if (pos != null) editor.commands.setNodeSelection(pos)
+                  setPanelOpen((v) => !v)
                 }}
               >
                 <PhotoIcon className="size-4" />
               </button>
             </div>
 
-            {/* Layout panel — shown while the figure is selected. */}
-            <div className="rt-figure-panel border-border bg-popover text-popover-foreground w-64 rounded-lg border p-2.5 shadow-xl">
+            {/* Layout panel — opens from its button only. */}
+            <div
+              className={cn(
+                "rt-figure-panel border-border bg-popover text-popover-foreground w-64 rounded-lg border p-2.5 shadow-xl",
+                panelOpen && "rt-figure-panel-open",
+              )}
+            >
               <div className="mb-1.5 flex items-center justify-between gap-2">
                 <span className="text-foreground px-0.5 text-xs font-semibold">
                   {TIPTAP_NS.figure.align}
@@ -263,12 +281,7 @@ export function ImageFigureView({
                   title={TIPTAP_NS.figure.cancel}
                   aria-label={TIPTAP_NS.figure.cancel}
                   className="hover:bg-accent flex size-6 items-center justify-center rounded-md"
-                  onClick={() => {
-                    const pos = getPos()
-                    if (pos != null) {
-                      editor.commands.setTextSelection(pos + node.nodeSize)
-                    }
-                  }}
+                  onClick={() => setPanelOpen(false)}
                 >
                   <XMarkIcon className="size-3.5" />
                 </button>

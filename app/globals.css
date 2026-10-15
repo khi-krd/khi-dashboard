@@ -383,7 +383,7 @@ audio {
 [dir="rtl"] .ProseMirror .rt-figure-panel {
   translate: 50% 0;
 }
-.ProseMirror .rt-figure-selected .rt-figure-panel,
+.ProseMirror .rt-figure-panel-open,
 .ProseMirror .rt-figure-panel:hover,
 .ProseMirror .rt-figure-panel:focus-within {
   opacity: 1;
