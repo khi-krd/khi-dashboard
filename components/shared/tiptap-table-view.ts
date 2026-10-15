@@ -20,7 +20,7 @@ export class CaptionedTableView extends TableView {
   private readonly input: HTMLInputElement
 
   constructor(node: PMNode, cellMinWidth: number, view?: EditorView) {
-    super(node, cellMinWidth, view)
+    super(node, cellMinWidth)
     this.view = view
     this.dom.classList.add("rt-table")
 
