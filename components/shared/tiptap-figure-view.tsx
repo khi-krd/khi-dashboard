@@ -61,7 +61,7 @@ export function ImageFigureView({
       <div contentEditable={false} className="rt-figure-media">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={src} alt={alt} draggable={false} />
-        {editable && selected ? (
+        {editable ? (
           <div
             className="rt-figure-bar border-border bg-popover text-popover-foreground flex flex-wrap items-center gap-0.5 rounded-md border p-1 shadow-md"
             dir="rtl"

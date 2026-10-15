@@ -13,6 +13,7 @@ import {
 import { SiteFontFaces } from "@/components/shared/site-font-faces"
 import { createTiptapExtensions } from "@/components/shared/tiptap-extensions"
 import { TIPTAP_NS } from "@/components/shared/tiptap-strings"
+import { TiptapBubbleMenus } from "@/components/shared/tiptap-bubble-menu"
 import { TiptapToolbar } from "@/components/shared/tiptap-toolbar"
 import {
   Dialog,
@@ -330,6 +331,7 @@ export function TiptapEditor({
           ) : null}
           <div className={cn(isSourceMode && "hidden")}>
             <EditorContent editor={editor} dir={dir} />
+            {isEditing ? <TiptapBubbleMenus editor={editor} /> : null}
           </div>
           {isSourceMode ? (
             <textarea

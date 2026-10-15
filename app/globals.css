@@ -351,6 +351,19 @@ audio {
   inset-inline-start: 50%;
   translate: -50% 0;
   z-index: 5;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.15s ease,
+    visibility 0.15s ease;
+}
+/* Reveal on hover, on node selection, or while interacting with the bar. */
+.ProseMirror .rt-figure:hover .rt-figure-bar,
+.ProseMirror .rt-figure-selected .rt-figure-bar,
+.ProseMirror .rt-figure-bar:focus-within,
+.ProseMirror .rt-figure-bar:hover {
+  opacity: 1;
+  visibility: visible;
 }
 [dir="rtl"] .ProseMirror .rt-figure-bar {
   translate: 50% 0;

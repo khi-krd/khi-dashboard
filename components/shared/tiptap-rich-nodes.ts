@@ -223,17 +223,36 @@ export const ImageFigure = Node.create({
     return {
       insertImageFigure:
         (attrs) =>
-        ({ commands }) =>
-          commands.insertContent({
-            type: this.name,
-            attrs: {
-              src: attrs.src,
-              alt: attrs.alt ?? "",
-              caption: attrs.caption ?? "",
-              align: attrs.align ?? "center",
-              width: attrs.width ?? 100,
+        ({ commands, tr }) => {
+          const { from, to } = tr.selection
+          const inserted = commands.insertContentAt(
+            { from, to },
+            {
+              type: this.name,
+              attrs: {
+                src: attrs.src,
+                alt: attrs.alt ?? "",
+                caption: attrs.caption ?? "",
+                align: attrs.align ?? "center",
+                width: attrs.width ?? 100,
+              },
             },
-          }),
+          )
+          if (!inserted) return false
+          // Select the new figure so its placement bar shows right away —
+          // the caret sits just after the inserted atom node.
+          const before = tr.selection.$from.nodeBefore
+          if (before?.type.name === this.name) {
+            return commands.setNodeSelection(
+              tr.selection.$from.pos - before.nodeSize,
+            )
+          }
+          const at = tr.doc.nodeAt(from)
+          if (at?.type.name === this.name) {
+            return commands.setNodeSelection(from)
+          }
+          return true
+        },
       setImageFigureAlign:
         (align) =>
         ({ commands }) =>
