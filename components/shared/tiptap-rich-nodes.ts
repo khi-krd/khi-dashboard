@@ -11,6 +11,7 @@ import { NodeSelection } from "@tiptap/pm/state"
 
 import { ImageBackdropView } from "@/components/shared/tiptap-backdrop-view"
 import { ImageFigureView } from "@/components/shared/tiptap-figure-view"
+import { ImageFloatView } from "@/components/shared/tiptap-float-view"
 import { CaptionedTableView } from "@/components/shared/tiptap-table-view"
 
 /**
@@ -72,6 +73,14 @@ declare module "@tiptap/core" {
       setImageFigureWidth: (width: FigureWidth) => ReturnType
       /** Convert the selected figure into an imageBackdrop (text over / under it). */
       convertFigureToBackdrop: (pos: BackdropPos) => ReturnType
+      /** Convert the selected figure into a free-floating imageFloat. */
+      convertFigureToFloat: (pos: FloatPos) => ReturnType
+    }
+    imageFloat: {
+      /** Float the selected figure/backdrop at its current position. */
+      convertFigureToFloat: (pos: FloatPos) => ReturnType
+      /** Convert the selected float back into an in-flow figure. */
+      unsetImageFloat: () => ReturnType
     }
     richTable: {
       insertCaptionedTable: (opts?: {
@@ -600,5 +609,199 @@ export const ImageBackdrop = Node.create({
     if (!src) return ""
     const alt = (node.attrs?.alt as string | undefined) ?? ""
     return `![${alt}](${src})`
+  },
+})
+
+// ============================================================
+// Floating image — Word's free placement: "In Front of Text" /
+// "Behind Text". Absolutely positioned inside the prose container
+// (x/y px from its top-left); dragged anywhere with the pointer.
+// The node itself keeps a zero-height anchor in the flow so it can
+// still be selected and moved as a document block.
+// ============================================================
+
+export type FloatPos = "behind" | "front"
+
+/**
+ * Stored HTML:
+ *
+ *   <div class="rt-float" data-pos="behind|front" data-width data-x data-y
+ *        style="left:Xpx;top:Ypx;width:W%">
+ *     <img>
+ *     <figcaption>optional</figcaption>
+ *   </div>
+ */
+export const ImageFloat = Node.create({
+  name: "imageFloat",
+  group: "block",
+  atom: true,
+  // Pointer-drag repositions in place; a ProseMirror drag would only move
+  // the invisible anchor, which is never what the user wants.
+  draggable: false,
+  selectable: true,
+
+  addAttributes() {
+    return {
+      src: {
+        default: null,
+        parseHTML: (element) =>
+          element.querySelector("img")?.getAttribute("src") ?? null,
+        renderHTML: () => ({}),
+      },
+      alt: {
+        default: "",
+        parseHTML: (element) =>
+          element.querySelector("img")?.getAttribute("alt") ?? "",
+        renderHTML: () => ({}),
+      },
+      caption: {
+        default: "",
+        parseHTML: (element) =>
+          element.querySelector("figcaption")?.textContent?.trim() ?? "",
+        renderHTML: () => ({}),
+      },
+      pos: {
+        default: "front" as FloatPos,
+        parseHTML: (element) =>
+          element.getAttribute("data-pos") === "behind" ? "behind" : "front",
+        renderHTML: (attributes) => ({ "data-pos": attributes.pos }),
+      },
+      width: {
+        default: 50 as FigureWidth,
+        parseHTML: (element) => {
+          const value = Number(element.getAttribute("data-width"))
+          return FIGURE_WIDTHS.includes(value as FigureWidth) ? value : 50
+        },
+        renderHTML: (attributes) => ({ "data-width": attributes.width }),
+      },
+      // Left/top offsets in px, anchored to the prose container's padding
+      // box. `data-x`/`data-y` keep the position even if `style` is
+      // stripped by a sanitizer; `style.left/top` is the render path.
+      x: {
+        default: 0,
+        parseHTML: (element) => {
+          const attr = Number(element.getAttribute("data-x"))
+          if (Number.isFinite(attr) && attr !== 0) return attr
+          return Math.round(parseFloat(element.style.left)) || 0
+        },
+        renderHTML: (attributes) => ({ "data-x": attributes.x }),
+      },
+      y: {
+        default: 0,
+        parseHTML: (element) => {
+          const attr = Number(element.getAttribute("data-y"))
+          if (Number.isFinite(attr) && attr !== 0) return attr
+          return Math.round(parseFloat(element.style.top)) || 0
+        },
+        renderHTML: (attributes) => ({ "data-y": attributes.y }),
+      },
+    }
+  },
+
+  parseHTML() {
+    return [{ tag: "div.rt-float" }]
+  },
+
+  renderHTML({ node, HTMLAttributes }) {
+    const src = (node.attrs.src as string | null) ?? ""
+    const alt = (node.attrs.alt as string) ?? ""
+    const caption = (node.attrs.caption as string) ?? ""
+    const width = (node.attrs.width as FigureWidth) ?? 50
+    const x = (node.attrs.x as number) ?? 0
+    const y = (node.attrs.y as number) ?? 0
+    const kids: DOMOutputSpec[] = [
+      ["img", { src, alt, loading: "lazy" }],
+    ]
+    if (caption) kids.push(["figcaption", {}, caption])
+    return [
+      "div",
+      mergeAttributes(HTMLAttributes, {
+        class: "rt-float",
+        style: `left:${x}px; top:${y}px; width:${width}%`,
+      }),
+      ...kids,
+    ]
+  },
+
+  addNodeView() {
+    return ReactNodeViewRenderer(ImageFloatView)
+  },
+
+  addCommands() {
+    return {
+      convertFigureToFloat:
+        (pos) =>
+        ({ tr, state, view, dispatch }) => {
+          const sel = tr.selection
+          if (!(sel instanceof NodeSelection)) return false
+          const name = sel.node.type.name
+          if (name !== "imageFigure" && name !== "imageBackdrop") return false
+          if (!dispatch) return true
+          const float = state.schema.nodes.imageFloat
+          if (!float) return false
+          // x/y are measured from the prose container's padding-box top-left
+          // — the same containing block the absolute positioning uses.
+          const style = getComputedStyle(view.dom)
+          const rect = view.dom.getBoundingClientRect()
+          const padX = parseFloat(style.paddingLeft) || 0
+          const padY = parseFloat(style.paddingTop) || 0
+          const coords = view.coordsAtPos(sel.from)
+          const x = Math.max(0, Math.round(coords.left - rect.left - padX))
+          const y = Math.max(0, Math.round(coords.top - rect.top - padY))
+          const node = float.create({
+            src: sel.node.attrs.src,
+            alt: sel.node.attrs.alt,
+            caption: sel.node.attrs.caption ?? "",
+            pos,
+            width: sel.node.attrs.width ?? 50,
+            x,
+            y,
+          })
+          tr.replaceWith(sel.from, sel.to, node)
+          // A converted backdrop had text inside — put it back in the flow
+          // right after the float so nothing is lost.
+          if (name === "imageBackdrop" && sel.node.content.size) {
+            tr.insert(sel.from + node.nodeSize, sel.node.content)
+          }
+          tr.setSelection(NodeSelection.create(tr.doc, sel.from))
+          return true
+        },
+      unsetImageFloat:
+        () =>
+        ({ tr, state, dispatch }) => {
+          const sel = tr.selection
+          if (
+            !(sel instanceof NodeSelection) ||
+            sel.node.type.name !== "imageFloat"
+          ) {
+            return false
+          }
+          if (!dispatch) return true
+          const figure = state.schema.nodes.imageFigure
+          if (!figure) return false
+          tr.replaceWith(
+            sel.from,
+            sel.to,
+            figure.create({
+              src: sel.node.attrs.src,
+              alt: sel.node.attrs.alt,
+              caption: sel.node.attrs.caption ?? "",
+              align: "center",
+              width: sel.node.attrs.width ?? 100,
+            }),
+          )
+          tr.setSelection(NodeSelection.create(tr.doc, sel.from))
+          return true
+        },
+    }
+  },
+
+  renderMarkdown: (node: JSONContent) => {
+    const src = (node.attrs?.src as string | undefined) ?? ""
+    if (!src) return ""
+    const alt = (node.attrs?.alt as string | undefined) ?? ""
+    const caption = (node.attrs?.caption as string | undefined) ?? ""
+    const img = `![${alt}](${src})`
+    return caption ? `${img}\n\n*${caption}*` : img
   },
 })

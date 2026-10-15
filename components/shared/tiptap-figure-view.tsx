@@ -11,9 +11,9 @@ import {
 
 import {
   FIGURE_WIDTHS,
-  type BackdropPos,
   type FigureAlign,
   type FigureWidth,
+  type FloatPos,
 } from "@/components/shared/tiptap-rich-nodes"
 import { ImageInsertDialog } from "@/components/shared/tiptap-toolbar-rich"
 import { TIPTAP_NS } from "@/components/shared/tiptap-strings"
@@ -22,16 +22,16 @@ import { cn } from "@/lib/utils"
 /** Order shown in the wrap grid — mirrors Word's "With Text Wrapping". */
 const WRAP_OPTIONS: FigureAlign[] = ["left", "full", "right"]
 /**
- * Word's Behind/In-Front-of-Text: these convert the figure into an
- * `imageBackdrop` (text over the picture, or the picture over the text).
+ * Word's Behind/In-Front-of-Text: these convert the figure into a free-
+ * floating `imageFloat` that can be dragged anywhere over/under the text.
  */
-const OVERLAY_OPTIONS: BackdropPos[] = ["behind", "front"]
+const OVERLAY_OPTIONS: FloatPos[] = ["behind", "front"]
 
 /**
  * Small visual icon per placement, drawn like Word's layout glyphs: a blue
  * picture block plus grey text lines showing how the copy flows around it.
  */
-function WrapIcon({ kind }: { kind: FigureAlign | BackdropPos }) {
+function WrapIcon({ kind }: { kind: FigureAlign | FloatPos }) {
   const img = "fill-[#7ba7d9]"
   const line = "fill-current opacity-40"
   switch (kind) {
@@ -312,7 +312,7 @@ export function ImageFigureView({
                       editor
                         .chain()
                         .focus()
-                        .convertFigureToBackdrop(value)
+                        .convertFigureToFloat(value)
                         .run()
                     }
                   >

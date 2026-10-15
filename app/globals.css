@@ -460,6 +460,66 @@ audio {
   visibility: visible;
 }
 
+/* Floating image — Word's free placement. The editor/prose container is the
+   "page": floats anchor to it via absolute x/y. `isolation:isolate` keeps
+   behind-mode (`z-index:-1`) inside the prose stacking context so the image
+   drops under the text but stays above the page background. */
+.ProseMirror,
+.prose {
+  position: relative;
+  isolation: isolate;
+}
+.rt-float-anchor {
+  position: static;
+  height: 0;
+  overflow: visible;
+}
+.rt-float {
+  position: absolute;
+  z-index: 3;
+  margin: 0;
+}
+.rt-float[data-pos="behind"] {
+  z-index: -1;
+}
+.rt-float img,
+.ProseMirror .rt-float img {
+  display: block;
+  width: 100%;
+  max-width: none;
+  height: auto;
+  margin: 0;
+  border-radius: var(--radius-md);
+}
+.rt-float figcaption {
+  margin-top: 0.4rem;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--muted-foreground);
+  text-align: center;
+}
+/* Front mode: the picture itself is the drag surface (click selects, a
+   press-and-move drags). Behind mode: the picture ignores the pointer so the
+   text over it stays editable — the ui chip does the grabbing instead. */
+.ProseMirror .rt-float[data-pos="front"] img {
+  cursor: grab;
+}
+.ProseMirror .rt-float[data-pos="front"]:active img {
+  cursor: grabbing;
+}
+.ProseMirror .rt-float[data-pos="behind"] {
+  pointer-events: none;
+}
+.rt-float-ui {
+  position: absolute;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 0.125rem;
+  padding: 0.125rem;
+  max-width: max-content;
+}
+
 .rt-caption-input {
   display: block;
   width: 100%;
