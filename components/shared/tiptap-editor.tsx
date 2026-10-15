@@ -444,7 +444,7 @@ export function TiptapEditor({
       >
         <DialogContent
           dir={dir}
-          className="flex h-[92vh] max-h-[92vh] w-[96vw] max-w-6xl flex-col gap-0 overflow-hidden p-0"
+          className="flex h-[92vh] max-h-[92vh] w-[94vw] max-w-7xl flex-col gap-0 overflow-hidden p-0 sm:max-w-7xl"
         >
           <DialogHeader className="shrink-0 flex-row flex-wrap items-center justify-between gap-3 border-b px-4 py-3 pe-12">
             <DialogTitle>
