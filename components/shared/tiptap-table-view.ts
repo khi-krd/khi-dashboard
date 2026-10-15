@@ -14,15 +14,30 @@ import { TIPTAP_NS } from "@/components/shared/tiptap-strings"
  * ProseMirror must neither interpret its keystrokes nor treat its DOM
  * mutations as document changes, hence `stopEvent` / `ignoreMutation`.
  */
+/** Word's table move handle — the four-headed arrow. */
+const MOVE_ICON = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1.5v13M1.5 8h13"/><path d="M8 1.5 5.75 3.75M8 1.5l2.25 2.25M8 14.5l-2.25-2.25M8 14.5l2.25-2.25M1.5 8l2.25-2.25M1.5 8l2.25 2.25M14.5 8l-2.25-2.25M14.5 8l-2.25 2.25"/></svg>`
+
 export class CaptionedTableView extends TableView {
   private readonly view: EditorView | undefined
   private readonly caption: HTMLElement
   private readonly input: HTMLInputElement
+  private readonly handle: HTMLElement
 
   constructor(node: PMNode, cellMinWidth: number, view?: EditorView) {
     super(node, cellMinWidth)
     this.view = view
     this.dom.classList.add("rt-table")
+
+    // Table move handle — appears at the table's top corner on hover;
+    // ProseMirror picks up its `data-drag-handle` and drags the whole table.
+    this.handle = document.createElement("span")
+    this.handle.className = "rt-table-handle"
+    this.handle.setAttribute("data-drag-handle", "")
+    this.handle.contentEditable = "false"
+    this.handle.title = TIPTAP_NS.table.drag
+    this.handle.setAttribute("aria-label", TIPTAP_NS.table.drag)
+    this.handle.innerHTML = MOVE_ICON
+    this.dom.appendChild(this.handle)
 
     this.caption = document.createElement("figcaption")
     this.caption.className = "rt-table-caption"
@@ -60,8 +75,17 @@ export class CaptionedTableView extends TableView {
   private applyAttrs(node: PMNode) {
     const style = (node.attrs.tableStyle as string) ?? "grid"
     this.table.setAttribute("data-style", style)
+    // Mirror the wrapper attrs `renderHTML` emits so the editor view is the
+    // same shape the public site renders.
+    this.dom.setAttribute("data-align", (node.attrs.align as string) ?? "left")
+    this.dom.setAttribute("data-wrap", (node.attrs.wrap as string) ?? "none")
+    this.dom.setAttribute(
+      "data-width",
+      String((node.attrs.width as number) ?? 100),
+    )
     const editable = this.view?.editable ?? true
     this.caption.hidden = !editable && !(node.attrs.caption as string)
+    this.handle.hidden = !editable
     this.input.readOnly = !editable
   }
 

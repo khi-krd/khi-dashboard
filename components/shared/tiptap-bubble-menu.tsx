@@ -20,9 +20,15 @@ import {
   FontFamilySelect,
   FontSizeSelect,
 } from "@/components/shared/tiptap-toolbar-rich"
+import { WrapIcon } from "@/components/shared/tiptap-figure-view"
 import {
+  FIGURE_WIDTHS,
+  TABLE_ALIGNS,
   TABLE_STYLES,
+  type FigureWidth,
+  type TableAlign,
   type TableStyle,
+  type TableWrap,
 } from "@/components/shared/tiptap-rich-nodes"
 import { cn } from "@/lib/utils"
 
@@ -72,6 +78,24 @@ function BubbleBtn({
   )
 }
 
+/** Word's "Around" text-wrapping glyph — table block, text on both sides. */
+function WrapAroundIcon() {
+  const line = "fill-current opacity-40"
+  return (
+    <svg viewBox="0 0 40 30" className="size-full" aria-hidden>
+      <rect x="2" y="4" width="11" height="3" className={line} />
+      <rect x="2" y="10" width="11" height="3" className={line} />
+      <rect x="2" y="16" width="11" height="3" className={line} />
+      <rect x="2" y="22" width="11" height="3" className={line} />
+      <rect x="27" y="4" width="11" height="3" className={line} />
+      <rect x="27" y="10" width="11" height="3" className={line} />
+      <rect x="27" y="16" width="11" height="3" className={line} />
+      <rect x="27" y="22" width="11" height="3" className={line} />
+      <rect x="15" y="2" width="10" height="26" rx="1" className="fill-[#7ba7d9]" />
+    </svg>
+  )
+}
+
 function promptLink(editor: Editor) {
   const prev = editor.getAttributes("link").href as string | undefined
   const next =
@@ -106,6 +130,12 @@ export function TiptapBubbleMenus({ editor }: { editor: Editor }) {
   const tableStyle =
     (editor.getAttributes("table").tableStyle as TableStyle | undefined) ??
     "grid"
+  const tableAlign =
+    (editor.getAttributes("table").align as TableAlign | undefined) ?? "left"
+  const tableWrap =
+    (editor.getAttributes("table").wrap as TableWrap | undefined) ?? "none"
+  const tableWidth =
+    (editor.getAttributes("table").width as FigureWidth | undefined) ?? 100
 
   return (
     <>
@@ -216,6 +246,60 @@ export function TiptapBubbleMenus({ editor }: { editor: Editor }) {
               </span>
             </BubbleBtn>
           ))}
+          <span className="bg-border mx-0.5 h-5 w-px" />
+          {/* Alignment + text wrapping — Word's Table Properties. */}
+          <span className="text-muted-foreground px-1 text-xs">
+            {TIPTAP_NS.table.align}
+          </span>
+          {TABLE_ALIGNS.map((a) => (
+            <BubbleBtn
+              key={a}
+              label={TIPTAP_NS.table.alignLabel[a]}
+              pressed={tableAlign === a}
+              onClick={() => editor.chain().focus().setTableAlign(a).run()}
+            >
+              <span className="block h-4 w-5">
+                <WrapIcon kind={a} />
+              </span>
+            </BubbleBtn>
+          ))}
+          <BubbleBtn
+            label={
+              tableWrap === "around"
+                ? TIPTAP_NS.table.wrapAround
+                : TIPTAP_NS.table.wrapNone
+            }
+            pressed={tableWrap === "around"}
+            onClick={() =>
+              editor
+                .chain()
+                .focus()
+                .setTableWrap(tableWrap === "around" ? "none" : "around")
+                .run()
+            }
+          >
+            <span className="block h-4 w-5">
+              <WrapAroundIcon />
+            </span>
+          </BubbleBtn>
+          <select
+            className="bg-background h-7 rounded border px-1 text-xs"
+            value={tableWidth}
+            title={TIPTAP_NS.table.width}
+            onChange={(e) =>
+              editor
+                .chain()
+                .focus()
+                .setTableWidth(Number(e.target.value) as FigureWidth)
+                .run()
+            }
+          >
+            {FIGURE_WIDTHS.map((w) => (
+              <option key={w} value={w}>
+                {w}%
+              </option>
+            ))}
+          </select>
           <span className="bg-border mx-0.5 h-5 w-px" />
           <ColorPicker
             label={TIPTAP_NS.table.cellColor}

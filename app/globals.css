@@ -584,6 +584,65 @@ audio {
   margin: 1.25rem 0;
   overflow-x: auto;
 }
+/* Word's Table Properties — alignment, preferred width, text wrapping.
+   The figure carries data-align / data-wrap / data-width; width presets
+   reuse the figure's --rt-w scale. */
+.rt-table {
+  --rt-w: 100%;
+  inline-size: var(--rt-w);
+}
+.rt-table[data-width="25"] { --rt-w: 25%; }
+.rt-table[data-width="33"] { --rt-w: 33.333%; }
+.rt-table[data-width="50"] { --rt-w: 50%; }
+.rt-table[data-width="66"] { --rt-w: 66.666%; }
+.rt-table[data-width="75"] { --rt-w: 75%; }
+.rt-table[data-align="center"] {
+  margin-inline: auto;
+}
+.rt-table[data-align="right"] {
+  margin-left: auto;
+  margin-right: 0;
+}
+.rt-table[data-wrap="around"][data-align="left"] {
+  float: left;
+  margin: 0.4rem 1.5rem 1rem 0;
+}
+.rt-table[data-wrap="around"][data-align="right"] {
+  float: right;
+  margin: 0.4rem 0 1rem 1.5rem;
+}
+/* Word's move handle — four-headed arrow at the table's top corner. */
+.ProseMirror .rt-table {
+  position: relative;
+}
+.rt-table-handle {
+  position: absolute;
+  top: 0.2rem;
+  inset-inline-start: 0.2rem;
+  z-index: 10;
+  width: 1.2rem;
+  height: 1.2rem;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  color: var(--muted-foreground);
+  background: var(--popover);
+  border: 1px solid var(--border);
+  border-radius: 0.25rem;
+  box-shadow: var(--shadow-sm);
+}
+.rt-table-handle svg {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+.ProseMirror .rt-table:hover .rt-table-handle,
+.ProseMirror .rt-table:focus-within .rt-table-handle {
+  display: flex;
+}
+.ProseMirror .rt-table-handle:active {
+  cursor: grabbing;
+}
 .rt-table table,
 .ProseMirror table {
   width: 100%;

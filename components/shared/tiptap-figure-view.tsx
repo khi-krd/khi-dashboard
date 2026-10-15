@@ -31,7 +31,7 @@ const OVERLAY_OPTIONS: FloatPos[] = ["behind", "front"]
  * Small visual icon per placement, drawn like Word's layout glyphs: a blue
  * picture block plus grey text lines showing how the copy flows around it.
  */
-function WrapIcon({ kind }: { kind: FigureAlign | FloatPos }) {
+export function WrapIcon({ kind }: { kind: FigureAlign | FloatPos }) {
   const img = "fill-[#7ba7d9]"
   const line = "fill-current opacity-40"
   switch (kind) {

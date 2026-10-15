@@ -105,6 +105,17 @@ export const TIPTAP_NS = {
     caption: "ژێرنووسی خشتە",
     captionPlaceholder: "ژێرنووسی خشتە…",
     delete: "سڕینەوەی خشتە",
+    drag: "ڕاکێشە بۆ گواستنەوەی خشتە",
+    align: "جێگیربوون",
+    alignLabel: {
+      left: "لە چەپ",
+      center: "ناوەند",
+      right: "لە ڕاست",
+    },
+    wrap: "پێچانی دەق",
+    wrapNone: "بێ پێچانی دەق",
+    wrapAround: "دەق دەوری خشتە",
+    width: "پانی خشتە",
   },
   color: {
     none: "بێ ڕەنگ",

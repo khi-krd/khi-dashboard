@@ -54,6 +54,10 @@ export const TABLE_STYLES: TableStyle[] = [
   "borderless",
   "minimal",
 ]
+export type TableAlign = "left" | "center" | "right"
+export type TableWrap = "none" | "around"
+export const TABLE_ALIGNS: TableAlign[] = ["left", "center", "right"]
+export const TABLE_WRAPS: TableWrap[] = ["none", "around"]
 
 declare module "@tiptap/core" {
   interface Commands<ReturnType> {
@@ -91,6 +95,12 @@ declare module "@tiptap/core" {
       setTableStyle: (style: TableStyle | null) => ReturnType
       setTableCaption: (caption: string) => ReturnType
       setCellBackground: (color: string | null) => ReturnType
+      /** Word's Table Properties → Alignment. */
+      setTableAlign: (align: TableAlign) => ReturnType
+      /** Word's Table Properties → Text Wrapping (none / around). */
+      setTableWrap: (wrap: TableWrap) => ReturnType
+      /** Preferred width — matters once the table is aligned or wrapped. */
+      setTableWidth: (width: FigureWidth) => ReturnType
     }
     columns: {
       insertColumns: (count: 2 | 3) => ReturnType
@@ -299,6 +309,10 @@ export const ImageFigure = Node.create({
 // ============================================================
 
 export const RichTable = Table.extend({
+  // Word's move handle (data-drag-handle in the view) needs the node
+  // draggable so the whole table can be picked up and dropped elsewhere.
+  draggable: true,
+
   addOptions() {
     const parent = this.parent?.()
     return {
@@ -332,6 +346,32 @@ export const RichTable = Table.extend({
         },
         renderHTML: (attributes) => ({ "data-style": attributes.tableStyle }),
       },
+      // Word's Table Properties → Alignment / Text wrapping / Preferred
+      // width. All three live on the <figure class="rt-table"> wrapper.
+      align: {
+        default: "left" as TableAlign,
+        parseHTML: (element) => {
+          const value = element.getAttribute("data-align")
+          return TABLE_ALIGNS.includes(value as TableAlign) ? value : "left"
+        },
+        renderHTML: (attributes) => ({ "data-align": attributes.align }),
+      },
+      wrap: {
+        default: "none" as TableWrap,
+        parseHTML: (element) => {
+          const value = element.getAttribute("data-wrap")
+          return TABLE_WRAPS.includes(value as TableWrap) ? value : "none"
+        },
+        renderHTML: (attributes) => ({ "data-wrap": attributes.wrap }),
+      },
+      width: {
+        default: 100 as FigureWidth,
+        parseHTML: (element) => {
+          const value = Number(element.getAttribute("data-width"))
+          return FIGURE_WIDTHS.includes(value as FigureWidth) ? value : 100
+        },
+        renderHTML: (attributes) => ({ "data-width": attributes.width }),
+      },
     }
   },
 
@@ -345,7 +385,12 @@ export const RichTable = Table.extend({
   renderHTML(props) {
     const table = this.parent?.(props) as DOMOutputSpec
     const caption = (props.node.attrs.caption as string) ?? ""
-    return ["figure", { class: "rt-table" }, table, ["figcaption", {}, caption]]
+    return [
+      "figure",
+      mergeAttributes(props.HTMLAttributes, { class: "rt-table" }),
+      table,
+      ["figcaption", {}, caption],
+    ]
   },
 
   addCommands() {
@@ -371,6 +416,18 @@ export const RichTable = Table.extend({
               commands.updateAttributes(type, { backgroundColor: color }),
             )
             .some(Boolean),
+      setTableAlign:
+        (align) =>
+        ({ commands }) =>
+          commands.updateAttributes("table", { align }),
+      setTableWrap:
+        (wrap) =>
+        ({ commands }) =>
+          commands.updateAttributes("table", { wrap }),
+      setTableWidth:
+        (width) =>
+        ({ commands }) =>
+          commands.updateAttributes("table", { width }),
     }
   },
 })
