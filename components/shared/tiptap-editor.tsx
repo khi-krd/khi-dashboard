@@ -2,7 +2,10 @@
 
 import { useEffect, useState } from "react"
 import { EditorContent, useEditor } from "@tiptap/react"
-import { EyeIcon } from "@heroicons/react/24/outline"
+import {
+  ArrowsPointingOutIcon,
+  EyeIcon,
+} from "@heroicons/react/24/outline"
 import { marked } from "marked"
 import { toast } from "sonner"
 
@@ -136,6 +139,8 @@ export function TiptapEditor({
 }: TiptapEditorProps) {
   const [mode, setMode] = useState<EditorMode>(editable ? "edit" : "preview")
   const [previewOpen, setPreviewOpen] = useState(false)
+  /** Full-size editing modal — the same editor instance remounts inside it. */
+  const [expanded, setExpanded] = useState(false)
   const [previewContent, setPreviewContent] = useState<{
     html: string
     markdown: string
@@ -338,72 +343,120 @@ export function TiptapEditor({
 
   const modes = editable ? EDITABLE_MODES : VIEWER_MODES
 
+  const modeTabs = (
+    <div
+      role="tablist"
+      aria-label={TIPTAP_NS.modes.label}
+      className="bg-muted inline-flex w-fit items-center gap-0.5 rounded-lg p-[3px]"
+    >
+      {modes.map((m) => (
+        <button
+          key={m}
+          type="button"
+          role="tab"
+          aria-selected={activeMode === m}
+          onClick={() => switchMode(m)}
+          className={cn(
+            "text-foreground/60 hover:text-foreground rounded-md px-2.5 py-1 text-xs font-medium whitespace-nowrap transition-all",
+            activeMode === m &&
+              "bg-background text-foreground shadow-sm dark:bg-input/30",
+          )}
+        >
+          {TIPTAP_NS.modes[m]}
+        </button>
+      ))}
+      {previewModal ? (
+        <button
+          type="button"
+          onClick={openPreview}
+          title={TIPTAP_NS.modes.preview}
+          className="text-foreground/60 hover:text-foreground inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-medium whitespace-nowrap transition-all"
+        >
+          <EyeIcon className="size-3.5" />
+          {editable ? TIPTAP_NS.modes.preview : TIPTAP_NS.modes.expand}
+        </button>
+      ) : null}
+      {isEditing ? (
+        <button
+          type="button"
+          onClick={() => setExpanded(true)}
+          title={TIPTAP_NS.modes.expandEditor}
+          className="text-foreground/60 hover:text-foreground inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-medium whitespace-nowrap transition-all"
+        >
+          <ArrowsPointingOutIcon className="size-3.5" />
+        </button>
+      ) : null}
+    </div>
+  )
+
+  // The editing surface — one <EditorContent> may only be mounted once, so
+  // the same fragment serves the inline shell and the expanded modal; only
+  // one of them is rendered at a time.
+  const editPane = (stickyBar: boolean) => (
+    <>
+      {isEditing ? (
+        <TiptapToolbar
+          editor={editor}
+          variant={toolbar}
+          sticky={stickyBar}
+          entity={entity}
+        />
+      ) : null}
+      <div className={cn(isSourceMode && "hidden")}>
+        <EditorContent editor={editor} dir={dir} />
+        {isEditing ? <TiptapBubbleMenus editor={editor} /> : null}
+      </div>
+      {isSourceMode ? (
+        <textarea
+          dir="ltr"
+          value={sourceEdit?.mode === activeMode ? sourceEdit.text : ""}
+          readOnly={!editable}
+          spellCheck={false}
+          onChange={(e) => handleSourceChange(e.target.value)}
+          className={cn(
+            "text-foreground min-h-[320px] w-full resize-y bg-transparent px-3 py-2 font-mono text-xs leading-relaxed outline-none",
+            !editable && "cursor-default",
+          )}
+          aria-label={TIPTAP_NS.modes[activeMode]}
+        />
+      ) : null}
+    </>
+  )
+
   const editorChrome = (
     <div className="space-y-1.5">
       <SiteFontFaces />
-      <div
-        role="tablist"
-        aria-label={TIPTAP_NS.modes.label}
-        className="bg-muted inline-flex w-fit items-center gap-0.5 rounded-lg p-[3px]"
-      >
-        {modes.map((m) => (
-          <button
-            key={m}
-            type="button"
-            role="tab"
-            aria-selected={activeMode === m}
-            onClick={() => switchMode(m)}
-            className={cn(
-              "text-foreground/60 hover:text-foreground rounded-md px-2.5 py-1 text-xs font-medium whitespace-nowrap transition-all",
-              activeMode === m &&
-                "bg-background text-foreground shadow-sm dark:bg-input/30",
-            )}
-          >
-            {TIPTAP_NS.modes[m]}
-          </button>
-        ))}
-        {previewModal ? (
-          <button
-            type="button"
-            onClick={openPreview}
-            title={TIPTAP_NS.modes.preview}
-            className="text-foreground/60 hover:text-foreground inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-medium whitespace-nowrap transition-all"
-          >
-            <EyeIcon className="size-3.5" />
-            {editable ? TIPTAP_NS.modes.preview : TIPTAP_NS.modes.expand}
-          </button>
-        ) : null}
-      </div>
+      {modeTabs}
       <div className={tiptapEditorShellClass(error)}>
-        <div className="bg-background min-h-0 max-h-[480px] overflow-y-auto">
-          {isEditing ? (
-            <TiptapToolbar
-              editor={editor}
-              variant={toolbar}
-              sticky={pinToolbar}
-              entity={entity}
-            />
-          ) : null}
-          <div className={cn(isSourceMode && "hidden")}>
-            <EditorContent editor={editor} dir={dir} />
-            {isEditing ? <TiptapBubbleMenus editor={editor} /> : null}
+        {expanded ? (
+          <div className="text-muted-foreground flex min-h-36 items-center justify-center px-3 py-2 text-xs">
+            {TIPTAP_NS.modes.editingInModal}
           </div>
-          {isSourceMode ? (
-            <textarea
-              dir="ltr"
-              value={sourceEdit?.mode === activeMode ? sourceEdit.text : ""}
-              readOnly={!editable}
-              spellCheck={false}
-              onChange={(e) => handleSourceChange(e.target.value)}
-              className={cn(
-                "text-foreground min-h-[320px] w-full resize-y bg-transparent px-3 py-2 font-mono text-xs leading-relaxed outline-none",
-                !editable && "cursor-default",
-              )}
-              aria-label={TIPTAP_NS.modes[activeMode]}
-            />
-          ) : null}
-        </div>
+        ) : (
+          <div className="bg-background min-h-0 max-h-[480px] overflow-y-auto">
+            {editPane(pinToolbar)}
+          </div>
+        )}
       </div>
+      <Dialog
+        open={expanded}
+        onOpenChange={setExpanded}
+      >
+        <DialogContent
+          dir={dir}
+          className="flex h-[92vh] max-h-[92vh] w-[96vw] max-w-6xl flex-col gap-0 overflow-hidden p-0"
+        >
+          <DialogHeader className="shrink-0 flex-row flex-wrap items-center justify-between gap-3 border-b px-4 py-3 pe-12">
+            <DialogTitle>
+              {label ?? TIPTAP_NS.modes.edit}
+            </DialogTitle>
+            {modeTabs}
+          </DialogHeader>
+          <div className="bg-background min-h-0 flex-1 overflow-y-auto">
+            {expanded ? editPane(true) : null}
+          </div>
+        </DialogContent>
+      </Dialog>
       {previewModal ? (
         <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
           <DialogContent

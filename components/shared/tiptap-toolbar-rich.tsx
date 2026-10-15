@@ -291,33 +291,75 @@ export function ColorPicker({
 /* Image dialog — upload or link, alt, caption, placement, width       */
 /* ------------------------------------------------------------------ */
 
+export type ImageFigureValues = {
+  src: string
+  alt: string
+  caption: string
+  align: FigureAlign
+  width: FigureWidth
+}
+
 export function ImageInsertDialog({
   editor,
   entity,
   open,
   onOpenChange,
+  initial,
+  onApply,
 }: {
   editor: Editor
   entity?: string
   open: boolean
   onOpenChange: (open: boolean) => void
+  /** Edit mode: seed the fields from an existing figure. */
+  initial?: Partial<ImageFigureValues>
+  /** Edit mode: apply back onto the selected node instead of inserting. */
+  onApply?: (values: ImageFigureValues) => void
 }) {
-  const [src, setSrc] = useState("")
-  const [alt, setAlt] = useState("")
-  const [caption, setCaption] = useState("")
-  const [align, setAlign] = useState<FigureAlign>("center")
-  const [width, setWidth] = useState<FigureWidth>(100)
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent dir="rtl" className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>
+            {onApply ? TIPTAP_NS.figure.editTitle : TIPTAP_NS.figure.title}
+          </DialogTitle>
+        </DialogHeader>
+        {open ? (
+          // Mounts fresh on every open — fields seed from `initial` and a
+          // closed dialog can never hold stale values.
+          <ImageInsertBody
+            editor={editor}
+            entity={entity}
+            initial={initial}
+            onApply={onApply}
+            onDone={() => onOpenChange(false)}
+          />
+        ) : null}
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+function ImageInsertBody({
+  editor,
+  entity,
+  initial,
+  onApply,
+  onDone,
+}: {
+  editor: Editor
+  entity?: string
+  initial?: Partial<ImageFigureValues>
+  onApply?: (values: ImageFigureValues) => void
+  onDone: () => void
+}) {
+  const [src, setSrc] = useState(initial?.src ?? "")
+  const [alt, setAlt] = useState(initial?.alt ?? "")
+  const [caption, setCaption] = useState(initial?.caption ?? "")
+  const [align, setAlign] = useState<FigureAlign>(initial?.align ?? "center")
+  const [width, setWidth] = useState<FigureWidth>(initial?.width ?? 100)
   const [progress, setProgress] = useState<number | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
-
-  function reset() {
-    setSrc("")
-    setAlt("")
-    setCaption("")
-    setAlign("center")
-    setWidth(100)
-    setProgress(null)
-  }
 
   async function handleFile(file: File | undefined) {
     if (!file) return
@@ -336,130 +378,118 @@ export function ImageInsertDialog({
   function insert() {
     const url = src.trim()
     if (!url) return
-    editor
-      .chain()
-      .focus()
-      .insertImageFigure({ src: url, alt, caption, align, width })
-      .run()
-    onOpenChange(false)
-    reset()
+    if (onApply) {
+      onApply({ src: url, alt, caption, align, width })
+    } else {
+      editor
+        .chain()
+        .focus()
+        .insertImageFigure({ src: url, alt, caption, align, width })
+        .run()
+    }
+    onDone()
   }
 
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(next) => {
-        onOpenChange(next)
-        if (!next) reset()
-      }}
-    >
-      <DialogContent dir="rtl" className="sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>{TIPTAP_NS.figure.title}</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4">
-          <div className="flex flex-wrap items-center gap-2">
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/*"
-              className="sr-only"
-              onChange={(e) => void handleFile(e.target.files?.[0])}
-            />
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={progress !== null}
-              onClick={() => fileRef.current?.click()}
-            >
-              <ArrowUpTrayIcon className="size-4" />
-              {TIPTAP_NS.figure.upload}
-            </Button>
-            <span className="text-muted-foreground text-xs">
-              {TIPTAP_NS.figure.orUrl}
-            </span>
-            <Input
-              dir="ltr"
-              className="h-8 min-w-0 flex-1 font-mono text-xs"
-              placeholder={TIPTAP_NS.figure.urlPlaceholder}
-              value={src}
-              onChange={(e) => setSrc(e.target.value)}
-            />
-          </div>
-          {progress !== null ? <UploadProgressLine value={progress} /> : null}
-          {src.trim() ? (
-            <div className="bg-muted/30 overflow-hidden rounded-md border">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={src}
-                alt={alt}
-                className="mx-auto max-h-48 object-contain"
-              />
-            </div>
-          ) : null}
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="space-y-1">
-              <Label className="text-xs">{TIPTAP_NS.figure.alt}</Label>
-              <Input
-                className="h-8"
-                value={alt}
-                onChange={(e) => setAlt(e.target.value)}
-              />
-            </div>
-            <div className="space-y-1">
-              <Label className="text-xs">{TIPTAP_NS.figure.caption}</Label>
-              <Input
-                className="h-8"
-                value={caption}
-                onChange={(e) => setCaption(e.target.value)}
-              />
-            </div>
-            <div className="space-y-1">
-              <Label className="text-xs">{TIPTAP_NS.figure.align}</Label>
-              <select
-                className={cn(selectClass, "h-8 w-full max-w-none")}
-                value={align}
-                onChange={(e) => setAlign(e.target.value as FigureAlign)}
-              >
-                {FIGURE_ALIGNS.map((a) => (
-                  <option key={a} value={a}>
-                    {TIPTAP_NS.figure.alignLabel[a]}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="space-y-1">
-              <Label className="text-xs">{TIPTAP_NS.figure.width}</Label>
-              <select
-                className={cn(selectClass, "h-8 w-full max-w-none")}
-                value={width}
-                onChange={(e) => setWidth(Number(e.target.value) as FigureWidth)}
-              >
-                {FIGURE_WIDTHS.map((w) => (
-                  <option key={w} value={w}>
-                    {w}%
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-        </div>
-        <DialogFooter>
+    <>
+      <div className="space-y-4">
+        <div className="flex flex-wrap items-center gap-2">
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            className="sr-only"
+            onChange={(e) => void handleFile(e.target.files?.[0])}
+          />
           <Button
             type="button"
-            variant="ghost"
-            onClick={() => onOpenChange(false)}
+            variant="outline"
+            size="sm"
+            disabled={progress !== null}
+            onClick={() => fileRef.current?.click()}
           >
-            {TIPTAP_NS.figure.cancel}
+            <ArrowUpTrayIcon className="size-4" />
+            {TIPTAP_NS.figure.upload}
           </Button>
-          <Button type="button" disabled={!src.trim()} onClick={insert}>
-            <PhotoIcon className="size-4" />
-            {TIPTAP_NS.figure.insert}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          <span className="text-muted-foreground text-xs">
+            {TIPTAP_NS.figure.orUrl}
+          </span>
+          <Input
+            dir="ltr"
+            className="h-8 min-w-0 flex-1 font-mono text-xs"
+            placeholder={TIPTAP_NS.figure.urlPlaceholder}
+            value={src}
+            onChange={(e) => setSrc(e.target.value)}
+          />
+        </div>
+        {progress !== null ? <UploadProgressLine value={progress} /> : null}
+        {src.trim() ? (
+          <div className="bg-muted/30 overflow-hidden rounded-md border">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={src}
+              alt={alt}
+              className="mx-auto max-h-48 object-contain"
+            />
+          </div>
+        ) : null}
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="space-y-1">
+            <Label className="text-xs">{TIPTAP_NS.figure.alt}</Label>
+            <Input
+              className="h-8"
+              value={alt}
+              onChange={(e) => setAlt(e.target.value)}
+            />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs">{TIPTAP_NS.figure.caption}</Label>
+            <Input
+              className="h-8"
+              value={caption}
+              onChange={(e) => setCaption(e.target.value)}
+            />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs">{TIPTAP_NS.figure.align}</Label>
+            <select
+              className={cn(selectClass, "h-8 w-full max-w-none")}
+              value={align}
+              onChange={(e) => setAlign(e.target.value as FigureAlign)}
+            >
+              {FIGURE_ALIGNS.map((a) => (
+                <option key={a} value={a}>
+                  {TIPTAP_NS.figure.alignLabel[a]}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs">{TIPTAP_NS.figure.width}</Label>
+            <select
+              className={cn(selectClass, "h-8 w-full max-w-none")}
+              value={width}
+              onChange={(e) => setWidth(Number(e.target.value) as FigureWidth)}
+            >
+              {FIGURE_WIDTHS.map((w) => (
+                <option key={w} value={w}>
+                  {w}%
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </div>
+      <DialogFooter>
+        <Button type="button" variant="ghost" onClick={onDone}>
+          {TIPTAP_NS.figure.cancel}
+        </Button>
+        <Button type="button" disabled={!src.trim()} onClick={insert}>
+          <PhotoIcon className="size-4" />
+          {onApply ? TIPTAP_NS.figure.apply : TIPTAP_NS.figure.insert}
+        </Button>
+      </DialogFooter>
+    </>
   )
 }
 

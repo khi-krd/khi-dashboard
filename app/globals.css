@@ -365,6 +365,35 @@ audio {
   opacity: 1;
   visibility: visible;
 }
+
+/* Word-style layout panel: floats just under the hover bar, only while the
+   figure is node-selected (or the pointer is inside the panel itself). */
+.ProseMirror .rt-figure-panel {
+  position: absolute;
+  top: calc(0.5rem + 40px);
+  inset-inline-start: 50%;
+  translate: -50% 0;
+  z-index: 20;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.15s ease,
+    visibility 0.15s ease;
+}
+[dir="rtl"] .ProseMirror .rt-figure-panel {
+  translate: 50% 0;
+}
+.ProseMirror .rt-figure-selected .rt-figure-panel,
+.ProseMirror .rt-figure-panel:hover,
+.ProseMirror .rt-figure-panel:focus-within {
+  opacity: 1;
+  visibility: visible;
+}
+/* On narrow figures keep the panel inside the editor viewport. */
+.ProseMirror .rt-figure[data-width="25"] .rt-figure-panel,
+.ProseMirror .rt-figure[data-width="33"] .rt-figure-panel {
+  max-width: min(320px, 80vw);
+}
 [dir="rtl"] .ProseMirror .rt-figure-bar {
   translate: 50% 0;
 }
