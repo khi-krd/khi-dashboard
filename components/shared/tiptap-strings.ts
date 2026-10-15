@@ -76,6 +76,7 @@ export const TIPTAP_NS = {
       left: "چەپ، دەق لە دەوری",
       right: "ڕاست، دەق لە دەوری",
       behind: "دەق لەسەر وێنە",
+      front: "وێنە لەسەر دەق",
     },
   },
   table: {

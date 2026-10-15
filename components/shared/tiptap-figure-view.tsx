@@ -11,6 +11,7 @@ import {
 
 import {
   FIGURE_WIDTHS,
+  type BackdropPos,
   type FigureAlign,
   type FigureWidth,
 } from "@/components/shared/tiptap-rich-nodes"
@@ -19,13 +20,18 @@ import { TIPTAP_NS } from "@/components/shared/tiptap-strings"
 import { cn } from "@/lib/utils"
 
 /** Order shown in the wrap grid — mirrors Word's "With Text Wrapping". */
-const WRAP_OPTIONS: FigureAlign[] = ["left", "full", "right", "behind"]
+const WRAP_OPTIONS: FigureAlign[] = ["left", "full", "right"]
+/**
+ * Word's Behind/In-Front-of-Text: these convert the figure into an
+ * `imageBackdrop` (text over the picture, or the picture over the text).
+ */
+const OVERLAY_OPTIONS: BackdropPos[] = ["behind", "front"]
 
 /**
  * Small visual icon per placement, drawn like Word's layout glyphs: a blue
  * picture block plus grey text lines showing how the copy flows around it.
  */
-function WrapIcon({ kind }: { kind: FigureAlign }) {
+function WrapIcon({ kind }: { kind: FigureAlign | BackdropPos }) {
   const img = "fill-[#7ba7d9]"
   const line = "fill-current opacity-40"
   switch (kind) {
@@ -80,6 +86,24 @@ function WrapIcon({ kind }: { kind: FigureAlign }) {
           <rect x="2" y="12" width="36" height="3" className={line} />
           <rect x="2" y="18" width="36" height="3" className={line} />
           <rect x="2" y="24" width="36" height="3" className={line} />
+        </svg>
+      )
+    case "front": // In front of text — the picture covers the lines
+      return (
+        <svg viewBox="0 0 40 30" className="size-full" aria-hidden>
+          <rect x="2" y="4" width="36" height="3" className={line} />
+          <rect x="2" y="10" width="36" height="3" className={line} />
+          <rect x="2" y="16" width="36" height="3" className={line} />
+          <rect x="2" y="22" width="36" height="3" className={line} />
+          <rect
+            x="8"
+            y="2"
+            width="24"
+            height="25"
+            rx="1"
+            className={img}
+            opacity="0.8"
+          />
         </svg>
       )
   }
@@ -273,6 +297,24 @@ export function ImageFigureView({
                     label={TIPTAP_NS.figure.alignLabel[value]}
                     active={align === value}
                     onClick={() => updateAttributes({ align: value })}
+                  >
+                    <WrapIcon kind={value} />
+                  </OptionCell>
+                ))}
+              </div>
+              <div className="mb-1.5 flex gap-0.5">
+                {OVERLAY_OPTIONS.map((value) => (
+                  <OptionCell
+                    key={value}
+                    label={TIPTAP_NS.figure.alignLabel[value]}
+                    active={false}
+                    onClick={() =>
+                      editor
+                        .chain()
+                        .focus()
+                        .convertFigureToBackdrop(value)
+                        .run()
+                    }
                   >
                     <WrapIcon kind={value} />
                   </OptionCell>

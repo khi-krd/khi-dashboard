@@ -17,6 +17,7 @@ import {
 import {
   Column,
   Columns,
+  ImageBackdrop,
   ImageFigure,
   RichTable,
   RichTableCell,
@@ -52,6 +53,7 @@ export function createTiptapExtensions({
     // Every <img> — pasted, linked or legacy — parses as a figure so it gets
     // the placement bar; there is no bare image node anymore.
     ImageFigure,
+    ImageBackdrop,
     Columns,
     Column,
     Gallery,

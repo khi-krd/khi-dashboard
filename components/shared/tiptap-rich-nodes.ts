@@ -7,7 +7,9 @@ import {
 } from "@tiptap/react"
 import { Table, TableCell, TableHeader } from "@tiptap/extension-table"
 import { type DOMOutputSpec, Fragment } from "@tiptap/pm/model"
+import { NodeSelection } from "@tiptap/pm/state"
 
+import { ImageBackdropView } from "@/components/shared/tiptap-backdrop-view"
 import { ImageFigureView } from "@/components/shared/tiptap-figure-view"
 import { CaptionedTableView } from "@/components/shared/tiptap-table-view"
 
@@ -68,6 +70,8 @@ declare module "@tiptap/core" {
       }) => ReturnType
       setImageFigureAlign: (align: FigureAlign) => ReturnType
       setImageFigureWidth: (width: FigureWidth) => ReturnType
+      /** Convert the selected figure into an imageBackdrop (text over / under it). */
+      convertFigureToBackdrop: (pos: BackdropPos) => ReturnType
     }
     richTable: {
       insertCaptionedTable: (opts?: {
@@ -468,5 +472,133 @@ export const Columns = Node.create({
           return false
         },
     }
+  },
+})
+
+// ============================================================
+// Image backdrop — Word's "Behind Text" / "In Front of Text"
+// ============================================================
+
+export type BackdropPos = "behind" | "front"
+
+/**
+ * An image layer plus an editable body over it. `pos="behind"` puts the text
+ * on top of the picture (Word's *Behind Text*); `pos="front"` lays the
+ * picture translucently over the text (*In Front of Text*). Stored HTML:
+ *
+ *   <div class="rt-backdrop" data-pos data-width>
+ *     <img class="rt-backdrop-img">
+ *     <div class="rt-backdrop-body">…</div>
+ *   </div>
+ */
+export const ImageBackdrop = Node.create({
+  name: "imageBackdrop",
+  group: "block",
+  content: "block+",
+  defining: true,
+  draggable: true,
+  selectable: true,
+
+  addAttributes() {
+    return {
+      src: {
+        default: null,
+        parseHTML: (element) =>
+          element.querySelector("img.rt-backdrop-img")?.getAttribute("src") ??
+          null,
+        renderHTML: () => ({}),
+      },
+      alt: {
+        default: "",
+        parseHTML: (element) =>
+          element.querySelector("img.rt-backdrop-img")?.getAttribute("alt") ??
+          "",
+        renderHTML: () => ({}),
+      },
+      pos: {
+        default: "behind" as BackdropPos,
+        parseHTML: (element) =>
+          element.getAttribute("data-pos") === "front" ? "front" : "behind",
+        renderHTML: (attributes) => ({ "data-pos": attributes.pos }),
+      },
+      width: {
+        default: 100 as FigureWidth,
+        parseHTML: (element) => {
+          const value = Number(element.getAttribute("data-width"))
+          return FIGURE_WIDTHS.includes(value as FigureWidth) ? value : 100
+        },
+        renderHTML: (attributes) => ({ "data-width": attributes.width }),
+      },
+    }
+  },
+
+  parseHTML() {
+    return [{ tag: "div.rt-backdrop" }]
+  },
+
+  renderHTML({ node, HTMLAttributes }) {
+    const src = (node.attrs.src as string | null) ?? ""
+    const alt = (node.attrs.alt as string) ?? ""
+    return [
+      "div",
+      mergeAttributes(HTMLAttributes, { class: "rt-backdrop" }),
+      [
+        "div",
+        { class: "rt-backdrop-layer" },
+        ["img", { class: "rt-backdrop-img", src, alt, loading: "lazy" }],
+      ],
+      ["div", { class: "rt-backdrop-body" }, 0],
+    ]
+  },
+
+  addNodeView() {
+    return ReactNodeViewRenderer(ImageBackdropView)
+  },
+
+  addCommands() {
+    return {
+      convertFigureToBackdrop:
+        (pos) =>
+        ({ tr, state, dispatch }) => {
+          const sel = tr.selection
+          if (
+            !(sel instanceof NodeSelection) ||
+            sel.node.type.name !== "imageFigure" ||
+            !dispatch
+          ) {
+            return false
+          }
+          const backdrop = state.schema.nodes.imageBackdrop
+          const paragraph = state.schema.nodes.paragraph
+          if (!backdrop || !paragraph) return false
+          const { from, to } = sel
+          // Word's "behind text" anchors the image to a paragraph — pull the
+          // following paragraph inside the body when there is one, so the
+          // text lands on the image immediately.
+          const next = tr.doc.resolve(to).nodeAfter
+          const body =
+            next?.type.name === "paragraph"
+              ? [next]
+              : [paragraph.create()]
+          const node = backdrop.create(
+            {
+              src: sel.node.attrs.src,
+              alt: sel.node.attrs.alt,
+              width: sel.node.attrs.width,
+              pos,
+            },
+            body,
+          )
+          tr.replaceWith(from, next?.type.name === "paragraph" ? to + next.nodeSize : to, node)
+          return true
+        },
+    }
+  },
+
+  renderMarkdown: (node: JSONContent) => {
+    const src = (node.attrs?.src as string | undefined) ?? ""
+    if (!src) return ""
+    const alt = (node.attrs?.alt as string | undefined) ?? ""
+    return `![${alt}](${src})`
   },
 })
