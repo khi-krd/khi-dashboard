@@ -83,6 +83,8 @@ export const TIPTAP_NS = {
   },
   table: {
     insert: "خشتەی نوێ",
+    rows: "ڕیزەکان",
+    cols: "ستوونەکان",
     addRowBefore: "ڕیز لە سەرەوە",
     addRowAfter: "ڕیز لە خوارەوە",
     deleteRow: "سڕینەوەی ڕیز",

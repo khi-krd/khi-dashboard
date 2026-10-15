@@ -497,7 +497,98 @@ function ImageInsertBody({
 /* Table menu                                                          */
 /* ------------------------------------------------------------------ */
 
+/** Word's Insert ▸ Table grid — hover to pick the size, click to insert,
+ * with numeric fields for sizes past the grid (like Word's dialog). */
+const PICKER_COLS = 10
+const PICKER_ROWS = 8
+
+function TableSizePicker({
+  onPick,
+}: {
+  onPick: (rows: number, cols: number) => void
+}) {
+  const [hover, setHover] = useState<{ r: number; c: number } | null>(null)
+  const [rows, setRows] = useState(3)
+  const [cols, setCols] = useState(3)
+  const T = TIPTAP_NS.table
+  const selR = hover?.r ?? -1
+  const selC = hover?.c ?? -1
+
+  return (
+    <div className="px-1 py-1">
+      <div
+        className="grid w-fit gap-0.5"
+        style={{ gridTemplateColumns: `repeat(${PICKER_COLS}, 1rem)` }}
+        onMouseLeave={() => setHover(null)}
+        role="grid"
+        aria-label={T.insert}
+      >
+        {Array.from({ length: PICKER_ROWS }, (_, r) =>
+          Array.from({ length: PICKER_COLS }, (_, c) => (
+            <button
+              key={`${r}-${c}`}
+              type="button"
+              role="gridcell"
+              aria-label={`${c + 1} × ${r + 1}`}
+              className={cn(
+                "size-4 rounded-[2px] border transition-colors",
+                r <= selR && c <= selC
+                  ? "border-primary bg-primary/60"
+                  : "border-border bg-background hover:border-primary/60",
+              )}
+              onMouseEnter={() => setHover({ r, c })}
+              onFocus={() => setHover({ r, c })}
+              onClick={() => onPick(r + 1, c + 1)}
+            />
+          )),
+        )}
+      </div>
+      <p className="text-muted-foreground mt-1 text-center text-xs tabular-nums">
+        {hover ? `${selC + 1} × ${selR + 1}` : `${cols} × ${rows}`}
+      </p>
+      {/* Exact numbers — Word's "Insert Table" dialog equivalent. */}
+      <div className="mt-1.5 flex items-center gap-1 text-xs">
+        <label className="text-muted-foreground flex items-center gap-1">
+          {T.cols}
+          <input
+            type="number"
+            min={1}
+            max={20}
+            value={cols}
+            onChange={(e) =>
+              setCols(Math.max(1, Math.min(20, Number(e.target.value) || 1)))
+            }
+            className="border-input bg-background h-7 w-12 rounded border px-1 text-center text-xs"
+          />
+        </label>
+        <label className="text-muted-foreground flex items-center gap-1">
+          {T.rows}
+          <input
+            type="number"
+            min={1}
+            max={100}
+            value={rows}
+            onChange={(e) =>
+              setRows(Math.max(1, Math.min(100, Number(e.target.value) || 1)))
+            }
+            className="border-input bg-background h-7 w-12 rounded border px-1 text-center text-xs"
+          />
+        </label>
+        <Button
+          type="button"
+          size="sm"
+          className="ms-auto h-7 px-2 text-xs"
+          onClick={() => onPick(rows, cols)}
+        >
+          {T.insert}
+        </Button>
+      </div>
+    </div>
+  )
+}
+
 export function TableMenu({ editor }: { editor: Editor }) {
+  const [open, setOpen] = useState(false)
   const inTable = editor.isActive("table")
   const tableStyle =
     (editor.getAttributes("table").tableStyle as TableStyle | undefined) ??
@@ -505,20 +596,22 @@ export function TableMenu({ editor }: { editor: Editor }) {
   const T = TIPTAP_NS.table
   const run = (fn: (chain: ReturnType<Editor["chain"]>) => unknown) => () =>
     fn(editor.chain().focus())
+  const insert = (rows: number, cols: number) => {
+    editor
+      .chain()
+      .focus()
+      .insertCaptionedTable({ rows, cols, withHeaderRow: true })
+      .run()
+    setOpen(false)
+  }
 
   return (
-    <DropdownMenu>
+    <DropdownMenu open={open} onOpenChange={setOpen}>
       <ToolbarTrigger label={TIPTAP_NS.toolbar.tableMenu} pressed={inTable}>
         <TableCellsIcon className="size-4" />
       </ToolbarTrigger>
       <DropdownMenuContent dir="rtl" align="start" className="min-w-52">
-        <DropdownMenuItem
-          onClick={run((c) =>
-            c.insertCaptionedTable({ rows: 3, cols: 3, withHeaderRow: true }).run(),
-          )}
-        >
-          {T.insert}
-        </DropdownMenuItem>
+        <TableSizePicker onPick={insert} />
         {inTable ? (
           <>
             <DropdownMenuSeparator />
