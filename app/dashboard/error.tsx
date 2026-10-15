@@ -18,6 +18,19 @@ export default function DashboardError({
 }) {
   useEffect(() => {
     console.error(error)
+    // A page kept open across a redeploy holds dead chunk URLs — the lazy
+    // bundles 404 and surface here as ChunkLoadError. Reload once to pull the
+    // fresh build; the session flag stops a reload loop if it isn't that.
+    if (typeof window === "undefined") return
+    const isChunkError =
+      error.name === "ChunkLoadError" ||
+      /loading chunk|dynamically imported module|import\(\)/i.test(error.message)
+    if (isChunkError && !sessionStorage.getItem("chunk-reload")) {
+      sessionStorage.setItem("chunk-reload", "1")
+      window.location.reload()
+      return
+    }
+    if (!isChunkError) sessionStorage.removeItem("chunk-reload")
   }, [error])
 
   return (
