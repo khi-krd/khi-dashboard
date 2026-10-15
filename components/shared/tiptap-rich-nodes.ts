@@ -153,23 +153,27 @@ export const ImageFigure = Node.create({
   selectable: true,
 
   addAttributes() {
+    // `element` is either the <figure> wrapper or a bare <img> (pasted and
+    // legacy content is upgraded to a figure so it gets the options panel).
+    const imgOf = (element: HTMLElement) =>
+      element.tagName === "IMG" ? element : element.querySelector("img")
     return {
       src: {
         default: null,
-        parseHTML: (element) =>
-          element.querySelector("img")?.getAttribute("src") ?? null,
+        parseHTML: (element) => imgOf(element)?.getAttribute("src") ?? null,
         renderHTML: () => ({}),
       },
       alt: {
         default: "",
-        parseHTML: (element) =>
-          element.querySelector("img")?.getAttribute("alt") ?? "",
+        parseHTML: (element) => imgOf(element)?.getAttribute("alt") ?? "",
         renderHTML: () => ({}),
       },
       caption: {
         default: "",
         parseHTML: (element) =>
-          element.querySelector("figcaption")?.textContent?.trim() ?? "",
+          element.tagName === "FIGURE"
+            ? (element.querySelector("figcaption")?.textContent?.trim() ?? "")
+            : "",
         renderHTML: () => ({}),
       },
       align: {
@@ -200,6 +204,9 @@ export const ImageFigure = Node.create({
         getAttrs: (element) =>
           (element as HTMLElement).querySelector("img") ? null : false,
       },
+      // Bare <img> — pasted/copied images and legacy docs become figures too,
+      // so they also get the placement/caption options.
+      { tag: "img" },
     ]
   },
 

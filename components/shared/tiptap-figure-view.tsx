@@ -181,6 +181,7 @@ export function ImageFigureView({
       )}
       data-align={align}
       data-width={width}
+      draggable
     >
       {/* Dragging starts from the grip only (data-drag-handle there), so a
           plain click on the image reliably selects the node — which is what

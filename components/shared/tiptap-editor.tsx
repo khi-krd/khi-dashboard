@@ -238,6 +238,44 @@ export function TiptapEditor({
         })()
         return true
       },
+      // Pasted image/video/audio files upload to the entity's R2 folder and
+      // insert as figures/media nodes — pasted <img> HTML is upgraded to a
+      // figure by the schema itself.
+      handlePaste: (_view, event) => {
+        const files = Array.from(event.clipboardData?.files ?? [])
+        const media = files.filter((f) =>
+          /^(image|video|audio)\//.test(f.type),
+        )
+        if (!media.length) return false
+        const ed = editor
+        if (!ed || ed.isDestroyed || !ed.isEditable) return false
+        event.preventDefault()
+        const hint = entity ?? "content"
+        void (async () => {
+          try {
+            for (const file of media) {
+              const res = await uploadMedia(file, hint)
+              const mime = file.type.toLowerCase()
+              if (mime.startsWith("image/")) {
+                ed.chain().focus().insertImageFigure({ src: res.fileUrl }).run()
+              } else if (mime.startsWith("video/")) {
+                ed.chain()
+                  .focus()
+                  .insertContent({ type: "video", attrs: { src: res.fileUrl } })
+                  .run()
+              } else {
+                ed.chain()
+                  .focus()
+                  .insertContent({ type: "audio", attrs: { src: res.fileUrl } })
+                  .run()
+              }
+            }
+          } catch {
+            toast.error(TIPTAP_NS.error.uploadFailed)
+          }
+        })()
+        return true
+      },
     },
     onUpdate({ editor: ed }) {
       onChange?.(getEditorHtml(ed))

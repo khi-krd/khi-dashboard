@@ -1,5 +1,4 @@
 import Highlight from "@tiptap/extension-highlight"
-import Image from "@tiptap/extension-image"
 import { Markdown } from "@tiptap/markdown"
 import Placeholder from "@tiptap/extension-placeholder"
 import Subscript from "@tiptap/extension-subscript"
@@ -50,11 +49,8 @@ export function createTiptapExtensions({
     // TextStyle + FontFamily + FontSize + Color + BackgroundColor + LineHeight
     TextStyleKit.configure({ lineHeight: false }),
     TextDirection,
-    // Bare <img> kept for legacy content; new images insert as ImageFigure.
-    Image.configure({
-      inline: false,
-      allowBase64: true,
-    }),
+    // Every <img> — pasted, linked or legacy — parses as a figure so it gets
+    // the placement bar; there is no bare image node anymore.
     ImageFigure,
     Columns,
     Column,
