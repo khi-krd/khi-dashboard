@@ -546,8 +546,10 @@ function TableSizePicker({
       <p className="text-muted-foreground mt-1 text-center text-xs tabular-nums">
         {hover ? `${selC + 1} × ${selR + 1}` : `${cols} × ${rows}`}
       </p>
-      {/* Exact numbers — Word's "Insert Table" dialog equivalent. */}
-      <div className="mt-1.5 flex items-center gap-1 text-xs">
+      {/* Exact numbers — Word's "Insert Table" dialog equivalent. The button
+          gets its own full-width row: squeezed onto the labels row it clipped
+          past the popup's overflow-x-hidden edge. */}
+      <div className="mt-1.5 flex flex-wrap items-center justify-between gap-x-2 gap-y-1 text-xs">
         <label className="text-muted-foreground flex items-center gap-1">
           {T.cols}
           <input
@@ -574,15 +576,15 @@ function TableSizePicker({
             className="border-input bg-background h-7 w-12 rounded border px-1 text-center text-xs"
           />
         </label>
-        <Button
-          type="button"
-          size="sm"
-          className="ms-auto h-7 px-2 text-xs"
-          onClick={() => onPick(rows, cols)}
-        >
-          {T.insert}
-        </Button>
       </div>
+      <Button
+        type="button"
+        size="sm"
+        className="mt-1.5 h-7 w-full text-xs"
+        onClick={() => onPick(rows, cols)}
+      >
+        {T.insert}
+      </Button>
     </div>
   )
 }
@@ -610,7 +612,11 @@ export function TableMenu({ editor }: { editor: Editor }) {
       <ToolbarTrigger label={TIPTAP_NS.toolbar.tableMenu} pressed={inTable}>
         <TableCellsIcon className="size-4" />
       </ToolbarTrigger>
-      <DropdownMenuContent dir="rtl" align="start" className="min-w-52">
+      <DropdownMenuContent
+        dir="rtl"
+        align="start"
+        className="w-60 max-w-60 min-w-60 overflow-x-hidden"
+      >
         <TableSizePicker onPick={insert} />
         {inTable ? (
           <>
