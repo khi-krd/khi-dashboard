@@ -181,9 +181,25 @@ export function ImageFigureView({
       )}
       data-align={align}
       data-width={width}
-      data-drag-handle
     >
-      <div contentEditable={false} className="rt-figure-media">
+      {/* Dragging starts from the grip only (data-drag-handle there), so a
+          plain click on the image reliably selects the node — which is what
+          opens the layout panel. The explicit onClick is belt-and-suspenders
+          for the same guarantee. */}
+      <div
+        contentEditable={false}
+        className="rt-figure-media"
+        onClick={(e) => {
+          // Clicks on the bar/panel/inputs keep their own behaviour — only a
+          // click on the image itself (re)selects the node.
+          const target = e.target as HTMLElement
+          if (target.closest(".rt-figure-bar, .rt-figure-panel, input, select, button, a")) {
+            return
+          }
+          const pos = getPos()
+          if (pos != null) editor.commands.setNodeSelection(pos)
+        }}
+      >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={src} alt={alt} draggable={false} />
         {editable ? (
