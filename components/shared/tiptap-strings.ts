@@ -63,6 +63,7 @@ export const TIPTAP_NS = {
     insert: "زیادکردن",
     cancel: "پاشگەزبوونەوە",
     remove: "سڕینەوەی وێنە",
+    drag: "ڕاکێشە بۆ گواستنەوە",
     replace: "گۆڕینی وێنە",
     alignLabel: {
       center: "ناوەند",

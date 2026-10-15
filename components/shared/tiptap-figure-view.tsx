@@ -3,6 +3,7 @@
 import { NodeViewWrapper, type NodeViewProps } from "@tiptap/react"
 import {
   ArrowsPointingOutIcon,
+  ArrowsUpDownIcon,
   Bars3BottomLeftIcon,
   Bars3BottomRightIcon,
   Bars3Icon,
@@ -66,6 +67,15 @@ export function ImageFigureView({
             className="rt-figure-bar border-border bg-popover text-popover-foreground flex flex-wrap items-center gap-0.5 rounded-md border p-1 shadow-md"
             dir="rtl"
           >
+            <span
+              data-drag-handle
+              title={TIPTAP_NS.figure.drag}
+              aria-label={TIPTAP_NS.figure.drag}
+              className="hover:bg-accent flex size-7 cursor-grab items-center justify-center rounded-md active:cursor-grabbing"
+            >
+              <ArrowsUpDownIcon className="size-4" />
+            </span>
+            <span className="bg-border mx-1 h-5 w-px" />
             {(Object.keys(ALIGN_ICONS) as FigureAlign[]).map((value) => {
               const Icon = ALIGN_ICONS[value]
               return (

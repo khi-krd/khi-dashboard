@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { EditorContent, useEditor } from "@tiptap/react"
 import { EyeIcon } from "@heroicons/react/24/outline"
 import { marked } from "marked"
+import { toast } from "sonner"
 
 import { tiptapContentType } from "@/components/shared/tiptap-content"
 import {
@@ -15,6 +16,8 @@ import { createTiptapExtensions } from "@/components/shared/tiptap-extensions"
 import { TIPTAP_NS } from "@/components/shared/tiptap-strings"
 import { TiptapBubbleMenus } from "@/components/shared/tiptap-bubble-menu"
 import { TiptapToolbar } from "@/components/shared/tiptap-toolbar"
+import { fileNameFromUrl } from "@/lib/tiptap-media"
+import { uploadMedia } from "@/services/mediaService"
 import {
   Dialog,
   DialogContent,
@@ -177,6 +180,58 @@ export function TiptapEditor({
           "bg-transparent rounded-none",
           !isEditing && "prose-img:rounded-md",
         ),
+      },
+      // Dropping files uploads them to the entity's R2 folder and inserts at
+      // the drop point. `moved` means an editor node is being dragged (e.g. a
+      // figure to a new spot) — leave that to ProseMirror's native move.
+      handleDrop: (view, event, _slice, moved) => {
+        if (moved) return false
+        const files = Array.from(event.dataTransfer?.files ?? [])
+        if (!files.length) return false
+        const ed = editor
+        if (!ed || ed.isDestroyed || !ed.isEditable) return false
+        event.preventDefault()
+        const dropPos = view.posAtCoords({
+          left: event.clientX,
+          top: event.clientY,
+        })?.pos
+        const hint = entity ?? "content"
+        void (async () => {
+          try {
+            // A single image goes through insertImageFigure so it lands
+            // selected with its placement bar already showing.
+            if (files.length === 1 && files[0].type.startsWith("image/")) {
+              const res = await uploadMedia(files[0], hint)
+              const chain = ed.chain().focus()
+              if (dropPos != null) chain.setTextSelection(dropPos)
+              chain.insertImageFigure({ src: res.fileUrl }).run()
+              return
+            }
+            const results = await Promise.all(
+              files.map((f) => uploadMedia(f, hint)),
+            )
+            const content = files.map((f, i) => {
+              const mime = f.type.toLowerCase()
+              const url = results[i].fileUrl
+              if (mime.startsWith("image/"))
+                return { type: "imageFigure", attrs: { src: url } }
+              if (mime.startsWith("video/"))
+                return { type: "video", attrs: { src: url } }
+              if (mime.startsWith("audio/"))
+                return { type: "audio", attrs: { src: url } }
+              return {
+                type: "fileLink",
+                attrs: { href: url, name: fileNameFromUrl(url) },
+              }
+            })
+            const chain = ed.chain().focus()
+            if (dropPos != null) chain.insertContentAt(dropPos, content).run()
+            else chain.insertContent(content).run()
+          } catch {
+            toast.error(TIPTAP_NS.error.uploadFailed)
+          }
+        })()
+        return true
       },
     },
     onUpdate({ editor: ed }) {
