@@ -11,6 +11,7 @@ import { toast } from "sonner"
 
 import { ServiceGalleryEditor } from "@/components/services/service-gallery-editor"
 import { NS } from "@/components/services/services-strings"
+import { TiptapEditor } from "@/components/shared/tiptap-editor-lazy"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -82,11 +83,13 @@ function LangFields({
         name={descPath}
         control={control}
         render={({ field }) => (
-          <Textarea
-            {...field}
-            rows={4}
+          <TiptapEditor
+            entity="services"
+            lang={isCkb ? "CKB" : "KMR"}
             placeholder={isCkb ? NS.field.bodyCkb : NS.field.bodyKmr}
-            className="min-h-[100px] resize-y text-sm"
+            contentMinHeightClass="min-h-[120px]"
+            value={field.value ?? ""}
+            onChange={field.onChange}
           />
         )}
       />
