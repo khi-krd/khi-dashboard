@@ -35,6 +35,7 @@ const ALLOWED_TAGS = [
   "td",
   "br",
   "div",
+  "iframe",
 ] as const
 
 function sanitizeHtml(html: string): string {
@@ -50,6 +51,12 @@ function sanitizeHtml(html: string): string {
       "class",
       "controls",
       "download",
+      "allow",
+      "allowfullscreen",
+      "loading",
+      "width",
+      "height",
+      "frameborder",
     ],
     KEEP_CONTENT: false,
   })

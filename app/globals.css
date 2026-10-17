@@ -203,6 +203,15 @@ video {
 audio {
   width: 100%;
 }
+/* Embedded audio players (SoundCloud, Spotify, …) inside the editor. */
+.rt-audio-embed {
+  display: block;
+  width: 100%;
+  height: 166px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--muted);
+}
 
 /* Downloadable document / "other file" link, rendered as a chip. */
 .file {

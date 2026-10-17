@@ -25,6 +25,8 @@ export type MediaKind = "IMAGE" | "VIDEO" | "AUDIO"
 export type MediaGalleryItemDto = {
   url: string
   kind?: MediaKind
+  externalUrl?: string | null
+  embedUrl?: string | null
   thumbnailUrl?: string | null
   captionCkb?: string | null
   captionKmr?: string | null

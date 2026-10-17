@@ -6,6 +6,7 @@ import { toast } from "sonner"
 import {
   ArrowUpTrayIcon,
   ChevronDownIcon,
+  MusicalNoteIcon,
   PhotoIcon,
   TableCellsIcon,
   ViewColumnsIcon,
@@ -45,6 +46,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { extractIframeSrc, toAudioEmbedUrl } from "@/lib/embed-url"
 import { uploadMedia } from "@/services/mediaService"
 import { cn } from "@/lib/utils"
 
@@ -488,6 +490,222 @@ function ImageInsertBody({
         <Button type="button" disabled={!src.trim()} onClick={insert}>
           <PhotoIcon className="size-4" />
           {onApply ? TIPTAP_NS.figure.apply : TIPTAP_NS.figure.insert}
+        </Button>
+      </DialogFooter>
+    </>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/* Audio dialog — upload / direct URL / embed (SoundCloud, Spotify, …)  */
+/* ------------------------------------------------------------------ */
+
+type AudioSourceMode = "upload" | "url" | "embed"
+
+export function AudioInsertDialog({
+  editor,
+  entity,
+  open,
+  onOpenChange,
+}: {
+  editor: Editor
+  entity?: string
+  open: boolean
+  onOpenChange: (open: boolean) => void
+}) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent dir="rtl" className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>{TIPTAP_NS.audio.dialogTitle}</DialogTitle>
+        </DialogHeader>
+        {open ? (
+          <AudioInsertBody
+            editor={editor}
+            entity={entity}
+            onDone={() => onOpenChange(false)}
+          />
+        ) : null}
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+function AudioInsertBody({
+  editor,
+  entity,
+  onDone,
+}: {
+  editor: Editor
+  entity?: string
+  onDone: () => void
+}) {
+  const A = TIPTAP_NS.audio
+  const [mode, setMode] = useState<AudioSourceMode>("upload")
+  const [url, setUrl] = useState("")
+  const [embed, setEmbed] = useState("")
+  const [title, setTitle] = useState("")
+  const [progress, setProgress] = useState<number | null>(null)
+  const fileRef = useRef<HTMLInputElement>(null)
+
+  async function handleFile(file: File | undefined) {
+    if (!file) return
+    setProgress(0)
+    try {
+      const result = await uploadMedia(file, entity ?? "audio", setProgress)
+      setUrl(result.fileUrl)
+      setMode("url")
+    } catch {
+      toast.error(TIPTAP_NS.error.uploadFailed)
+    } finally {
+      setProgress(null)
+      if (fileRef.current) fileRef.current.value = ""
+    }
+  }
+
+  function insert() {
+    const titleAttr = title.trim() || null
+    if (mode === "embed") {
+      const raw = embed.trim()
+      if (!raw) return
+      // Accept pasted <iframe> code, provider page links (SoundCloud,
+      // Spotify, …) and ready-made player URLs alike.
+      const src = extractIframeSrc(raw)
+      const normalized = toAudioEmbedUrl(src) ?? src
+      editor
+        .chain()
+        .focus()
+        .insertContent({
+          type: "audio",
+          attrs: { src: normalized, title: titleAttr, embed: true },
+        })
+        .run()
+    } else {
+      const src = extractIframeSrc(url.trim())
+      if (!src) return
+      editor
+        .chain()
+        .focus()
+        .insertContent({
+          type: "audio",
+          attrs: { src, title: titleAttr },
+        })
+        .run()
+    }
+    onDone()
+  }
+
+  const canInsert =
+    progress === null &&
+    (mode === "embed" ? !!embed.trim() : !!url.trim())
+
+  const MODES: { key: AudioSourceMode; label: string }[] = [
+    { key: "upload", label: A.tabUpload },
+    { key: "url", label: A.tabUrl },
+    { key: "embed", label: A.tabEmbed },
+  ]
+
+  return (
+    <>
+      <div className="space-y-4">
+        <div className="bg-muted/40 inline-flex rounded-md p-0.5">
+          {MODES.map((m) => (
+            <button
+              key={m.key}
+              type="button"
+              onClick={() => setMode(m.key)}
+              className={cn(
+                "rounded px-3 py-1 text-xs transition-colors",
+                mode === m.key
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              {m.label}
+            </button>
+          ))}
+        </div>
+
+        {mode === "upload" ? (
+          <div className="space-y-2">
+            <input
+              ref={fileRef}
+              type="file"
+              accept="audio/*"
+              className="sr-only"
+              onChange={(e) => void handleFile(e.target.files?.[0])}
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={progress !== null}
+              onClick={() => fileRef.current?.click()}
+            >
+              <ArrowUpTrayIcon className="size-4" />
+              {A.upload}
+            </Button>
+            {progress !== null ? <UploadProgressLine value={progress} /> : null}
+          </div>
+        ) : mode === "url" ? (
+          <div className="space-y-1.5">
+            <Label className="text-xs">{A.urlLabel}</Label>
+            <Input
+              dir="ltr"
+              className="h-8 font-mono text-xs"
+              placeholder="https://…/track.mp3"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+            />
+            <p className="text-muted-foreground text-[11px]">
+              {A.urlHint}
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-1.5">
+            <Label className="text-xs">{A.embedLabel}</Label>
+            <Input
+              dir="ltr"
+              className="h-8 font-mono text-xs"
+              placeholder={A.embedPlaceholder}
+              value={embed}
+              onChange={(e) => setEmbed(e.target.value)}
+            />
+            <p className="text-muted-foreground text-[11px]">{A.embedHint}</p>
+          </div>
+        )}
+
+        {mode !== "embed" && url.trim() ? (
+          <audio controls src={url.trim()} className="w-full" />
+        ) : null}
+        {mode === "embed" && embed.trim() ? (
+          <div className="bg-muted/30 overflow-hidden rounded-md border">
+            <iframe
+              src={extractIframeSrc(embed)}
+              title="audio embed preview"
+              className="h-[120px] w-full"
+              allow="autoplay; clipboard-write; encrypted-media"
+            />
+          </div>
+        ) : null}
+
+        <div className="space-y-1">
+          <Label className="text-xs">{A.titleLabel}</Label>
+          <Input
+            className="h-8"
+            placeholder={A.titlePlaceholder}
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
+        </div>
+      </div>
+      <DialogFooter>
+        <Button type="button" variant="ghost" onClick={onDone}>
+          {TIPTAP_NS.figure.cancel}
+        </Button>
+        <Button type="button" disabled={!canInsert} onClick={insert}>
+          <MusicalNoteIcon className="size-4" />
+          {TIPTAP_NS.figure.insert}
         </Button>
       </DialogFooter>
     </>

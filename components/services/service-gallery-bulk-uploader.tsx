@@ -20,6 +20,7 @@ import { UploadProgressLine } from "@/components/shared/upload-progress-line"
 import { formatBytes, useFileUpload } from "@/hooks/use-file-upload"
 import { formatCkbDigits } from "@/lib/intl-ckb"
 import { cn } from "@/lib/utils"
+import { captureVideoFrame } from "@/lib/video-thumbnail"
 import {
   createEmptyGallerySlot,
   type ServiceFormValues,
@@ -73,10 +74,24 @@ export function ServiceGalleryBulkUploader({
             (pct) => setProgress(base + (pct / 100) * perFileShare),
           )
           const type = typeFromFile(file)
+          // Video files get an auto poster: grab a frame from the LOCAL file
+          // (blob URL — no CORS taint) and upload it alongside the video.
+          let posterUrl = ""
+          if (type === "VIDEO") {
+            const frame = await captureVideoFrame({ kind: "file", file })
+            if (frame) {
+              try {
+                posterUrl = (await uploadMedia(frame, "services")).fileUrl
+              } catch {
+                posterUrl = ""
+              }
+            }
+          }
           newSlots.push({
             ...createEmptyGallerySlot(),
             type,
             url: result.fileUrl,
+            posterUrl,
           })
         } catch {
           // skip failed uploads

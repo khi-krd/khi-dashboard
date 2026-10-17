@@ -145,6 +145,26 @@ export async function patchServiceFeatured(
   await api.patch(`${BASE}/${id}/featured`, payload)
 }
 
+/**
+ * Narrow PATCH — replace only the ordered gallery media list of an existing
+ * service (poster/thumbnail fixes without resubmitting the whole record).
+ */
+export async function patchServiceGalleryMedia(
+  id: number,
+  items: Array<{
+    type: string
+    url: string
+    posterUrl?: string | null
+    alt?: string | null
+  }>,
+): Promise<ServiceSingleResponse> {
+  const { data } = await api.patch<ServiceSingleResponse>(
+    `${BASE}/${id}/gallery-media`,
+    items,
+  )
+  return normalizedSingle(data)
+}
+
 export async function getFeaturedServices(
   page: number,
   size: number,

@@ -14,32 +14,50 @@ import {
   useSortable,
 } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
-import { PlayIcon, XMarkIcon } from "@heroicons/react/24/outline"
+import { PencilIcon, PlayIcon, XMarkIcon } from "@heroicons/react/24/outline"
 import { useState } from "react"
 import { useFieldArray, useFormContext } from "react-hook-form"
 
 import { ServiceGalleryBulkUploader } from "@/components/services/service-gallery-bulk-uploader"
+import { ServiceGallerySlotDialog } from "@/components/services/service-gallery-slot-dialog"
 import { NS } from "@/components/services/services-strings"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { extractIframeSrc } from "@/lib/embed-url"
+import {
+  extractVimeoId,
+  extractYoutubeId,
+  vimeoPosterUrl,
+  youtubeThumb,
+} from "@/lib/video-url-helpers"
 import { cn } from "@/lib/utils"
 import { createEmptyGallerySlot } from "@/lib/validations/services"
 import type { ServiceFormValues } from "@/lib/validations/services"
+import { patchServiceGalleryMedia } from "@/services/servicesService"
+import { toast } from "sonner"
 
 const MAX_GALLERY_SLOTS = 24
 
 type GallerySlot = ServiceFormValues["galleryMedia"][number]
 
+function providerPoster(url: string): string | null {
+  const yt = youtubeThumb(url)
+  if (yt) return yt
+  const vm = extractVimeoId(url)
+  return vm ? vimeoPosterUrl(vm) : null
+}
+
 function previewUrl(slot: GallerySlot | undefined): string | null {
   const url = slot?.url?.trim()
   if (!url) return null
-  if (slot?.type === "VIDEO") return slot.posterUrl?.trim() || url
+  if (slot?.type === "VIDEO")
+    return slot.posterUrl?.trim() || providerPoster(url) || null
   return url
 }
 
-export function ServiceGalleryEditor() {
+export function ServiceGalleryEditor({ serviceId }: { serviceId?: number }) {
   const { control, watch } = useFormContext<ServiceFormValues>()
-  const { fields, remove, move, append } = useFieldArray({
+  const { fields, remove, move, append, update } = useFieldArray({
     control,
     name: "galleryMedia",
   })
@@ -48,17 +66,52 @@ export function ServiceGalleryEditor() {
   const [urlDraft, setUrlDraft] = useState("")
   const [urlType, setUrlType] = useState<"IMAGE" | "VIDEO">("IMAGE")
   const [posterDraft, setPosterDraft] = useState("")
+  const [editIndex, setEditIndex] = useState<number | null>(null)
+  const [patching, setPatching] = useState(false)
 
   const full = slots.length >= MAX_GALLERY_SLOTS
 
+  /**
+   * Persist the whole gallery list for an EXISTING service via the narrow
+   * PATCH endpoint — a forgotten poster can be fixed without resubmitting
+   * (and risking) the full record. Runs after the form-array write so the
+   * two stay consistent.
+   */
+  async function patchGallery(nextSlots: GallerySlot[]) {
+    if (!serviceId) return
+    setPatching(true)
+    try {
+      await patchServiceGalleryMedia(
+        serviceId,
+        nextSlots
+          .filter((s) => s.url?.trim())
+          .map((s) => ({
+            type: s.type ?? "IMAGE",
+            url: extractIframeSrc(s.url!),
+            posterUrl: s.posterUrl?.trim() || null,
+            alt: s.alt?.trim() || null,
+          })),
+      )
+      toast.success(NS.gallery.patchSaved)
+    } catch {
+      toast.error(NS.gallery.patchFailed)
+    } finally {
+      setPatching(false)
+    }
+  }
+
   function addUrlSlot() {
-    const url = urlDraft.trim()
+    // Accept a pasted <iframe …> embed too — only the src is stored.
+    const url = extractIframeSrc(urlDraft)
     if (!url || full) return
     append({
       ...createEmptyGallerySlot(),
       type: urlType,
       url,
-      posterUrl: urlType === "VIDEO" ? posterDraft.trim() : "",
+      posterUrl:
+        urlType === "VIDEO"
+          ? posterDraft.trim() || providerPoster(url) || ""
+          : "",
     })
     setUrlDraft("")
     setPosterDraft("")
@@ -156,6 +209,7 @@ export function ServiceGalleryEditor() {
                   key={field.id}
                   fieldId={field.id}
                   slot={slots[index]}
+                  onEdit={() => setEditIndex(index)}
                   onRemove={() => remove(index)}
                 />
               ))}
@@ -163,6 +217,33 @@ export function ServiceGalleryEditor() {
           </SortableContext>
         </DndContext>
       ) : null}
+
+      <ServiceGallerySlotDialog
+        open={editIndex !== null}
+        onOpenChange={(o) => !o && setEditIndex(null)}
+        slot={editIndex !== null ? (slots[editIndex] ?? null) : null}
+        saving={patching}
+        onSave={(patch) => {
+          if (editIndex === null) return
+          const current = slots[editIndex]
+          if (!current) return
+          const next = { ...current, ...patch }
+          update(editIndex, next)
+          // Persist immediately when the service already exists — this is the
+          // "forgot the thumbnail" patch path, no full PUT needed.
+          if (serviceId) {
+            void patchGallery(
+              slots.map((s, i) => (i === editIndex ? next : s)),
+            )
+          }
+        }}
+        onDelete={() => {
+          if (editIndex === null) return
+          const next = slots.filter((_, i) => i !== editIndex)
+          remove(editIndex)
+          if (serviceId) void patchGallery(next)
+        }}
+      />
     </div>
   )
 }
@@ -170,10 +251,12 @@ export function ServiceGalleryEditor() {
 function SortableTile({
   fieldId,
   slot,
+  onEdit,
   onRemove,
 }: {
   fieldId: string
   slot: GallerySlot | undefined
+  onEdit: () => void
   onRemove: () => void
 }) {
   const {
@@ -218,6 +301,20 @@ function SortableTile({
           <PlayIcon className="size-3" />
         </span>
       ) : null}
+
+      <button
+        type="button"
+        aria-label={NS.action.edit}
+        onPointerDown={(e) => e.stopPropagation()}
+        onClick={onEdit}
+        className={cn(
+          "absolute bottom-1.5 end-1.5 flex size-6 items-center justify-center rounded-full",
+          "bg-black/65 text-white opacity-0 transition-opacity group-hover:opacity-100",
+          "focus-visible:opacity-100 focus-visible:outline-none",
+        )}
+      >
+        <PencilIcon className="size-3.5" />
+      </button>
 
       <button
         type="button"

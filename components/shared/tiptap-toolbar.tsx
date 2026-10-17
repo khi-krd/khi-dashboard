@@ -33,6 +33,7 @@ import {
 
 import { TIPTAP_NS } from "@/components/shared/tiptap-strings"
 import {
+  AudioInsertDialog,
   ColorPicker,
   ColumnsMenu,
   FontFamilySelect,
@@ -42,7 +43,6 @@ import {
 } from "@/components/shared/tiptap-toolbar-rich"
 import { UploadProgressLine } from "@/components/shared/upload-progress-line"
 import {
-  insertUploadedAudio,
   insertUploadedFile,
   insertUploadedGallery,
   insertUploadedVideo,
@@ -213,6 +213,7 @@ export function TiptapToolbar({
   const canRedo = editor.can().chain().focus().redo().run()
   const [activeUploads, setActiveUploads] = useState<Record<string, number>>({})
   const [imageOpen, setImageOpen] = useState(false)
+  const [audioOpen, setAudioOpen] = useState(false)
   const inTable = editor.isActive("table")
   const textColor = editor.getAttributes("textStyle").color as string | undefined
   const highlightColor = editor.getAttributes("highlight").color as
@@ -497,19 +498,18 @@ export function TiptapToolbar({
         >
           <VideoCameraIcon className="size-4" />
         </MediaUploadButton>
-        <MediaUploadButton
-          editor={editor}
-          type="audio"
-          entity={entity}
-          accept="audio/*"
+        <ToolbarBtn
           label={TIPTAP_NS.toolbar.audio}
-          onProgressChange={reportProgress(TIPTAP_NS.toolbar.audio)}
-          onInsert={(ed, results) =>
-            insertUploadedAudio(ed, results[0].fileUrl)
-          }
+          onClick={() => setAudioOpen(true)}
         >
           <MusicalNoteIcon className="size-4" />
-        </MediaUploadButton>
+        </ToolbarBtn>
+        <AudioInsertDialog
+          editor={editor}
+          entity={entity}
+          open={audioOpen}
+          onOpenChange={setAudioOpen}
+        />
         <MediaUploadButton
           editor={editor}
           type="document"

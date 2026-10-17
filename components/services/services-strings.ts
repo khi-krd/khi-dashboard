@@ -221,6 +221,19 @@ export const NS = {
     bulkProcessing: (count: string) => `بارکردنی ${count} فایل…`,
     bulkMax: (max: string) => `زۆرترین ${max} فایل`,
     noUrl: "بێ URL",
+    slotSettings: "ڕێکخستنی میدیا",
+    posterUpload: "وێنە باربکە",
+    posterCapture: "لە ڤیدیۆکە وەربگرە",
+    posterAuto: "تامبنەیلی ئۆتۆماتیکی لە سەرچاوەکەوە بەکاردەهێنرێت",
+    posterFailed: "بارکردنی تامبنەیل سەرکەوتوو نەبوو",
+    capturing: "وەردەگیرێت…",
+    captureFailed: "وەرگرتنی وێنە لە ڤیدیۆکە سەرکەوتوو نەبوو",
+    captureUnsupported:
+      "ئەم لینکە ناتوانرێت فڕەیمی لێ وەربگیرێت — بە لینک یان فایل زیادی بکە",
+    uploading: "باردەکرێت…",
+    patchSaved: "گالەری نوێکرایەوە",
+    patchFailed:
+      "نوێکردنەوەی گالەری سەرکەوتوو نەبوو — گۆڕانکارییەکە لە فۆرمەکە دەمێنێتەوە",
   },
   collection: {
     namePlaceholder: "ناوی کۆکراوە…",

@@ -81,6 +81,10 @@ export const Video = Node.create({
 /**
  * `<audio controls src="…">` — an atomic block node. Round-trips through
  * Markdown as a raw `<audio>` tag.
+ *
+ * When `embed` is set the src is a provider/player URL (SoundCloud widget,
+ * Spotify embed, …) and the node renders as `<iframe class="rt-audio-embed">`
+ * instead of a native <audio> element.
  */
 export const Audio = Node.create({
   name: "audio",
@@ -93,14 +97,32 @@ export const Audio = Node.create({
     return {
       src: { default: null },
       title: { default: null },
+      embed: {
+        default: false,
+        parseHTML: (element) => element.tagName === "IFRAME",
+        // Node-internal flag — never emitted as a DOM attribute; the tag
+        // switch in renderHTML is what serializes it.
+        renderHTML: () => ({}),
+      },
     }
   },
 
   parseHTML() {
-    return [{ tag: "audio[src]" }]
+    return [{ tag: "audio[src]" }, { tag: "iframe.rt-audio-embed" }]
   },
 
-  renderHTML({ HTMLAttributes }) {
+  renderHTML({ node, HTMLAttributes }) {
+    if (node.attrs.embed) {
+      return [
+        "iframe",
+        mergeAttributes(HTMLAttributes, {
+          class: "rt-audio-embed",
+          allow:
+            "autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture",
+          loading: "lazy",
+        }),
+      ]
+    }
     return ["audio", mergeAttributes(HTMLAttributes, { controls: "true" })]
   },
 
@@ -109,8 +131,11 @@ export const Audio = Node.create({
     if (!src) return ""
     const title = (node.attrs?.title as string | undefined) ?? ""
     const titleAttr = title ? ` title="${escapeAttr(title)}"` : ""
-    // Wrapped in a <div> so `marked` treats it as a block (a bare <audio> is
-    // tokenized as inline HTML); the wrapper is dropped on re-parse.
+    // Wrapped in a <div> so `marked` treats it as a block (a bare <audio>/
+    // <iframe> is tokenized as inline HTML); the wrapper is dropped on re-parse.
+    if (node.attrs?.embed) {
+      return `<div class="audio-embed"><iframe class="rt-audio-embed" src="${escapeAttr(src)}"${titleAttr}></iframe></div>`
+    }
     return `<div class="audio"><audio controls src="${escapeAttr(src)}"${titleAttr}></audio></div>`
   },
 })

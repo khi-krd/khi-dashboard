@@ -301,7 +301,7 @@ export function ServiceSectionCard({
             <p className="inline-flex items-center gap-2 text-sm font-semibold text-foreground before:h-3.5 before:w-1 before:rounded-full before:bg-primary/70 before:content-['']">
               {NS.gallery.section}
             </p>
-            <ServiceGalleryEditor />
+            <ServiceGalleryEditor serviceId={serviceId} />
           </div>
         </div>
       </FormProvider>

@@ -17,11 +17,16 @@ function coerceKind(v: unknown): MediaKind | null {
 function normalizeGalleryItem(raw: unknown): MediaGalleryItemDto | null {
   if (!raw || typeof raw !== "object") return null
   const o = raw as Record<string, unknown>
-  const url = coerceStr(o.url)
-  if (!url?.trim()) return null
+  const url = coerceStr(o.url)?.trim() ?? ""
+  const externalUrl =
+    coerceStr(o.externalUrl) ?? coerceStr(o.external_url)
+  const embedUrl = coerceStr(o.embedUrl) ?? coerceStr(o.embed_url)
+  if (!url && !externalUrl?.trim() && !embedUrl?.trim()) return null
   return {
-    url: url.trim(),
+    url,
     kind: coerceKind(o.kind) ?? "IMAGE",
+    externalUrl,
+    embedUrl,
     thumbnailUrl: coerceStr(o.thumbnailUrl) ?? coerceStr(o.thumbnail_url),
     captionCkb: coerceStr(o.captionCkb) ?? coerceStr(o.caption_ckb),
     captionKmr: coerceStr(o.captionKmr) ?? coerceStr(o.caption_kmr),

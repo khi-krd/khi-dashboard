@@ -1,3 +1,4 @@
+import { extractIframeSrc, toAudioEmbedUrl } from "@/lib/embed-url"
 import type { SoundFormValues } from "@/lib/validations/sounds"
 
 function trimOrUndef(s: string | null | undefined) {
@@ -33,9 +34,13 @@ export function soundFormValuesToMultipart(
 
   const filesPayload = readyFiles.map((f, i) => ({
     ...(typeof f.id === "number" && f.id > 0 ? { id: f.id } : {}),
-    fileUrl: trimOrUndef(f.fileUrl),
+    fileUrl: trimOrUndef(extractIframeSrc(f.fileUrl)),
     externalUrl: trimOrUndef(f.externalUrl),
-    embedUrl: trimOrUndef(f.embedUrl),
+    // Accept pasted <iframe> code and provider page links (SoundCloud,
+    // Spotify…) — normalized to a real embed URL before it hits the API.
+    embedUrl: trimOrUndef(
+      f.embedUrl ? (toAudioEmbedUrl(f.embedUrl) ?? extractIframeSrc(f.embedUrl)) : undefined,
+    ),
     title: trimOrUndef(f.title),
     fileType: f.fileType ?? "AUDIO",
     publishmentYear: f.publishmentYear ?? undefined,

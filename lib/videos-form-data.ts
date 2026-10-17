@@ -1,10 +1,19 @@
 import type { VideoDto } from "@/types/videos"
 
+import { extractIframeSrc } from "@/lib/embed-url"
+import { watchToEmbedUrl } from "@/lib/video-url-helpers"
 import type { VideoFormValues } from "@/lib/validations/videos"
 
 function trimOrUndef(s: string | null | undefined) {
   const t = s?.trim()
   return t || undefined
+}
+
+/** Pasted <iframe> code → src; YouTube/Vimeo watch links → embed URL. */
+function normalizeEmbed(s: string | null | undefined) {
+  const src = extractIframeSrc(s)
+  if (!src) return undefined
+  return watchToEmbedUrl(src) ?? src
 }
 
 function clipHasSource(c: VideoFormValues["videoClipItems"][number]) {
@@ -38,9 +47,9 @@ export function videoFormValuesToMultipart(
           .filter(clipHasSource)
           .map((c, i) => ({
             ...(typeof c.id === "number" && c.id > 0 ? { id: c.id } : {}),
-            url: trimOrUndef(c.url),
+            url: trimOrUndef(extractIframeSrc(c.url)),
             externalUrl: trimOrUndef(c.externalUrl),
-            embedUrl: trimOrUndef(c.embedUrl),
+            embedUrl: trimOrUndef(normalizeEmbed(c.embedUrl)),
             clipNumber: c.clipNumber ?? i + 1,
             durationSeconds: c.durationSeconds ?? undefined,
             resolution: trimOrUndef(c.resolution),
@@ -99,9 +108,9 @@ export function videoFormValuesToMultipart(
       const sources = values.videoSources.filter(sourceHasContent)
       const hasMain = sources.some((s) => s.main)
       payload.videoSources = sources.map((s, i) => ({
-        url: trimOrUndef(s.url),
+        url: trimOrUndef(extractIframeSrc(s.url)),
         externalUrl: trimOrUndef(s.externalUrl),
-        embedUrl: trimOrUndef(s.embedUrl),
+        embedUrl: trimOrUndef(normalizeEmbed(s.embedUrl)),
         main: hasMain ? !!s.main : i === 0,
         label: trimOrUndef(s.label),
         durationSeconds: s.durationSeconds ?? undefined,

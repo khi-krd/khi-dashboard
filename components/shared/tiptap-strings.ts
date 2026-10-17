@@ -160,5 +160,16 @@ export const TIPTAP_NS = {
     dropHint: "دەنگ ڕاکێشە یان کلیک بکە بۆ بارکردن",
     upload: "بارکردنی دەنگ",
     urlLabel: "لینکی دەنگ",
+    dialogTitle: "زیادکردنی دەنگ",
+    tabUpload: "فایل",
+    tabUrl: "لینک",
+    tabEmbed: "ئێمبێد",
+    urlHint: "لینکی ڕاستەوخۆی فایلی دەنگ (mp3, wav, ogg…)",
+    embedLabel: "Embed URL یان کۆدی iframe",
+    embedPlaceholder: "SoundCloud / Spotify / کۆدی <iframe>…",
+    embedHint:
+      "لینکی پلەیەر یان کۆدی ئێمبێدی SoundCloud، Spotify و پلاتفۆرمەکانی تر",
+    titleLabel: "ناونیشان",
+    titlePlaceholder: "ناوی دەنگ…",
   },
 } as const

@@ -15,6 +15,7 @@ import {
 } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import { Bars2Icon, PlusIcon, TrashIcon } from "@heroicons/react/24/outline"
+import { useState } from "react"
 import {
   useFieldArray,
   useFormContext,
@@ -53,6 +54,27 @@ const KIND_VARIANT: Record<MediaKind, "image" | "video" | "audio"> = {
   IMAGE: "image",
   VIDEO: "video",
   AUDIO: "audio",
+}
+
+/** Source tabs for VIDEO/AUDIO rows — mirrors the sound-file sheet modes. */
+type SourceMode = "file" | "external" | "embed"
+
+const SOURCE_MODE_LABELS: Record<SourceMode, string> = {
+  file: "فایل / لینک",
+  external: "لینکی دەرەکی",
+  embed: "ئێمبێد",
+}
+
+const EXTERNAL_PLACEHOLDERS: Record<MediaKind, string> = {
+  IMAGE: "https://…",
+  VIDEO: "https://youtube.com/watch?v=…",
+  AUDIO: "https://soundcloud.com/artist/track",
+}
+
+const EMBED_PLACEHOLDERS: Record<MediaKind, string> = {
+  IMAGE: "https://…",
+  VIDEO: 'https://youtube.com/embed/… یان کۆدی <iframe>',
+  AUDIO: 'https://w.soundcloud.com/player/… یان کۆدی <iframe>',
 }
 
 type MediaGalleryEditorProps<T extends FieldValues> = {
@@ -172,6 +194,19 @@ function SortableGalleryRow<T extends FieldValues>({
 
   const kind = watch(`${name}.${index}.kind` as Path<T>) as MediaKind
   const url = watch(`${name}.${index}.url` as Path<T>) as string
+  const embedUrl = watch(`${name}.${index}.embedUrl` as Path<T>) as string
+  const externalUrl = watch(
+    `${name}.${index}.externalUrl` as Path<T>,
+  ) as string
+
+  // Which source tab is shown for VIDEO/AUDIO rows — seeded from whichever
+  // field already holds a value; all three stay in the form so switching
+  // tabs never loses typed data.
+  const [sourceMode, setSourceMode] = useState<SourceMode>(() =>
+    embedUrl?.trim() ? "embed" : externalUrl?.trim() ? "external" : "file",
+  )
+
+  const isMedia = kind === "VIDEO" || kind === "AUDIO"
 
   return (
     <div
@@ -244,30 +279,91 @@ function SortableGalleryRow<T extends FieldValues>({
         </div>
       </div>
 
-      <MediaCoverUpload
-        label={KIND_URL_LABELS[kind ?? "IMAGE"]}
-        previewUrl={url?.trim() || null}
-        urlValue={url ?? ""}
-        entity={entity}
-        onUrlChange={(s) =>
-          setValue(`${name}.${index}.url` as Path<T>, s as never, {
-            shouldDirty: true,
-          })
-        }
-        variant={KIND_VARIANT[kind ?? "IMAGE"]}
-        accept={
-          kind === "VIDEO"
-            ? "video/*"
-            : kind === "AUDIO"
-              ? "audio/*"
-              : "image/jpeg,image/png,image/webp,image/gif"
-        }
-        aspectClass={
-          kind === "AUDIO" ? "aspect-square max-w-[200px]" : "aspect-video"
-        }
-      />
+      {isMedia ? (
+        <div className="space-y-2">
+          {/* Source picker — file/URL · external page link · embed */}
+          <div className="bg-muted/40 inline-flex rounded-md p-0.5">
+            {(Object.keys(SOURCE_MODE_LABELS) as SourceMode[]).map((m) => (
+              <button
+                key={m}
+                type="button"
+                onClick={() => setSourceMode(m)}
+                className={cn(
+                  "rounded px-3 py-1 text-xs transition-colors",
+                  sourceMode === m
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {SOURCE_MODE_LABELS[m]}
+              </button>
+            ))}
+          </div>
 
-      {kind === "VIDEO" || kind === "AUDIO" ? (
+          {sourceMode === "file" ? (
+            <MediaCoverUpload
+              label={KIND_URL_LABELS[kind ?? "IMAGE"]}
+              previewUrl={url?.trim() || null}
+              urlValue={url ?? ""}
+              entity={entity}
+              onUrlChange={(s) =>
+                setValue(`${name}.${index}.url` as Path<T>, s as never, {
+                  shouldDirty: true,
+                })
+              }
+              variant={KIND_VARIANT[kind ?? "IMAGE"]}
+              accept={kind === "VIDEO" ? "video/*" : "audio/*"}
+              aspectClass={
+                kind === "AUDIO" ? "aspect-square max-w-[200px]" : "aspect-video"
+              }
+            />
+          ) : sourceMode === "external" ? (
+            <div>
+              <Label className="text-xs">لینکی دەرەکی</Label>
+              <Input
+                className="mt-1 h-9 font-mono text-xs"
+                dir="ltr"
+                placeholder={EXTERNAL_PLACEHOLDERS[kind]}
+                {...register(`${name}.${index}.externalUrl` as Path<T>)}
+              />
+              <p className="text-muted-foreground mt-1 text-[11px]">
+                لینکی لاپەڕەی سەرچاوە — وەک SoundCloud یان YouTube.
+              </p>
+            </div>
+          ) : (
+            <div>
+              <Label className="text-xs">Embed URL یان کۆدی iframe</Label>
+              <Input
+                className="mt-1 h-9 font-mono text-xs"
+                dir="ltr"
+                placeholder={EMBED_PLACEHOLDERS[kind]}
+                {...register(`${name}.${index}.embedUrl` as Path<T>)}
+              />
+              <p className="text-muted-foreground mt-1 text-[11px]">
+                لینکی پلەیەر/ئێمبێد یان کۆدی iframeی تەواو — لە ماڵپەڕ وەک
+                پلەیەر نمایش دەکرێت.
+              </p>
+            </div>
+          )}
+        </div>
+      ) : (
+        <MediaCoverUpload
+          label={KIND_URL_LABELS[kind ?? "IMAGE"]}
+          previewUrl={url?.trim() || null}
+          urlValue={url ?? ""}
+          entity={entity}
+          onUrlChange={(s) =>
+            setValue(`${name}.${index}.url` as Path<T>, s as never, {
+              shouldDirty: true,
+            })
+          }
+          variant={KIND_VARIANT[kind ?? "IMAGE"]}
+          accept="image/jpeg,image/png,image/webp,image/gif"
+          aspectClass="aspect-video"
+        />
+      )}
+
+      {isMedia ? (
         <div>
           <Label className="text-xs">وێنەی بچووک (thumbnail)</Label>
           <Input
