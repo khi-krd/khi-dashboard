@@ -66,7 +66,7 @@ export const NS = {
     view_on_site: "بینین لە سایت",
     publish_now: "ئێستا بڵاوبکەوە",
     clear_publish: "پاککردنەوە",
-    bulk_delete: "سڕینەوەی هەڵبژێردراوەکان",
+    bulk_delete: "سڕینەوەی دیاریکراوەکان",
     bulk_cancel: "هەڵوەشاندنەوەی هەڵبژاردن",
     remove_cover: "سڕینەوە",
     use_url_instead: "یان لینکی URL بەکاربهێنە",
@@ -264,7 +264,7 @@ export const NS = {
   list: {
     sectionsHeading: "بەشەکان",
     totalCount: (count: string) => `کۆی ${count} بەش`,
-    selectedCount: (count: string) => `${count} بەش هەڵبژێردراوە`,
+    selectedCount: (count: string) => `${count} بەش دیاریکراوە`,
     paginationRange: (from: string, to: string, total: string) =>
       `ڕیزی ${from}–${to} لە ${total}`,
     collectionCount: (count: string) => `${count} کۆکراوە`,
@@ -322,7 +322,7 @@ export const NS = {
     formIntro:
       "هەر خزمەتگوزارییەک = یەک بەش لە پەڕەی /ckb/services یان /ku/services. ناونیشان و دەق لە contents[] دەچێتە سایت. بەبێ ناونیشان بۆ زمانەکە، بەشەکە لەو زمانە نیشان نادرێت.",
     saveRequirements:
-      "بۆ پاشەکەوتکردن: لانیکەم ناونیشانێک بۆ یەکێک لە زمانە هەڵبژێردراوەکان پێویستە.",
+      "بۆ پاشەکەوتکردن: لانیکەم ناونیشانێک بۆ یەکێک لە زمانە دیاریکراوەکان پێویستە.",
     langStatusCkb: "سۆرانی — ناونیشان پێویستە",
     langStatusKmr: "کورمانجی — ناونیشان پێویستە",
   },
@@ -334,7 +334,7 @@ export const NS = {
     collections: "کۆکراوەکان",
     files: "فایلەکان",
     cover: "کافەر",
-    coverSet: "هەڵبژێردراوە",
+    coverSet: "دیاریکراوە",
     none: "نییە",
   },
   system: {

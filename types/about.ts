@@ -54,6 +54,7 @@ export type AboutTeamMemberDto = {
   bioCkb?: string | null
   bioKmr?: string | null
   office?: string | null
+  memberType?: string | null
   imageUrl?: string | null
   displayOrder?: number
   active?: boolean

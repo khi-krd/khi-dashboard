@@ -21,7 +21,7 @@ export const NS = {
     copy_url: "لەبەرگرتنەوەی ناونیشانی URL",
     view_on_site: "بینین لە سایت",
     reset_selection: "هەڵوەشاندنەوەی هەڵبژاردن",
-    bulk_delete: "سڕینەوەی هەڵبژێردراوەکان",
+    bulk_delete: "سڕینەوەی دیاریکراوەکان",
     add_category: "+ زیادکردنی پۆلێکی نوێ",
     add_subcategory: "+ زیادکردنی ژێرپۆلێکی نوێ",
     add_inline: "زیادکردن",
@@ -40,7 +40,7 @@ export const NS = {
   },
   selection: {
     /** {count} is inserted as formatted digits */
-    summary: (count: string) => `${count} هەواڵ هەڵبژێردراوە`,
+    summary: (count: string) => `${count} هەواڵ دیاریکراوە`,
   },
   filter: {
     toolbar_title: "فلتەرکردن",

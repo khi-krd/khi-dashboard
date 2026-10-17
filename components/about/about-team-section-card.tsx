@@ -14,7 +14,7 @@ import { AboutSectionCardShell } from "@/components/about/about-section-card-she
 import { NS } from "@/components/about/about-strings"
 import { MediaCoverUpload } from "@/components/shared/media-cover-upload"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardTitle } from "@/components/ui/card"
 import {
   Dialog,
   DialogContent,
@@ -24,6 +24,13 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
 import { Textarea } from "@/components/ui/textarea"
 import {
@@ -40,6 +47,111 @@ function clean(v?: string | null) {
   return t ? t : null
 }
 
+type OfficeId = "sulaymaniyah" | "duhok"
+
+const OFFICE_API_VALUES: Record<OfficeId, string> = {
+  sulaymaniyah: "SULAYMANIYAH",
+  duhok: "DUHOK",
+}
+
+const OFFICE_ALIASES: Record<string, OfficeId> = {
+  SULAYMANIYAH: "sulaymaniyah",
+  SULAYMANIYA: "sulaymaniyah",
+  ERBIL: "sulaymaniyah",
+  DUHOK: "duhok",
+}
+
+function officeId(raw?: string | null): OfficeId {
+  const key = (raw ?? "").trim().toUpperCase().replace(/[\s-]/g, "_")
+  return OFFICE_ALIASES[key] ?? "sulaymaniyah"
+}
+
+const emptyForm = {
+  nameCkb: "",
+  nameKmr: "",
+  roleCkb: "",
+  roleKmr: "",
+  bioCkb: "",
+  bioKmr: "",
+  office: "SULAYMANIYAH",
+  memberType: "MEMBER",
+  imageUrl: "",
+  displayOrder: "0",
+}
+
+function MemberCard({
+  item,
+  officeLabel,
+  onEdit,
+  onDelete,
+}: {
+  item: AboutTeamMemberDto
+  officeLabel: string
+  onEdit: () => void
+  onDelete: () => void
+}) {
+  const isManager = item.memberType === "MANAGER"
+  return (
+    <Card className="overflow-hidden">
+      <div className="flex gap-4 p-4">
+        {item.imageUrl?.trim() ? (
+          <Image
+            src={item.imageUrl}
+            alt=""
+            width={112}
+            height={112}
+            className="border-border size-28 shrink-0 rounded-xl border object-cover shadow-sm"
+            unoptimized={!isOptimizableImageSrc(item.imageUrl)}
+          />
+        ) : (
+          <div className="border-border bg-muted text-muted-foreground grid size-28 shrink-0 place-items-center rounded-xl border text-xs">
+            {NS.form.team_image}
+          </div>
+        )}
+        <div className="flex min-w-0 flex-1 flex-col">
+          <CardTitle className="text-base leading-snug">
+            {item.nameCkb || item.nameKmr || "—"}
+          </CardTitle>
+          <p className="text-muted-foreground mt-1 text-sm">
+            {item.roleCkb || item.roleKmr || "—"}
+          </p>
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            <span className="bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-[11px]">
+              {officeLabel}
+            </span>
+            {isManager ? (
+              <span className="bg-primary/10 text-primary rounded-full px-2 py-0.5 text-[11px] font-medium">
+                {NS.form.team_type_manager}
+              </span>
+            ) : null}
+          </div>
+          <div className="mt-auto flex gap-2 pt-3">
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={onEdit}
+            >
+              <PencilIcon className="me-1 size-3.5" />
+              {NS.action.edit}
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              className="text-destructive"
+              onClick={onDelete}
+            >
+              <TrashIcon className="me-1 size-3.5" />
+              {NS.action.delete}
+            </Button>
+          </div>
+        </div>
+      </div>
+    </Card>
+  )
+}
+
 export function AboutTeamSectionCard({ index }: { index: number }) {
   const teamQ = useAboutTeamMembersQuery()
   const createMut = useCreateAboutTeamMember()
@@ -48,29 +160,12 @@ export function AboutTeamSectionCard({ index }: { index: number }) {
 
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState<AboutTeamMemberDto | null>(null)
-  const [form, setForm] = useState({
-    nameCkb: "",
-    nameKmr: "",
-    roleCkb: "",
-    roleKmr: "",
-    bioCkb: "",
-    bioKmr: "",
-    office: "",
-    imageUrl: "",
-    displayOrder: "0",
-  })
+  const [form, setForm] = useState(emptyForm)
 
   function openCreate() {
     setEditing(null)
     setForm({
-      nameCkb: "",
-      nameKmr: "",
-      roleCkb: "",
-      roleKmr: "",
-      bioCkb: "",
-      bioKmr: "",
-      office: "",
-      imageUrl: "",
+      ...emptyForm,
       displayOrder: String(teamQ.data?.length ?? 0),
     })
     setDialogOpen(true)
@@ -85,7 +180,8 @@ export function AboutTeamSectionCard({ index }: { index: number }) {
       roleKmr: item.roleKmr ?? "",
       bioCkb: item.bioCkb ?? "",
       bioKmr: item.bioKmr ?? "",
-      office: item.office ?? "",
+      office: OFFICE_API_VALUES[officeId(item.office)],
+      memberType: item.memberType === "MANAGER" ? "MANAGER" : "MEMBER",
       imageUrl: item.imageUrl ?? "",
       displayOrder: String(item.displayOrder ?? 0),
     })
@@ -101,6 +197,7 @@ export function AboutTeamSectionCard({ index }: { index: number }) {
       bioCkb: clean(form.bioCkb),
       bioKmr: clean(form.bioKmr),
       office: clean(form.office),
+      memberType: form.memberType === "MANAGER" ? "MANAGER" : "MEMBER",
       imageUrl: clean(form.imageUrl),
       displayOrder: Number(form.displayOrder || "0"),
       active: true,
@@ -119,6 +216,52 @@ export function AboutTeamSectionCard({ index }: { index: number }) {
   }
 
   const items = teamQ.data ?? []
+  const managers = items.filter((i) => i.memberType === "MANAGER")
+  const officeGroups = (["sulaymaniyah", "duhok"] as const).map((id) => ({
+    id,
+    label:
+      id === "sulaymaniyah"
+        ? NS.form.team_group_sulaymaniyah
+        : NS.form.team_group_duhok,
+    items: items.filter(
+      (i) => i.memberType !== "MANAGER" && officeId(i.office) === id,
+    ),
+  }))
+
+  const deleteItem = (item: AboutTeamMemberDto) => {
+    if (!item.id) return
+    deleteMut.mutate(item.id, {
+      onSuccess: () => toast.success(NS.toast.deleted),
+      onError: () => toast.error(NS.error.deleteFailed),
+    })
+  }
+
+  const renderGroup = (
+    heading: string,
+    list: AboutTeamMemberDto[],
+  ) =>
+    list.length > 0 ? (
+      <div className="space-y-3">
+        <h3 className="text-muted-foreground border-border border-b pb-1.5 text-xs font-semibold uppercase">
+          {heading}
+        </h3>
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+          {list.map((item) => (
+            <MemberCard
+              key={item.id ?? `${item.nameCkb}-${item.displayOrder}`}
+              item={item}
+              officeLabel={
+                officeId(item.office) === "sulaymaniyah"
+                  ? NS.form.team_office_sulaymaniyah
+                  : NS.form.team_office_duhok
+              }
+              onEdit={() => openEdit(item)}
+              onDelete={() => deleteItem(item)}
+            />
+          ))}
+        </div>
+      </div>
+    ) : null
 
   return (
     <>
@@ -136,60 +279,9 @@ export function AboutTeamSectionCard({ index }: { index: number }) {
         {items.length === 0 ? (
           <p className="text-muted-foreground text-sm">{NS.form.team_empty}</p>
         ) : (
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-            {items.map((item) => (
-              <Card key={item.id ?? `${item.nameCkb}-${item.displayOrder}`}>
-                <CardHeader className="flex-row items-start gap-3 space-y-0">
-                  {item.imageUrl?.trim() ? (
-                    <Image
-                      src={item.imageUrl}
-                      alt=""
-                      width={56}
-                      height={56}
-                      className="border-border size-14 shrink-0 rounded-lg border object-cover"
-                      unoptimized={!isOptimizableImageSrc(item.imageUrl)}
-                    />
-                  ) : null}
-                  <div className="min-w-0 flex-1">
-                    <CardTitle className="text-sm">
-                      {item.nameCkb || item.nameKmr || "—"}
-                    </CardTitle>
-                    <p className="text-muted-foreground mt-1 text-xs">
-                      {item.roleCkb || item.roleKmr || "—"}
-                    </p>
-                  </div>
-                </CardHeader>
-                <CardContent className="flex gap-2">
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={() => openEdit(item)}
-                  >
-                    <PencilIcon className="me-1 size-3.5" />
-                    {NS.action.edit}
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="ghost"
-                    className="text-destructive"
-                    // A silent failure here reads as "the dashboard keeps
-                    // showing something I deleted" — say so instead.
-                    onClick={() => {
-                      if (!item.id) return
-                      deleteMut.mutate(item.id, {
-                        onSuccess: () => toast.success(NS.toast.deleted),
-                        onError: () => toast.error(NS.error.deleteFailed),
-                      })
-                    }}
-                  >
-                    <TrashIcon className="me-1 size-3.5" />
-                    {NS.action.delete}
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
+          <div className="space-y-6">
+            {renderGroup(NS.form.team_managers_group, managers)}
+            {officeGroups.map((g) => renderGroup(g.label, g.items))}
           </div>
         )}
       </AboutSectionCardShell>
@@ -268,21 +360,64 @@ export function AboutTeamSectionCard({ index }: { index: number }) {
               aspectClass="aspect-square max-w-xs"
               onUrlChange={(v) => setForm((p) => ({ ...p, imageUrl: v }))}
             />
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-              <Input
-                placeholder={NS.form.team_office}
-                value={form.office}
-                onChange={(e) =>
-                  setForm((p) => ({ ...p, office: e.target.value }))
-                }
-              />
-              <Input
-                placeholder={NS.form.team_display_order}
-                value={form.displayOrder}
-                onChange={(e) =>
-                  setForm((p) => ({ ...p, displayOrder: e.target.value }))
-                }
-              />
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+              <div className="space-y-1.5">
+                <Label className="text-muted-foreground text-xs">
+                  {NS.form.team_office}
+                </Label>
+                <Select
+                  value={form.office}
+                  onValueChange={(v) =>
+                    v && setForm((p) => ({ ...p, office: v }))
+                  }
+                >
+                  <SelectTrigger className="w-full" dir="rtl">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent dir="rtl">
+                    <SelectItem value="SULAYMANIYAH">
+                      {NS.form.team_office_sulaymaniyah}
+                    </SelectItem>
+                    <SelectItem value="DUHOK">
+                      {NS.form.team_office_duhok}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-muted-foreground text-xs">
+                  {NS.form.team_member_type}
+                </Label>
+                <Select
+                  value={form.memberType}
+                  onValueChange={(v) =>
+                    v && setForm((p) => ({ ...p, memberType: v }))
+                  }
+                >
+                  <SelectTrigger className="w-full" dir="rtl">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent dir="rtl">
+                    <SelectItem value="MANAGER">
+                      {NS.form.team_type_manager}
+                    </SelectItem>
+                    <SelectItem value="MEMBER">
+                      {NS.form.team_type_member}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-muted-foreground text-xs">
+                  {NS.form.team_display_order}
+                </Label>
+                <Input
+                  value={form.displayOrder}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, displayOrder: e.target.value }))
+                  }
+                />
+              </div>
             </div>
           </div>
           <DialogFooter>

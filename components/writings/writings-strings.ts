@@ -150,7 +150,7 @@ export const NS = {
       knowledge: "زانست و زانیاری",
       culture_life: "کلتوور و ژیان",
     },
-    selected_count: (count: string) => `${count} هەڵبژێردراوە`,
+    selected_count: (count: string) => `${count} دیاریکراوە`,
     empty_helper: "هیچ جۆرێک هەڵنەبژێردراوە",
   },
   filter: {

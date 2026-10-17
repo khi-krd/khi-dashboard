@@ -334,7 +334,7 @@ export const NS = {
     languageRequired: "زمانێک پێویستە",
     topicNameRequired: "ناوێک پێویستە",
     typeRequired: "جۆری ڤیدیۆ پێویستە.",
-    topicNotFound: "بابەتی هەڵبژێردراو نەدۆزرایەوە.",
+    topicNotFound: "بابەتی دیاریکراو نەدۆزرایەوە.",
   },
 }
 

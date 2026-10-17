@@ -11,7 +11,7 @@ export const NS = {
     languageRequired: "زمانێک پێویستە",
     typeRequired: "جۆری کۆکراوە پێویستە",
     topicNameRequired: "ناوی بابەت پێویستە",
-    topicNotFound: "بابەتی هەڵبژێردراو نەدۆزرایەوە",
+    topicNotFound: "بابەتی دیاریکراو نەدۆزرایەوە",
     singleAlbumLimit: "کۆکراوەی تاک وێنە تەنها یەک وێنەی هەیە",
   },
   page: {
