@@ -356,9 +356,9 @@ export function AboutDetailClient({ aboutId }: { aboutId: number }) {
                         <Image
                           src={item.imageUrl}
                           alt=""
-                          width={56}
-                          height={56}
-                          className="border-border size-14 shrink-0 rounded-lg border object-cover"
+                          width={112}
+                          height={112}
+                          className="border-border size-28 shrink-0 rounded-xl border object-cover shadow-sm"
                           unoptimized={!isOptimizableImageSrc(item.imageUrl)}
                         />
                       ) : null}
@@ -393,9 +393,9 @@ export function AboutDetailClient({ aboutId }: { aboutId: number }) {
                         <Image
                           src={item.logoUrl}
                           alt=""
-                          width={56}
-                          height={56}
-                          className="border-border size-14 shrink-0 rounded-lg border bg-background object-contain p-1"
+                          width={112}
+                          height={112}
+                          className="border-border size-28 shrink-0 rounded-xl border bg-background object-contain p-1.5 shadow-sm"
                           unoptimized={!isOptimizableImageSrc(item.logoUrl)}
                         />
                       ) : null}

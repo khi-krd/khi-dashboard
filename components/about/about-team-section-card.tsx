@@ -13,6 +13,10 @@ import { isOptimizableImageSrc } from "@/lib/image-src"
 import { AboutSectionCardShell } from "@/components/about/about-section-card-shell"
 import { NS } from "@/components/about/about-strings"
 import { MediaCoverUpload } from "@/components/shared/media-cover-upload"
+import {
+  MediaLightbox,
+  useLightbox,
+} from "@/components/shared/media-lightbox"
 import { Button } from "@/components/ui/button"
 import { Card, CardTitle } from "@/components/ui/card"
 import {
@@ -84,25 +88,34 @@ function MemberCard({
   officeLabel,
   onEdit,
   onDelete,
+  onImageClick,
 }: {
   item: AboutTeamMemberDto
   officeLabel: string
   onEdit: () => void
   onDelete: () => void
+  onImageClick: () => void
 }) {
   const isManager = item.memberType === "MANAGER"
   return (
     <Card className="overflow-hidden">
       <div className="flex gap-4 p-4">
         {item.imageUrl?.trim() ? (
-          <Image
-            src={item.imageUrl}
-            alt=""
-            width={112}
-            height={112}
-            className="border-border size-28 shrink-0 rounded-xl border object-cover shadow-sm"
-            unoptimized={!isOptimizableImageSrc(item.imageUrl)}
-          />
+          <button
+            type="button"
+            onClick={onImageClick}
+            className="cursor-zoom-in shrink-0 self-start"
+            aria-label={item.nameCkb || item.nameKmr || undefined}
+          >
+            <Image
+              src={item.imageUrl}
+              alt=""
+              width={112}
+              height={112}
+              className="border-border size-28 rounded-xl border object-cover shadow-sm"
+              unoptimized={!isOptimizableImageSrc(item.imageUrl)}
+            />
+          </button>
         ) : (
           <div className="border-border bg-muted text-muted-foreground grid size-28 shrink-0 place-items-center rounded-xl border text-xs">
             {NS.form.team_image}
@@ -228,6 +241,20 @@ export function AboutTeamSectionCard({ index }: { index: number }) {
     ),
   }))
 
+  // Lightbox order mirrors the render order (managers, then each office
+  // group) so opening a photo lands on the image the user tapped.
+  const lb = useLightbox()
+  const imageItems = [managers, ...officeGroups.map((g) => g.items)]
+    .flat()
+    .filter((i) => i.imageUrl?.trim())
+    .map((i) => ({
+      src: i.imageUrl as string,
+      alt: i.nameCkb || i.nameKmr,
+      caption: i.roleCkb || i.roleKmr,
+    }))
+  const imageIndex = (item: AboutTeamMemberDto) =>
+    imageItems.findIndex((i) => i.src === item.imageUrl)
+
   const deleteItem = (item: AboutTeamMemberDto) => {
     if (!item.id) return
     deleteMut.mutate(item.id, {
@@ -257,6 +284,10 @@ export function AboutTeamSectionCard({ index }: { index: number }) {
               }
               onEdit={() => openEdit(item)}
               onDelete={() => deleteItem(item)}
+              onImageClick={() => {
+                const i = imageIndex(item)
+                if (i >= 0) lb.openAt(i)
+              }}
             />
           ))}
         </div>
@@ -285,6 +316,13 @@ export function AboutTeamSectionCard({ index }: { index: number }) {
           </div>
         )}
       </AboutSectionCardShell>
+
+      <MediaLightbox
+        open={lb.open}
+        onOpenChange={lb.onOpenChange}
+        items={imageItems}
+        initialIndex={lb.index}
+      />
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-2xl">

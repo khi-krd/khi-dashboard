@@ -14,8 +14,12 @@ import { AboutSectionCardShell } from "@/components/about/about-section-card-she
 import { NS } from "@/components/about/about-strings"
 import { PartnerLinkPicker } from "@/components/about/partner-link-picker"
 import { MediaCoverUpload } from "@/components/shared/media-cover-upload"
+import {
+  MediaLightbox,
+  useLightbox,
+} from "@/components/shared/media-lightbox"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardTitle } from "@/components/ui/card"
 import {
   Dialog,
   DialogContent,
@@ -113,6 +117,15 @@ export function AboutPartnersSectionCard({ index }: { index: number }) {
 
   const items = partnersQ.data ?? []
 
+  const lb = useLightbox()
+  const imageItems = items
+    .filter((i) => i.logoUrl?.trim())
+    .map((i) => ({
+      src: i.logoUrl as string,
+      alt: i.nameCkb || i.nameKmr,
+      caption: i.websiteUrl?.trim() || undefined,
+    }))
+
   return (
     <>
       <AboutSectionCardShell
@@ -132,63 +145,87 @@ export function AboutPartnersSectionCard({ index }: { index: number }) {
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             {items.map((item) => (
               <Card key={item.id ?? `${item.nameCkb}-${item.displayOrder}`}>
-                <CardHeader className="flex-row items-start gap-3 space-y-0">
+                <div className="flex items-start gap-4 p-4">
                   {item.logoUrl?.trim() ? (
-                    <Image
-                      src={item.logoUrl}
-                      alt=""
-                      width={56}
-                      height={56}
-                      className="border-border size-14 shrink-0 rounded-lg border bg-background object-contain p-1"
-                      unoptimized={!isOptimizableImageSrc(item.logoUrl)}
-                    />
-                  ) : null}
-                  <div className="min-w-0 flex-1">
-                    <CardTitle className="text-sm">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const i = imageItems.findIndex(
+                          (x) => x.src === item.logoUrl,
+                        )
+                        if (i >= 0) lb.openAt(i)
+                      }}
+                      className="cursor-zoom-in shrink-0 self-start"
+                      aria-label={item.nameCkb || item.nameKmr || undefined}
+                    >
+                      <Image
+                        src={item.logoUrl}
+                        alt=""
+                        width={112}
+                        height={112}
+                        className="border-border size-28 rounded-xl border bg-background object-contain p-1.5 shadow-sm"
+                        unoptimized={!isOptimizableImageSrc(item.logoUrl)}
+                      />
+                    </button>
+                  ) : (
+                    <div className="border-border bg-muted text-muted-foreground grid size-28 shrink-0 place-items-center rounded-xl border text-xs">
+                      {NS.form.partner_logo}
+                    </div>
+                  )}
+                  <div className="flex min-w-0 flex-1 flex-col">
+                    <CardTitle className="text-base leading-snug">
                       {item.nameCkb || item.nameKmr || "—"}
                     </CardTitle>
-                    <p className="text-muted-foreground mt-1 line-clamp-2 text-xs">
+                    <p className="text-muted-foreground mt-1 line-clamp-2 text-sm">
                       {item.descriptionCkb ||
                         item.descriptionKmr ||
                         item.websiteUrl ||
                         "—"}
                     </p>
+                    <div className="mt-auto flex gap-2 pt-3">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => openEdit(item)}
+                      >
+                        <PencilIcon className="me-1 size-3.5" />
+                        {NS.action.edit}
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        className="text-destructive"
+                        // A silent failure here reads as "the dashboard keeps
+                        // showing something I deleted" — say so instead.
+                        onClick={() => {
+                          if (!item.id) return
+                          deleteMut.mutate(item.id, {
+                            onSuccess: () => toast.success(NS.toast.deleted),
+                            onError: () =>
+                              toast.error(NS.error.deleteFailed),
+                          })
+                        }}
+                      >
+                        <TrashIcon className="me-1 size-3.5" />
+                        {NS.action.delete}
+                      </Button>
+                    </div>
                   </div>
-                </CardHeader>
-                <CardContent className="flex gap-2">
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={() => openEdit(item)}
-                  >
-                    <PencilIcon className="me-1 size-3.5" />
-                    {NS.action.edit}
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="ghost"
-                    className="text-destructive"
-                    // A silent failure here reads as "the dashboard keeps
-                    // showing something I deleted" — say so instead.
-                    onClick={() => {
-                      if (!item.id) return
-                      deleteMut.mutate(item.id, {
-                        onSuccess: () => toast.success(NS.toast.deleted),
-                        onError: () => toast.error(NS.error.deleteFailed),
-                      })
-                    }}
-                  >
-                    <TrashIcon className="me-1 size-3.5" />
-                    {NS.action.delete}
-                  </Button>
-                </CardContent>
+                </div>
               </Card>
             ))}
           </div>
         )}
       </AboutSectionCardShell>
+
+      <MediaLightbox
+        open={lb.open}
+        onOpenChange={lb.onOpenChange}
+        items={imageItems}
+        initialIndex={lb.index}
+      />
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-2xl">
