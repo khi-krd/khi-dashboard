@@ -238,6 +238,13 @@ audio {
   text-decoration: underline;
 }
 
+/* Tailwind Typography paints <strong> with --tw-prose-bold (near-black),
+   which made bolded text look like it lost its formatting/color. Keep the
+   inherited color — weight alone should signal emphasis. */
+.ProseMirror :is(strong, b) {
+  color: inherit;
+}
+
 /* In-editor sizing: keep standalone images/videos from dominating the editor. */
 .ProseMirror img,
 .ProseMirror video {

@@ -57,7 +57,11 @@ export function SiteFontFaces() {
         .map((font) => {
           const family = siteFontFamily(font)
           if (!family || !font.url) return ""
-          return `@font-face{font-family:"${family}";src:url("/api/site-font?src=${encodeURIComponent(font.url)}")${fontFormatHint(font.url)};font-weight:100 900;font-display:swap}`
+          // font-weight stays 400 on purpose: a 100-900 range tells the
+          // browser this static file already covers bold, which disables
+          // faux-bold synthesis and makes <strong> render identically to
+          // body text. A single-weight face lets the browser synthesize it.
+          return `@font-face{font-family:"${family}";src:url("/api/site-font?src=${encodeURIComponent(font.url)}")${fontFormatHint(font.url)};font-weight:400;font-display:swap}`
         })
         .filter(Boolean)
         .join("\n"),

@@ -319,7 +319,14 @@ export function TiptapEditor({
       onChange?.(getEditorHtml(editor))
     }
     if (next === "markdown") {
-      const seed = getEditorMarkdown(editor)
+      // Markdown serialization throws on marks/nodes without a serializer —
+      // fall back to the HTML view rather than crashing the source switch.
+      let seed: string
+      try {
+        seed = getEditorMarkdown(editor)
+      } catch {
+        seed = getEditorHtml(editor)
+      }
       setSourceEdit({ mode: "markdown", text: seed, seed, emitted: false })
     } else if (next === "html") {
       const seed = getEditorHtml(editor)
@@ -331,11 +338,19 @@ export function TiptapEditor({
   function openPreview() {
     // Snapshot the live doc — unsaved edits and media nodes included — even
     // when `onChange` has not round-tripped the value back to the form.
-    setPreviewContent(
-      editor && !editor.isDestroyed
-        ? { html: getEditorHtml(editor), markdown: getEditorMarkdown(editor) }
-        : { html: value ?? "", markdown: value ?? "" },
-    )
+    let html = value ?? ""
+    let markdown = html
+    if (editor && !editor.isDestroyed) {
+      html = getEditorHtml(editor)
+      // Markdown serialization throws on marks/nodes without a serializer
+      // (textStyle colors, sub/superscript…); the pane must never crash.
+      try {
+        markdown = getEditorMarkdown(editor)
+      } catch {
+        markdown = html
+      }
+    }
+    setPreviewContent({ html, markdown })
     setPreviewPane("preview")
     setPreviewOpen(true)
   }

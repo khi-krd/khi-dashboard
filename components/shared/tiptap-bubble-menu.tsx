@@ -140,11 +140,14 @@ export function TiptapBubbleMenus({ editor }: { editor: Editor }) {
   return (
     <>
       {/* Text selection — font, size, marks, colors. */}
+      {/* z-[60]: the body-appended floating wrapper otherwise stacks under
+          the expanded editor modal (z-50), making the menus invisible there. */}
       <BubbleMenu
         editor={editor}
         pluginKey="textBubble"
         appendTo={appendToBody}
         options={bubbleOptions}
+        className="z-[60]"
         shouldShow={({ editor: ed, state, from, to }) => {
           if (!ed.isEditable || from === to) return false
           // Atom node selections (figures, videos…) get their own controls.
@@ -224,6 +227,7 @@ export function TiptapBubbleMenus({ editor }: { editor: Editor }) {
         pluginKey="tableBubble"
         appendTo={appendToBody}
         options={bubbleOptions}
+        className="z-[60]"
         shouldShow={({ editor: ed, state }) => {
           if (!ed.isEditable || !ed.isActive("table")) return false
           // A text selection gets the text bar instead.
