@@ -445,7 +445,7 @@ export function TiptapEditor({
   // The editing surface — one <EditorContent> may only be mounted once, so
   // the same fragment serves the inline shell and the expanded modal; only
   // one of them is rendered at a time.
-  const editPane = (stickyBar: boolean) => (
+  const editPane = (stickyBar: boolean, inModal = false) => (
     <>
       {isEditing ? (
         <TiptapToolbar
@@ -457,7 +457,9 @@ export function TiptapEditor({
       ) : null}
       <div className={cn(isSourceMode && "hidden")}>
         <EditorContent editor={editor} dir={dir} />
-        {isEditing ? <TiptapBubbleMenus editor={editor} /> : null}
+        {isEditing ? (
+          <TiptapBubbleMenus editor={editor} text={!inModal} />
+        ) : null}
       </div>
       {isSourceMode ? (
         <textarea
@@ -506,7 +508,7 @@ export function TiptapEditor({
             {modeTabs}
           </DialogHeader>
           <div className="bg-background min-h-0 flex-1 overflow-y-auto">
-            {expanded ? editPane(true) : null}
+            {expanded ? editPane(true, true) : null}
           </div>
         </DialogContent>
       </Dialog>

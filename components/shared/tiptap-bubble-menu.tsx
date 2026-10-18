@@ -118,7 +118,16 @@ function promptLink(editor: Editor) {
  *    presets + cell background) so the table options are right at the table.
  * Both are editor-only chrome — nothing here touches the stored HTML.
  */
-export function TiptapBubbleMenus({ editor }: { editor: Editor }) {
+export function TiptapBubbleMenus({
+  editor,
+  /** Show the text-selection bar (font/size/marks/colors). Off inside the
+      expanded modal — the sticky toolbar there already carries the same
+      actions, so the bubble only duplicated it. */
+  text = true,
+}: {
+  editor: Editor
+  text?: boolean
+}) {
   const textColor = editor.getAttributes("textStyle").color as
     | string
     | undefined
@@ -142,6 +151,7 @@ export function TiptapBubbleMenus({ editor }: { editor: Editor }) {
       {/* Text selection — font, size, marks, colors. */}
       {/* z-[60]: the body-appended floating wrapper otherwise stacks under
           the expanded editor modal (z-50), making the menus invisible there. */}
+      {text ? (
       <BubbleMenu
         editor={editor}
         pluginKey="textBubble"
@@ -220,6 +230,7 @@ export function TiptapBubbleMenus({ editor }: { editor: Editor }) {
           </BubbleBtn>
         </div>
       </BubbleMenu>
+      ) : null}
 
       {/* Table context — style preset + cell background at the caret. */}
       <BubbleMenu
