@@ -40,6 +40,7 @@ import {
   useUpdateProject,
 } from "@/hooks/useProjects"
 import { useProjectsDerivedTypes } from "@/hooks/useProjectsDerivedTypes"
+import { useCreateProjectTypeMutation } from "@/hooks/useTaxonomy"
 import {
   mergeProjectsDerivedTypes,
   pushInlineProjectType,
@@ -157,6 +158,7 @@ export function ProjectForm({
   const derivedTypes = useProjectsDerivedTypes()
   const createMut = useCreateProject()
   const updateMut = useUpdateProject()
+  const createTypeMut = useCreateProjectTypeMutation()
 
   const form = useForm<ProjectFormValues>({
     resolver: permissiveResolver(projectFormSchema) as Resolver<ProjectFormValues>,
@@ -381,6 +383,12 @@ export function ProjectForm({
                     projectTypeKmr: kmr,
                   })
                 }}
+                onCreateInline={(option) =>
+                  createTypeMut.mutate({
+                    nameCkb: option.projectTypeCkb,
+                    nameKmr: option.projectTypeKmr,
+                  })
+                }
               />
             </section>
 

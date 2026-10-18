@@ -124,6 +124,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           url: "/dashboard/topics",
           icon: <HugeiconsIcon icon={Tag01Icon} strokeWidth={2} />,
         },
+        {
+          title: "پۆلەکان و جۆرەکان",
+          url: "/dashboard/taxonomy",
+          icon: <HugeiconsIcon icon={Tag01Icon} strokeWidth={2} />,
+        },
       ],
     },
     {

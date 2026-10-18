@@ -19,11 +19,14 @@ export function ProjectTypeCombobox({
   valueCkb,
   valueKmr,
   onChange,
+  onCreateInline,
 }: {
   items: ProjectTypeOption[]
   valueCkb: string
   valueKmr: string
   onChange: (ckb: string, kmr: string) => void
+  /** Fired only from the "add type" panel — lets the caller persist the new name into the managed vocabulary. */
+  onCreateInline?: (option: ProjectTypeOption) => void
 }) {
   const [open, setOpen] = useState(false)
   const [showCreate, setShowCreate] = useState(false)
@@ -110,7 +113,10 @@ export function ProjectTypeCombobox({
               className="w-full"
               onClick={() => {
                 if (!draftCkb.trim()) return
-                onChange(draftCkb.trim(), draftKmr.trim())
+                const ckb = draftCkb.trim()
+                const kmr = draftKmr.trim()
+                onCreateInline?.({ projectTypeCkb: ckb, projectTypeKmr: kmr })
+                onChange(ckb, kmr)
                 setDraftCkb("")
                 setDraftKmr("")
                 setShowCreate(false)

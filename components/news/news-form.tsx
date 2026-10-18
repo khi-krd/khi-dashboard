@@ -51,6 +51,10 @@ import {
   useNewsDerivedSubcategories,
 } from "@/hooks/useNewsDerivedTaxonomy"
 import {
+  useCreateNewsCategoryMutation,
+  useCreateNewsSubCategoryMutation,
+} from "@/hooks/useTaxonomy"
+import {
   mergeNewsDerivedTaxonomy,
   pushInlineCategory,
   pushInlineSubcategory,
@@ -206,6 +210,8 @@ export function NewsForm({
 
   const createMut = useCreateNews()
   const updateMut = useUpdateNews()
+  const createCategoryMut = useCreateNewsCategoryMutation()
+  const createSubCategoryMut = useCreateNewsSubCategoryMutation()
   const pending = createMut.isPending || updateMut.isPending
 
   const tabMarkers = {
@@ -432,9 +438,13 @@ export function NewsForm({
                           }}
                           labelId="nf-category"
                           allowCreate
-                          onCreateInline={(c) =>
+                          onCreateInline={(c) => {
                             pushInlineCategory(queryClient, c)
-                          }
+                            createCategoryMut.mutate({
+                              nameCkb: c.ckbName,
+                              nameKmr: c.kmrName,
+                            })
+                          }}
                         />
                       )}
                     />
@@ -468,12 +478,19 @@ export function NewsForm({
                           allowCreate={Boolean(category?.ckbName?.trim())}
                           onCreateInline={
                             category?.ckbName?.trim()
-                              ? (s) =>
+                              ? (s) => {
                                   pushInlineSubcategory(
                                     queryClient,
                                     category.ckbName.trim(),
                                     s,
                                   )
+                                  createSubCategoryMut.mutate({
+                                    nameCkb: s.ckbName,
+                                    nameKmr: s.kmrName,
+                                    categoryCkb: category.ckbName.trim(),
+                                    categoryKmr: category.kmrName?.trim(),
+                                  })
+                                }
                               : undefined
                           }
                         />
