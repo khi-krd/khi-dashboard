@@ -14,8 +14,13 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
-import { Bars2Icon, PlusIcon, TrashIcon } from "@heroicons/react/24/outline"
-import { useState } from "react"
+import {
+  Bars2Icon,
+  CloudArrowUpIcon,
+  PlusIcon,
+  TrashIcon,
+} from "@heroicons/react/24/outline"
+import { useCallback, useState } from "react"
 import {
   useFieldArray,
   useFormContext,
@@ -24,7 +29,11 @@ import {
 } from "react-hook-form"
 
 import { MediaCoverUpload } from "@/components/shared/media-cover-upload"
+import { UploadProgressLine } from "@/components/shared/upload-progress-line"
 import { Button } from "@/components/ui/button"
+import { Spinner } from "@/components/ui/spinner"
+import { useFileUpload } from "@/hooks/use-file-upload"
+import { uploadMedia } from "@/services/mediaService"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
@@ -35,8 +44,11 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { cn } from "@/lib/utils"
-import { createEmptyGalleryItem } from "@/types/media-gallery"
-import type { MediaKind } from "@/types/media-gallery"
+import {
+  createEmptyGalleryItem,
+  type MediaGalleryItemFormValues,
+  type MediaKind,
+} from "@/types/media-gallery"
 
 const KIND_LABELS: Record<MediaKind, string> = {
   IMAGE: "وێنە",
@@ -77,6 +89,21 @@ const EMBED_PLACEHOLDERS: Record<MediaKind, string> = {
   AUDIO: 'https://w.soundcloud.com/player/… یان کۆدی <iframe>',
 }
 
+const MEDIA_EXT = {
+  VIDEO: /\.(mp4|webm|mov|m4v|ogv|ogg|mkv|avi)$/i,
+  AUDIO: /\.(mp3|wav|ogg|oga|m4a|aac|flac|opus|weba)$/i,
+} as const
+
+function kindFromFile(file: File): MediaKind {
+  if (file.type.startsWith("video/") || MEDIA_EXT.VIDEO.test(file.name)) {
+    return "VIDEO"
+  }
+  if (file.type.startsWith("audio/") || MEDIA_EXT.AUDIO.test(file.name)) {
+    return "AUDIO"
+  }
+  return "IMAGE"
+}
+
 type MediaGalleryEditorProps<T extends FieldValues> = {
   name: Path<T>
   title?: string
@@ -97,6 +124,66 @@ export function MediaGalleryEditor<T extends FieldValues>({
   const { fields, append, remove, move } = useFieldArray({
     control,
     name: name as never,
+  })
+
+  const [busyCount, setBusyCount] = useState(0)
+  const [progress, setProgress] = useState<number | null>(null)
+
+  // Multi-file upload: every picked/dropped file uploads to the entity's
+  // folder and becomes its own gallery row (kind follows the MIME type).
+  const addFiles = useCallback(
+    async (files: File[]) => {
+      if (files.length === 0) return
+      setBusyCount(files.length)
+      setProgress(0)
+      const share = 100 / files.length
+      const base = (getValues(name) as unknown[] | undefined)?.length ?? 0
+      const added: MediaGalleryItemFormValues[] = []
+      for (const [i, file] of files.entries()) {
+        try {
+          const res = await uploadMedia(
+            file,
+            entity ?? "content",
+            (pct) => setProgress(i * share + (pct / 100) * share),
+          )
+          added.push({
+            ...createEmptyGalleryItem(base + added.length),
+            kind: kindFromFile(file),
+            url: res.fileUrl,
+          })
+        } catch {
+          // skip failed uploads; the row just isn't created
+        }
+      }
+      added.forEach((item) => append(item as never))
+      setBusyCount(0)
+      setProgress(null)
+    },
+    [append, entity, getValues, name],
+  )
+
+  const [
+    { isDragging },
+    {
+      handleDragEnter,
+      handleDragLeave,
+      handleDragOver,
+      handleDrop,
+      openFileDialog,
+      getInputProps,
+      clearFiles,
+    },
+  ] = useFileUpload({
+    maxFiles: 30,
+    accept: "image/*,video/*,audio/*",
+    multiple: true,
+    onFilesAdded: (added) => {
+      const files = added
+        .map((entry) => entry.file)
+        .filter((file): file is File => file instanceof File)
+      void addFiles(files)
+      queueMicrotask(() => clearFiles())
+    },
   })
 
   const sensors = useSensors(
@@ -121,22 +208,69 @@ export function MediaGalleryEditor<T extends FieldValues>({
   }
 
   return (
-    <section className="space-y-3">
+    <section
+      className={cn(
+        "space-y-3 rounded-lg transition-colors",
+        isDragging && "bg-primary/5 ring-primary/30 ring-2 ring-offset-2",
+      )}
+      onDragEnter={handleDragEnter}
+      onDragLeave={handleDragLeave}
+      onDragOver={handleDragOver}
+      onDrop={handleDrop}
+    >
+      <input {...getInputProps({ disabled: busyCount > 0 })} className="sr-only" />
       <div className="flex items-center justify-between gap-2">
         <h2 className="text-sm font-semibold">{title}</h2>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="h-8 gap-1"
-          onClick={() =>
-            append(createEmptyGalleryItem(fields.length) as never)
-          }
-        >
-          <PlusIcon className="size-3.5" />
-          {addLabel}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-8 gap-1"
+            disabled={busyCount > 0}
+            onClick={openFileDialog}
+          >
+            <CloudArrowUpIcon className="size-3.5" />
+            بارکردنی فایلەکان
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-8 gap-1"
+            onClick={() =>
+              append(createEmptyGalleryItem(fields.length) as never)
+            }
+          >
+            <PlusIcon className="size-3.5" />
+            {addLabel}
+          </Button>
+        </div>
       </div>
+
+      {busyCount > 0 ? (
+        <div className="border-border bg-muted/10 flex items-center gap-3 rounded-lg border border-dashed p-3">
+          <Spinner className="size-4" />
+          <div className="min-w-0 flex-1">
+            <p className="text-muted-foreground text-xs">
+              {busyCount} فایل بار دەکرێت…
+            </p>
+            <UploadProgressLine value={progress} className="mt-1.5" />
+          </div>
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={openFileDialog}
+          className={cn(
+            "border-border text-muted-foreground hover:border-primary/40 hover:text-foreground flex w-full items-center justify-center gap-2 rounded-lg border border-dashed p-3 text-xs transition-colors",
+            isDragging && "border-primary text-primary",
+          )}
+        >
+          <CloudArrowUpIcon className="size-4" />
+          فایلەکان ئێرە دابنێ یان کلیک بکە — وێنە، ڤیدیۆ و دەنگ پێکەوە
+        </button>
+      )}
 
       {fields.length === 0 ? (
         <p className="text-muted-foreground text-sm">{emptyLabel}</p>
