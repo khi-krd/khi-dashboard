@@ -68,7 +68,7 @@ export function SoundAlbumBrochureRow({
       style={style}
       className="border-border bg-background grid gap-3 rounded-lg border p-3 sm:grid-cols-[1fr_auto_auto_auto] sm:items-end"
     >
-      <div className="space-y-2 sm:col-span-1">
+      <div className="min-w-0 space-y-2 sm:col-span-1">
         <div className="space-y-1">
           <Label className="text-xs">{NS.col.title}</Label>
           <Input
@@ -86,7 +86,7 @@ export function SoundAlbumBrochureRow({
           >
             {brochure.stagedFile ? NS.action.change : NS.action.add}
           </button>
-          <span className="text-muted-foreground truncate text-xs">
+          <span className="text-muted-foreground min-w-0 truncate text-xs">
             {fileLabel}
           </span>
         </div>
