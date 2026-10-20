@@ -102,6 +102,20 @@ function dtoToFormValues(d: ProjectDto): ProjectFormValues {
         : ["CKB"],
     projectTypeCkb: d.projectTypeCkb ?? "",
     projectTypeKmr: d.projectTypeKmr ?? "",
+    projectTypes:
+      d.projectTypes?.length
+        ? d.projectTypes.map((t) => ({
+            nameCkb: t.nameCkb ?? "",
+            nameKmr: t.nameKmr ?? "",
+          }))
+        : d.projectTypeCkb
+          ? [
+              {
+                nameCkb: d.projectTypeCkb,
+                nameKmr: d.projectTypeKmr ?? d.projectTypeCkb,
+              },
+            ]
+          : [],
     coverUrl: d.coverUrl ?? null,
     existingCoverUrl: d.coverUrl ?? null,
     coverMediaType: d.coverMediaType ?? "IMAGE",
@@ -367,15 +381,16 @@ export function ProjectForm({
               </Label>
               <ProjectTypeCombobox
                 items={derivedTypes.data ?? []}
-                valueCkb={watch("projectTypeCkb") ?? ""}
-                valueKmr={watch("projectTypeKmr") ?? ""}
-                onChange={(ckb, kmr) => {
-                  setValue("projectTypeCkb", ckb, { shouldDirty: true })
-                  setValue("projectTypeKmr", kmr, { shouldDirty: true })
-                  pushInlineProjectType(queryClient, {
-                    projectTypeCkb: ckb,
-                    projectTypeKmr: kmr,
-                  })
+                values={watch("projectTypes") ?? []}
+                onChange={(v) => {
+                  setValue("projectTypes", v, { shouldDirty: true })
+                  const last = v[v.length - 1]
+                  if (last) {
+                    pushInlineProjectType(queryClient, {
+                      projectTypeCkb: last.nameCkb,
+                      projectTypeKmr: last.nameKmr,
+                    })
+                  }
                 }}
                 onCreateInline={(option) =>
                   createTypeMut.mutate({

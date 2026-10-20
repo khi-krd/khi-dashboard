@@ -88,9 +88,13 @@ export type SoundDto = {
   /** Only meaningful when trackState is MULTI — flags the album as "بیرەوەرییەکان". */
   albumOfMemories?: boolean
   soundType?: string | null
+  /** Multi-select sound types — first entry mirrors soundType. */
+  soundTypes?: string[]
   topicId?: number | null
   topicNameCkb?: string | null
   topicNameKmr?: string | null
+  /** Multi-select topics — first entry mirrors topicId/topicName*. */
+  topics?: TopicDto[]
   ckbCoverUrl?: string | null
   kmrCoverUrl?: string | null
   hoverCoverUrl?: string | null

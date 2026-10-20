@@ -128,8 +128,9 @@ export function SoundForm({
   const contentLanguages = watch("contentLanguages")
   const trackState = watch("trackState")
   const attachments = watch("attachments")
-  const topicId = watch("topicId")
-  const newTopic = watch("newTopic")
+  const topicIds = watch("topicIds")
+  const newTopics = watch("newTopics")
+  const soundTypes = watch("soundTypes")
 
   useEffect(() => {
     if (!contentLanguages.includes(activeLang) && contentLanguages[0]) {
@@ -262,9 +263,9 @@ export function SoundForm({
           >
             <section className={sectionCard}>
               <SoundTypeCombobox
-                value={watch("soundType")}
-                onChange={(v) => setValue("soundType", v, { shouldDirty: true })}
-                error={errors.soundType?.message}
+                values={soundTypes}
+                onChange={(v) => setValue("soundTypes", v, { shouldDirty: true })}
+                error={errors.soundTypes?.message}
               />
             </section>
 
@@ -273,22 +274,29 @@ export function SoundForm({
                 {NS.section.topic}
               </h2>
               <SoundTopicCombobox
-                topicId={topicId ?? null}
-                newTopic={newTopic}
-                onSelectTopic={(t) => {
-                  setValue("topicId", t.id, { shouldDirty: true })
-                  setValue("newTopic", undefined, { shouldDirty: true })
-                  setValue("clearTopic", false, { shouldDirty: true })
+                selectedIds={topicIds}
+                pending={newTopics}
+                onToggle={(t) => {
+                  const next = topicIds.includes(t.id)
+                    ? topicIds.filter((id) => id !== t.id)
+                    : [...topicIds, t.id]
+                  setValue("topicIds", next, { shouldDirty: true })
                 }}
-                onClearTopic={() => {
-                  setValue("topicId", null, { shouldDirty: true })
-                  setValue("newTopic", undefined, { shouldDirty: true })
-                  setValue("clearTopic", true, { shouldDirty: true })
+                onRemovePending={(i) => {
+                  setValue(
+                    "newTopics",
+                    newTopics.filter((_, idx) => idx !== i),
+                    { shouldDirty: true },
+                  )
                 }}
                 onCreateInline={(names) => {
-                  setValue("newTopic", names, { shouldDirty: true })
-                  setValue("topicId", null, { shouldDirty: true })
-                  setValue("clearTopic", false, { shouldDirty: true })
+                  setValue("newTopics", [...newTopics, names], {
+                    shouldDirty: true,
+                  })
+                }}
+                onClearAll={() => {
+                  setValue("topicIds", [], { shouldDirty: true })
+                  setValue("newTopics", [], { shouldDirty: true })
                 }}
               />
             </section>

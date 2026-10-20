@@ -490,20 +490,38 @@ function VideoDetailLoaded({
                 />
               </section>
 
-              {dto.topicId ? (
+              {(dto.topics?.length ?? 0) > 0 || dto.topicId ? (
                 <section className={cn(sectionDivider, "space-y-2")}>
                   <h4 className="text-muted-foreground text-xs uppercase tracking-wide">
                     {NS.section.topic}
                   </h4>
-                  <Link
-                    href={`/dashboard/videos?topic=${dto.topicId}`}
-                    className="text-primary hover:underline"
-                  >
-                    {topicCkb || NS.topic.empty}
-                  </Link>
-                  {topicKmr ? (
-                    <p className="text-muted-foreground text-xs">{topicKmr}</p>
-                  ) : null}
+                  {dto.topics?.length ? (
+                    <div className="flex flex-wrap gap-1.5">
+                      {dto.topics.map((t) => (
+                        <Link
+                          key={t.id}
+                          href={`/dashboard/videos?topic=${t.id}`}
+                          className="bg-primary/10 text-primary border-primary/20 hover:bg-primary/20 inline-flex rounded-md border px-2 py-1 text-xs"
+                        >
+                          {t.nameCkb ?? t.nameKmr ?? `#${t.id}`}
+                        </Link>
+                      ))}
+                    </div>
+                  ) : (
+                    <>
+                      <Link
+                        href={`/dashboard/videos?topic=${dto.topicId}`}
+                        className="text-primary hover:underline"
+                      >
+                        {topicCkb || NS.topic.empty}
+                      </Link>
+                      {topicKmr ? (
+                        <p className="text-muted-foreground text-xs">
+                          {topicKmr}
+                        </p>
+                      ) : null}
+                    </>
+                  )}
                 </section>
               ) : null}
 

@@ -28,8 +28,20 @@ export function projectFormValuesToPayload(
 
   return {
     status: values.status,
-    projectTypeCkb: values.projectTypeCkb?.trim() || undefined,
-    projectTypeKmr: values.projectTypeKmr?.trim() || undefined,
+    projectTypeCkb:
+      values.projectTypes[0]?.nameCkb?.trim() ||
+      values.projectTypeCkb?.trim() ||
+      undefined,
+    projectTypeKmr:
+      values.projectTypes[0]?.nameKmr?.trim() ||
+      values.projectTypeKmr?.trim() ||
+      undefined,
+    projectTypes: values.projectTypes
+      .map((t) => ({
+        nameCkb: t.nameCkb.trim(),
+        nameKmr: t.nameKmr.trim() || t.nameCkb.trim(),
+      }))
+      .filter((t) => t.nameCkb),
     contentLanguages: values.contentLanguages,
     coverUrl,
     coverMediaType: values.coverMediaType,

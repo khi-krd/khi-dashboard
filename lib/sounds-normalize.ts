@@ -32,6 +32,22 @@ function coerceBool(v: unknown): boolean {
   return false
 }
 
+function coerceTopics(raw: unknown): import("@/types/sounds").TopicDto[] {
+  if (!Array.isArray(raw)) return []
+  const out: import("@/types/sounds").TopicDto[] = []
+  for (const t of raw) {
+    const o = (t ?? {}) as Record<string, unknown>
+    const id = coerceNum(o.id)
+    if (id == null) continue
+    out.push({
+      id,
+      nameCkb: coerceStr(o.nameCkb) ?? coerceStr(o.name_ckb),
+      nameKmr: coerceStr(o.nameKmr) ?? coerceStr(o.name_kmr),
+    })
+  }
+  return out
+}
+
 function coerceStringArray(raw: unknown): string[] {
   if (!raw) return []
   if (raw instanceof Set) return [...raw].map(String)
@@ -195,11 +211,13 @@ export function normalizeSoundDto(raw: unknown): SoundDto {
     trackState,
     albumOfMemories: coerceBool(o.albumOfMemories ?? o.album_of_memories),
     soundType: coerceStr(o.soundType) ?? coerceStr(o.sound_type),
+    soundTypes: coerceStringArray(o.soundTypes ?? o.sound_types),
     topicId: coerceNum(o.topicId) ?? coerceNum(o.topic_id),
     topicNameCkb:
       coerceStr(o.topicNameCkb) ?? coerceStr(o.topic_name_ckb),
     topicNameKmr:
       coerceStr(o.topicNameKmr) ?? coerceStr(o.topic_name_kmr),
+    topics: coerceTopics(o.topics),
     ckbCoverUrl: coerceStr(o.ckbCoverUrl) ?? coerceStr(o.ckb_cover_url),
     kmrCoverUrl: coerceStr(o.kmrCoverUrl) ?? coerceStr(o.kmr_cover_url),
     hoverCoverUrl: coerceStr(o.hoverCoverUrl) ?? coerceStr(o.hover_cover_url),

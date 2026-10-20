@@ -114,7 +114,10 @@ export function soundFormValuesToMultipart(
     // never being an album of memories.
     albumOfMemories:
       values.trackState === "MULTI" ? values.albumOfMemories : false,
-    soundType: values.soundType.trim(),
+    soundType: values.soundTypes[0]?.trim() ?? values.soundType.trim(),
+    soundTypes: values.soundTypes
+      .map((t) => t.trim())
+      .filter(Boolean),
     contentLanguages: values.contentLanguages,
     ckbCoverUrl: trimOrUndef(values.ckbCoverUrl),
     kmrCoverUrl: trimOrUndef(values.kmrCoverUrl),
@@ -139,22 +142,16 @@ export function soundFormValuesToMultipart(
     brochures: brochuresPayload,
   }
 
-  if (values.clearTopic) {
-    payload.clearTopic = true
-    payload.topicId = null
-  } else if (
-    values.newTopic?.nameCkb?.trim() ||
-    values.newTopic?.nameKmr?.trim()
-  ) {
-    payload.newTopic = {
-      nameCkb: trimOrUndef(values.newTopic.nameCkb),
-      nameKmr: trimOrUndef(values.newTopic.nameKmr),
-    }
-    payload.topicId = null
-  } else if (values.topicId != null) {
-    payload.topicId = values.topicId
-  } else if (mode === "create") {
-    payload.topicId = null
+  // Topics are a replace-set — always sent, so an empty selection clears.
+  payload.topicIds = values.topicIds
+  const namedNewTopics = values.newTopics
+    .map((t) => ({
+      nameCkb: trimOrUndef(t.nameCkb),
+      nameKmr: trimOrUndef(t.nameKmr),
+    }))
+    .filter((t) => t.nameCkb || t.nameKmr)
+  if (namedNewTopics.length > 0) {
+    payload.newTopics = namedNewTopics
   }
 
   fd.append(

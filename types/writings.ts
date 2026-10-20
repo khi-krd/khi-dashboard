@@ -96,6 +96,8 @@ export type WritingDto = {
   topicNameCkb?: string | null
   topicNameKmr?: string | null
   topic?: TopicDto | null
+  /** Multi-select topics — first entry mirrors topic/topicId. */
+  topics?: TopicDto[]
   ckbCoverUrl?: string | null
   kmrCoverUrl?: string | null
   hoverCoverUrl?: string | null

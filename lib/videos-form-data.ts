@@ -64,8 +64,8 @@ export function videoFormValuesToMultipart(
 
   const payload: Partial<VideoDto> & {
     id?: number
-    newTopic?: { nameCkb?: string; nameKmr?: string }
-    clearTopic?: boolean
+    topicIds?: number[]
+    newTopics?: { nameCkb?: string; nameKmr?: string }[]
   } = {
     ...(mode === "edit" && typeof videoId === "number" ? { id: videoId } : {}),
     videoType: values.videoType,
@@ -140,19 +140,16 @@ export function videoFormValuesToMultipart(
     }
   }
 
-  if (values.clearTopic) {
-    payload.clearTopic = true
-    payload.topicId = null
-  } else if (values.newTopic?.nameCkb?.trim() || values.newTopic?.nameKmr?.trim()) {
-    payload.newTopic = {
-      nameCkb: trimOrUndef(values.newTopic.nameCkb),
-      nameKmr: trimOrUndef(values.newTopic.nameKmr),
-    }
-    payload.topicId = null
-  } else if (values.topicId != null) {
-    payload.topicId = values.topicId
-  } else if (mode === "create") {
-    payload.topicId = null
+  // Topics are a replace-set — always sent, so an empty selection clears.
+  payload.topicIds = values.topicIds
+  const namedNewTopics = values.newTopics
+    .map((t) => ({
+      nameCkb: trimOrUndef(t.nameCkb),
+      nameKmr: trimOrUndef(t.nameKmr),
+    }))
+    .filter((t) => t.nameCkb || t.nameKmr)
+  if (namedNewTopics.length > 0) {
+    payload.newTopics = namedNewTopics
   }
 
   fd.append(

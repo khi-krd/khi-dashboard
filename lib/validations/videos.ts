@@ -66,14 +66,15 @@ export const VideoClipItemFormSchema = z.object({
 export const videoFormSchema = z.object({
   videoType: z.enum(["FILM", "VIDEO_CLIP"]),
   albumOfMemories: z.boolean().default(false),
-  topicId: z.number().int().nullable().optional(),
-  newTopic: z
-    .object({
-      nameCkb: z.string().optional(),
-      nameKmr: z.string().optional(),
-    })
-    .optional(),
-  clearTopic: z.boolean().optional(),
+  topicIds: z.array(z.number().int()).default([]),
+  newTopics: z
+    .array(
+      z.object({
+        nameCkb: z.string().optional(),
+        nameKmr: z.string().optional(),
+      }),
+    )
+    .default([]),
   contentLanguages: z
     .array(z.enum(["CKB", "KMR"]))
     .min(1, NS.validation.languageRequired),
@@ -121,9 +122,8 @@ export type VideoFormValues = z.infer<typeof videoFormSchema>
 export const defaultVideoFormValues: VideoFormValues = {
   videoType: "FILM",
   albumOfMemories: false,
-  topicId: null,
-  newTopic: undefined,
-  clearTopic: false,
+  topicIds: [],
+  newTopics: [],
   contentLanguages: ["CKB"],
   ckbContent: {
     title: "",
@@ -195,8 +195,13 @@ export function videoDtoToFormValues(d: import("@/types/videos").VideoDto): Vide
   return {
     videoType: d.videoType ?? "FILM",
     albumOfMemories: d.albumOfMemories ?? false,
-    topicId: d.topicId ?? null,
-    clearTopic: false,
+    topicIds:
+      d.topics?.length
+        ? d.topics.map((t) => t.id)
+        : d.topicId != null
+          ? [d.topicId]
+          : [],
+    newTopics: [],
     contentLanguages:
       Array.isArray(d.contentLanguages) && d.contentLanguages.length
         ? d.contentLanguages

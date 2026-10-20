@@ -104,24 +104,16 @@ export function writingFormValuesToMultipart(
   // On edit + standalone nothing is sent: update merges non-null fields, and
   // `parentBookId: null` cannot unlink a book anyway, so the nulls were noise.
 
-  if (
-    values.newTopic?.nameCkb?.trim() ||
-    values.newTopic?.nameKmr?.trim()
-  ) {
-    payload.newTopic = {
-      nameCkb: trimOrUndef(values.newTopic.nameCkb),
-      nameKmr: trimOrUndef(values.newTopic.nameKmr),
-    }
-    payload.topicId = null
-  } else if (values.clearTopic) {
-    // `topicId: null` on update is read as "unchanged" — detaching a topic
-    // needs the explicit flag, which also wins over any topicId in the blob.
-    payload.clearTopic = true
-    payload.topicId = null
-  } else if (values.topicId != null) {
-    payload.topicId = values.topicId
-  } else if (mode === "create") {
-    payload.topicId = null
+  // Topics are a replace-set — always sent, so an empty selection clears.
+  payload.topicIds = values.topicIds
+  const namedNewTopics = values.newTopics
+    .map((t) => ({
+      nameCkb: trimOrUndef(t.nameCkb),
+      nameKmr: trimOrUndef(t.nameKmr),
+    }))
+    .filter((t) => t.nameCkb || t.nameKmr)
+  if (namedNewTopics.length > 0) {
+    payload.newTopics = namedNewTopics
   }
 
   fd.append(

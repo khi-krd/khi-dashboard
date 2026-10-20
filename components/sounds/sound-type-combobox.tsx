@@ -1,7 +1,12 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { ChevronUpDownIcon, PlusIcon } from "@heroicons/react/24/outline"
+import {
+  CheckIcon,
+  ChevronUpDownIcon,
+  PlusIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/outline"
 import { toast } from "sonner"
 
 import { NS } from "@/components/sounds/sounds-strings"
@@ -21,17 +26,18 @@ import {
 import { cn } from "@/lib/utils"
 
 /**
- * Sound-type picker backed by the managed /api/v1/sound-tracks/types
- * vocabulary — like the project-type combobox. Still lets the editor type a
- * brand-new name; the backend auto-registers it into the vocabulary on save.
+ * Multi-select sound-type picker backed by the managed
+ * /api/v1/sound-tracks/types vocabulary. Each selected value is a chip; a
+ * brand-new name can be typed and added, and the backend auto-registers it
+ * into the vocabulary on save.
  */
 export function SoundTypeCombobox({
-  value,
+  values,
   onChange,
   error,
 }: {
-  value: string
-  onChange: (v: string) => void
+  values: string[]
+  onChange: (v: string[]) => void
   error?: string
 }) {
   const typesQ = useSoundTypesQuery()
@@ -41,6 +47,7 @@ export function SoundTypeCombobox({
   const [showCreate, setShowCreate] = useState(false)
   const [draftCkb, setDraftCkb] = useState("")
   const [draftKmr, setDraftKmr] = useState("")
+  const [typed, setTyped] = useState("")
 
   const items = useMemo(
     () =>
@@ -51,11 +58,38 @@ export function SoundTypeCombobox({
     [typesQ.data],
   )
 
+  const addValue = (v: string) => {
+    const t = v.trim()
+    if (!t) return
+    if (!values.some((x) => x === t)) onChange([...values, t])
+  }
+  const removeValue = (v: string) =>
+    onChange(values.filter((x) => x !== v))
+
   return (
     <div className="space-y-2">
       <Label className="text-muted-foreground text-xs uppercase">
         {NS.section.type}
       </Label>
+      {values.length > 0 ? (
+        <div className="flex flex-wrap gap-1.5">
+          {values.map((v) => (
+            <span
+              key={v}
+              className="bg-primary/10 text-primary border-primary/20 inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs"
+            >
+              {v}
+              <button
+                type="button"
+                onClick={() => removeValue(v)}
+                aria-label="×"
+              >
+                <XMarkIcon className="size-3.5" />
+              </button>
+            </span>
+          ))}
+        </div>
+      ) : null}
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger
           render={
@@ -67,8 +101,8 @@ export function SoundTypeCombobox({
                 error && "border-destructive",
               )}
             >
-              {value.trim() ? (
-                <span className="truncate">{value}</span>
+              {values.length > 0 ? (
+                <span className="truncate">{values.length}</span>
               ) : (
                 <span className="text-muted-foreground">
                   {NS.field.sound_type_helper}
@@ -79,37 +113,68 @@ export function SoundTypeCombobox({
           }
         />
         <PopoverContent dir="rtl" className="w-[var(--anchor-width)] p-2">
-          <Input
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            placeholder={NS.field.sound_type_helper}
-            className="h-9"
-          />
+          <div className="flex gap-1.5">
+            <Input
+              value={typed}
+              onChange={(e) => setTyped(e.target.value)}
+              placeholder={NS.field.sound_type_helper}
+              className="h-9"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault()
+                  addValue(typed)
+                  setTyped("")
+                }
+              }}
+            />
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="h-9 shrink-0"
+              onClick={() => {
+                addValue(typed)
+                setTyped("")
+              }}
+            >
+              {NS.action.add}
+            </Button>
+          </div>
           <div className="mt-2 max-h-48 space-y-1 overflow-y-auto">
             {typesQ.isLoading ? (
               <p className="text-muted-foreground px-2 py-1.5 text-xs">…</p>
             ) : null}
-            {items.map((t) => (
-              <button
-                key={t.ckb}
-                type="button"
-                className={cn(
-                  "hover:bg-muted w-full rounded-md px-2 py-1.5 text-start text-sm",
-                  value === t.ckb && "bg-muted",
-                )}
-                onClick={() => {
-                  onChange(t.ckb)
-                  setOpen(false)
-                }}
-              >
-                <span className="block">{t.ckb}</span>
-                {t.kmr && t.kmr !== t.ckb ? (
-                  <span className="text-muted-foreground block text-xs">
-                    {t.kmr}
+            {items.map((t) => {
+              const checked = values.includes(t.ckb)
+              return (
+                <button
+                  key={t.ckb}
+                  type="button"
+                  className={cn(
+                    "hover:bg-muted flex w-full items-start gap-2 rounded-md px-2 py-1.5 text-start text-sm",
+                    checked && "bg-muted",
+                  )}
+                  onClick={() =>
+                    checked ? removeValue(t.ckb) : addValue(t.ckb)
+                  }
+                >
+                  <CheckIcon
+                    className={cn(
+                      "mt-0.5 size-4 shrink-0",
+                      checked ? "text-primary opacity-100" : "opacity-0",
+                    )}
+                  />
+                  <span>
+                    <span className="block">{t.ckb}</span>
+                    {t.kmr && t.kmr !== t.ckb ? (
+                      <span className="text-muted-foreground block text-xs">
+                        {t.kmr}
+                      </span>
+                    ) : null}
                   </span>
-                ) : null}
-              </button>
-            ))}
+                </button>
+              )
+            })}
           </div>
           <Button
             type="button"
@@ -151,11 +216,10 @@ export function SoundTypeCombobox({
                       },
                     },
                   )
-                  onChange(ckb)
+                  addValue(ckb)
                   setDraftCkb("")
                   setDraftKmr("")
                   setShowCreate(false)
-                  setOpen(false)
                 }}
               >
                 {NS.action.add}

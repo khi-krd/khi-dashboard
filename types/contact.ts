@@ -24,6 +24,8 @@ export type ContactDto = {
   longitude?: number | null
   heroImageUrl?: string | null
   officeType?: string | null
+  /** Multi-select office types — first entry mirrors officeType. */
+  officeTypes?: string[]
   badgeCkb?: string | null
   badgeKmr?: string | null
   createdAt?: string

@@ -35,6 +35,7 @@ export const contactFormSchema = z
     longitude: z.number().nullable().optional(),
     heroImageUrl: z.string().optional().nullable(),
     officeType: z.string().max(40).optional().nullable(),
+    officeTypes: z.array(z.string().max(40)).default([]),
     badgeCkb: z.string().max(200).optional().nullable(),
     badgeKmr: z.string().max(200).optional().nullable(),
   })
@@ -76,6 +77,7 @@ export const defaultContactFormValues: ContactFormValues = {
   longitude: null,
   heroImageUrl: "",
   officeType: "",
+  officeTypes: [],
   badgeCkb: "",
   badgeKmr: "",
 }
@@ -138,6 +140,12 @@ export function contactDtoToFormValues(
     longitude: dto.longitude ?? null,
     heroImageUrl: dto.heroImageUrl ?? "",
     officeType: dto.officeType ?? "",
+    officeTypes:
+      dto.officeTypes?.length
+        ? dto.officeTypes
+        : dto.officeType
+          ? [dto.officeType]
+          : [],
     badgeCkb: dto.badgeCkb ?? "",
     badgeKmr: dto.badgeKmr ?? "",
   }

@@ -19,7 +19,7 @@ import { SoundFileSheet } from "@/components/sounds/sound-file-sheet"
 import { NS } from "@/components/sounds/sounds-strings"
 import { Button } from "@/components/ui/button"
 import { FieldError } from "@/components/ui/field"
-import { Label } from "@/components/ui/label"
+
 import { formatEnDigits } from "@/lib/intl-ckb"
 import {
   createEmptyFileRow,

@@ -343,8 +343,8 @@ export function ContactOfficeSectionCard({
               dir="ltr"
             />
             <OfficeTypeCombobox
-              value={watch("officeType") ?? ""}
-              onChange={(v) => setValue("officeType", v, { shouldDirty: true })}
+              values={watch("officeTypes") ?? []}
+              onChange={(v) => setValue("officeTypes", v, { shouldDirty: true })}
             />
             <Input {...register("badgeCkb")} placeholder={NS.form.badge_ckb} />
             <Input {...register("badgeKmr")} placeholder={NS.form.badge_kmr} />

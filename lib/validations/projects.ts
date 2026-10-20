@@ -15,6 +15,14 @@ export const projectFormSchema = z
       .min(1, NS.validation.languageRequired),
     projectTypeCkb: z.string().optional().nullable(),
     projectTypeKmr: z.string().optional().nullable(),
+    projectTypes: z
+      .array(
+        z.object({
+          nameCkb: z.string(),
+          nameKmr: z.string(),
+        }),
+      )
+      .default([]),
     coverUrl: z.string().optional().nullable(),
     existingCoverUrl: z.string().optional().nullable(),
     coverMediaType: z.enum(["IMAGE", "VIDEO", "AUDIO"]).default("IMAGE"),
@@ -93,6 +101,7 @@ export function defaultProjectFormValues(): ProjectFormValues {
     contentLanguages: ["CKB"],
     projectTypeCkb: "",
     projectTypeKmr: "",
+    projectTypes: [],
     coverUrl: null,
     existingCoverUrl: null,
     coverMediaType: "IMAGE",

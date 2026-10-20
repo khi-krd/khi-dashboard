@@ -127,8 +127,8 @@ export function CollectionForm({
 
   const contentLanguages = watch("contentLanguages")
   const collectionType = watch("collectionType")
-  const topicId = watch("topicId")
-  const newTopic = watch("newTopic")
+  const topicIds = watch("topicIds")
+  const newTopics = watch("newTopics")
   const imageAlbum = watch("imageAlbum")
 
   useEffect(() => {
@@ -262,22 +262,29 @@ export function CollectionForm({
                 {NS.section.topic}
               </h2>
               <CollectionTopicCombobox
-                topicId={topicId ?? null}
-                newTopic={newTopic}
-                onSelectTopic={(t) => {
-                  setValue("topicId", t.id, { shouldDirty: true })
-                  setValue("newTopic", undefined, { shouldDirty: true })
-                  setValue("clearTopic", false, { shouldDirty: true })
+                selectedIds={topicIds}
+                pending={newTopics}
+                onToggle={(t) => {
+                  const next = topicIds.includes(t.id)
+                    ? topicIds.filter((id) => id !== t.id)
+                    : [...topicIds, t.id]
+                  setValue("topicIds", next, { shouldDirty: true })
                 }}
-                onClearTopic={() => {
-                  setValue("topicId", null, { shouldDirty: true })
-                  setValue("newTopic", undefined, { shouldDirty: true })
-                  setValue("clearTopic", true, { shouldDirty: true })
+                onRemovePending={(i) => {
+                  setValue(
+                    "newTopics",
+                    newTopics.filter((_, idx) => idx !== i),
+                    { shouldDirty: true },
+                  )
                 }}
                 onCreateInline={(names) => {
-                  setValue("newTopic", names, { shouldDirty: true })
-                  setValue("topicId", null, { shouldDirty: true })
-                  setValue("clearTopic", false, { shouldDirty: true })
+                  setValue("newTopics", [...newTopics, names], {
+                    shouldDirty: true,
+                  })
+                }}
+                onClearAll={() => {
+                  setValue("topicIds", [], { shouldDirty: true })
+                  setValue("newTopics", [], { shouldDirty: true })
                 }}
               />
             </section>

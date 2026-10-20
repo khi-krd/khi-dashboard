@@ -31,14 +31,15 @@ export const writingFormSchema = z
     // /dashboard/writings/genres, so a book can legitimately carry a slug this
     // build has never heard of.
     bookGenres: z.array(z.string()),
-    topicId: z.number().int().nullable().optional(),
-    newTopic: z
-      .object({
-        nameCkb: z.string().optional(),
-        nameKmr: z.string().optional(),
-      })
-      .optional(),
-    clearTopic: z.boolean().optional(),
+    topicIds: z.array(z.number().int()).default([]),
+    newTopics: z
+      .array(
+        z.object({
+          nameCkb: z.string().optional(),
+          nameKmr: z.string().optional(),
+        }),
+      )
+      .default([]),
     publishedByInstitute: z.boolean().default(false),
     contentLanguages: z
       .array(z.enum(["CKB", "KMR"]))
@@ -105,8 +106,8 @@ export type WritingFormValues = z.infer<typeof writingFormSchema>
 
 export const defaultWritingFormValues: WritingFormValues = {
   bookGenres: [],
-  topicId: null,
-  clearTopic: false,
+  topicIds: [],
+  newTopics: [],
   publishedByInstitute: false,
   contentLanguages: ["CKB"],
   ckbContent: { title: "", description: "", writer: "", fileUrl: "", fileSizeBytes: 0, genre: "", location: "" },
@@ -135,8 +136,13 @@ export function writingDtoToFormValues(dto: WritingDto): WritingFormValues {
     !!dto.parentBookId
   return {
     bookGenres: [...(dto.bookGenres ?? [])],
-    topicId: dto.topicId ?? null,
-    clearTopic: false,
+    topicIds:
+      dto.topics?.length
+        ? dto.topics.map((t) => t.id)
+        : dto.topicId != null
+          ? [dto.topicId]
+          : [],
+    newTopics: [],
     publishedByInstitute: !!dto.publishedByInstitute,
     contentLanguages: dto.contentLanguages?.length
       ? [...dto.contentLanguages]

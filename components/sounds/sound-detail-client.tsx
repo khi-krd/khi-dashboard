@@ -226,7 +226,19 @@ function SoundDetailLoaded({
 
           <div className={sectionDivider}>
             <h3 className="mb-2 font-medium">{NS.section.topic}</h3>
-            {sound.topicId ? (
+            {(sound.topics?.length ?? 0) > 0 ? (
+              <div className="flex flex-wrap gap-1.5">
+                {sound.topics!.map((t) => (
+                  <Link
+                    key={t.id}
+                    href={`/dashboard/sounds?topic=${t.id}`}
+                    className="bg-primary/10 text-primary border-primary/20 hover:bg-primary/20 inline-flex rounded-md border px-2 py-1 text-xs"
+                  >
+                    {t.nameCkb ?? t.nameKmr ?? `#${t.id}`}
+                  </Link>
+                ))}
+              </div>
+            ) : sound.topicId ? (
               <Link
                 href={`/dashboard/sounds?topic=${sound.topicId}`}
                 className="hover:text-primary block"
@@ -245,13 +257,19 @@ function SoundDetailLoaded({
 
           <div className={sectionDivider}>
             <h3 className="mb-2 font-medium">{NS.section.type}</h3>
-            {sound.soundType ? (
-              <Link
-                href={`/dashboard/sounds`}
-                className="text-foreground hover:text-primary"
-              >
-                {sound.soundType}
-              </Link>
+            {(sound.soundTypes?.length ?? 0) > 0 ? (
+              <div className="flex flex-wrap gap-1.5">
+                {sound.soundTypes!.map((t) => (
+                  <span
+                    key={t}
+                    className="bg-primary/10 text-primary border-primary/20 inline-flex rounded-md border px-2 py-1 text-xs"
+                  >
+                    {t}
+                  </span>
+                ))}
+              </div>
+            ) : sound.soundType ? (
+              <span className="text-foreground">{sound.soundType}</span>
             ) : (
               NS.dash
             )}

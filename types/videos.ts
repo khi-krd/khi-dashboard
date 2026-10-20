@@ -50,6 +50,8 @@ export type VideoDto = {
   topicId?: number | null
   topicNameCkb?: string | null
   topicNameKmr?: string | null
+  /** Multi-select topics — first entry mirrors topicId/topicName*. */
+  topics?: TopicDto[]
   ckbCoverUrl?: string | null
   kmrCoverUrl?: string | null
   hoverCoverUrl?: string | null

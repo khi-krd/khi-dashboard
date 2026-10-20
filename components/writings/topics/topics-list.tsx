@@ -44,8 +44,12 @@ export function TopicsList() {
   const usageByTopic = useMemo(() => {
     const map = new Map<number, number>()
     for (const w of writingsQ.data?.content ?? []) {
-      if (w.topicId == null) continue
-      map.set(w.topicId, (map.get(w.topicId) ?? 0) + 1)
+      const ids = (w.topics?.length
+        ? w.topics.map((t) => t.id)
+        : w.topicId != null
+          ? [w.topicId]
+          : [])
+      for (const id of ids) map.set(id, (map.get(id) ?? 0) + 1)
     }
     return map
   }, [writingsQ.data?.content])

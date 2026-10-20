@@ -45,8 +45,12 @@ export function TopicsList() {
   const usageByTopic = useMemo(() => {
     const map = new Map<number, number>()
     for (const s of soundsQ.data?.content ?? []) {
-      if (s.topicId == null) continue
-      map.set(s.topicId, (map.get(s.topicId) ?? 0) + 1)
+      const ids = (s.topics?.length
+        ? s.topics.map((t) => t.id)
+        : s.topicId != null
+          ? [s.topicId]
+          : [])
+      for (const id of ids) map.set(id, (map.get(id) ?? 0) + 1)
     }
     return map
   }, [soundsQ.data?.content])

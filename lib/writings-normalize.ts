@@ -232,6 +232,9 @@ export function normalizeWritingDto(raw: unknown): WritingDto {
       coerceStr(o.topic_name_kmr) ??
       topic?.nameKmr,
     topic,
+    topics: Array.isArray(o.topics)
+      ? o.topics.map(normalizeTopicDto)
+      : [],
     ckbCoverUrl: coerceStr(o.ckbCoverUrl) ?? coerceStr(o.ckb_cover_url),
     kmrCoverUrl: coerceStr(o.kmrCoverUrl) ?? coerceStr(o.kmr_cover_url),
     hoverCoverUrl: coerceStr(o.hoverCoverUrl) ?? coerceStr(o.hover_cover_url),

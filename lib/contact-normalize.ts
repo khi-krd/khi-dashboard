@@ -60,6 +60,9 @@ export function normalizeContactDto(raw: unknown): ContactDto {
     longitude: coerceNum(o.longitude) ?? undefined,
     heroImageUrl: coerceStr(o.heroImageUrl) ?? coerceStr(o.hero_image_url),
     officeType: coerceStr(o.officeType) ?? coerceStr(o.office_type),
+    officeTypes: Array.isArray(o.officeTypes)
+      ? o.officeTypes.filter((t): t is string => typeof t === "string")
+      : [],
     badgeCkb: coerceStr(o.badgeCkb) ?? coerceStr(o.badge_ckb),
     badgeKmr: coerceStr(o.badgeKmr) ?? coerceStr(o.badge_kmr),
     createdAt: coerceStr(o.createdAt) ?? coerceStr(o.created_at) ?? undefined,

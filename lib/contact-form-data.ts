@@ -38,6 +38,7 @@ export type ContactWritePayload = {
   longitude?: number
   heroImageUrl?: string
   officeType?: string
+  officeTypes?: string[]
   badgeCkb?: string
   badgeKmr?: string
 }
@@ -114,7 +115,8 @@ export function contactFormValuesToPayload(
     // PUT is a full replacement: anything omitted here is nulled server-side,
     // so these round-trip even though the form may never touch them.
     heroImageUrl: trimOrUndef(values.heroImageUrl),
-    officeType: trimOrUndef(values.officeType),
+    officeType: values.officeTypes[0]?.trim() || trimOrUndef(values.officeType),
+    officeTypes: values.officeTypes.map((t) => t.trim()).filter(Boolean),
     badgeCkb: trimOrUndef(values.badgeCkb),
     badgeKmr: trimOrUndef(values.badgeKmr),
   }

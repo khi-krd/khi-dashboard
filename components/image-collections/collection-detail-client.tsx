@@ -295,7 +295,19 @@ function CollectionDetailLoaded({
 
           <div className={sectionDivider}>
             <h3 className="mb-2 font-medium">{NS.section.topic}</h3>
-            {collection.topicId ? (
+            {collection.topics?.length ? (
+              <div className="flex flex-wrap gap-1.5">
+                {collection.topics.map((t) => (
+                  <Link
+                    key={t.id}
+                    href={`/dashboard/image-collections?topic=${t.id}`}
+                    className="bg-primary/10 text-primary border-primary/20 hover:bg-primary/20 inline-flex rounded-md border px-2 py-1 text-xs"
+                  >
+                    {t.nameCkb ?? t.nameKmr ?? `#${t.id}`}
+                  </Link>
+                ))}
+              </div>
+            ) : collection.topicId ? (
               <Link
                 href={`/dashboard/image-collections?topic=${collection.topicId}`}
                 className="hover:text-primary block"

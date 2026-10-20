@@ -39,8 +39,12 @@ export function TopicsList() {
   const usageByTopic = useMemo(() => {
     const map = new Map<number, number>()
     for (const v of videosQ.data?.content ?? []) {
-      if (v.topicId == null) continue
-      map.set(v.topicId, (map.get(v.topicId) ?? 0) + 1)
+      const ids = (v.topics?.length
+        ? v.topics.map((t) => t.id)
+        : v.topicId != null
+          ? [v.topicId]
+          : [])
+      for (const id of ids) map.set(id, (map.get(id) ?? 0) + 1)
     }
     return map
   }, [videosQ.data?.content])

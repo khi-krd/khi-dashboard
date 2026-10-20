@@ -304,7 +304,19 @@ function WritingDetailLoaded({
             )}
           >
             <h4 className={sideHeading}>{NS.section.topic}</h4>
-            {writing.topicId ? (
+            {writing.topics?.length ? (
+              <div className="flex flex-wrap gap-1.5">
+                {writing.topics.map((t) => (
+                  <Link
+                    key={t.id}
+                    href={`/dashboard/writings?topic=${t.id}`}
+                    className="bg-primary/10 text-primary border-primary/20 hover:bg-primary/20 inline-flex rounded-md border px-2 py-1 text-xs"
+                  >
+                    {t.nameCkb ?? t.nameKmr ?? `#${t.id}`}
+                  </Link>
+                ))}
+              </div>
+            ) : writing.topicId ? (
               <Link
                 href={`/dashboard/writings?topic=${writing.topicId}`}
                 className="text-primary block hover:underline"

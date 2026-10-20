@@ -45,14 +45,15 @@ function imageItemHasSource(item: z.infer<typeof ImageItemFormSchema>) {
 export const collectionFormSchema = z
   .object({
     collectionType: z.enum(["SINGLE", "GALLERY", "PHOTO_STORY"]),
-    topicId: z.number().int().nullable().optional(),
-    newTopic: z
-      .object({
-        nameCkb: z.string().optional(),
-        nameKmr: z.string().optional(),
-      })
-      .optional(),
-    clearTopic: z.boolean().optional(),
+    topicIds: z.array(z.number().int()).default([]),
+    newTopics: z
+      .array(
+        z.object({
+          nameCkb: z.string().optional(),
+          nameKmr: z.string().optional(),
+        }),
+      )
+      .default([]),
     publishmentDate: z.string().optional().nullable(),
     contentLanguages: z
       .array(z.enum(["CKB", "KMR"]))
@@ -112,8 +113,8 @@ export function createEmptyAlbumItem(sortOrder = 0): ImageItemFormValues {
 export function defaultCollectionFormValues(): CollectionFormValues {
   return {
     collectionType: "GALLERY",
-    topicId: null,
-    clearTopic: false,
+    topicIds: [],
+    newTopics: [],
     publishmentDate: null,
     contentLanguages: ["CKB"],
     ckbContent: { title: "", description: "", location: "", collectedBy: "" },
@@ -156,8 +157,13 @@ export function collectionDtoToFormValues(dto: CollectionDto): CollectionFormVal
 
   return {
     collectionType: dto.collectionType,
-    topicId: dto.topicId ?? null,
-    clearTopic: false,
+    topicIds:
+      dto.topics?.length
+        ? dto.topics.map((t) => t.id)
+        : dto.topicId != null
+          ? [dto.topicId]
+          : [],
+    newTopics: [],
     publishmentDate: dto.publishmentDate ?? null,
     contentLanguages:
       dto.contentLanguages?.length > 0 ? dto.contentLanguages : ["CKB"],

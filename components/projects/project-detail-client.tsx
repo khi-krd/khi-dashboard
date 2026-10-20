@@ -331,15 +331,37 @@ export function ProjectDetailClient({ projectId }: { projectId: number }) {
                 ) : null}
               </section>
 
-              {(typeCkb || typeKmr) ? (
+              {(dto.projectTypes?.length || typeCkb || typeKmr) ? (
                 <section className={cn(sectionDivider, "space-y-2")}>
                   <h4 className="text-muted-foreground text-xs uppercase tracking-wide">
                     {NS.section.type}
                   </h4>
-                  <p className="text-foreground">{typeCkb || NS.dash}</p>
-                  {typeKmr ? (
-                    <p className="text-muted-foreground text-xs">{typeKmr}</p>
-                  ) : null}
+                  {dto.projectTypes?.length ? (
+                    <div className="flex flex-wrap gap-1.5">
+                      {dto.projectTypes.map((t) => (
+                        <span
+                          key={t.nameCkb}
+                          className="bg-primary/10 text-primary border-primary/20 inline-flex rounded-md border px-2 py-1 text-xs"
+                        >
+                          {t.nameCkb}
+                          {t.nameKmr && t.nameKmr !== t.nameCkb ? (
+                            <span className="text-muted-foreground ms-1">
+                              ({t.nameKmr})
+                            </span>
+                          ) : null}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <>
+                      <p className="text-foreground">{typeCkb || NS.dash}</p>
+                      {typeKmr ? (
+                        <p className="text-muted-foreground text-xs">
+                          {typeKmr}
+                        </p>
+                      ) : null}
+                    </>
+                  )}
                 </section>
               ) : null}
 

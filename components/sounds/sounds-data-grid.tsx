@@ -268,7 +268,11 @@ export function SoundsDataGrid({
         },
         header: NS.col.type,
         cell: ({ row }) => (
-          <span className="text-sm">{row.original.soundType ?? NS.dash}</span>
+          <span className="text-sm">
+            {row.original.soundTypes?.length
+              ? row.original.soundTypes.join("، ")
+              : (row.original.soundType ?? NS.dash)}
+          </span>
         ),
       },
       {
@@ -299,12 +303,20 @@ export function SoundsDataGrid({
           skeleton: <Skeleton className="h-3 w-24" />,
         },
         header: NS.col.topic,
-        cell: ({ row }) => (
-          <StackedBilingualCell
-            primary={row.original.topicNameCkb}
-            secondary={row.original.topicNameKmr}
-          />
-        ),
+        cell: ({ row }) =>
+          row.original.topics?.length ? (
+            <span className="text-sm">
+              {row.original.topics
+                .map((t) => t.nameCkb ?? t.nameKmr)
+                .filter(Boolean)
+                .join("، ")}
+            </span>
+          ) : (
+            <StackedBilingualCell
+              primary={row.original.topicNameCkb}
+              secondary={row.original.topicNameKmr}
+            />
+          ),
       },
       {
         id: "duration",

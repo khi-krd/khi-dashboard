@@ -153,7 +153,12 @@ function SoundsListClientInner() {
             s.ckbContent?.title?.trim() ||
             s.kmrContent?.title?.trim() ||
             NS.file.no_title,
-          subtitle: s.topicNameCkb || s.soundType || null,
+          subtitle:
+            s.topics?.map((t) => t.nameCkb ?? t.nameKmr).filter(Boolean).join("، ") ||
+            s.topicNameCkb ||
+            s.soundTypes?.join("، ") ||
+            s.soundType ||
+            null,
           coverUrl: s.ckbCoverUrl || s.kmrCoverUrl || s.hoverCoverUrl || null,
         })),
     [reorderQuery.data],

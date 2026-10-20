@@ -29,6 +29,8 @@ export type ProjectDto = {
   status: ProjectStatus
   projectTypeCkb?: string | null
   projectTypeKmr?: string | null
+  /** Multi-select project types — first entry mirrors projectTypeCkb/Kmr. */
+  projectTypes?: { nameCkb: string; nameKmr: string }[]
   coverUrl?: string | null
   coverMediaType?: MediaKind | null
   coverThumbnailUrl?: string | null

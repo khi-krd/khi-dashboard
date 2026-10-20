@@ -82,14 +82,16 @@ export const soundFormSchema = z
     trackState: z.enum(["SINGLE", "MULTI"]),
     albumOfMemories: z.boolean().default(false),
     soundType: z.string().max(100),
-    topicId: z.number().int().nullable().optional(),
-    newTopic: z
-      .object({
-        nameCkb: z.string().optional(),
-        nameKmr: z.string().optional(),
-      })
-      .optional(),
-    clearTopic: z.boolean().optional(),
+    soundTypes: z.array(z.string().max(100)).default([]),
+    topicIds: z.array(z.number().int()).default([]),
+    newTopics: z
+      .array(
+        z.object({
+          nameCkb: z.string().optional(),
+          nameKmr: z.string().optional(),
+        }),
+      )
+      .default([]),
     contentLanguages: z
       .array(z.enum(["CKB", "KMR"]))
       .min(1, NS.validation.languageRequired),
@@ -132,9 +134,9 @@ export const defaultSoundFormValues: SoundFormValues = {
   trackState: "SINGLE",
   albumOfMemories: false,
   soundType: "",
-  topicId: null,
-  newTopic: undefined,
-  clearTopic: false,
+  soundTypes: [],
+  topicIds: [],
+  newTopics: [],
   contentLanguages: ["CKB"],
   ckbContent: { title: "", description: "" },
   kmrContent: { title: "", description: "" },
@@ -160,9 +162,19 @@ export function soundDtoToFormValues(dto: SoundDto): SoundFormValues {
     trackState: dto.trackState ?? "SINGLE",
     albumOfMemories: dto.albumOfMemories ?? false,
     soundType: dto.soundType ?? "",
-    topicId: dto.topicId ?? null,
-    newTopic: undefined,
-    clearTopic: false,
+    soundTypes:
+      dto.soundTypes?.length
+        ? dto.soundTypes
+        : dto.soundType
+          ? [dto.soundType]
+          : [],
+    topicIds:
+      dto.topics?.length
+        ? dto.topics.map((t) => t.id)
+        : dto.topicId != null
+          ? [dto.topicId]
+          : [],
+    newTopics: [],
     contentLanguages:
       dto.contentLanguages?.length > 0 ? dto.contentLanguages : ["CKB"],
     ckbContent: {

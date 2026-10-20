@@ -132,6 +132,9 @@ export function normalizeVideoDto(raw: unknown): VideoDto {
       coerceStr(o.topicNameCkb) ?? coerceStr(o.topic_name_ckb),
     topicNameKmr:
       coerceStr(o.topicNameKmr) ?? coerceStr(o.topic_name_kmr),
+    topics: Array.isArray(o.topics)
+      ? o.topics.map(normalizeTopicDto)
+      : [],
     ckbCoverUrl: coerceStr(o.ckbCoverUrl) ?? coerceStr(o.ckb_cover_url),
     kmrCoverUrl: coerceStr(o.kmrCoverUrl) ?? coerceStr(o.kmr_cover_url),
     hoverCoverUrl: coerceStr(o.hoverCoverUrl) ?? coerceStr(o.hover_cover_url),

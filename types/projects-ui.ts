@@ -48,7 +48,9 @@ export function matchesProjectTypeFilter(
   typeCkb: string | null,
 ): boolean {
   if (!typeCkb?.trim()) return true
-  return (p.projectTypeCkb?.trim() ?? "") === typeCkb.trim()
+  const needle = typeCkb.trim()
+  if ((p.projectTypeCkb?.trim() ?? "") === needle) return true
+  return (p.projectTypes ?? []).some((t) => t.nameCkb?.trim() === needle)
 }
 
 function trimmedEq(a: string, b: string) {
@@ -102,11 +104,20 @@ export function deriveProjectTypeOptions(rows: ProjectDto[]) {
   const map = new Map<string, { projectTypeCkb: string; projectTypeKmr: string }>()
   for (const p of rows) {
     const ckb = p.projectTypeCkb?.trim()
-    if (!ckb) continue
-    map.set(ckb, {
-      projectTypeCkb: ckb,
-      projectTypeKmr: p.projectTypeKmr?.trim() ?? "",
-    })
+    if (ckb) {
+      map.set(ckb, {
+        projectTypeCkb: ckb,
+        projectTypeKmr: p.projectTypeKmr?.trim() ?? "",
+      })
+    }
+    for (const t of p.projectTypes ?? []) {
+      const tCkb = t.nameCkb?.trim()
+      if (!tCkb) continue
+      map.set(tCkb, {
+        projectTypeCkb: tCkb,
+        projectTypeKmr: t.nameKmr?.trim() ?? "",
+      })
+    }
   }
   return [...map.values()].sort((a, b) =>
     a.projectTypeCkb.localeCompare(b.projectTypeCkb, "ckb"),
