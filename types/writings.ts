@@ -52,6 +52,7 @@ export type WritingContentDto = {
   fileSizeBytes?: number | null
   pageCount?: number | null
   genre?: string | null
+  location?: string | null
 }
 
 export type TopicDto = {

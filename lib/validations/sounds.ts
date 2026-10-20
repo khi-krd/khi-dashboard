@@ -57,6 +57,22 @@ export const AttachmentFormSchema = z.object({
   stagedAttachmentFile: z.instanceof(File).optional().nullable(),
 })
 
+// Album-level brochure rows — mixed file types (PDF, images …) staged through
+// the `albumBrochureFiles` multipart part, independent of the sound files.
+export const AlbumBrochureFormSchema = z.object({
+  clientKey: z.string(),
+  id: z.number().optional(),
+  fileUrl: z.string().optional().or(z.literal("")),
+  title: z.string().max(300).optional(),
+  fileType: z
+    .enum(["PDF", "VIDEO", "IMAGE", "AUDIO", "OTHER"])
+    .default("IMAGE"),
+  sizeBytes: z.number().int().min(0).default(0),
+  mimeType: z.string().max(100).optional().nullable(),
+  brochureOrder: z.number().int().optional(),
+  stagedFile: z.instanceof(File).optional().nullable(),
+})
+
 // Every field is optional by design: an editor can save a draft with any
 // subset filled in. Only format/length rules remain — they fire on what was
 // typed, never on what was left blank. Sourceless file/attachment rows are
@@ -88,6 +104,8 @@ export const soundFormSchema = z
     }),
     files: z.array(SoundFileFormSchema).default([]),
     attachments: z.array(AttachmentFormSchema).default([]),
+    albumBrochures: z.array(AlbumBrochureFormSchema).default([]),
+    locations: z.array(z.string().max(255)).default([]),
     ckbCoverFile: z.instanceof(File).optional().nullable(),
     kmrCoverFile: z.instanceof(File).optional().nullable(),
     hoverCoverFile: z.instanceof(File).optional().nullable(),
@@ -103,6 +121,7 @@ export type SoundFormValues = z.infer<typeof soundFormSchema>
 export type SoundFileFormValues = z.infer<typeof SoundFileFormSchema>
 export type BrochureFormValues = z.infer<typeof BrochureFormSchema>
 export type AttachmentFormValues = z.infer<typeof AttachmentFormSchema>
+export type AlbumBrochureFormValues = z.infer<typeof AlbumBrochureFormSchema>
 
 function newClientKey() {
   return `k-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
@@ -121,6 +140,8 @@ export const defaultSoundFormValues: SoundFormValues = {
   keywords: { ckb: [], kmr: [] },
   files: [],
   attachments: [],
+  albumBrochures: [],
+  locations: [],
   ckbCoverFile: null,
   kmrCoverFile: null,
   hoverCoverFile: null,
@@ -190,6 +211,18 @@ export function soundDtoToFormValues(dto: SoundDto): SoundFormValues {
       attachmentOrder: a.attachmentOrder ?? i,
       stagedAttachmentFile: null,
     })),
+    albumBrochures: (dto.brochures ?? []).map((b, i) => ({
+      clientKey: newClientKey(),
+      id: b.id,
+      fileUrl: b.fileUrl ?? "",
+      title: b.title ?? "",
+      fileType: b.fileType ?? "IMAGE",
+      sizeBytes: b.sizeBytes ?? 0,
+      mimeType: b.mimeType ?? "",
+      brochureOrder: b.brochureOrder ?? i,
+      stagedFile: null,
+    })),
+    locations: [...(dto.locations ?? [])],
     ckbCoverFile: null,
     kmrCoverFile: null,
     hoverCoverFile: null,
@@ -235,5 +268,18 @@ export function createEmptyAttachmentRow(): AttachmentFormValues {
     mimeType: "",
     attachmentOrder: 0,
     stagedAttachmentFile: null,
+  }
+}
+
+export function createEmptyAlbumBrochureRow(): AlbumBrochureFormValues {
+  return {
+    clientKey: newClientKey(),
+    fileUrl: "",
+    title: "",
+    fileType: "IMAGE",
+    sizeBytes: 0,
+    mimeType: "",
+    brochureOrder: 0,
+    stagedFile: null,
   }
 }

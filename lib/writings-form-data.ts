@@ -23,6 +23,7 @@ function buildContent(
     fileSizeBytes: content.fileSizeBytes ?? 0,
     pageCount: content.pageCount ?? undefined,
     genre: trimOrUndef(content.genre),
+    location: trimOrUndef(content.location),
   }
 }
 

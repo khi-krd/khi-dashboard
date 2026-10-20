@@ -300,6 +300,28 @@ export function ServiceSectionCard({
             />
           </div>
 
+          <div className="space-y-1.5">
+            <Label htmlFor={`service-location-${serviceId ?? "new"}-${index}`}>
+              {NS.section.location}{" "}
+              <span className="text-muted-foreground font-normal text-xs">
+                {NS.field.locationHelper}
+              </span>
+            </Label>
+            <Controller
+              name="location"
+              control={control}
+              render={({ field }) => (
+                <Input
+                  {...field}
+                  id={`service-location-${serviceId ?? "new"}-${index}`}
+                  value={field.value ?? ""}
+                  placeholder={NS.field.location}
+                  className="h-10"
+                />
+              )}
+            />
+          </div>
+
           <div className="space-y-2">
             <p className="inline-flex items-center gap-2 text-sm font-semibold text-foreground before:h-3.5 before:w-1 before:rounded-full before:bg-primary/70 before:content-['']">
               {NS.gallery.section}

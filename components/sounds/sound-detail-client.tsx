@@ -490,6 +490,57 @@ function SoundDetailLoaded({
             </section>
           ) : null}
 
+          {(sound.brochures?.length ?? 0) > 0 ? (
+            <section className={cn(sectionDivider, "mt-10")}>
+              <h2 className="mb-4 text-sm font-medium">
+                {NS.section.brochures} ({sound.brochures!.length})
+              </h2>
+              <ul className="space-y-2">
+                {sound.brochures!.map((b, i) => (
+                  <li
+                    key={b.id ?? i}
+                    className="border-border/60 flex items-center justify-between gap-3 rounded-lg border px-3 py-2"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium">
+                        {b.title?.trim() || NS.brochure.no_file}
+                      </p>
+                      <p className="text-muted-foreground text-xs">
+                        {b.fileType} · {formatBytes(b.sizeBytes)}
+                      </p>
+                    </div>
+                    {b.fileUrl ? (
+                      <a
+                        href={b.fileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={buttonVariants({ variant: "ghost", size: "sm" })}
+                      >
+                        {NS.action.view}
+                      </a>
+                    ) : null}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
+
+          {(sound.locations?.length ?? 0) > 0 ? (
+            <section className={cn(sectionDivider, "mt-10")}>
+              <h2 className="mb-3 text-sm font-medium">{NS.credits.locations}</h2>
+              <div className="flex flex-wrap gap-2">
+                {sound.locations!.map((loc) => (
+                  <span
+                    key={loc}
+                    className="border-border bg-muted inline-flex rounded-md border px-2 py-0.5 text-xs"
+                  >
+                    {loc}
+                  </span>
+                ))}
+              </div>
+            </section>
+          ) : null}
+
           <section className={cn(sectionDivider, "mt-10")}>
             <h2 className="mb-3 text-sm font-medium">{NS.section.tags}</h2>
             <div className="flex flex-wrap gap-2">

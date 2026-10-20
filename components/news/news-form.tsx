@@ -104,10 +104,12 @@ function dtoToFormValues(d: NewsDto): NewsFormValues {
     ckbContent: {
       title: d.ckbContent?.title ?? "",
       description: d.ckbContent?.description ?? "",
+      location: d.ckbContent?.location ?? "",
     },
     kmrContent: {
       title: d.kmrContent?.title ?? "",
       description: d.kmrContent?.description ?? "",
+      location: d.kmrContent?.location ?? "",
     },
     tags: {
       ckb: d.tags?.ckb ?? [],
@@ -835,6 +837,18 @@ function CkbLangFields({
         </div>
       </div>
 
+      <div className="space-y-1.5">
+        <Label htmlFor="nf-ckb-location">{NS.field.location}</Label>
+        <Input
+          id="nf-ckb-location"
+          className="h-10"
+          dir="rtl"
+          autoComplete="off"
+          placeholder={NS.field.location_placeholder_ckb}
+          {...register("ckbContent.location")}
+        />
+      </div>
+
       <TiptapEditor entity="news"
         lang="CKB"
         label={undefined}
@@ -922,6 +936,19 @@ function KmrLangFields({
             {formatCkbDigits(kmrTitleLen)} / ٢٥٠
           </span>
         </div>
+      </div>
+
+      <div className="space-y-1.5">
+        <Label htmlFor="nf-kmr-location">{NS.field.location}</Label>
+        <Input
+          id="nf-kmr-location"
+          className="h-10"
+          dir="ltr"
+          lang="ku"
+          autoComplete="off"
+          placeholder={NS.field.location_placeholder_kmr}
+          {...register("kmrContent.location")}
+        />
       </div>
 
       <TiptapEditor entity="news"

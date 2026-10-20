@@ -23,6 +23,12 @@ function attachmentHasSource(
   return !!(a.fileUrl?.trim() || a.stagedAttachmentFile)
 }
 
+function brochureHasSource(
+  b: SoundFormValues["albumBrochures"][number],
+): boolean {
+  return !!(b.fileUrl?.trim() || b.stagedFile)
+}
+
 export function soundFormValuesToMultipart(
   mode: "create" | "edit",
   soundId: number | undefined,
@@ -31,8 +37,16 @@ export function soundFormValuesToMultipart(
   const fd = new FormData()
 
   const readyFiles = values.files.filter(fileHasSource)
+  // The backend pairs the i-th non-empty file part with the i-th DTO in the
+  // payload array — staged-binary rows must lead or an upload would be
+  // assigned to an existing row that precedes it. `sortOrder` carries the
+  // original form position, so display order survives the partition.
+  const orderedFiles = [
+    ...readyFiles.filter((f) => f.stagedAudioFile),
+    ...readyFiles.filter((f) => !f.stagedAudioFile),
+  ]
 
-  const filesPayload = readyFiles.map((f, i) => ({
+  const filesPayload = orderedFiles.map((f) => ({
     ...(typeof f.id === "number" && f.id > 0 ? { id: f.id } : {}),
     fileUrl: trimOrUndef(extractIframeSrc(f.fileUrl)),
     externalUrl: trimOrUndef(f.externalUrl),
@@ -57,20 +71,40 @@ export function soundFormValuesToMultipart(
       caption: trimOrUndef(b.caption),
       brochureOrder: b.brochureOrder ?? bi,
     })),
-    sortOrder: i,
+    sortOrder: readyFiles.indexOf(f),
   }))
 
   const readyAttachments =
     values.trackState === "MULTI"
       ? values.attachments.filter(attachmentHasSource)
       : []
+  const orderedAttachments = [
+    ...readyAttachments.filter((a) => a.stagedAttachmentFile),
+    ...readyAttachments.filter((a) => !a.stagedAttachmentFile),
+  ]
 
-  const attachmentsPayload = readyAttachments.map((a, i) => ({
+  const attachmentsPayload = orderedAttachments.map((a) => ({
     ...(typeof a.id === "number" && a.id > 0 ? { id: a.id } : {}),
     fileUrl: trimOrUndef(a.fileUrl),
     title: trimOrUndef(a.title),
     attachmentType: a.attachmentType ?? "OTHER",
-    attachmentOrder: a.attachmentOrder ?? i,
+    attachmentOrder: readyAttachments.indexOf(a),
+  }))
+
+  const readyBrochures = values.albumBrochures.filter(brochureHasSource)
+  const orderedBrochures = [
+    ...readyBrochures.filter((b) => b.stagedFile),
+    ...readyBrochures.filter((b) => !b.stagedFile),
+  ]
+
+  const brochuresPayload = orderedBrochures.map((b) => ({
+    ...(typeof b.id === "number" && b.id > 0 ? { id: b.id } : {}),
+    fileUrl: trimOrUndef(b.fileUrl),
+    title: trimOrUndef(b.title),
+    fileType: b.fileType ?? "IMAGE",
+    sizeBytes: b.sizeBytes ?? 0,
+    mimeType: trimOrUndef(b.mimeType),
+    brochureOrder: readyBrochures.indexOf(b),
   }))
 
   const payload: Record<string, unknown> = {
@@ -95,8 +129,10 @@ export function soundFormValuesToMultipart(
           description: values.kmrContent?.description ?? "",
         }
       : undefined,
+    locations: values.locations.map((l) => l.trim()).filter(Boolean),
     files: filesPayload,
     attachments: attachmentsPayload,
+    brochures: brochuresPayload,
   }
 
   if (values.clearTopic) {
@@ -126,13 +162,13 @@ export function soundFormValuesToMultipart(
   if (values.kmrCoverFile) fd.append("kmrCoverImage", values.kmrCoverFile)
   if (values.hoverCoverFile) fd.append("hoverCoverImage", values.hoverCoverFile)
 
-  for (const f of readyFiles) {
+  for (const f of orderedFiles) {
     if (f.stagedAudioFile) {
       fd.append("audioFiles", f.stagedAudioFile)
     }
   }
 
-  for (const f of readyFiles) {
+  for (const f of orderedFiles) {
     for (const b of f.brochures) {
       if (b.stagedImageFile) {
         fd.append("brochureFiles", b.stagedImageFile)
@@ -140,9 +176,15 @@ export function soundFormValuesToMultipart(
     }
   }
 
-  for (const a of readyAttachments) {
+  for (const a of orderedAttachments) {
     if (a.stagedAttachmentFile) {
       fd.append("attachmentFiles", a.stagedAttachmentFile)
+    }
+  }
+
+  for (const b of orderedBrochures) {
+    if (b.stagedFile) {
+      fd.append("albumBrochureFiles", b.stagedFile)
     }
   }
 

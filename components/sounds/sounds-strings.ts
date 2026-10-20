@@ -208,6 +208,7 @@ export const NS = {
     recording_venue_placeholder: "شوێنی تۆمارکردن…",
     file_title_placeholder: "ناونیشانی پارچە…",
     attachment_title_placeholder: "ناونیشانی پاشکۆ…",
+    brochure_title_placeholder: "ناونیشانی بڕۆشێر…",
     brochure_caption_placeholder: "نموونە: ڕووکاری پێشەوە",
     sound_type_required: "جۆری دەنگ پێویستە",
     sound_type_helper: "بۆ نموونە: شیعر، مۆسیقا، فۆلکلۆر، ئاینی، وتار",
@@ -235,7 +236,9 @@ export const NS = {
     multi_only: "پاشکۆ تەنها بۆ ئەلبووم (MULTI) بەردەستە",
   },
   brochure: {
-    empty: "هیچ بڕۆشێرێک نییە",
+    empty: "هیچ بڕۆشێرێک نییە — وەک PDF یان وێنە زیاد بکە",
+    no_file: "هیچ فایلێک نییە",
+    delete: "سڕینەوەی بڕۆشێر",
   },
   files: {
     empty: "هیچ پارچەیەک زیاد نەکراوە",

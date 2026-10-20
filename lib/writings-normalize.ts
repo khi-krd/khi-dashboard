@@ -97,6 +97,7 @@ function normalizeContent(raw: unknown): WritingContentDto | null {
       coerceNum(o.fileSizeBytes) ?? coerceNum(o.file_size_bytes) ?? undefined,
     pageCount: coerceNum(o.pageCount) ?? coerceNum(o.page_count) ?? undefined,
     genre: coerceStr(o.genre) ?? undefined,
+    location: coerceStr(o.location) ?? undefined,
   }
 }
 

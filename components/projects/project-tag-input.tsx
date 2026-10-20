@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input"
 
 function splitIncoming(raw: string) {
   return raw
-    .split(/[,،\n]/g)
+    .split(/[,،;؛\n]/g)
     .map((s) => s.trim())
     .filter(Boolean)
 }
@@ -37,7 +37,7 @@ export function ProjectTagInput({
   }, [draft, onChange, value])
 
   function onKeyDown(e: KeyboardEvent<HTMLInputElement>) {
-    if (e.key === "Enter" || e.key === ",") {
+    if (e.key === "Enter" || e.key === "," || e.key === ";" || e.key === "؛") {
       e.preventDefault()
       commitDraft()
     }

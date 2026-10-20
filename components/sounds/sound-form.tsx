@@ -4,6 +4,7 @@ import {
   CheckIcon,
   ExclamationCircleIcon,
   HashtagIcon,
+  MapPinIcon,
 } from "@heroicons/react/24/outline"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -21,6 +22,7 @@ import {
   SoundBreadcrumbBar,
   dashboardSoundsCrumbHref,
 } from "@/components/sounds/sound-breadcrumb"
+import { SoundAlbumBrochuresList } from "@/components/sounds/sound-album-brochures"
 import { SoundAttachmentsList } from "@/components/sounds/sound-attachments-list"
 import { SoundCoverTrio } from "@/components/sounds/sound-cover-trio"
 import { SoundsErrorState } from "@/components/sounds/sound-error-state"
@@ -514,6 +516,27 @@ export function SoundForm({
                 )}
               />
             </section>
+
+            <section className={cn("mt-6", sectionCard)}>
+              <h2 className={cn(sectionHeading, "mb-3")}>
+                <MapPinIcon className="size-4" />
+                {NS.credits.locations}
+              </h2>
+              <Controller
+                name="locations"
+                control={control}
+                render={({ field }) => (
+                  <SoundTagInput
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder={NS.field.locations_placeholder}
+                    variant="solid"
+                  />
+                )}
+              />
+            </section>
+
+            <SoundAlbumBrochuresList />
 
             {trackState === "MULTI" ? <SoundAttachmentsList /> : null}
           </div>

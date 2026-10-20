@@ -51,6 +51,18 @@ export type AttachmentDto = {
   attachmentOrder?: number | null
 }
 
+/** Album-level brochure file (PDF, scanned page image …) — independent of the
+ * per-file brochure images nested inside SoundFileDto. */
+export type AlbumBrochureDto = {
+  id?: number
+  fileUrl?: string | null
+  title?: string | null
+  fileType?: AttachmentType
+  sizeBytes?: number | null
+  mimeType?: string | null
+  brochureOrder?: number | null
+}
+
 export type TopicDto = {
   id: number
   nameCkb?: string | null
@@ -89,6 +101,8 @@ export type SoundDto = {
   keywordsKmr?: string[]
   files?: SoundFileDto[]
   attachments?: AttachmentDto[]
+  brochures?: AlbumBrochureDto[]
+  locations?: string[]
   createdAt?: string
   updatedAt?: string
   createdBy?: string | null

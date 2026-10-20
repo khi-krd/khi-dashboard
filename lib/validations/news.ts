@@ -30,12 +30,14 @@ export const newsFormSchema = z
       .object({
         title: z.string(),
         description: z.string().optional().nullable(),
+        location: z.string().optional().nullable(),
       })
       .optional(),
     kmrContent: z
       .object({
         title: z.string(),
         description: z.string().optional().nullable(),
+        location: z.string().optional().nullable(),
       })
       .optional(),
     tags: z.object({
@@ -82,8 +84,8 @@ export function defaultNewsFormValues(): NewsFormValues {
     existingCoverThumbnailUrl: null,
     mediaGallery: [],
     datePublished: today,
-    ckbContent: { title: "", description: "" },
-    kmrContent: { title: "", description: "" },
+    ckbContent: { title: "", description: "", location: "" },
+    kmrContent: { title: "", description: "", location: "" },
     tags: { ckb: [], kmr: [] },
     keywords: { ckb: [], kmr: [] },
   }

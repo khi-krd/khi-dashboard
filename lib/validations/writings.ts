@@ -18,6 +18,7 @@ const WritingContentSchema = z.object({
   fileSizeBytes: z.number().int().min(0).default(0),
   pageCount: optionalPositiveInt,
   genre: z.string().max(150).optional(),
+  location: z.string().max(255).optional(),
 })
 
 // Every field is optional by design: an editor can save a draft with any
@@ -108,8 +109,8 @@ export const defaultWritingFormValues: WritingFormValues = {
   clearTopic: false,
   publishedByInstitute: false,
   contentLanguages: ["CKB"],
-  ckbContent: { title: "", description: "", writer: "", fileUrl: "", fileSizeBytes: 0, genre: "" },
-  kmrContent: { title: "", description: "", writer: "", fileUrl: "", fileSizeBytes: 0, genre: "" },
+  ckbContent: { title: "", description: "", writer: "", fileUrl: "", fileSizeBytes: 0, genre: "", location: "" },
+  kmrContent: { title: "", description: "", writer: "", fileUrl: "", fileSizeBytes: 0, genre: "", location: "" },
   tags: { ckb: [], kmr: [] },
   keywords: { ckb: [], kmr: [] },
   seriesOrder: 1,
@@ -149,6 +150,7 @@ export function writingDtoToFormValues(dto: WritingDto): WritingFormValues {
       fileSizeBytes: dto.ckbContent?.fileSizeBytes ?? 0,
       pageCount: dto.ckbContent?.pageCount ?? undefined,
       genre: dto.ckbContent?.genre ?? "",
+      location: dto.ckbContent?.location ?? "",
     },
     kmrContent: {
       title: dto.kmrContent?.title ?? "",
@@ -159,6 +161,7 @@ export function writingDtoToFormValues(dto: WritingDto): WritingFormValues {
       fileSizeBytes: dto.kmrContent?.fileSizeBytes ?? 0,
       pageCount: dto.kmrContent?.pageCount ?? undefined,
       genre: dto.kmrContent?.genre ?? "",
+      location: dto.kmrContent?.location ?? "",
     },
     tags: {
       ckb: [...(dto.tagsCkb ?? [])],

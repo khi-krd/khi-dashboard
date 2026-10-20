@@ -3,6 +3,7 @@ export type Language = "CKB" | "KMR"
 export type LanguageContentDto = {
   title: string
   description?: string | null
+  location?: string | null
 }
 
 export type BilingualSet = {

@@ -10,7 +10,7 @@ import { Badge } from "@/components/reui/badge"
 
 function splitIncoming(raw: string) {
   return raw
-    .split(/[,،\n]/g)
+    .split(/[,،;؛\n]/g)
     .map((s) => s.trim())
     .filter(Boolean)
 }
@@ -42,7 +42,7 @@ export function NewsTagInput({
   }, [draft, onChange, value])
 
   function onKeyDown(e: KeyboardEvent<HTMLInputElement>) {
-    if (e.key === "Enter" || e.key === ",") {
+    if (e.key === "Enter" || e.key === "," || e.key === ";" || e.key === "؛") {
       e.preventDefault()
       commitDraft()
     }

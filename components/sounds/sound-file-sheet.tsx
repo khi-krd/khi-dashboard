@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import { useFieldArray, useFormContext } from "react-hook-form"
 
-import { SoundFileBrochures } from "@/components/sounds/sound-file-brochures"
+
 import { SoundSourcePanel } from "@/components/sounds/sound-source-panel"
 import { NS } from "@/components/sounds/sounds-strings"
 import { Button } from "@/components/ui/button"
@@ -229,10 +229,11 @@ export function SoundFileSheet({
             </div>
           </section>
 
-          <SoundFileBrochures
-            brochures={draft.brochures ?? []}
-            onChange={(brochures) => patch({ brochures })}
-          />
+          {/*
+            Brochures live at the album level now — editors manage them from
+            the main form's بڕۆشێرەکان section. The draft keeps the legacy
+            per-file list so existing data round-trips on save.
+          */}
         </div>
         <SheetFooter className="flex-row justify-between gap-2 sm:justify-between">
           <Button type="button" variant="ghost" className="text-destructive" onClick={onDelete}>

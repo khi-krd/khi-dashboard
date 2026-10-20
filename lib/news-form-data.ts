@@ -52,11 +52,20 @@ export function newsFormValuesToPayload(values: NewsFormValues): NewsWritePayloa
  * is omitted from the payload entirely rather than sent as empty strings.
  */
 function contentOrUndefined(
-  content?: { title?: string | null; description?: string | null } | null,
-): { title: string; description: string } | undefined {
+  content?: {
+    title?: string | null
+    description?: string | null
+    location?: string | null
+  } | null,
+): { title: string; description: string; location?: string } | undefined {
   const title = content?.title?.trim() ?? ""
   const description = content?.description ?? ""
+  const location = content?.location?.trim() ?? ""
   const emptyDescription = isRichTextEmpty(description)
-  if (!title && emptyDescription) return undefined
-  return { title, description: emptyDescription ? "" : description }
+  if (!title && emptyDescription && !location) return undefined
+  return {
+    title,
+    description: emptyDescription ? "" : description,
+    location: location || undefined,
+  }
 }

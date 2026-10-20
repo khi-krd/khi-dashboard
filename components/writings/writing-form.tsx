@@ -503,6 +503,13 @@ export function WritingForm({
                     {...register("ckbContent.genre")}
                   />
                 </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">{NS.field.location}</Label>
+                  <Input
+                    placeholder={NS.field.location_ckb}
+                    {...register("ckbContent.location")}
+                  />
+                </div>
                 <TiptapEditor entity="writings"
                   stickyToolbar
                   lang="CKB"
@@ -540,6 +547,14 @@ export function WritingForm({
                     dir="ltr"
                     placeholder={NS.field.editorial_genre_kmr}
                     {...register("kmrContent.genre")}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">{NS.field.location}</Label>
+                  <Input
+                    dir="ltr"
+                    placeholder={NS.field.location_kmr}
+                    {...register("kmrContent.location")}
                   />
                 </div>
                 <TiptapEditor entity="writings"

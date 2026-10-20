@@ -1,5 +1,6 @@
 import { unwrapApiData } from "@/lib/api-unwrap"
 import type {
+  AlbumBrochureDto,
   AttachmentDto,
   AttachmentType,
   AudioChannel,
@@ -108,6 +109,21 @@ function normalizeFile(raw: unknown): SoundFileDto {
   }
 }
 
+function normalizeAlbumBrochure(raw: unknown): AlbumBrochureDto {
+  const o = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>
+  const type = coerceStr(o.fileType) ?? coerceStr(o.file_type)
+  return {
+    id: coerceNum(o.id) ?? undefined,
+    fileUrl: coerceStr(o.fileUrl) ?? coerceStr(o.file_url),
+    title: coerceStr(o.title),
+    fileType: (type ?? "IMAGE") as AttachmentType,
+    sizeBytes: coerceNum(o.sizeBytes) ?? coerceNum(o.size_bytes),
+    mimeType: coerceStr(o.mimeType) ?? coerceStr(o.mime_type),
+    brochureOrder:
+      coerceNum(o.brochureOrder) ?? coerceNum(o.brochure_order) ?? undefined,
+  }
+}
+
 function normalizeAttachment(raw: unknown): AttachmentDto {
   const o = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>
   const type = coerceStr(o.attachmentType) ?? coerceStr(o.attachment_type)
@@ -160,6 +176,9 @@ export function normalizeSoundDto(raw: unknown): SoundDto {
     : []
   const attachments = Array.isArray(o.attachments)
     ? o.attachments.map(normalizeAttachment)
+    : []
+  const brochures = Array.isArray(o.brochures)
+    ? o.brochures.map(normalizeAlbumBrochure)
     : []
 
   const tagsFromBilingual = normalizeTags(o.tags, "tagsCkb", "tagsKmr")
@@ -214,6 +233,10 @@ export function normalizeSoundDto(raw: unknown): SoundDto {
     attachments: attachments.sort(
       (a, b) => (a.attachmentOrder ?? 0) - (b.attachmentOrder ?? 0),
     ),
+    brochures: brochures.sort(
+      (a, b) => (a.brochureOrder ?? 0) - (b.brochureOrder ?? 0),
+    ),
+    locations: coerceStringArray(o.locations),
     createdAt: coerceStr(o.createdAt) ?? coerceStr(o.created_at) ?? undefined,
     updatedAt: coerceStr(o.updatedAt) ?? coerceStr(o.updated_at) ?? undefined,
     createdBy: coerceStr(o.createdBy) ?? coerceStr(o.created_by),
