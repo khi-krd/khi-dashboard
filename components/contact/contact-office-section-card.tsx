@@ -10,6 +10,7 @@ import {
 import { toast } from "sonner"
 
 import { ContactSectionCardShell } from "@/components/contact/contact-section-card-shell"
+import { OfficeTypeCombobox } from "@/components/contact/office-type-combobox"
 import { NS } from "@/components/contact/contact-strings"
 import { ServiceActiveSwitch } from "@/components/services/service-active-switch"
 import { MediaCoverUpload } from "@/components/shared/media-cover-upload"
@@ -341,10 +342,9 @@ export function ContactOfficeSectionCard({
               placeholder={NS.form.longitude}
               dir="ltr"
             />
-            <Input
-              {...register("officeType")}
-              placeholder={NS.form.office_type}
-              dir="ltr"
+            <OfficeTypeCombobox
+              value={watch("officeType") ?? ""}
+              onChange={(v) => setValue("officeType", v, { shouldDirty: true })}
             />
             <Input {...register("badgeCkb")} placeholder={NS.form.badge_ckb} />
             <Input {...register("badgeKmr")} placeholder={NS.form.badge_kmr} />

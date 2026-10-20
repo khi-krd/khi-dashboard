@@ -132,6 +132,7 @@ export const NS = {
     hero_image_empty:
       "ئەگەر بەتاڵ بێت، ماڵپەڕ وێنەیەکی ئامادەکراو پیشان دەدات.",
     office_type: "جۆری نووسینگە",
+    office_type_add: "جۆرێکی نوێ",
     office_type_hint: "بۆ نموونە HQ یان REGIONAL",
     badge_ckb: "نیشانەی سۆرانی",
     badge_kmr: "نیشانەی کورمانجی",

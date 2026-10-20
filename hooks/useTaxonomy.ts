@@ -2,21 +2,31 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 
+import { contactKeys } from "@/lib/contact-query-keys"
 import { newsKeys } from "@/lib/news-query-keys"
 import { projectKeys } from "@/lib/projects-query-keys"
+import { soundKeys } from "@/lib/sounds-query-keys"
 import { taxonomyKeys } from "@/lib/taxonomy-query-keys"
 import {
   createNewsCategory,
   createNewsSubCategory,
+  createOfficeType,
   createProjectType,
+  createSoundType,
   deleteNewsCategory,
   deleteNewsSubCategory,
+  deleteOfficeType,
   deleteProjectType,
+  deleteSoundType,
   getNewsTaxonomy,
+  getOfficeTypes,
   getProjectTypes,
+  getSoundTypes,
   updateNewsCategory,
   updateNewsSubCategory,
+  updateOfficeType,
   updateProjectType,
+  updateSoundType,
 } from "@/services/taxonomyService"
 import type {
   SubCategoryWritePayload,
@@ -44,6 +54,20 @@ export function useProjectTypesQuery() {
   })
 }
 
+export function useSoundTypesQuery() {
+  return useQuery({
+    queryKey: taxonomyKeys.soundTypes(),
+    queryFn: getSoundTypes,
+  })
+}
+
+export function useOfficeTypesQuery() {
+  return useQuery({
+    queryKey: taxonomyKeys.officeTypes(),
+    queryFn: getOfficeTypes,
+  })
+}
+
 function useInvalidateNewsTaxonomy() {
   const queryClient = useQueryClient()
   return () => {
@@ -57,6 +81,22 @@ function useInvalidateProjectTypes() {
   return () => {
     void queryClient.invalidateQueries({ queryKey: taxonomyKeys.projectTypes() })
     void queryClient.invalidateQueries({ queryKey: projectKeys.all })
+  }
+}
+
+function useInvalidateSoundTypes() {
+  const queryClient = useQueryClient()
+  return () => {
+    void queryClient.invalidateQueries({ queryKey: taxonomyKeys.soundTypes() })
+    void queryClient.invalidateQueries({ queryKey: soundKeys.all })
+  }
+}
+
+function useInvalidateOfficeTypes() {
+  const queryClient = useQueryClient()
+  return () => {
+    void queryClient.invalidateQueries({ queryKey: taxonomyKeys.officeTypes() })
+    void queryClient.invalidateQueries({ queryKey: contactKeys.all })
   }
 }
 
@@ -143,6 +183,60 @@ export function useDeleteProjectTypeMutation() {
   const invalidate = useInvalidateProjectTypes()
   return useMutation({
     mutationFn: (id: number) => deleteProjectType(id),
+    onSuccess: invalidate,
+  })
+}
+
+// ── Sound types ──────────────────────────────────────────────────────────
+
+export function useCreateSoundTypeMutation() {
+  const invalidate = useInvalidateSoundTypes()
+  return useMutation({
+    mutationFn: (payload: TaxonomyWritePayload) => createSoundType(payload),
+    onSuccess: invalidate,
+  })
+}
+
+export function useUpdateSoundTypeMutation() {
+  const invalidate = useInvalidateSoundTypes()
+  return useMutation({
+    mutationFn: ({ id, payload }: { id: number; payload: TaxonomyWritePayload }) =>
+      updateSoundType(id, payload),
+    onSuccess: invalidate,
+  })
+}
+
+export function useDeleteSoundTypeMutation() {
+  const invalidate = useInvalidateSoundTypes()
+  return useMutation({
+    mutationFn: (id: number) => deleteSoundType(id),
+    onSuccess: invalidate,
+  })
+}
+
+// ── Office types ─────────────────────────────────────────────────────────
+
+export function useCreateOfficeTypeMutation() {
+  const invalidate = useInvalidateOfficeTypes()
+  return useMutation({
+    mutationFn: (payload: TaxonomyWritePayload) => createOfficeType(payload),
+    onSuccess: invalidate,
+  })
+}
+
+export function useUpdateOfficeTypeMutation() {
+  const invalidate = useInvalidateOfficeTypes()
+  return useMutation({
+    mutationFn: ({ id, payload }: { id: number; payload: TaxonomyWritePayload }) =>
+      updateOfficeType(id, payload),
+    onSuccess: invalidate,
+  })
+}
+
+export function useDeleteOfficeTypeMutation() {
+  const invalidate = useInvalidateOfficeTypes()
+  return useMutation({
+    mutationFn: (id: number) => deleteOfficeType(id),
     onSuccess: invalidate,
   })
 }

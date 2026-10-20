@@ -3,13 +3,17 @@ import { unwrapApiData } from "@/lib/api-unwrap"
 import type {
   NewsTaxonomyCategoryDto,
   NewsTaxonomySubCategoryDto,
+  OfficeTypeDto,
   ProjectTypeDto,
+  SoundTypeDto,
   SubCategoryWritePayload,
   TaxonomyWritePayload,
 } from "@/types/taxonomy"
 
 const NEWS_BASE = "/api/v1/news"
 const PROJECT_TYPES = "/api/v1/projects/types"
+const SOUND_TYPES = "/api/v1/sound-tracks/types"
+const OFFICE_TYPES = "/api/v1/contact/office-types"
 
 function str(v: unknown): string {
   return typeof v === "string" ? v : ""
@@ -137,4 +141,76 @@ export async function updateProjectType(
 
 export async function deleteProjectType(id: number): Promise<void> {
   await api.delete(`${PROJECT_TYPES}/${id}`)
+}
+
+// ── Sound types ──────────────────────────────────────────────────────────
+
+function normalizeSoundType(raw: unknown): SoundTypeDto {
+  const r = (raw ?? {}) as Record<string, unknown>
+  return {
+    id: num(r.id),
+    nameCkb: str(r.nameCkb),
+    nameKmr: str(r.nameKmr),
+    trackCount: num(r.trackCount),
+  }
+}
+
+export async function getSoundTypes(): Promise<SoundTypeDto[]> {
+  const { data } = await api.get<unknown>(SOUND_TYPES)
+  return asList(unwrapApiData(data)).map(normalizeSoundType)
+}
+
+export async function createSoundType(
+  payload: TaxonomyWritePayload,
+): Promise<SoundTypeDto> {
+  const { data } = await api.post<unknown>(SOUND_TYPES, payload)
+  return normalizeSoundType(unwrapApiData(data))
+}
+
+export async function updateSoundType(
+  id: number,
+  payload: TaxonomyWritePayload,
+): Promise<SoundTypeDto> {
+  const { data } = await api.put<unknown>(`${SOUND_TYPES}/${id}`, payload)
+  return normalizeSoundType(unwrapApiData(data))
+}
+
+export async function deleteSoundType(id: number): Promise<void> {
+  await api.delete(`${SOUND_TYPES}/${id}`)
+}
+
+// ── Office types ─────────────────────────────────────────────────────────
+
+function normalizeOfficeType(raw: unknown): OfficeTypeDto {
+  const r = (raw ?? {}) as Record<string, unknown>
+  return {
+    id: num(r.id),
+    nameCkb: str(r.nameCkb),
+    nameKmr: str(r.nameKmr),
+    officeCount: num(r.officeCount),
+  }
+}
+
+export async function getOfficeTypes(): Promise<OfficeTypeDto[]> {
+  const { data } = await api.get<unknown>(OFFICE_TYPES)
+  return asList(unwrapApiData(data)).map(normalizeOfficeType)
+}
+
+export async function createOfficeType(
+  payload: TaxonomyWritePayload,
+): Promise<OfficeTypeDto> {
+  const { data } = await api.post<unknown>(OFFICE_TYPES, payload)
+  return normalizeOfficeType(unwrapApiData(data))
+}
+
+export async function updateOfficeType(
+  id: number,
+  payload: TaxonomyWritePayload,
+): Promise<OfficeTypeDto> {
+  const { data } = await api.put<unknown>(`${OFFICE_TYPES}/${id}`, payload)
+  return normalizeOfficeType(unwrapApiData(data))
+}
+
+export async function deleteOfficeType(id: number): Promise<void> {
+  await api.delete(`${OFFICE_TYPES}/${id}`)
 }

@@ -17,24 +17,35 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   useCreateNewsCategoryMutation,
   useCreateNewsSubCategoryMutation,
+  useCreateOfficeTypeMutation,
   useCreateProjectTypeMutation,
+  useCreateSoundTypeMutation,
   useDeleteNewsCategoryMutation,
   useDeleteNewsSubCategoryMutation,
+  useDeleteOfficeTypeMutation,
   useDeleteProjectTypeMutation,
+  useDeleteSoundTypeMutation,
   useNewsTaxonomyQuery,
+  useOfficeTypesQuery,
   useProjectTypesQuery,
+  useSoundTypesQuery,
   useUpdateNewsCategoryMutation,
   useUpdateNewsSubCategoryMutation,
+  useUpdateOfficeTypeMutation,
   useUpdateProjectTypeMutation,
+  useUpdateSoundTypeMutation,
 } from "@/hooks/useTaxonomy"
 import { formatCkbDigits } from "@/lib/intl-ckb"
 import type {
   NewsTaxonomyCategoryDto,
   NewsTaxonomySubCategoryDto,
-  ProjectTypeDto,
 } from "@/types/taxonomy"
 
 type NamedTarget = { id: number; nameCkb: string; nameKmr: string }
+type TypeRow = NamedTarget & { count: number }
+
+/** The free-text "type" vocabularies — projects, sound tracks, contact offices. */
+type VocabKind = "project" | "sound" | "office"
 
 type NameDialogState =
   | { kind: "category"; mode: "create" }
@@ -46,14 +57,14 @@ type NameDialogState =
       parent: NewsTaxonomyCategoryDto
       target: NamedTarget
     }
-  | { kind: "type"; mode: "create" }
-  | { kind: "type"; mode: "edit"; target: NamedTarget }
+  | { kind: "type"; vocab: VocabKind; mode: "create" }
+  | { kind: "type"; vocab: VocabKind; mode: "edit"; target: NamedTarget }
   | null
 
 type DeleteState =
   | { kind: "category"; target: NewsTaxonomyCategoryDto }
   | { kind: "subcategory"; target: NewsTaxonomySubCategoryDto }
-  | { kind: "type"; target: ProjectTypeDto }
+  | { kind: "type"; vocab: VocabKind; target: TypeRow }
   | null
 
 function usage(unit: string, count: number) {
@@ -95,9 +106,89 @@ function RowActions({
   )
 }
 
+/** Flat type list shared by the project/sound/office vocabularies. */
+function TypePanel({
+  unit,
+  isLoading,
+  items,
+  onCreate,
+  onEdit,
+  onDelete,
+}: {
+  unit: string
+  isLoading: boolean
+  items: TypeRow[]
+  onCreate: () => void
+  onEdit: (target: NamedTarget) => void
+  onDelete: (target: TypeRow) => void
+}) {
+  return (
+    <>
+      <div className="flex justify-end">
+        <Button type="button" className="gap-1.5" onClick={onCreate}>
+          <PlusIcon className="size-4" />
+          {TX.action.new_type}
+        </Button>
+      </div>
+
+      {isLoading ? (
+        <div className="space-y-3">
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-12 w-full" />
+        </div>
+      ) : items.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <h2 className="text-foreground mb-2 text-base font-medium">
+            {TX.empty.title}
+          </h2>
+          <p className="text-muted-foreground mb-4 max-w-md text-sm">
+            {TX.empty.subtitle}
+          </p>
+          <Button type="button" onClick={onCreate}>
+            {TX.action.new_type}
+          </Button>
+        </div>
+      ) : (
+        <ul className="border-border/60 bg-card divide-border/60 divide-y overflow-hidden rounded-lg border">
+          {items.map((t) => (
+            <li
+              key={t.id}
+              className="flex items-center justify-between gap-3 px-4 py-3"
+            >
+              <div className="flex min-w-0 items-baseline gap-3">
+                <p className="text-foreground truncate font-medium">
+                  {t.nameCkb || TX.dash}
+                </p>
+                <p className="text-muted-foreground truncate text-sm" dir="ltr">
+                  {t.nameKmr || TX.dash}
+                </p>
+                <span className="text-muted-foreground shrink-0 text-xs">
+                  {usage(unit, t.count)}
+                </span>
+              </div>
+              <RowActions
+                onEdit={() =>
+                  onEdit({
+                    id: t.id,
+                    nameCkb: t.nameCkb,
+                    nameKmr: t.nameKmr,
+                  })
+                }
+                onDelete={() => onDelete(t)}
+              />
+            </li>
+          ))}
+        </ul>
+      )}
+    </>
+  )
+}
+
 export function TaxonomyClient() {
   const newsQ = useNewsTaxonomyQuery()
   const typesQ = useProjectTypesQuery()
+  const soundTypesQ = useSoundTypesQuery()
+  const officeTypesQ = useOfficeTypesQuery()
 
   const createCatMut = useCreateNewsCategoryMutation()
   const updateCatMut = useUpdateNewsCategoryMutation()
@@ -108,12 +199,38 @@ export function TaxonomyClient() {
   const createTypeMut = useCreateProjectTypeMutation()
   const updateTypeMut = useUpdateProjectTypeMutation()
   const deleteTypeMut = useDeleteProjectTypeMutation()
+  const createSoundTypeMut = useCreateSoundTypeMutation()
+  const updateSoundTypeMut = useUpdateSoundTypeMutation()
+  const deleteSoundTypeMut = useDeleteSoundTypeMutation()
+  const createOfficeTypeMut = useCreateOfficeTypeMutation()
+  const updateOfficeTypeMut = useUpdateOfficeTypeMutation()
+  const deleteOfficeTypeMut = useDeleteOfficeTypeMutation()
 
   const [nameDialog, setNameDialog] = useState<NameDialogState>(null)
   const [deleteState, setDeleteState] = useState<DeleteState>(null)
 
   const categories = newsQ.data ?? []
   const types = typesQ.data ?? []
+  const soundTypes = soundTypesQ.data ?? []
+  const officeTypes = officeTypesQ.data ?? []
+
+  const typeMuts = {
+    project: {
+      create: createTypeMut,
+      update: updateTypeMut,
+      remove: deleteTypeMut,
+    },
+    sound: {
+      create: createSoundTypeMut,
+      update: updateSoundTypeMut,
+      remove: deleteSoundTypeMut,
+    },
+    office: {
+      create: createOfficeTypeMut,
+      update: updateOfficeTypeMut,
+      remove: deleteOfficeTypeMut,
+    },
+  } as const
 
   const nameDialogPending =
     createCatMut.isPending ||
@@ -121,12 +238,18 @@ export function TaxonomyClient() {
     createSubMut.isPending ||
     updateSubMut.isPending ||
     createTypeMut.isPending ||
-    updateTypeMut.isPending
+    updateTypeMut.isPending ||
+    createSoundTypeMut.isPending ||
+    updateSoundTypeMut.isPending ||
+    createOfficeTypeMut.isPending ||
+    updateOfficeTypeMut.isPending
 
   const deletePending =
     deleteCatMut.isPending ||
     deleteSubMut.isPending ||
-    deleteTypeMut.isPending
+    deleteTypeMut.isPending ||
+    deleteSoundTypeMut.isPending ||
+    deleteOfficeTypeMut.isPending
 
   function nameDialogTitle(d: NonNullable<NameDialogState>): string {
     if (d.kind === "category")
@@ -137,7 +260,18 @@ export function TaxonomyClient() {
       return d.mode === "create"
         ? TX.dialog.create_subcategory
         : TX.dialog.edit_subcategory
-    return d.mode === "create" ? TX.dialog.create_type : TX.dialog.edit_type
+    const titles = {
+      project: { create: TX.dialog.create_type, edit: TX.dialog.edit_type },
+      sound: {
+        create: TX.dialog.create_sound_type,
+        edit: TX.dialog.edit_sound_type,
+      },
+      office: {
+        create: TX.dialog.create_office_type,
+        edit: TX.dialog.edit_office_type,
+      },
+    }
+    return titles[d.vocab][d.mode]
   }
 
   function submitNameDialog(payload: {
@@ -190,7 +324,7 @@ export function TaxonomyClient() {
         },
       )
     } else if (d.mode === "create") {
-      createTypeMut.mutate(payload, {
+      typeMuts[d.vocab].create.mutate(payload, {
         onSuccess: () => {
           toast.success(TX.toast.created)
           close()
@@ -198,7 +332,7 @@ export function TaxonomyClient() {
         onError,
       })
     } else {
-      updateTypeMut.mutate(
+      typeMuts[d.vocab].update.mutate(
         { id: d.target.id, payload },
         {
           onSuccess: () => {
@@ -222,9 +356,15 @@ export function TaxonomyClient() {
         ? TX.delete.body(formatCkbDigits(d.target.newsCount), TX.unit.news)
         : TX.delete.bodyEmpty
     }
-    return d.target.projectCount > 0
-      ? TX.delete.typeBody(formatCkbDigits(d.target.projectCount))
+    return d.target.count > 0
+      ? TX.delete.typeBody(formatCkbDigits(d.target.count), vocabUnit(d.vocab))
       : TX.delete.typeBodyEmpty
+  }
+
+  function vocabUnit(vocab: VocabKind): string {
+    if (vocab === "project") return TX.unit.project
+    if (vocab === "sound") return TX.unit.sound
+    return TX.unit.office
   }
 
   function confirmDelete() {
@@ -241,7 +381,7 @@ export function TaxonomyClient() {
     } else if (d.kind === "subcategory") {
       deleteSubMut.mutate(d.target.id, { onSuccess, onError })
     } else {
-      deleteTypeMut.mutate(d.target.id, { onSuccess, onError })
+      typeMuts[d.vocab].remove.mutate(d.target.id, { onSuccess, onError })
     }
   }
 
@@ -260,6 +400,8 @@ export function TaxonomyClient() {
         <TabsList>
           <TabsTrigger value="news">{TX.tabs.news}</TabsTrigger>
           <TabsTrigger value="projects">{TX.tabs.projects}</TabsTrigger>
+          <TabsTrigger value="sounds">{TX.tabs.sounds}</TabsTrigger>
+          <TabsTrigger value="offices">{TX.tabs.offices}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="news" className="space-y-4 pt-6">
@@ -409,75 +551,69 @@ export function TaxonomyClient() {
         </TabsContent>
 
         <TabsContent value="projects" className="space-y-4 pt-6">
-          <div className="flex justify-end">
-            <Button
-              type="button"
-              className="gap-1.5"
-              onClick={() => setNameDialog({ kind: "type", mode: "create" })}
-            >
-              <PlusIcon className="size-4" />
-              {TX.action.new_type}
-            </Button>
-          </div>
+          <TypePanel
+            unit={TX.unit.project}
+            isLoading={typesQ.isLoading}
+            items={types.map((t) => ({
+              id: t.id,
+              nameCkb: t.nameCkb,
+              nameKmr: t.nameKmr,
+              count: t.projectCount,
+            }))}
+            onCreate={() =>
+              setNameDialog({ kind: "type", vocab: "project", mode: "create" })
+            }
+            onEdit={(target) =>
+              setNameDialog({ kind: "type", vocab: "project", mode: "edit", target })
+            }
+            onDelete={(target) =>
+              setDeleteState({ kind: "type", vocab: "project", target })
+            }
+          />
+        </TabsContent>
 
-          {typesQ.isLoading ? (
-            <div className="space-y-3">
-              <Skeleton className="h-12 w-full" />
-              <Skeleton className="h-12 w-full" />
-            </div>
-          ) : types.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-center">
-              <h2 className="text-foreground mb-2 text-base font-medium">
-                {TX.empty.title}
-              </h2>
-              <p className="text-muted-foreground mb-4 max-w-md text-sm">
-                {TX.empty.subtitle}
-              </p>
-              <Button
-                type="button"
-                onClick={() => setNameDialog({ kind: "type", mode: "create" })}
-              >
-                {TX.action.new_type}
-              </Button>
-            </div>
-          ) : (
-            <ul className="border-border/60 bg-card divide-border/60 divide-y overflow-hidden rounded-lg border">
-              {types.map((t) => (
-                <li
-                  key={t.id}
-                  className="flex items-center justify-between gap-3 px-4 py-3"
-                >
-                  <div className="flex min-w-0 items-baseline gap-3">
-                    <p className="text-foreground truncate font-medium">
-                      {t.nameCkb || TX.dash}
-                    </p>
-                    <p className="text-muted-foreground truncate text-sm" dir="ltr">
-                      {t.nameKmr || TX.dash}
-                    </p>
-                    <span className="text-muted-foreground shrink-0 text-xs">
-                      {usage(TX.unit.project, t.projectCount)}
-                    </span>
-                  </div>
-                  <RowActions
-                    onEdit={() =>
-                      setNameDialog({
-                        kind: "type",
-                        mode: "edit",
-                        target: {
-                          id: t.id,
-                          nameCkb: t.nameCkb,
-                          nameKmr: t.nameKmr,
-                        },
-                      })
-                    }
-                    onDelete={() =>
-                      setDeleteState({ kind: "type", target: t })
-                    }
-                  />
-                </li>
-              ))}
-            </ul>
-          )}
+        <TabsContent value="sounds" className="space-y-4 pt-6">
+          <TypePanel
+            unit={TX.unit.sound}
+            isLoading={soundTypesQ.isLoading}
+            items={soundTypes.map((t) => ({
+              id: t.id,
+              nameCkb: t.nameCkb,
+              nameKmr: t.nameKmr,
+              count: t.trackCount,
+            }))}
+            onCreate={() =>
+              setNameDialog({ kind: "type", vocab: "sound", mode: "create" })
+            }
+            onEdit={(target) =>
+              setNameDialog({ kind: "type", vocab: "sound", mode: "edit", target })
+            }
+            onDelete={(target) =>
+              setDeleteState({ kind: "type", vocab: "sound", target })
+            }
+          />
+        </TabsContent>
+
+        <TabsContent value="offices" className="space-y-4 pt-6">
+          <TypePanel
+            unit={TX.unit.office}
+            isLoading={officeTypesQ.isLoading}
+            items={officeTypes.map((t) => ({
+              id: t.id,
+              nameCkb: t.nameCkb,
+              nameKmr: t.nameKmr,
+              count: t.officeCount,
+            }))}
+            onCreate={() =>
+              setNameDialog({ kind: "type", vocab: "office", mode: "create" })
+            }
+            onEdit={(target) =>
+              setNameDialog({ kind: "type", vocab: "office", mode: "edit", target })
+            }
+            onDelete={(target) =>
+              setDeleteState({ kind: "type", vocab: "office", target })
+            }
+          />
         </TabsContent>
       </Tabs>
 

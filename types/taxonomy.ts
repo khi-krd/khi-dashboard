@@ -23,6 +23,20 @@ export type ProjectTypeDto = {
   projectCount: number
 }
 
+export type SoundTypeDto = {
+  id: number
+  nameCkb: string
+  nameKmr: string
+  trackCount: number
+}
+
+export type OfficeTypeDto = {
+  id: number
+  nameCkb: string
+  nameKmr: string
+  officeCount: number
+}
+
 export type TaxonomyWritePayload = {
   nameCkb?: string
   nameKmr?: string

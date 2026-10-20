@@ -6,6 +6,8 @@ export const TX = {
   tabs: {
     news: "پۆلەکانی هەواڵ",
     projects: "جۆرەکانی پرۆژە",
+    sounds: "جۆرەکانی سەدا",
+    offices: "جۆرەکانی نووسینگە",
   },
   col: {
     nameCkb: "ناو (کوردی)",
@@ -32,19 +34,25 @@ export const TX = {
     edit_subcategory: "دەستکاری ژێرپۆل",
     create_type: "جۆری پرۆژەی نوێ",
     edit_type: "دەستکاری جۆری پرۆژە",
+    create_sound_type: "جۆری سەدای نوێ",
+    edit_sound_type: "دەستکاری جۆری سەدا",
+    create_office_type: "جۆری نووسینگەی نوێ",
+    edit_office_type: "دەستکاری جۆری نووسینگە",
   },
   delete: {
     title: "سڕینەوە",
     body: (count: string, unit: string) =>
       `ئەم تۆمارە لە ${count} ${unit} بەکارهێنراوە. ئەگەر بیسڕیتەوە، ئەو تۆمارانە دەچنە سەر «گشتی».`,
     bodyEmpty: "دڵنیایت لە سڕینەوەی ئەم تۆمارە؟",
-    typeBody: (count: string) =>
-      `ئەم جۆرە لە ${count} پرۆژەدا بەکارهێنراوە. سڕینەوەی تەنها لە لیستی هەڵبژاردن لایدەبات — ناوی جۆر لەسەر پرۆژەکان دەمێنێتەوە.`,
+    typeBody: (count: string, unit: string) =>
+      `ئەم جۆرە لە ${count} ${unit} بەکارهێنراوە. سڕینەوەی تەنها لە لیستی هەڵبژاردن لایدەبات — ناوی جۆر لەسەر تۆمارەکان دەمێنێتەوە.`,
     typeBodyEmpty: "دڵنیایت لە سڕینەوەی ئەم جۆرە؟",
   },
   unit: {
     news: "هەواڵ",
     project: "پرۆژە",
+    sound: "سەدا",
+    office: "نووسینگە",
   },
   empty: {
     title: "هیچ تۆمارێک نییە",

@@ -88,6 +88,7 @@ export const NS = {
     cancel: "هەڵوەشاندنەوە",
     change: "گۆڕین",
     add: "زیادکردن",
+    add_type: "جۆرێکی نوێ",
     reset_filters: "پاککردنەوەی فلتەرەکان",
     copy_url: "لەبەرگرتنەوەی ناونیشانی URL",
     share: "هاوبەشکردن",
