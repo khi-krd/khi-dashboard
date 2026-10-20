@@ -302,8 +302,8 @@ export function ProjectForm({
               <Label className={cn(sectionHeading, "mb-2")}>
                 {NS.col.status}
               </Label>
-              <div className="grid grid-cols-3 gap-1 rounded-md border border-border p-1">
-                {(["ACTIVE", "COMPLETED", "ARCHIVED"] as const).map((s) => (
+              <div className="grid grid-cols-2 gap-1 rounded-md border border-border p-1">
+                {(["ACTIVE", "COMPLETED"] as const).map((s) => (
                   <button
                     key={s}
                     type="button"
@@ -314,16 +314,10 @@ export function ProjectForm({
                         "bg-amber-500/10 text-amber-700 dark:text-amber-400",
                       status === s && s === "COMPLETED" &&
                         "bg-primary/10 text-primary",
-                      status === s && s === "ARCHIVED" &&
-                        "bg-muted text-muted-foreground",
                       status !== s && "text-muted-foreground hover:bg-muted/50",
                     )}
                   >
-                    {s === "ACTIVE"
-                      ? NS.status.active
-                      : s === "COMPLETED"
-                        ? NS.status.completed
-                        : NS.status.archived}
+                    {s === "ACTIVE" ? NS.status.active : NS.status.completed}
                   </button>
                 ))}
               </div>

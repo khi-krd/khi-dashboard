@@ -136,7 +136,6 @@ export function ProjectsFiltersToolbar({
               <SelectItem value="all">{NS.filter.all_statuses}</SelectItem>
               <SelectItem value="active">{NS.status.active}</SelectItem>
               <SelectItem value="completed">{NS.status.completed}</SelectItem>
-              <SelectItem value="archived">{NS.status.archived}</SelectItem>
             </SelectContent>
           </Select>
         </div>

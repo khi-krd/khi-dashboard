@@ -85,6 +85,8 @@ export type SoundDto = {
   /** Hero picture for the homepage carousel; falls back to the cover when unset. */
   featureImageUrl?: string | null
   trackState: TrackState
+  /** Only meaningful when trackState is MULTI — flags the album as "بیرەوەرییەکان". */
+  albumOfMemories?: boolean
   soundType?: string | null
   topicId?: number | null
   topicNameCkb?: string | null

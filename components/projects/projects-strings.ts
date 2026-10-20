@@ -49,9 +49,9 @@ export const NS = {
     lang_both: "هەردووکیان",
   },
   status: {
-    active: "چالاک",
-    ongoing: "بەردەوام",
-    completed: "تەواو",
+    active: "تەواونەکراو",
+    ongoing: "تەواونەکراو",
+    completed: "تەواوکراو",
     archived: "ئەرشیف",
     draft_new: "ڕەشنووسی نوێ",
   },

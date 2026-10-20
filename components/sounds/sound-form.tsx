@@ -440,6 +440,23 @@ export function SoundForm({
                 {errors.ckbContent?.title ? (
                   <FieldError>{errors.ckbContent.title.message}</FieldError>
                 ) : null}
+                <div className="flex items-start gap-2">
+                  <MapPinIcon className="text-muted-foreground mt-2 size-4 shrink-0" />
+                  <div className="min-w-0 flex-1">
+                    <Controller
+                      name="locations"
+                      control={control}
+                      render={({ field }) => (
+                        <SoundTagInput
+                          value={field.value}
+                          onChange={field.onChange}
+                          placeholder={NS.field.locations_placeholder}
+                          variant="solid"
+                        />
+                      )}
+                    />
+                  </div>
+                </div>
                 <TiptapEditor entity="sounds"
                   stickyToolbar
                   lang="CKB"
@@ -467,6 +484,23 @@ export function SoundForm({
                 {errors.kmrContent?.title ? (
                   <FieldError>{errors.kmrContent.title.message}</FieldError>
                 ) : null}
+                <div className="flex items-start gap-2">
+                  <MapPinIcon className="text-muted-foreground mt-2 size-4 shrink-0" />
+                  <div className="min-w-0 flex-1">
+                    <Controller
+                      name="locations"
+                      control={control}
+                      render={({ field }) => (
+                        <SoundTagInput
+                          value={field.value}
+                          onChange={field.onChange}
+                          placeholder={NS.field.locations_placeholder}
+                          variant="solid"
+                        />
+                      )}
+                    />
+                  </div>
+                </div>
                 <TiptapEditor entity="sounds"
                   stickyToolbar
                   lang="KMR"
@@ -512,25 +546,6 @@ export function SoundForm({
                     value={field.value}
                     onChange={field.onChange}
                     variant="dashed"
-                  />
-                )}
-              />
-            </section>
-
-            <section className={cn("mt-6", sectionCard)}>
-              <h2 className={cn(sectionHeading, "mb-3")}>
-                <MapPinIcon className="size-4" />
-                {NS.credits.locations}
-              </h2>
-              <Controller
-                name="locations"
-                control={control}
-                render={({ field }) => (
-                  <SoundTagInput
-                    value={field.value}
-                    onChange={field.onChange}
-                    placeholder={NS.field.locations_placeholder}
-                    variant="solid"
                   />
                 )}
               />

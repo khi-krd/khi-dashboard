@@ -110,6 +110,10 @@ export function soundFormValuesToMultipart(
   const payload: Record<string, unknown> = {
     ...(mode === "edit" && typeof soundId === "number" ? { id: soundId } : {}),
     trackState: values.trackState,
+    // Only meaningful on MULTI albums — the backend treats a SINGLE track as
+    // never being an album of memories.
+    albumOfMemories:
+      values.trackState === "MULTI" ? values.albumOfMemories : false,
     soundType: values.soundType.trim(),
     contentLanguages: values.contentLanguages,
     ckbCoverUrl: trimOrUndef(values.ckbCoverUrl),

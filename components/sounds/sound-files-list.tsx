@@ -13,6 +13,7 @@ import { PlusIcon } from "@heroicons/react/24/outline"
 import { useRef, useState } from "react"
 import { useFieldArray, useFormContext } from "react-hook-form"
 
+import { SoundAlbumToggle } from "@/components/sounds/sound-album-toggle"
 import { SoundFileCard } from "@/components/sounds/sound-file-card"
 import { SoundFileSheet } from "@/components/sounds/sound-file-sheet"
 import { NS } from "@/components/sounds/sounds-strings"
@@ -79,6 +80,14 @@ export function SoundFilesList() {
           {NS.section.files} ({formatEnDigits(fields.length)})
         </h2>
         <div className="flex flex-wrap items-center gap-2">
+          {trackState === "MULTI" ? (
+            <SoundAlbumToggle
+              checked={watch("albumOfMemories") ?? false}
+              onCheckedChange={(v) =>
+                setValue("albumOfMemories", v, { shouldDirty: true })
+              }
+            />
+          ) : null}
           <input
             ref={bulkInputRef}
             type="file"

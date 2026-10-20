@@ -80,6 +80,7 @@ export const AlbumBrochureFormSchema = z.object({
 export const soundFormSchema = z
   .object({
     trackState: z.enum(["SINGLE", "MULTI"]),
+    albumOfMemories: z.boolean().default(false),
     soundType: z.string().max(100),
     topicId: z.number().int().nullable().optional(),
     newTopic: z
@@ -129,6 +130,7 @@ function newClientKey() {
 
 export const defaultSoundFormValues: SoundFormValues = {
   trackState: "SINGLE",
+  albumOfMemories: false,
   soundType: "",
   topicId: null,
   newTopic: undefined,
@@ -156,6 +158,7 @@ export const defaultSoundFormValues: SoundFormValues = {
 export function soundDtoToFormValues(dto: SoundDto): SoundFormValues {
   return {
     trackState: dto.trackState ?? "SINGLE",
+    albumOfMemories: dto.albumOfMemories ?? false,
     soundType: dto.soundType ?? "",
     topicId: dto.topicId ?? null,
     newTopic: undefined,
