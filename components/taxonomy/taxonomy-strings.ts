@@ -6,7 +6,7 @@ export const TX = {
   tabs: {
     news: "پۆلەکانی هەواڵ",
     projects: "جۆرەکانی پرۆژە",
-    sounds: "جۆرەکانی سەدا",
+    sounds: "جۆرەکانی دەنگ",
     offices: "جۆرەکانی نووسینگە",
   },
   col: {
@@ -34,8 +34,8 @@ export const TX = {
     edit_subcategory: "دەستکاری ژێرپۆل",
     create_type: "جۆری پرۆژەی نوێ",
     edit_type: "دەستکاری جۆری پرۆژە",
-    create_sound_type: "جۆری سەدای نوێ",
-    edit_sound_type: "دەستکاری جۆری سەدا",
+    create_sound_type: "جۆری دەنگی نوێ",
+    edit_sound_type: "دەستکاری جۆری دەنگ",
     create_office_type: "جۆری نووسینگەی نوێ",
     edit_office_type: "دەستکاری جۆری نووسینگە",
   },
@@ -51,7 +51,7 @@ export const TX = {
   unit: {
     news: "هەواڵ",
     project: "پرۆژە",
-    sound: "سەدا",
+    sound: "دەنگ",
     office: "نووسینگە",
   },
   empty: {

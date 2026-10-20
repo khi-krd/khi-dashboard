@@ -212,7 +212,7 @@ export const NS = {
     brochure_title_placeholder: "ناونیشانی بڕۆشێر…",
     brochure_caption_placeholder: "نموونە: ڕووکاری پێشەوە",
     sound_type_required: "جۆری دەنگ پێویستە",
-    sound_type_helper: "بۆ نموونە: شیعر، مۆسیقا، فۆلکلۆر، ئاینی، وتار",
+    sound_type_helper: "جۆرێک هەڵبژێرە یان بنووسە",
     institute_label: "بەرهەمی دەزگا",
     institute_helper: "ئەگەر دەنگەکە لە لایەن دەزگاوە بەرهەمهێنرابێت",
   },
@@ -336,15 +336,6 @@ export const NS = {
     paginationRange: (from: string, to: string, total: string) =>
       `ڕیزی ${from}–${to} لە ${total}`,
   },
-  sound_type_suggestions: [
-    "شیعر",
-    "مۆسیقا",
-    "فۆلکلۆر",
-    "ئاینی",
-    "وتار",
-    "گۆرانی",
-    "دەنگی سروشت",
-  ],
 } as const
 
 export function truncateTitle(title: string, max = 40) {

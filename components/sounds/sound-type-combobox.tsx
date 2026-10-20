@@ -24,8 +24,6 @@ import { cn } from "@/lib/utils"
  * Sound-type picker backed by the managed /api/v1/sound-tracks/types
  * vocabulary — like the project-type combobox. Still lets the editor type a
  * brand-new name; the backend auto-registers it into the vocabulary on save.
- * The hardcoded `sound_type_suggestions` remain as fallback options for
- * values that were common before the vocabulary existed.
  */
 export function SoundTypeCombobox({
   value,
@@ -44,19 +42,14 @@ export function SoundTypeCombobox({
   const [draftCkb, setDraftCkb] = useState("")
   const [draftKmr, setDraftKmr] = useState("")
 
-  const items = useMemo(() => {
-    const map = new Map<string, { ckb: string; kmr: string }>()
-    for (const s of NS.sound_type_suggestions) {
-      if (s.trim()) map.set(s.trim(), { ckb: s.trim(), kmr: "" })
-    }
-    for (const t of typesQ.data ?? []) {
-      if (t.nameCkb.trim())
-        map.set(t.nameCkb.trim(), { ckb: t.nameCkb.trim(), kmr: t.nameKmr })
-    }
-    return [...map.values()].sort((a, b) =>
-      a.ckb.localeCompare(b.ckb, "ckb"),
-    )
-  }, [typesQ.data])
+  const items = useMemo(
+    () =>
+      (typesQ.data ?? [])
+        .filter((t) => t.nameCkb.trim())
+        .map((t) => ({ ckb: t.nameCkb.trim(), kmr: t.nameKmr }))
+        .sort((a, b) => a.ckb.localeCompare(b.ckb, "ckb")),
+    [typesQ.data],
+  )
 
   return (
     <div className="space-y-2">
