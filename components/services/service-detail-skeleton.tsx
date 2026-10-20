@@ -8,7 +8,7 @@ export function ServiceDetailSkeleton() {
       </div>
       <div
         dir="ltr"
-        className="grid grid-cols-1 gap-6 px-4 py-6 lg:grid-cols-[340px_minmax(0,1fr)] lg:gap-8 lg:px-6"
+        className="grid grid-cols-1 gap-6 px-4 py-6 xl:grid-cols-[340px_minmax(0,1fr)] lg:gap-8 lg:px-6"
       >
         <aside dir="rtl" className="space-y-6">
           <div className="border-border bg-card space-y-4 rounded-xl border p-6">
@@ -19,7 +19,7 @@ export function ServiceDetailSkeleton() {
             <Skeleton className="h-8 w-full" />
           </div>
         </aside>
-        <main dir="rtl" className="mx-auto min-w-0 max-w-[860px] space-y-6 px-2">
+        <main dir="rtl" className="mx-auto w-full min-w-0 max-w-[860px] space-y-6 px-2">
           <Skeleton className="aspect-[21/9] w-full rounded-xl" />
           <Skeleton className="h-10 w-3/4" />
           <Skeleton className="h-6 w-1/2" />

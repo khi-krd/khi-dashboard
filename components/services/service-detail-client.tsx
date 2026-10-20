@@ -255,9 +255,9 @@ export function ServiceDetailClient({ serviceId }: { serviceId: number }) {
 
         <div
           dir="ltr"
-          className="grid grid-cols-1 lg:mx-auto lg:grid-cols-[340px_minmax(0,1fr)] lg:gap-8 lg:px-6"
+          className="grid grid-cols-1 xl:mx-auto xl:grid-cols-[340px_minmax(0,1fr)] lg:gap-8 lg:px-6"
         >
-          <aside dir="rtl" className="lg:sticky lg:top-20 lg:self-start">
+          <aside dir="rtl" className="xl:sticky xl:top-20 xl:self-start">
             <div className="rounded-xl border border-border bg-card p-6 text-sm">
               <section className="space-y-2">
                 <ServiceStatusPillSidebar service={dto} />
@@ -464,7 +464,7 @@ export function ServiceDetailClient({ serviceId }: { serviceId: number }) {
           </aside>
 
           <main dir="rtl" className="min-w-0">
-            <div className="mx-auto max-w-[860px] px-6 pb-12 pt-8">
+            <div className="mx-auto w-full max-w-[860px] px-6 pb-12 pt-8">
               <div className="text-muted-foreground flex flex-wrap items-center text-xs">
                 <span className="text-foreground font-medium">
                   {serviceStatusInlineWord(dto)}

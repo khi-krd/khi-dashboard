@@ -155,7 +155,7 @@ export function AboutDetailClient({ aboutId }: { aboutId: number }) {
 
       <div
         dir="ltr"
-        className="grid grid-cols-1 gap-8 py-8 lg:grid-cols-[340px_minmax(0,1fr)]"
+        className="grid grid-cols-1 gap-8 py-8 xl:grid-cols-[340px_minmax(0,1fr)]"
       >
         <div dir="rtl">
           <AboutDetailSidebar about={about} />
@@ -260,7 +260,7 @@ export function AboutDetailClient({ aboutId }: { aboutId: number }) {
               <h3 className="text-muted-foreground mb-4 text-xs font-medium tracking-wide uppercase">
                 {NS.detail.founder}
               </h3>
-              <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_220px]">
+              <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_220px]">
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="border-border bg-muted/20 rounded-lg border p-4">
                     <p className="text-muted-foreground mb-1 text-[10px] uppercase">

@@ -223,13 +223,13 @@ export function ContactForm({
 
         <div
           dir="ltr"
-          className="mx-auto grid max-w-[1280px] grid-cols-1 gap-6 px-4 py-6 lg:grid-cols-[340px_minmax(0,1fr)] lg:gap-8 lg:px-6"
+          className="mx-auto grid max-w-[1280px] grid-cols-1 gap-6 px-4 py-6 xl:grid-cols-[340px_minmax(0,1fr)] lg:gap-8 lg:px-6"
         >
           <div dir="rtl">
             <ContactFormSidebar mode={mode} editDto={editDto} />
           </div>
 
-          <article dir="rtl" className="mx-auto max-w-[860px] pb-12 pt-2">
+          <article dir="rtl" className="mx-auto w-full max-w-[860px] pb-12 pt-2">
             <div className="mb-8 flex items-center gap-2">
               {(["CKB", "KMR"] as const).map((lang) => {
                 const isActive = activeLang === lang

@@ -8,7 +8,7 @@ export function AboutDetailSkeleton() {
       <Skeleton className="mb-6 h-10 w-full max-w-lg" />
       <div
         dir="ltr"
-        className="grid grid-cols-1 gap-8 lg:grid-cols-[340px_minmax(0,1fr)]"
+        className="grid grid-cols-1 gap-8 xl:grid-cols-[340px_minmax(0,1fr)]"
       >
         <Skeleton className="h-96 rounded-xl" />
         <div dir="rtl" className="space-y-6">

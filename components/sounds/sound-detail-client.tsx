@@ -210,10 +210,10 @@ function SoundDetailLoaded({
         </div>
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-[340px_minmax(0,1fr)] lg:gap-10">
+      <div className="grid gap-8 xl:grid-cols-[340px_minmax(0,1fr)] lg:gap-10">
         <aside
           dir="rtl"
-          className="border-border bg-card space-y-6 self-start rounded-xl border p-6 text-sm lg:sticky lg:top-20"
+          className="border-border bg-card space-y-6 self-start rounded-xl border p-6 text-sm xl:sticky xl:top-20"
         >
           <SoundStatePill trackState={sound.trackState} size="large" />
           <p className="text-muted-foreground text-xs">

@@ -26,7 +26,7 @@ export function ContactDetailSidebar({ contact }: { contact: ContactDto }) {
   const kmrScore = computeContactCompletion(formLike, "KMR")
 
   return (
-    <aside className="border-border bg-card space-y-5 rounded-xl border p-5 text-sm lg:sticky lg:top-20 lg:self-start">
+    <aside className="border-border bg-card space-y-5 rounded-xl border p-5 text-sm xl:sticky xl:top-20 xl:self-start">
       <section>
         <h4 className="text-muted-foreground mb-2 text-[10px] font-medium tracking-wide uppercase">
           {NS.sidebar.visibility}

@@ -400,9 +400,9 @@ export function NewsDetailClient({ newsId }: { newsId: number }) {
           </div>
         </header>
 
-        <div className="grid grid-cols-1 lg:mx-auto lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-8 lg:px-6">
+        <div className="grid grid-cols-1 xl:mx-auto xl:grid-cols-[minmax(0,1fr)_340px] lg:gap-8 lg:px-6">
           <main className="order-1 min-w-0">
-            <div className="mx-auto max-w-[860px] px-6 pb-12 pt-8">
+            <div className="mx-auto w-full max-w-[860px] px-6 pb-12 pt-8">
               <div className="text-muted-foreground flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
                 {miniStatusPill(dto)}
                 <span aria-hidden className="text-muted-foreground/60">
@@ -638,7 +638,7 @@ export function NewsDetailClient({ newsId }: { newsId: number }) {
             </div>
           </main>
 
-          <aside className="border-border order-2 mx-4 mb-8 rounded-xl border bg-card/40 lg:sticky lg:top-20 lg:mx-0 lg:mb-16 lg:h-fit lg:self-start lg:mt-8">
+          <aside className="border-border order-2 mx-4 mb-8 rounded-xl border bg-card/40 xl:sticky xl:top-20 lg:mx-0 lg:mb-16 lg:h-fit xl:self-start lg:mt-8">
             <div className="divide-border/60 divide-y px-5 py-5">
               <section className="pb-6">
                 <div className="space-y-2">{sidebarStatusPill(dto)}</div>

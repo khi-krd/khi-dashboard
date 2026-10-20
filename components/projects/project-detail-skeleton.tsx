@@ -6,9 +6,9 @@ export function ProjectDetailSkeleton() {
       <div className="border-border sticky top-0 z-30 border-b px-4 py-3 lg:px-6">
         <Skeleton className="h-5 w-64 max-w-full" />
       </div>
-      <div className="grid grid-cols-1 lg:mx-auto lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-8 lg:px-6">
+      <div className="grid grid-cols-1 xl:mx-auto xl:grid-cols-[minmax(0,1fr)_340px] lg:gap-8 lg:px-6">
         <main className="order-1 min-w-0">
-          <div className="mx-auto max-w-[860px] space-y-6 px-6 pb-12 pt-8">
+          <div className="mx-auto w-full max-w-[860px] space-y-6 px-6 pb-12 pt-8">
             <Skeleton className="aspect-[21/9] w-full rounded-xl" />
             <Skeleton className="h-10 w-3/4" />
             <Skeleton className="h-6 w-1/2" />

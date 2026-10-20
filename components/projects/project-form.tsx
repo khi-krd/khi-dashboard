@@ -282,11 +282,11 @@ export function ProjectForm({
 
         <div
           dir="ltr"
-          className="grid grid-cols-1 gap-6 px-4 py-6 lg:grid-cols-[340px_minmax(0,1fr)] lg:gap-8 lg:px-6"
+          className="grid grid-cols-1 gap-6 px-4 py-6 xl:grid-cols-[340px_minmax(0,1fr)] lg:gap-8 lg:px-6"
         >
           <aside
             dir="rtl"
-            className="space-y-6 rounded-xl border border-border bg-card/50 p-6 text-sm shadow-xs lg:sticky lg:top-20 lg:self-start"
+            className="space-y-6 rounded-xl border border-border bg-card/50 p-6 text-sm shadow-xs xl:sticky xl:top-20 xl:self-start"
           >
             <div className="flex justify-center">
               {mode === "create" ? (
@@ -435,7 +435,7 @@ export function ProjectForm({
             <p className="text-muted-foreground text-xs italic">{NS.help.save_requirements}</p>
           </aside>
 
-          <div dir="rtl" className="mx-auto min-w-0 max-w-[860px] space-y-0">
+          <div dir="rtl" className="mx-auto w-full min-w-0 max-w-[860px] space-y-0">
             <div className="mb-6 flex flex-wrap gap-2">
               {(["CKB", "KMR"] as const).map((code) => {
                 const active = contentLanguages.includes(code)

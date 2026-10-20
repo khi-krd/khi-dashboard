@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 
 export function SoundDetailSkeleton() {
   return (
-    <div dir="ltr" className="grid gap-8 lg:grid-cols-[340px_minmax(0,1fr)]">
+    <div dir="ltr" className="grid gap-8 xl:grid-cols-[340px_minmax(0,1fr)]">
       <aside className="space-y-6 rounded-xl border border-border bg-card p-6">
         <Skeleton className="h-10 w-full rounded-md" />
         <Skeleton className="h-20 w-full" />

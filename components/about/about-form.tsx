@@ -538,7 +538,7 @@ export function AboutForm({
           className={
             embedded
               ? "space-y-4"
-              : "mx-auto grid max-w-[1280px] grid-cols-1 gap-6 px-4 py-6 lg:grid-cols-[340px_minmax(0,1fr)] lg:gap-8 lg:px-6"
+              : "mx-auto grid max-w-[1280px] grid-cols-1 gap-6 px-4 py-6 xl:grid-cols-[340px_minmax(0,1fr)] lg:gap-8 lg:px-6"
           }
         >
           {!embedded ? (
@@ -550,7 +550,7 @@ export function AboutForm({
           <article
             dir="rtl"
             className={
-              embedded ? "space-y-4" : "mx-auto max-w-[860px] pb-12 pt-2"
+              embedded ? "space-y-4" : "mx-auto w-full max-w-[860px] pb-12 pt-2"
             }
           >
             {embedded ? (

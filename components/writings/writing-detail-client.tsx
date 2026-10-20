@@ -279,10 +279,10 @@ function WritingDetailLoaded({
         </div>
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-[340px_minmax(0,1fr)] lg:gap-10">
+      <div className="grid gap-8 xl:grid-cols-[340px_minmax(0,1fr)] lg:gap-10">
         <aside
           dir="rtl"
-          className="px-4 pt-4 lg:sticky lg:top-20 lg:self-start lg:px-0 lg:pt-0"
+          className="px-4 pt-4 xl:sticky xl:top-20 xl:self-start xl:px-0 xl:pt-0"
         >
           <div className="border-border bg-card space-y-6 rounded-xl border p-6 text-sm">
           {writing.publishedByInstitute ? (

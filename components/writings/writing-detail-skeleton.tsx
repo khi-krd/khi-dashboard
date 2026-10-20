@@ -13,7 +13,7 @@ export function WritingDetailSkeleton() {
           </div>
         </div>
       </div>
-      <div className="grid gap-8 lg:grid-cols-[340px_minmax(0,1fr)] lg:gap-10">
+      <div className="grid gap-8 xl:grid-cols-[340px_minmax(0,1fr)] lg:gap-10">
         <aside className="px-4 pt-4 lg:px-0 lg:pt-0">
           <div className="border-border bg-card space-y-6 rounded-xl border p-6">
             <Skeleton className="h-10 w-full rounded-md" />

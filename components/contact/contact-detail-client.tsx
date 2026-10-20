@@ -137,7 +137,7 @@ export function ContactDetailClient({ contactId }: { contactId: number }) {
         </div>
       </nav>
 
-      <div className="grid grid-cols-1 gap-8 py-8 lg:grid-cols-[340px_minmax(0,1fr)]">
+      <div className="grid grid-cols-1 gap-8 py-8 xl:grid-cols-[340px_minmax(0,1fr)]">
         <ContactDetailSidebar contact={contact} />
 
         <article className="min-w-0">

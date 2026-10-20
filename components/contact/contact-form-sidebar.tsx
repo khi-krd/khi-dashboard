@@ -38,7 +38,7 @@ export function ContactFormSidebar({
   const kmrScore = computeContactCompletion(values, "KMR")
 
   return (
-    <aside className="border-border bg-card space-y-5 self-start rounded-xl border p-5 text-sm lg:sticky lg:top-20">
+    <aside className="border-border bg-card space-y-5 self-start rounded-xl border p-5 text-sm xl:sticky xl:top-20">
       <section>
         <h4 className="text-muted-foreground mb-2 text-[10px] font-medium tracking-wide uppercase">
           {NS.sidebar.visibility}

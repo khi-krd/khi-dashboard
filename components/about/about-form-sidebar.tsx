@@ -44,7 +44,7 @@ export function AboutFormSidebar({
         "border-border bg-card space-y-5 text-sm",
         embedded
           ? "space-y-4"
-          : "self-start rounded-xl border p-5 lg:sticky lg:top-20",
+          : "self-start rounded-xl border p-5 xl:sticky xl:top-20",
       )}
     >
       <section>

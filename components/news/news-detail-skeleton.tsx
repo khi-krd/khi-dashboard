@@ -19,9 +19,9 @@ export function NewsDetailSkeleton() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:mx-auto lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-8 lg:px-6">
+      <div className="grid grid-cols-1 xl:mx-auto xl:grid-cols-[minmax(0,1fr)_340px] lg:gap-8 lg:px-6">
         <main className="order-1 max-w-none lg:py-8">
-          <div className="mx-auto max-w-[860px] px-6 pb-12 pt-8">
+          <div className="mx-auto w-full max-w-[860px] px-6 pb-12 pt-8">
             <div className="bg-muted mb-4 h-4 w-48 max-w-[90%] animate-pulse rounded-md" />
 
             <div className="bg-muted relative mb-10 aspect-[21/9] w-full animate-pulse rounded-xl overflow-hidden" />
@@ -38,7 +38,7 @@ export function NewsDetailSkeleton() {
           </div>
         </main>
 
-        <aside className="order-2 border-border mx-4 mb-8 rounded-xl border lg:sticky lg:top-20 lg:mb-12 lg:h-fit lg:self-start lg:mx-0 lg:mt-8">
+        <aside className="order-2 border-border mx-4 mb-8 rounded-xl border xl:sticky xl:top-20 lg:mb-12 lg:h-fit xl:self-start lg:mx-0 lg:mt-8">
           <div className="space-y-6 p-6">
             <div className="bg-muted h-12 w-full animate-pulse rounded-md" />
             <div className="border-border border-t pt-6">

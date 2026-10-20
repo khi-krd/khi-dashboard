@@ -254,11 +254,11 @@ export function SoundForm({
 
         <div
           dir="ltr"
-          className="grid grid-cols-1 gap-6 px-4 py-6 lg:grid-cols-[340px_minmax(0,1fr)] lg:gap-8 lg:px-6"
+          className="grid grid-cols-1 gap-6 px-4 py-6 xl:grid-cols-[340px_minmax(0,1fr)] lg:gap-8 lg:px-6"
         >
           <aside
             dir="rtl"
-            className="space-y-6 text-sm lg:sticky lg:top-20 lg:self-start"
+            className="space-y-6 text-sm xl:sticky xl:top-20 xl:self-start"
           >
             <section className={sectionCard}>
               <SoundTypeCombobox
@@ -365,7 +365,7 @@ export function SoundForm({
             </p>
           </aside>
 
-          <div dir="rtl" className="mx-auto min-w-0 max-w-[860px] space-y-0">
+          <div dir="rtl" className="mx-auto w-full min-w-0 max-w-[860px] space-y-0">
             <div className="mb-6">
               <SoundStateToggle
                 value={trackState}
