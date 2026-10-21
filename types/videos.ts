@@ -16,6 +16,8 @@ export type VideoSourceDto = {
   embedUrl?: string | null
   main?: boolean
   label?: string | null
+  labelCkb?: string | null
+  labelKmr?: string | null
   durationSeconds?: number | null
 }
 

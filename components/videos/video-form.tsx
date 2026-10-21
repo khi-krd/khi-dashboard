@@ -350,18 +350,6 @@ export function VideoForm({
                   resolution={watch("resolution") ?? ""}
                   fileFormat={watch("fileFormat") ?? ""}
                   fileSizeMb={watch("fileSizeMb")}
-                  onDurationChange={(n) =>
-                    setValue("durationSeconds", n, { shouldDirty: true })
-                  }
-                  onResolutionChange={(s) =>
-                    setValue("resolution", s, { shouldDirty: true })
-                  }
-                  onFormatChange={(s) =>
-                    setValue("fileFormat", s, { shouldDirty: true })
-                  }
-                  onSizeChange={(n) =>
-                    setValue("fileSizeMb", n, { shouldDirty: true })
-                  }
                 />
               </section>
             ) : null}

@@ -17,6 +17,8 @@ export type BrochureDto = {
   id?: number
   imageUrl?: string | null
   caption?: string | null
+  captionCkb?: string | null
+  captionKmr?: string | null
   brochureOrder?: number | null
 }
 
@@ -26,6 +28,8 @@ export type SoundFileDto = {
   externalUrl?: string | null
   embedUrl?: string | null
   title?: string | null
+  titleCkb?: string | null
+  titleKmr?: string | null
   fileType?: FileType
   publishmentYear?: number | null
   fileFormat?: string | null
@@ -45,6 +49,8 @@ export type AttachmentDto = {
   id?: number
   fileUrl?: string | null
   title?: string | null
+  titleCkb?: string | null
+  titleKmr?: string | null
   attachmentType?: AttachmentType
   sizeBytes?: number | null
   mimeType?: string | null
@@ -57,6 +63,8 @@ export type AlbumBrochureDto = {
   id?: number
   fileUrl?: string | null
   title?: string | null
+  titleCkb?: string | null
+  titleKmr?: string | null
   fileType?: AttachmentType
   sizeBytes?: number | null
   mimeType?: string | null

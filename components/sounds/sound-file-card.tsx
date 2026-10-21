@@ -50,7 +50,8 @@ export function SoundFileCard({
     file.embedUrl?.trim() ||
     ""
 
-  const title = file.title?.trim() || NS.file.no_title
+  const title =
+    file.titleCkb?.trim() || file.title?.trim() || file.titleKmr?.trim() || NS.file.no_title
   const hasSource = !!src
 
   return (

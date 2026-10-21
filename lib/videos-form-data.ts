@@ -113,7 +113,9 @@ export function videoFormValuesToMultipart(
         externalUrl: trimOrUndef(s.externalUrl),
         embedUrl: trimOrUndef(normalizeEmbed(s.embedUrl)),
         main: hasMain ? !!s.main : i === 0,
-        label: trimOrUndef(s.label),
+        label: trimOrUndef(s.labelCkb) ?? trimOrUndef(s.label) ?? trimOrUndef(s.labelKmr),
+        labelCkb: trimOrUndef(s.labelCkb) ?? trimOrUndef(s.label),
+        labelKmr: trimOrUndef(s.labelKmr),
         durationSeconds: s.durationSeconds ?? undefined,
       }))
 

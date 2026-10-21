@@ -49,6 +49,8 @@ function normalizeVideoSource(raw: unknown): VideoSourceDto {
     embedUrl: coerceStr(o.embedUrl) ?? coerceStr(o.embed_url),
     main: coerceBool(o.main) || coerceBool(o.is_main),
     label: coerceStr(o.label),
+    labelCkb: coerceStr(o.labelCkb) ?? coerceStr(o.label_ckb),
+    labelKmr: coerceStr(o.labelKmr) ?? coerceStr(o.label_kmr),
     durationSeconds:
       coerceNum(o.durationSeconds) ?? coerceNum(o.duration_seconds),
   }

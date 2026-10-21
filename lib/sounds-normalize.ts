@@ -70,6 +70,8 @@ function normalizeBrochure(raw: unknown): BrochureDto {
     id: coerceNum(o.id) ?? undefined,
     imageUrl: coerceStr(o.imageUrl) ?? coerceStr(o.image_url),
     caption: coerceStr(o.caption),
+    captionCkb: coerceStr(o.captionCkb) ?? coerceStr(o.caption_ckb),
+    captionKmr: coerceStr(o.captionKmr) ?? coerceStr(o.caption_kmr),
     brochureOrder:
       coerceNum(o.brochureOrder) ?? coerceNum(o.brochure_order) ?? undefined,
   }
@@ -96,6 +98,8 @@ function normalizeFile(raw: unknown): SoundFileDto {
     externalUrl: coerceStr(o.externalUrl) ?? coerceStr(o.external_url),
     embedUrl: coerceStr(o.embedUrl) ?? coerceStr(o.embed_url),
     title: coerceStr(o.title),
+    titleCkb: coerceStr(o.titleCkb) ?? coerceStr(o.title_ckb),
+    titleKmr: coerceStr(o.titleKmr) ?? coerceStr(o.title_kmr),
     fileType,
     publishmentYear:
       coerceNum(o.publishmentYear) ?? coerceNum(o.publishment_year),
@@ -132,6 +136,8 @@ function normalizeAlbumBrochure(raw: unknown): AlbumBrochureDto {
     id: coerceNum(o.id) ?? undefined,
     fileUrl: coerceStr(o.fileUrl) ?? coerceStr(o.file_url),
     title: coerceStr(o.title),
+    titleCkb: coerceStr(o.titleCkb) ?? coerceStr(o.title_ckb),
+    titleKmr: coerceStr(o.titleKmr) ?? coerceStr(o.title_kmr),
     fileType: (type ?? "IMAGE") as AttachmentType,
     sizeBytes: coerceNum(o.sizeBytes) ?? coerceNum(o.size_bytes),
     mimeType: coerceStr(o.mimeType) ?? coerceStr(o.mime_type),
@@ -147,6 +153,8 @@ function normalizeAttachment(raw: unknown): AttachmentDto {
     id: coerceNum(o.id) ?? undefined,
     fileUrl: coerceStr(o.fileUrl) ?? coerceStr(o.file_url),
     title: coerceStr(o.title),
+    titleCkb: coerceStr(o.titleCkb) ?? coerceStr(o.title_ckb),
+    titleKmr: coerceStr(o.titleKmr) ?? coerceStr(o.title_kmr),
     attachmentType: (type ?? "OTHER") as AttachmentType,
     sizeBytes: coerceNum(o.sizeBytes) ?? coerceNum(o.size_bytes),
     mimeType: coerceStr(o.mimeType) ?? coerceStr(o.mime_type),

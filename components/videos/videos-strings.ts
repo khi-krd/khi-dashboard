@@ -170,7 +170,7 @@ export const NS = {
     label_placeholder: "بەشی 1، 1080p…",
     main_label: "سەرچاوەی سەرەکی",
     main_helper: "ئەم سەرچاوەیە وەک سەرەکی لە لیستدا دەردەکەوێت",
-    metadata_manual: "ئەم زانیارییە بە دەستی پڕ دەکرێتەوە",
+    metadata_manual: "ئەم زانیارییە خۆکار لە کاتی بارکردنەوە دیاری دەکرێت",
   },
   col: {
     cover: "ڕووکار",
@@ -248,7 +248,7 @@ export const NS = {
     bulk_max: (count: string) => `زۆرترین ${count} فایل ڕێگەپێدراوە`,
     no_title: "بێ ناونیشان",
     sheet_title: (n: string) => `دەستکاری کلیپ #${n}`,
-    metadata_manual: "ئەم زانیارییە بە دەستی پڕ دەکرێتەوە",
+    metadata_manual: "ئەم زانیارییە خۆکار لە کاتی بارکردنەوە دیاری دەکرێت",
     delete: "سڕینەوەی کلیپ",
     main_badge: "سەرەکی",
     set_main: "وەک کلیپی سەرەکی دیاری بکە",

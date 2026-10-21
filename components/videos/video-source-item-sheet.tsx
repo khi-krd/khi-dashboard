@@ -5,7 +5,6 @@ import {
   AlertCircleIcon,
   CloudUploadIcon,
 } from "@hugeicons/core-free-icons"
-import { useEffect, useState } from "react"
 
 import {
   Alert,
@@ -135,15 +134,31 @@ export function VideoSourceItemSheet({
         </SheetHeader>
         <div className="flex flex-1 flex-col gap-6 overflow-y-auto px-4 pb-4">
           <FieldGroup>
-            <Field>
-              <FieldLabel htmlFor="source-label">{NS.source.label_field}</FieldLabel>
-              <Input
-                id="source-label"
-                value={draft.label ?? ""}
-                onChange={(e) => patch({ label: e.target.value })}
-                placeholder={NS.source.label_placeholder}
-              />
-            </Field>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Field>
+                <FieldLabel htmlFor="source-label-ckb">
+                  {NS.source.label_field} · {NS.lang.ckb}
+                </FieldLabel>
+                <Input
+                  id="source-label-ckb"
+                  value={draft.labelCkb ?? draft.label ?? ""}
+                  onChange={(e) => patch({ labelCkb: e.target.value })}
+                  placeholder={NS.source.label_placeholder}
+                />
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="source-label-kmr">
+                  {NS.source.label_field} · {NS.lang.kmr}
+                </FieldLabel>
+                <Input
+                  id="source-label-kmr"
+                  value={draft.labelKmr ?? ""}
+                  onChange={(e) => patch({ labelKmr: e.target.value })}
+                  placeholder={NS.source.label_placeholder}
+                  dir="ltr"
+                />
+              </Field>
+            </div>
 
             <Field orientation="horizontal">
               <div className="flex flex-col gap-1">
@@ -299,10 +314,6 @@ export function VideoSourceItemSheet({
             resolution={draft.resolution ?? ""}
             fileFormat={draft.fileFormat ?? ""}
             fileSizeMb={draft.fileSizeMb}
-            onDurationChange={(n) => patch({ durationSeconds: n })}
-            onResolutionChange={(s) => patch({ resolution: s })}
-            onFormatChange={(s) => patch({ fileFormat: s })}
-            onSizeChange={(n) => patch({ fileSizeMb: n })}
           />
         </div>
         <SheetFooter className="flex-row justify-between gap-2 sm:justify-between">

@@ -76,13 +76,28 @@ export function SoundAttachmentRow({
       className="border-border bg-background grid gap-3 rounded-lg border p-3 sm:grid-cols-[1fr_auto_auto_auto] sm:items-end"
     >
       <div className="min-w-0 space-y-2 sm:col-span-1">
-        <div className="space-y-1">
-          <Label className="text-xs">{NS.col.title}</Label>
-          <Input
-            {...register(`${base}.title`)}
-            placeholder={NS.field.attachment_title_placeholder}
-            className="h-9"
-          />
+        <div className="grid gap-2 sm:grid-cols-2">
+          <div className="space-y-1">
+            <Label className="text-xs">
+              {NS.col.title} · {NS.lang.ckb}
+            </Label>
+            <Input
+              {...register(`${base}.titleCkb`)}
+              placeholder={NS.field.attachment_title_placeholder}
+              className="h-9"
+            />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs">
+              {NS.col.title} · {NS.lang.kmr}
+            </Label>
+            <Input
+              {...register(`${base}.titleKmr`)}
+              placeholder={NS.field.attachment_title_placeholder}
+              className="h-9"
+              dir="ltr"
+            />
+          </div>
         </div>
         <div className="flex flex-wrap gap-2">
           <input {...getInputProps()} className="sr-only" />

@@ -81,10 +81,12 @@ export function SoundSourcePanel({
         stagedAudioFile: staged,
         fileUrl: "",
         ...rest,
-        ...(id3Title && !file.title?.trim() ? { title: id3Title } : {}),
+        ...(id3Title && !file.titleCkb?.trim() && !file.title?.trim()
+          ? { titleCkb: id3Title }
+          : {}),
       })
     })
-  }, [staged, applyMetaPatch, file.title])
+  }, [staged, applyMetaPatch, file.title, file.titleCkb])
 
   const syncFromAudioElement = useCallback(() => {
     const el = audioRef.current
@@ -186,7 +188,9 @@ export function SoundSourcePanel({
           stagedAudioFile: audioFile,
           fileUrl: "",
           ...rest,
-          ...(id3Title && !file.title?.trim() ? { title: id3Title } : {}),
+          ...(id3Title && !file.titleCkb?.trim() && !file.title?.trim()
+            ? { titleCkb: id3Title }
+            : {}),
         })
       })
       queueMicrotask(() => removeFile(entry.id))

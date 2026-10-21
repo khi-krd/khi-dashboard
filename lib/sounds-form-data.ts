@@ -55,7 +55,9 @@ export function soundFormValuesToMultipart(
     embedUrl: trimOrUndef(
       f.embedUrl ? (toAudioEmbedUrl(f.embedUrl) ?? extractIframeSrc(f.embedUrl)) : undefined,
     ),
-    title: trimOrUndef(f.title),
+    title: trimOrUndef(f.titleCkb) ?? trimOrUndef(f.title) ?? trimOrUndef(f.titleKmr),
+    titleCkb: trimOrUndef(f.titleCkb) ?? trimOrUndef(f.title),
+    titleKmr: trimOrUndef(f.titleKmr),
     fileType: f.fileType ?? "AUDIO",
     publishmentYear: f.publishmentYear ?? undefined,
     durationSeconds: f.durationSeconds ?? 0,
@@ -68,7 +70,9 @@ export function soundFormValuesToMultipart(
     brochures: f.brochures.map((b, bi) => ({
       ...(typeof b.id === "number" && b.id > 0 ? { id: b.id } : {}),
       imageUrl: trimOrUndef(b.imageUrl),
-      caption: trimOrUndef(b.caption),
+      caption: trimOrUndef(b.captionCkb) ?? trimOrUndef(b.caption) ?? trimOrUndef(b.captionKmr),
+      captionCkb: trimOrUndef(b.captionCkb) ?? trimOrUndef(b.caption),
+      captionKmr: trimOrUndef(b.captionKmr),
       brochureOrder: b.brochureOrder ?? bi,
     })),
     sortOrder: readyFiles.indexOf(f),
@@ -86,7 +90,9 @@ export function soundFormValuesToMultipart(
   const attachmentsPayload = orderedAttachments.map((a) => ({
     ...(typeof a.id === "number" && a.id > 0 ? { id: a.id } : {}),
     fileUrl: trimOrUndef(a.fileUrl),
-    title: trimOrUndef(a.title),
+    title: trimOrUndef(a.titleCkb) ?? trimOrUndef(a.title) ?? trimOrUndef(a.titleKmr),
+    titleCkb: trimOrUndef(a.titleCkb) ?? trimOrUndef(a.title),
+    titleKmr: trimOrUndef(a.titleKmr),
     attachmentType: a.attachmentType ?? "OTHER",
     attachmentOrder: readyAttachments.indexOf(a),
   }))
@@ -100,7 +106,9 @@ export function soundFormValuesToMultipart(
   const brochuresPayload = orderedBrochures.map((b) => ({
     ...(typeof b.id === "number" && b.id > 0 ? { id: b.id } : {}),
     fileUrl: trimOrUndef(b.fileUrl),
-    title: trimOrUndef(b.title),
+    title: trimOrUndef(b.titleCkb) ?? trimOrUndef(b.title) ?? trimOrUndef(b.titleKmr),
+    titleCkb: trimOrUndef(b.titleCkb) ?? trimOrUndef(b.title),
+    titleKmr: trimOrUndef(b.titleKmr),
     fileType: b.fileType ?? "IMAGE",
     sizeBytes: b.sizeBytes ?? 0,
     mimeType: trimOrUndef(b.mimeType),

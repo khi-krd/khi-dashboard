@@ -43,7 +43,8 @@ export function SoundDetailFilesList({
       trackId: sound.id,
       fileId: file.id,
       src,
-      title: file.title?.trim() || sound.ckbContent?.title || "",
+      title:
+        file.titleCkb?.trim() || file.title?.trim() || file.titleKmr?.trim() || sound.ckbContent?.title || "",
       subtitle: `${String(index + 1).padStart(2, "0")}`,
     })
   }
@@ -82,7 +83,7 @@ export function SoundDetailFilesList({
               </button>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium">
-                  {file.title?.trim() || NS.file.no_title}
+                  {file.titleCkb?.trim() || file.title?.trim() || file.titleKmr?.trim() || NS.file.no_title}
                 </p>
                 <p className="text-muted-foreground text-xs">
                   {meta}

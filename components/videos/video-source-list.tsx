@@ -75,6 +75,8 @@ export function VideoSourceList() {
       embedUrl: "",
       main: isFirst,
       label: "",
+      labelCkb: "",
+      labelKmr: "",
       durationSeconds: null,
       resolution: "",
       fileFormat: "",

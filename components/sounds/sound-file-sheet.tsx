@@ -10,13 +10,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import {
   Sheet,
   SheetContent,
   SheetFooter,
@@ -95,17 +88,37 @@ export function SoundFileSheet({
           <SheetTitle>{NS.file.sheet_title(String(index + 1))}</SheetTitle>
         </SheetHeader>
         <div className="flex-1 space-y-6 overflow-y-auto px-4 pb-4">
-          <div className="space-y-2">
-            <Label className="text-xs">{NS.col.title}</Label>
-            <Input
-              value={draft.title ?? ""}
-              onChange={(e) => patch({ title: e.target.value })}
-              placeholder={NS.field.file_title_placeholder}
-            />
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label className="text-xs">
+                {NS.col.title} · {NS.lang.ckb}
+              </Label>
+              <Input
+                value={draft.titleCkb ?? draft.title ?? ""}
+                onChange={(e) => patch({ titleCkb: e.target.value })}
+                placeholder={NS.field.file_title_placeholder}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs">
+                {NS.col.title} · {NS.lang.kmr}
+              </Label>
+              <Input
+                value={draft.titleKmr ?? ""}
+                onChange={(e) => patch({ titleKmr: e.target.value })}
+                placeholder={NS.field.file_title_placeholder}
+                dir="ltr"
+              />
+            </div>
           </div>
 
           <SoundSourcePanel file={draft} onChange={patch} />
 
+          {/*
+            Technical metadata is calculated automatically — from the staged
+            file in the browser, then re-verified server-side with ffprobe on
+            upload — so these fields are read-only.
+          */}
           <section className="space-y-3">
             <h3 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
               {NS.section.technical}
@@ -113,71 +126,33 @@ export function SoundFileSheet({
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
                 <Label className="text-xs">{NS.field.duration}</Label>
-                <div className="flex items-center gap-1">
-                  <Input
-                    type="number"
-                    className="h-8"
-                    value={draft.durationSeconds ?? ""}
-                    onChange={(e) => {
-                      const v = e.target.value
-                      patch({ durationSeconds: v === "" ? 0 : Number(v) })
-                    }}
-                  />
-                  <span className="text-muted-foreground text-xs">{NS.field.duration_unit}</span>
-                </div>
-                <p className="text-muted-foreground font-mono text-[10px]">
+                <p className="bg-muted/50 flex h-8 items-center rounded-md px-2 font-mono text-xs">
                   {formatDuration(draft.durationSeconds)}
                 </p>
               </div>
               <div className="space-y-1">
                 <Label className="text-xs">{NS.field.size}</Label>
-                <Input
-                  type="number"
-                  className="h-8"
-                  value={draft.sizeBytes ?? ""}
-                  onChange={(e) => {
-                    const v = e.target.value
-                    patch({ sizeBytes: v === "" ? 0 : Number(v) })
-                  }}
-                />
-                <p className="text-muted-foreground font-mono text-[10px]">
+                <p className="bg-muted/50 flex h-8 items-center rounded-md px-2 font-mono text-xs">
                   {formatBytes(draft.sizeBytes)}
                 </p>
               </div>
               <div className="space-y-1">
                 <Label className="text-xs">{NS.field.bit_rate}</Label>
-                <Input
-                  className="h-8"
-                  value={draft.bitRate ?? ""}
-                  onChange={(e) => patch({ bitRate: e.target.value })}
-                  placeholder={NS.field.bit_rate_placeholder}
-                />
+                <p className="bg-muted/50 flex h-8 items-center rounded-md px-2 font-mono text-xs">
+                  {draft.bitRate?.trim() || "—"}
+                </p>
               </div>
               <div className="space-y-1">
                 <Label className="text-xs">{NS.field.sample_rate}</Label>
-                <Input
-                  className="h-8"
-                  value={draft.sampleRate ?? ""}
-                  onChange={(e) => patch({ sampleRate: e.target.value })}
-                  placeholder={NS.field.sample_rate_placeholder}
-                />
+                <p className="bg-muted/50 flex h-8 items-center rounded-md px-2 font-mono text-xs">
+                  {draft.sampleRate?.trim() || "—"}
+                </p>
               </div>
               <div className="space-y-1">
                 <Label className="text-xs">{NS.field.audio_channel}</Label>
-                <Select
-                  value={draft.audioChannel ?? "STEREO"}
-                  onValueChange={(v) =>
-                    patch({ audioChannel: v === "MONO" ? "MONO" : "STEREO" })
-                  }
-                >
-                  <SelectTrigger className="h-8">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="STEREO">{NS.channel.stereo}</SelectItem>
-                    <SelectItem value="MONO">{NS.channel.mono}</SelectItem>
-                  </SelectContent>
-                </Select>
+                <p className="bg-muted/50 flex h-8 items-center rounded-md px-2 font-mono text-xs">
+                  {draft.audioChannel === "MONO" ? NS.channel.mono : NS.channel.stereo}
+                </p>
               </div>
             </div>
           </section>

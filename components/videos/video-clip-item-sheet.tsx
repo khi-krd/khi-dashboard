@@ -279,10 +279,6 @@ export function VideoClipItemSheet({
             resolution={draft.resolution ?? ""}
             fileFormat={draft.fileFormat ?? ""}
             fileSizeMb={draft.fileSizeMb}
-            onDurationChange={(n) => patch({ durationSeconds: n })}
-            onResolutionChange={(s) => patch({ resolution: s })}
-            onFormatChange={(s) => patch({ fileFormat: s })}
-            onSizeChange={(n) => patch({ fileSizeMb: n })}
           />
         </div>
         <SheetFooter className="flex-row justify-between gap-2 sm:justify-between">
