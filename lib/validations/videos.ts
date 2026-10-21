@@ -56,6 +56,7 @@ export const VideoClipItemFormSchema = z.object({
   titleKmr: z.string().max(300).optional(),
   descriptionCkb: z.string().optional(),
   descriptionKmr: z.string().optional(),
+  main: z.boolean().default(false),
   stagedVideoFile: z.instanceof(File).optional().nullable(),
 })
 
@@ -251,6 +252,7 @@ export function videoDtoToFormValues(d: import("@/types/videos").VideoDto): Vide
       titleKmr: c.titleKmr ?? "",
       descriptionCkb: c.descriptionCkb ?? "",
       descriptionKmr: c.descriptionKmr ?? "",
+      main: c.main ?? false,
       stagedVideoFile: null,
     })),
     fileFormat: d.fileFormat ?? "",

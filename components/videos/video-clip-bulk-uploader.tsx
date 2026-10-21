@@ -78,6 +78,7 @@ export function VideoClipBulkUploader({
           titleKmr: contentLanguages.includes("KMR") ? title : "",
           descriptionCkb: "",
           descriptionKmr: "",
+          main: existing.length === 0 && newClips.length === 0,
           stagedVideoFile: file,
         })
       }

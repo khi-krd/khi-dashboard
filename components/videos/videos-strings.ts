@@ -250,6 +250,9 @@ export const NS = {
     sheet_title: (n: string) => `دەستکاری کلیپ #${n}`,
     metadata_manual: "ئەم زانیارییە بە دەستی پڕ دەکرێتەوە",
     delete: "سڕینەوەی کلیپ",
+    main_badge: "سەرەکی",
+    set_main: "وەک کلیپی سەرەکی دیاری بکە",
+    main_helper: "ئەم کلیپە لە پەڕەی وردەکاری سەرەتای یەکەم لێدەدات",
     hero_label: (count: string) =>
       `${count} کلیپ — کلیک بکە بۆ بینین لە خوارەوە`,
   },

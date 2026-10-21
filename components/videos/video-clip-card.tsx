@@ -3,8 +3,10 @@
 import {
   Bars2Icon,
   PencilSquareIcon,
+  StarIcon as StarIconOutline,
   TrashIcon,
 } from "@heroicons/react/24/outline"
+import { StarIcon as StarIconSolid } from "@heroicons/react/24/solid"
 import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import { useEffect, useState } from "react"
@@ -23,11 +25,13 @@ export function VideoClipCard({
   clip,
   onEdit,
   onRemove,
+  onSetMain,
 }: {
   id: string
   clip: Clip
   onEdit: () => void
   onRemove: () => void
+  onSetMain: () => void
 }) {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id })
@@ -59,7 +63,15 @@ export function VideoClipCard({
         className="min-w-0 flex-1 text-start"
         onClick={onEdit}
       >
-        <p className="text-primary text-xs font-mono">#{clip.clipNumber}</p>
+        <div className="flex flex-wrap items-center gap-2">
+          <p className="text-primary text-xs font-mono">#{clip.clipNumber}</p>
+          {clip.main ? (
+            <span className="bg-primary/10 text-primary inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium">
+              <StarIconSolid className="size-3" />
+              {NS.clip.main_badge}
+            </span>
+          ) : null}
+        </div>
         <p className="font-medium">{title}</p>
         {clip.titleKmr && clip.titleCkb ? (
           <p className="text-muted-foreground text-xs">{clip.titleKmr}</p>
@@ -74,6 +86,25 @@ export function VideoClipCard({
         </p>
       </button>
       <div className="flex shrink-0 flex-col gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100">
+        <button
+          type="button"
+          title={NS.clip.set_main}
+          aria-label={NS.clip.set_main}
+          aria-pressed={!!clip.main}
+          className={cn(
+            "rounded p-1",
+            clip.main
+              ? "text-primary"
+              : "text-muted-foreground hover:text-foreground",
+          )}
+          onClick={onSetMain}
+        >
+          {clip.main ? (
+            <StarIconSolid className="size-4" />
+          ) : (
+            <StarIconOutline className="size-4" />
+          )}
+        </button>
         <button
           type="button"
           className="text-muted-foreground hover:text-foreground rounded p-1"

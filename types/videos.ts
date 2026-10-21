@@ -33,6 +33,8 @@ export type VideoClipItemDto = {
   titleKmr?: string | null
   descriptionCkb?: string | null
   descriptionKmr?: string | null
+  /** Primary clip — the detail page opens with it. */
+  main?: boolean
 }
 
 export type TopicDto = {

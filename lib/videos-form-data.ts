@@ -41,26 +41,27 @@ export function videoFormValuesToMultipart(
 ): FormData {
   const fd = new FormData()
 
-  const clips =
+  const sourcedClips =
     values.videoType === "VIDEO_CLIP"
-      ? values.videoClipItems
-          .filter(clipHasSource)
-          .map((c, i) => ({
-            ...(typeof c.id === "number" && c.id > 0 ? { id: c.id } : {}),
-            url: trimOrUndef(extractIframeSrc(c.url)),
-            externalUrl: trimOrUndef(c.externalUrl),
-            embedUrl: trimOrUndef(normalizeEmbed(c.embedUrl)),
-            clipNumber: c.clipNumber ?? i + 1,
-            durationSeconds: c.durationSeconds ?? undefined,
-            resolution: trimOrUndef(c.resolution),
-            fileFormat: trimOrUndef(c.fileFormat),
-            fileSizeMb: c.fileSizeMb ?? undefined,
-            titleCkb: trimOrUndef(c.titleCkb),
-            titleKmr: trimOrUndef(c.titleKmr),
-            descriptionCkb: c.descriptionCkb?.trim() || undefined,
-            descriptionKmr: c.descriptionKmr?.trim() || undefined,
-          }))
+      ? values.videoClipItems.filter(clipHasSource)
       : []
+  const clipsHaveMain = sourcedClips.some((c) => c.main)
+  const clips = sourcedClips.map((c, i) => ({
+    ...(typeof c.id === "number" && c.id > 0 ? { id: c.id } : {}),
+    url: trimOrUndef(extractIframeSrc(c.url)),
+    externalUrl: trimOrUndef(c.externalUrl),
+    embedUrl: trimOrUndef(normalizeEmbed(c.embedUrl)),
+    clipNumber: c.clipNumber ?? i + 1,
+    durationSeconds: c.durationSeconds ?? undefined,
+    resolution: trimOrUndef(c.resolution),
+    fileFormat: trimOrUndef(c.fileFormat),
+    fileSizeMb: c.fileSizeMb ?? undefined,
+    titleCkb: trimOrUndef(c.titleCkb),
+    titleKmr: trimOrUndef(c.titleKmr),
+    descriptionCkb: c.descriptionCkb?.trim() || undefined,
+    descriptionKmr: c.descriptionKmr?.trim() || undefined,
+    main: clipsHaveMain ? !!c.main : i === 0,
+  }))
 
   const payload: Partial<VideoDto> & {
     id?: number

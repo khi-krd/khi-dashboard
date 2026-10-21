@@ -93,6 +93,7 @@ function normalizeClip(raw: unknown): VideoClipItemDto {
       coerceStr(o.descriptionCkb) ?? coerceStr(o.description_ckb),
     descriptionKmr:
       coerceStr(o.descriptionKmr) ?? coerceStr(o.description_kmr),
+    main: coerceBool(o.main) || coerceBool(o.is_main),
   }
 }
 

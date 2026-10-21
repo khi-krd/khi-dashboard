@@ -59,9 +59,19 @@ export function VideoClipList() {
       titleKmr: "",
       descriptionCkb: "",
       descriptionKmr: "",
+      main: fields.length === 0,
       stagedVideoFile: null,
     })
     setSheetIdx(fields.length)
+  }
+
+  function setMain(index: number) {
+    const items = watch("videoClipItems")
+    items.forEach((_, i) => {
+      setValue(`videoClipItems.${i}.main`, i === index, {
+        shouldDirty: true,
+      })
+    })
   }
 
   return (
@@ -106,6 +116,7 @@ export function VideoClipList() {
                   clip={watch(`videoClipItems.${index}`)}
                   onEdit={() => setSheetIdx(index)}
                   onRemove={() => remove(index)}
+                  onSetMain={() => setMain(index)}
                 />
               ))}
             </div>
