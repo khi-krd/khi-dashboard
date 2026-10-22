@@ -60,12 +60,6 @@ export function BookGenreDeleteDialog({
               <span className="block text-sm font-medium">
                 {bookGenreLabel(target)}
               </span>
-              <span
-                className="text-muted-foreground block font-mono text-xs"
-                dir="ltr"
-              >
-                {target.slug}
-              </span>
             </span>
           </AlertDialogDescription>
         </AlertDialogHeader>

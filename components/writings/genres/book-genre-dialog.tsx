@@ -37,17 +37,14 @@ const sectionCard =
 /**
  * `403` comes back with an empty body, so `extractApiErrorMessage` finds nothing
  * to read. `409` does carry one, but its text is the generic "A record with this
- * data already exists"; a duplicate `slug` is the only way this endpoint
- * conflicts, so naming it — and saying what to do instead — is more useful. A
- * `400` on edit is the server refusing a changed slug for a genre books use,
- * which only happens to a client whose page predates someone else's save.
+ * data already exists"; a duplicate is the only way this endpoint conflicts,
+ * so naming it — and saying what to do instead — is more useful.
  */
 function bookGenreErrorMessage(err: unknown, mode: "create" | "edit"): string {
   const status = (err as { response?: { status?: number } })?.response?.status
   if (status === 403) return BG.error.forbidden
   if (status === 409) return BG.error.duplicateSlug
   if (status === 404) return BG.error.notFound
-  if (status === 400 && mode === "edit") return BG.error.slugImmutable
   return extractApiErrorMessage(err) ?? BG.error.generic
 }
 
