@@ -1,16 +1,23 @@
 "use client"
 
-import { ExclamationTriangleIcon } from "@heroicons/react/24/outline"
+import {
+  ExclamationTriangleIcon,
+  PlusIcon,
+} from "@heroicons/react/24/outline"
 import Link from "next/link"
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
 
 import { BG } from "@/components/writings/genres/book-genres-strings"
 import { WritingGenrePill } from "@/components/writings/writing-genre-pill"
 import { NS } from "@/components/writings/writings-strings"
 import { FieldError } from "@/components/ui/field"
+import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Spinner } from "@/components/ui/spinner"
 import { Skeleton } from "@/components/ui/skeleton"
-import { useBookGenresQuery } from "@/hooks/useBookGenres"
+import { useBookGenresQuery, useCreateBookGenre } from "@/hooks/useBookGenres"
+import { extractApiErrorMessage } from "@/lib/api-error"
+import { toastError, toastSuccess } from "@/lib/toast"
 import {
   GENRE_FAMILY_CLASSES,
   GENRE_GROUPS,
@@ -19,7 +26,11 @@ import {
 } from "@/lib/writings-genres"
 import { formatCkbDigits } from "@/lib/intl-ckb"
 import { cn } from "@/lib/utils"
-import { bookGenreLabel, type BookGenreDto } from "@/types/book-genre"
+import {
+  bookGenreLabel,
+  suggestGenreSlug,
+  type BookGenreDto,
+} from "@/types/book-genre"
 import type { BookGenre } from "@/types/writings"
 
 const FAMILY_LABELS: Record<GenreFamily, string> = {
@@ -79,6 +90,47 @@ export function WritingGenreMultiselect({
     )
     return value.filter((slug) => !offered.has(slug))
   }, [genresQ.isLoading, useFallback, options, value])
+
+  const createMut = useCreateBookGenre()
+  const [newNameCkb, setNewNameCkb] = useState("")
+  const [newNameKmr, setNewNameKmr] = useState("")
+
+  /**
+   * Quick-add: POSTs just the two names — the slug input is gone, so the
+   * suggested slug (or the backend's GENRE_* fallback when both names are in
+   * Arabic script) is the machine key. On success the returned slug is
+   * selected immediately; the invalidation the hook already performs is what
+   * makes the chip appear in the list.
+   */
+  function addGenre() {
+    const nameCkb = newNameCkb.trim()
+    const nameKmr = newNameKmr.trim()
+    if (!nameCkb && !nameKmr) {
+      toastError(BG.error.nameRequired)
+      return
+    }
+    createMut.mutate(
+      {
+        slug: suggestGenreSlug(nameKmr, nameCkb),
+        nameCkb: nameCkb || null,
+        nameKmr: nameKmr || null,
+        displayOrder: options.length,
+        active: true,
+      },
+      {
+        onSuccess: (created) => {
+          toastSuccess(BG.toast.created)
+          setNewNameCkb("")
+          setNewNameKmr("")
+          if (created?.slug && !selected.has(created.slug)) {
+            onChange([...value, created.slug])
+          }
+        },
+        onError: (err) =>
+          toastError(extractApiErrorMessage(err) ?? BG.error.generic),
+      },
+    )
+  }
 
   function toggle(slug: string) {
     if (selected.has(slug)) {
@@ -152,6 +204,43 @@ export function WritingGenreMultiselect({
         </section>
       ) : null}
 
+      <section className="border-border/60 bg-card/50 space-y-3 rounded-xl border p-3">
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-muted-foreground text-xs font-medium">
+            {BG.form.addTitle}
+          </span>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Input
+            className="h-8 w-40"
+            placeholder={BG.form.addNameCkb}
+            value={newNameCkb}
+            onChange={(e) => setNewNameCkb(e.target.value)}
+          />
+          <Input
+            dir="ltr"
+            className="h-8 w-40"
+            placeholder={BG.form.addNameKmr}
+            value={newNameKmr}
+            onChange={(e) => setNewNameKmr(e.target.value)}
+          />
+          <button
+            type="button"
+            onClick={addGenre}
+            disabled={createMut.isPending}
+            className="border-input bg-background hover:bg-accent hover:text-accent-foreground inline-flex h-8 items-center gap-1 rounded-md border px-3 text-xs font-medium transition-colors disabled:opacity-60"
+          >
+            {createMut.isPending ? (
+              <Spinner className="size-3.5" aria-hidden />
+            ) : (
+              <PlusIcon className="size-3.5" aria-hidden />
+            )}
+            {createMut.isPending ? BG.form.addSaving : BG.form.addButton}
+          </button>
+        </div>
+        <p className="text-muted-foreground text-xs">{BG.form.addHint}</p>
+      </section>
+
       <Link
         href="/dashboard/writings/genres"
         className="text-muted-foreground hover:text-foreground inline-block text-xs underline-offset-4 transition-colors hover:underline"
@@ -181,7 +270,6 @@ function GenreChip({
       type="button"
       onClick={onClick}
       aria-pressed={isOn}
-      title={genre.slug}
       className={cn(
         "inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[11px] font-medium transition-opacity hover:opacity-90",
         isOn ? classes.selected : cn(classes.pill, "opacity-80"),

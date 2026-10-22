@@ -91,8 +91,15 @@ export const BG = {
     fallbackNotice:
       "لیستی جۆرەکان نەهێنرا، بۆیە لیستی ناوەکی بەکاردەهێنرێت. دەتوانیت کتێبەکە پاشەکەوت بکەیت، بەڵام جۆرە نوێیەکان لێرە دەرناکەون.",
     empty:
-      "هیچ ژانرێکی چالاک نییە. لە «ژانرەکانی کتێب»ەوە ژانرێک زیاد بکە.",
+      "هیچ ژانرێکی چالاک نییە. لە خوارەوە ژانرێک زیاد بکە.",
     manageLink: "بەڕێوەبردنی جۆرەکان",
+    /** Inline quick-add inside the picker — bilingual names, no code. */
+    addTitle: "ژانرێکی نوێ",
+    addNameCkb: "ناو بە سۆرانی",
+    addNameKmr: "ناو بە کورمانجی",
+    addButton: "زیادکردن",
+    addSaving: "دەخرێتە سەردا…",
+    addHint: "ناوەکە بنووسە و لەگەڵ خۆیان هەڵدەبژێردرێت.",
     /** Genres already on the book that the active list no longer offers. */
     attachedTitle: "لەسەر ئەم کتێبە، بەڵام لە لیستدا نییە",
     attachedHint:

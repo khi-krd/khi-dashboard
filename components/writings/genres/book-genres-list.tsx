@@ -350,12 +350,6 @@ function BookGenreRow({
           <span className="text-muted-foreground text-xs">
             {BG.page.rowLabel(formatCkbDigits(index + 1))}
           </span>
-          <span
-            className="text-muted-foreground/80 font-mono text-xs"
-            dir="ltr"
-          >
-            {genre.slug}
-          </span>
           {!genre.active ? (
             <Badge variant="outline">{BG.field.inactive}</Badge>
           ) : null}

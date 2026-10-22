@@ -1,6 +1,5 @@
 "use client"
 
-import { LockClosedIcon } from "@heroicons/react/24/outline"
 import { useState } from "react"
 import { Controller, useForm, type Resolver } from "react-hook-form"
 
@@ -110,9 +109,8 @@ function BookGenreDialogBody({
   // here rather than in the schema so no field is marked required while it is
   // being typed — the message appears only once the editor tries to save.
   const [blockers, setBlockers] = useState<string[]>([])
-  // Auto-suggestion stops the moment the editor types a slug of their own,
-  // otherwise every keystroke in the Kurmanji name would overwrite it.
-  const [slugTouched, setSlugTouched] = useState(false)
+  // The slug itself is hidden — `suggestGenreSlug` keeps the auto-generated
+  // value readable whenever a name is in Latin script.
 
   const {
     control,
@@ -129,8 +127,6 @@ function BookGenreDialogBody({
     mode: "onChange",
   })
 
-  const slugLocked = mode === "edit"
-
   /**
    * Keeps the suggested slug in step with the names until the editor takes over.
    *
@@ -139,7 +135,7 @@ function BookGenreDialogBody({
    * on to the Sorani name, which is Arabic script and suggests nothing.
    */
   function maybeSuggestSlug(next: { nameKmr?: string; nameCkb?: string }) {
-    if (slugLocked || slugTouched) return
+    if (mode === "edit") return
     const kmr = next.nameKmr ?? getValues("nameKmr") ?? ""
     const ckb = next.nameCkb ?? getValues("nameCkb") ?? ""
     setValue("slug", suggestGenreSlug(kmr, ckb), { shouldDirty: true })
@@ -153,7 +149,6 @@ function BookGenreDialogBody({
       if (!payload.nameCkb && !payload.nameKmr) {
         found.push(BG.error.nameRequired)
       }
-      if (!payload.slug) found.push(BG.error.slugRequired)
       setBlockers(found)
       if (found.length > 0) return
 
@@ -233,43 +228,12 @@ function BookGenreDialogBody({
           <p className="text-muted-foreground text-xs">{BG.field.nameHint}</p>
         </section>
 
-        <section className={cn("space-y-2", sectionCard)}>
-          <Label className="text-muted-foreground text-xs">
-            {BG.field.slug}
-          </Label>
-          <Input
-            dir="ltr"
-            readOnly={slugLocked}
-            aria-readonly={slugLocked}
-            className={cn(
-              "h-9 font-mono text-xs",
-              slugLocked && "bg-muted/60 text-muted-foreground cursor-not-allowed",
-            )}
-            placeholder="NOVEL"
-            {...register("slug", {
-              onChange: () => setSlugTouched(true),
-            })}
-          />
-          {errors.slug ? (
-            <p className="text-destructive text-xs">
-              {errors.slug.message === "slug_format"
-                ? BG.error.slugFormat
-                : BG.error.tooLong}
-            </p>
-          ) : null}
-          <p
-            className={cn(
-              "text-muted-foreground flex items-start gap-1.5 text-xs leading-relaxed",
-              slugLocked && "text-foreground/70",
-            )}
-          >
-            {slugLocked ? (
-              <LockClosedIcon className="mt-0.5 size-3.5 shrink-0" aria-hidden />
-            ) : null}
-            <span>{slugLocked ? BG.field.slugLocked : BG.field.slugHint}</span>
-          </p>
-        </section>
-
+        {/*
+          The slug field is hidden — the backend auto-generates GENRE_* when
+          the suggested value comes out blank, and books link by id anyway.
+          `suggestGenreSlug` still runs silently so a Latin-script name still
+          gets a readable key.
+        */}
         <div className={cn("flex flex-wrap items-center gap-4", sectionCard)}>
           <div className="space-y-1.5">
             <Label className="text-muted-foreground text-xs">
