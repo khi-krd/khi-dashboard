@@ -502,15 +502,6 @@ export function WritingForm({
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-xs">
-                    {NS.field.editorial_genre_label_ckb}
-                  </Label>
-                  <Input
-                    placeholder={NS.field.editorial_genre_ckb}
-                    {...register("ckbContent.genre")}
-                  />
-                </div>
-                <div className="space-y-1">
                   <Label className="text-xs">{NS.field.location}</Label>
                   <Input
                     placeholder={NS.field.location_ckb}
@@ -544,16 +535,6 @@ export function WritingForm({
                     dir="ltr"
                     placeholder={NS.field.writer_kmr}
                     {...register("kmrContent.writer")}
-                  />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs">
-                    {NS.field.editorial_genre_label_kmr}
-                  </Label>
-                  <Input
-                    dir="ltr"
-                    placeholder={NS.field.editorial_genre_kmr}
-                    {...register("kmrContent.genre")}
                   />
                 </div>
                 <div className="space-y-1">

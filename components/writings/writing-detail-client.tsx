@@ -706,16 +706,6 @@ function WritingDetailLoaded({
                     {activeWriter || NS.dash}
                   </dd>
                 </div>
-                {activeContent?.genre?.trim() ? (
-                  <div className="min-w-0">
-                    <dt className="text-muted-foreground/80 text-xs">
-                      {NS.section.editorial_genre}
-                    </dt>
-                    <dd className="text-foreground font-medium">
-                      {activeContent.genre}
-                    </dd>
-                  </div>
-                ) : null}
               </dl>
 
               {(writing.bookGenres ?? []).length > 0 ? (

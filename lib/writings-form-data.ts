@@ -22,7 +22,6 @@ function buildContent(
     fileFormat: content.fileFormat ?? undefined,
     fileSizeBytes: content.fileSizeBytes ?? 0,
     pageCount: content.pageCount ?? undefined,
-    genre: trimOrUndef(content.genre),
     location: trimOrUndef(content.location),
   }
 }

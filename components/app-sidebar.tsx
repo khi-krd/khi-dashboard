@@ -114,7 +114,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               url: "/dashboard/writings",
             },
             {
-              title: "جۆرەکانی کتێب",
+              title: "ژانرەکانی کتێب",
               url: "/dashboard/writings/genres",
             },
           ],
