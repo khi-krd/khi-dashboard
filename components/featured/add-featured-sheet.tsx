@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useMemo } from "react"
 
 import { useSyncedState } from "@/hooks/use-synced-state"
 import { FeaturedCatalogBrowser } from "@/components/featured/featured-catalog-browser"
@@ -144,7 +144,6 @@ export function AddFeaturedSheet({
             }
             compact
             showFilters
-            useCategoryTabs
             emptyMessage={NS.sheet.empty}
             pageIndex={pageIndex}
             pageSize={pageSize}
