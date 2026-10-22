@@ -85,6 +85,12 @@ export function FeaturedCatalogBrowser({
 
   const categoryTabs = FEATURED_CATALOG_CATEGORIES.filter((c) => c !== "all")
 
+  const STATUS_LABELS: Record<FeaturedCatalogStatusFilter, string> = {
+    all: NS.filters.status_all,
+    featured: NS.filters.status_featured,
+    not_featured: NS.filters.status_not_featured,
+  }
+
   return (
     <div className="space-y-4">
       {showFilters ? (
@@ -127,7 +133,11 @@ export function FeaturedCatalogBrowser({
                 }
               >
                 <SelectTrigger className="bg-background h-9 w-full sm:w-40">
-                  <SelectValue placeholder={NS.filters.category_all} />
+                  <SelectValue>
+                    {category === "all"
+                      ? NS.filters.category_all
+                      : FEATURED_CATEGORY_LABELS[category]}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">{NS.filters.category_all}</SelectItem>
@@ -145,7 +155,7 @@ export function FeaturedCatalogBrowser({
                 }
               >
                 <SelectTrigger className="bg-background h-9 w-full sm:w-36">
-                  <SelectValue placeholder={NS.filters.status_all} />
+                  <SelectValue>{STATUS_LABELS[status]}</SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">{NS.filters.status_all}</SelectItem>
@@ -184,7 +194,7 @@ export function FeaturedCatalogBrowser({
               }
             >
               <SelectTrigger className="bg-background h-9 w-full sm:w-40">
-                <SelectValue placeholder={NS.filters.status_all} />
+                <SelectValue>{STATUS_LABELS[status]}</SelectValue>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{NS.filters.status_all}</SelectItem>
