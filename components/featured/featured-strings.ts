@@ -36,9 +36,8 @@ export const NS = {
         "لە پەڕەی تایبەتی خۆیاندا دەردەکەون — نەک لە کاروسێلی پەڕەی سەرەکی. سنووریان نییە.",
       emptyTitle: "هیچ ڕۆشنکردنەوەیەک نییە",
       emptySubtitle:
-        "خزمەتگوزارییەک یان پەڕەیەکی دەربارە زیاد بکە بۆ ڕۆشنکردنەوەی لە پەڕەکەی خۆیدا",
+        "پەڕەیەکی دەربارە زیاد بکە بۆ ڕۆشنکردنەوەی لە پەڕەکەی خۆیدا",
       /** Per-source explanation of where the flag actually shows up. */
-      services: "لە ڕیزی ڕۆشنکردنەوەدا لە ناو هێرۆی پەڕەی خزمەتگوزارییەکاندا دەردەکەوێت",
       about:
         "کەمترین ڕیز پێشەنگی پەڕەی دەربارە دەبێت و وێنەکەی دەبێتە وێنەی سەرەکی — ئەوانی تر لە خوارەوە دەردەکەون",
     },
@@ -183,10 +182,9 @@ export function featureImageStrings(item: FeaturedCatalogItem): {
 
 /** Where this item's `featured` flag shows up, for the row's helper line. */
 export function surfaceNote(item: FeaturedCatalogItem): string | null {
-  if (item.surface !== "page") return null
-  return item.category === "about"
+  return item.surface === "page" && item.category === "about"
     ? NS.surfaces.page.about
-    : NS.surfaces.page.services
+    : null
 }
 
 /**

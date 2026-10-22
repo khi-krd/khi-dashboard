@@ -30,14 +30,12 @@ export type FeaturedCatalogCategory = (typeof FEATURED_CATALOG_CATEGORIES)[numbe
  *   hero — a slide in the homepage carousel, drawn from the shared slide cap
  *   page — a highlight on that source's own public page, uncapped
  *
- * Services and About moved to `page`: featuring a service now highlights it in
- * the index rail inside the `/services` hero, and a featured About record
- * leads `/about` and supplies that page's hero image. Neither reaches the carousel any more,
- * and neither is charged to the cap — which is the point, since a featured
- * service used to be able to crowd out a news article.
- *
- * Donation stays `hero`: it promotes a call-to-action page that has no list of
- * its own to be highlighted in.
+ * A featured service is a hero slide again — it joins the carousel pool and is
+ * ordered against the other slides. Featuring it is still free of the
+ * server-side cap (the backend never counts services toward
+ * `maxFeaturedSlides`), and its flag also keeps highlighting it in the
+ * `/services` page rail — one flag, two surfaces. About stays `page`: a
+ * featured record only ever leads `/about`.
  */
 export type FeaturedSurface = "hero" | "page"
 
@@ -52,7 +50,7 @@ export const FEATURED_SURFACE: Record<
   collections: "hero",
   writings: "hero",
   donation: "hero",
-  services: "page",
+  services: "hero",
   about: "page",
 }
 
