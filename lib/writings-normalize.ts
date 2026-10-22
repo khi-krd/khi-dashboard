@@ -244,6 +244,10 @@ export function normalizeWritingDto(raw: unknown): WritingDto {
       coerceStr(o.featureImageUrl) ?? coerceStr(o.feature_image_url),
     ckbContent: normalizeContent(o.ckbContent ?? o.ckb_content),
     kmrContent: normalizeContent(o.kmrContent ?? o.kmr_content),
+    bookLanguageCkb:
+      coerceStr(o.bookLanguageCkb) ?? coerceStr(o.book_language_ckb),
+    bookLanguageKmr:
+      coerceStr(o.bookLanguageKmr) ?? coerceStr(o.book_language_kmr),
     publishedByInstitute:
       coerceBool(o.publishedByInstitute) ||
       coerceBool(o.published_by_institute),
