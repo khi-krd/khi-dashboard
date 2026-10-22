@@ -17,5 +17,9 @@ export function parseFeaturedFields(
     featured: coerceBool(raw.featured),
     featuredOrder:
       coerceNum(raw.featuredOrder) ?? coerceNum(raw.featured_order),
+    featuredOnHome:
+      coerceBool(raw.featuredOnHome) || coerceBool(raw.featured_on_home),
+    featuredHomeOrder:
+      coerceNum(raw.featuredHomeOrder) ?? coerceNum(raw.featured_home_order),
   }
 }

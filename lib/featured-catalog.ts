@@ -15,6 +15,7 @@ export const FEATURED_CATALOG_CATEGORIES = [
   "news",
   "projects",
   "services",
+  "servicesHome",
   "videos",
   "sounds",
   "collections",
@@ -31,12 +32,13 @@ export type FeaturedCatalogCategory = (typeof FEATURED_CATALOG_CATEGORIES)[numbe
  *   hero — a slide in the homepage carousel, drawn from the shared slide cap
  *   page — a highlight on that source's own public page, uncapped
  *
- * Services are split per record: the services-PAGE record (serviceType /
- * navAnchorId "page-hero") is a `hero` slide that promotes `/services` as a
- * whole, while every section service stays `page` — its featured flag only
- * lights the `/services` highlight rail; section content is for that page,
- * not the carousel. About stays `page`: a featured record only ever leads
- * `/about`. Featuring any service is still free of the server-side cap (the
+ * Services carry TWO flags. `featured` lights the `/services` rail for every
+ * section (`page`) and slides the services-PAGE record into the carousel
+ * (`hero`). `featuredOnHome` — the separate "servicesHome" catalog — opts a
+ * SECTION into the hero too: "sometimes a section belongs on home". Its slide
+ * links to the service's own `/services` section anchor and orders on
+ * `featuredHomeOrder`, a column of its own so the two sequences never fight.
+ * About stays `page`. No service flag is charged the server-side cap (the
  * backend never counts services toward `maxFeaturedSlides`).
  */
 export type FeaturedSurface = "hero" | "page"
@@ -53,8 +55,9 @@ export const FEATURED_SURFACE: Record<
   writings: "hero",
   donation: "hero",
   // Category default only — mapServiceToCatalogItem overrides the page-hero
-  // record to "hero" per item.
+  // record to "hero" per item; "servicesHome" is always hero.
   services: "page",
+  servicesHome: "hero",
   about: "page",
 }
 
@@ -138,6 +141,7 @@ export const FEATURED_CATEGORY_LABELS: Record<
   news: "هەواڵەکان",
   projects: "پرۆژەکان",
   services: "خزمەتگوزارییەکان",
+  servicesHome: "خزمەتگوزاری بۆ ماڵپەڕ",
   videos: "ڤیدیۆکان",
   sounds: "دەنگەکان",
   collections: "کۆمەڵە وێنەکان",
@@ -273,6 +277,44 @@ export function mapServiceToCatalogItem(
     // service's flag only drives the highlight rail on /services.
     surface: isServicesPageHeroRecord(service) ? "hero" : "page",
     // A service with no gallery image at all is rejected outright.
+    strictImage: true,
+    detailHref: `/dashboard/services/${service.id}`,
+    editHref: `/dashboard/services/${service.id}/edit`,
+  }
+}
+
+/**
+ * The same service record as a HOMEPAGE-slide candidate — the "sometimes a
+ * section belongs on home" catalog. Driven by `featuredOnHome` /
+ * `featuredHomeOrder` (its own columns), and keyed apart from the rail item so
+ * one service can sit in both lists without colliding.
+ */
+export function mapServiceToHomeCatalogItem(
+  service: ServiceDto,
+): FeaturedCatalogItem | null {
+  if (!service.id || isServicesPageHeroRecord(service)) return null
+  const titleCkb = getServiceContent(service, "CKB")?.title ?? ""
+  const titleKmr = getServiceContent(service, "KMR")?.title ?? ""
+  return {
+    key: `services-home-${service.id}`,
+    id: service.id,
+    category: "servicesHome",
+    categoryLabel: FEATURED_CATEGORY_LABELS.servicesHome,
+    title: bilingualTitle(titleCkb, titleKmr),
+    subtitle:
+      service.navAnchorId?.trim() ||
+      service.serviceType?.trim() ||
+      service.location?.trim() ||
+      null,
+    coverUrl: serviceSlideFallbackImage(service),
+    featureImageUrl: service.featureImageUrl?.trim() || null,
+    coverAspect: "square",
+    featured: !!service.featuredOnHome,
+    featuredOrder: service.featuredHomeOrder,
+    canFeature: true,
+    surface: "hero",
+    // Same picture requirement as the rail flag — a slide with no image is
+    // dropped by the backend either way.
     strictImage: true,
     detailHref: `/dashboard/services/${service.id}`,
     editHref: `/dashboard/services/${service.id}/edit`,
@@ -507,6 +549,7 @@ export function countFeaturedByCategory(
     news: 0,
     projects: 0,
     services: 0,
+    servicesHome: 0,
     videos: 0,
     sounds: 0,
     collections: 0,

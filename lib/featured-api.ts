@@ -6,7 +6,12 @@ import {
 import { patchCollectionFeatured, getFeaturedCollections } from "@/services/imageCollectionsService"
 import { patchNewsFeatured, getFeaturedNews } from "@/services/newsService"
 import { patchProjectFeatured, getFeaturedProjects } from "@/services/projectsService"
-import { patchServiceFeatured, getFeaturedServices } from "@/services/servicesService"
+import {
+  getFeaturedHomeServices,
+  patchServiceFeatured,
+  getFeaturedServices,
+  patchServiceFeaturedHome,
+} from "@/services/servicesService"
 import { patchSoundFeatured, getFeaturedSounds } from "@/services/soundsService"
 import { patchVideoFeatured, getFeaturedVideos } from "@/services/videosService"
 import { patchWritingFeatured, getFeaturedWritings } from "@/services/writingsService"
@@ -17,6 +22,7 @@ import {
   mapNewsToCatalogItem,
   mapProjectToCatalogItem,
   mapServiceToCatalogItem,
+  mapServiceToHomeCatalogItem,
   mapSoundToCatalogItem,
   mapVideoToCatalogItem,
   mapWritingToCatalogItem,
@@ -38,6 +44,8 @@ export async function patchFeaturedItem(
       return patchProjectFeatured(id, payload)
     case "services":
       return patchServiceFeatured(id, payload)
+    case "servicesHome":
+      return patchServiceFeaturedHome(id, payload)
     case "videos":
       return patchVideoFeatured(id, payload)
     case "sounds":
@@ -89,6 +97,14 @@ export async function fetchFeaturedCatalogItems(
       return keepMapped(
         (pageData.content ?? []).map((item) =>
           mapServiceToCatalogItem({ ...item, featured: true }),
+        ),
+      )
+    }
+    case "servicesHome": {
+      const pageData = await getFeaturedHomeServices(page, size)
+      return keepMapped(
+        (pageData.content ?? []).map((item) =>
+          mapServiceToHomeCatalogItem({ ...item, featuredOnHome: true }),
         ),
       )
     }

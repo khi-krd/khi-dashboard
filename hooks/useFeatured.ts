@@ -128,7 +128,10 @@ export function usePatchFeaturedMutation() {
         void queryClient.invalidateQueries({ queryKey: aboutKeys.all })
       } else if (item.category === "donation") {
         void queryClient.invalidateQueries({ queryKey: donationKeys.all })
-      } else if (item.category === "services") {
+      } else if (
+        item.category === "services" ||
+        item.category === "servicesHome"
+      ) {
         void queryClient.invalidateQueries({ queryKey: servicesKeys.all })
       }
     },

@@ -18,4 +18,11 @@ export type FeaturedPayload = {
 export type FeaturedFields = {
   featured?: boolean
   featuredOrder?: number | null
+  /**
+   * Services-only second flag — this section in the homepage hero, written
+   * through `PATCH /{id}/featured-home`. Parsed alongside the rail fields so
+   * normalizers keep it round-tripping.
+   */
+  featuredOnHome?: boolean
+  featuredHomeOrder?: number | null
 }

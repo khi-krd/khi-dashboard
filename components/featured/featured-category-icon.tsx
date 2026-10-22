@@ -28,6 +28,7 @@ export function FeaturedCategoryIcon({
     case "projects":
       return <RectangleStackIcon className={className} aria-hidden />
     case "services":
+    case "servicesHome":
       return <BriefcaseIcon className={className} aria-hidden />
     case "videos":
       return <FilmIcon className={className} aria-hidden />

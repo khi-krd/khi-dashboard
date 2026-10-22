@@ -14,6 +14,7 @@ import {
   mapNewsToCatalogItem,
   mapProjectToCatalogItem,
   mapServiceToCatalogItem,
+  mapServiceToHomeCatalogItem,
   mapSoundToCatalogItem,
   mapVideoToCatalogItem,
   mapWritingToCatalogItem,
@@ -60,6 +61,14 @@ async function fetchBrowsePage(
   if (category === "services") {
     const res = await getServicesList(page, size)
     const items = compact((res.data?.content ?? []).map(mapServiceToCatalogItem))
+    return { items, totalElements: res.data?.totalElements ?? items.length }
+  }
+
+  if (category === "servicesHome") {
+    const res = await getServicesList(page, size)
+    const items = compact(
+      (res.data?.content ?? []).map(mapServiceToHomeCatalogItem),
+    )
     return { items, totalElements: res.data?.totalElements ?? items.length }
   }
 
@@ -137,6 +146,11 @@ async function fetchBrowsePage(
     ...compact((newsRes.data?.content ?? []).map(mapNewsToCatalogItem)),
     ...compact((projectsRes.data?.content ?? []).map(mapProjectToCatalogItem)),
     ...compact((servicesRes.data?.content ?? []).map(mapServiceToCatalogItem)),
+    // The home-slide variants carry their own key + label, so listing them
+    // beside the rail rows in "all" shows both destinations honestly.
+    ...compact(
+      (servicesRes.data?.content ?? []).map(mapServiceToHomeCatalogItem),
+    ),
     ...compact(videosRes.content.map(mapVideoToCatalogItem)),
     ...compact(soundsRes.content.map(mapSoundToCatalogItem)),
     ...compact(collectionsRes.content.map(mapCollectionToCatalogItem)),

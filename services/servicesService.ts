@@ -146,6 +146,17 @@ export async function patchServiceFeatured(
 }
 
 /**
+ * Second flag — puts a service SECTION in the homepage hero. Independent of
+ * `patchServiceFeatured`, which only lights the /services rail.
+ */
+export async function patchServiceFeaturedHome(
+  id: number,
+  payload: FeaturedPayload,
+): Promise<void> {
+  await api.patch(`${BASE}/${id}/featured-home`, payload)
+}
+
+/**
  * Narrow PATCH — replace only the ordered gallery media list of an existing
  * service (poster/thumbnail fixes without resubmitting the whole record).
  */
@@ -170,6 +181,17 @@ export async function getFeaturedServices(
   size: number,
 ): Promise<NonNullable<ServiceListResponse["data"]>> {
   const { data } = await api.get<unknown>(`${BASE}/featured`, {
+    params: { page, size },
+  })
+  return normalizeFeaturedServicePage(data, page, size)
+}
+
+/** Sections flagged for the homepage hero (featuredOnHome) — the home list. */
+export async function getFeaturedHomeServices(
+  page: number,
+  size: number,
+): Promise<NonNullable<ServiceListResponse["data"]>> {
+  const { data } = await api.get<unknown>(`${BASE}/featured-home`, {
     params: { page, size },
   })
   return normalizeFeaturedServicePage(data, page, size)

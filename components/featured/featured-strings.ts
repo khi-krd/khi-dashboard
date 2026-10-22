@@ -173,6 +173,7 @@ export function featureImageStrings(item: FeaturedCatalogItem): {
         hint: NS.field.featureImageAboutHint,
       }
     case "services":
+    case "servicesHome":
       return {
         label: NS.field.featureImageService,
         hint: NS.field.featureImageServiceHint,
@@ -204,6 +205,7 @@ export function blockedReason(item: FeaturedCatalogItem): string | null {
     case "about":
       return NS.blocked.about
     case "services":
+    case "servicesHome":
       return NS.blocked.service
     case "donation":
       return NS.blocked.donation

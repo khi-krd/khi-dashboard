@@ -75,6 +75,13 @@ export type ServiceDto = {
   featured?: boolean
   featuredOrder?: number | null
   /**
+   * Second flag — this section in the homepage carousel. Written via
+   * `PATCH /api/v1/services/{id}/featured-home`; `featured`/`featuredOrder`
+   * stay the /services rail highlight.
+   */
+  featuredOnHome?: boolean
+  featuredHomeOrder?: number | null
+  /**
    * Singular — the wide carousel hero. Unrelated to `featureImageUrls`
    * (plural), which is a legacy gallery list. Read-only on this DTO: the
    * service PUT ignores it, `PATCH /api/v1/services/{id}/featured` writes it.
