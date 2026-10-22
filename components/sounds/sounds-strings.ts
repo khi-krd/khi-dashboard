@@ -150,6 +150,7 @@ export const NS = {
     attachments: "پاشکۆ",
     brochures: "بڕۆشێرەکان",
     file_covers: "وێنەکانی سیدی",
+    add_cd_cover: "زیادکردنی وێنەی سیدی",
     tags: "تاگەکان",
     keywords: "کلیلەوشەکان",
     languages: "زمانەکان",

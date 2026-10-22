@@ -81,7 +81,7 @@ export function SoundFileBrochures({
         </h3>
         <Button type="button" size="sm" variant="outline" onClick={addBrochure}>
           <PlusIcon className="size-4" />
-          {NS.action.new_brochure}
+          {NS.section.add_cd_cover}
         </Button>
       </div>
       {brochures.length === 0 ? (
