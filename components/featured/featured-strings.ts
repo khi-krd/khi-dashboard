@@ -40,6 +40,8 @@ export const NS = {
       /** Per-source explanation of where the flag actually shows up. */
       about:
         "کەمترین ڕیز پێشەنگی پەڕەی دەربارە دەبێت و وێنەکەی دەبێتە وێنەی سەرەکی — ئەوانی تر لە خوارەوە دەردەکەون",
+      services:
+        "لە ڕیزی دیاریکراوەکانی پەڕەی خزمەتگوزارییەکاندا دەردەکەوێت — تەنها تۆماری سەرەکی پەڕە دەچێتە کاروسێلی ماڵپەڕەوە",
     },
   },
   stats: {
@@ -182,9 +184,10 @@ export function featureImageStrings(item: FeaturedCatalogItem): {
 
 /** Where this item's `featured` flag shows up, for the row's helper line. */
 export function surfaceNote(item: FeaturedCatalogItem): string | null {
-  return item.surface === "page" && item.category === "about"
-    ? NS.surfaces.page.about
-    : null
+  if (item.surface !== "page") return null
+  if (item.category === "about") return NS.surfaces.page.about
+  if (item.category === "services") return NS.surfaces.page.services
+  return null
 }
 
 /**

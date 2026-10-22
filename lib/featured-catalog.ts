@@ -1,3 +1,4 @@
+import { isServicesPageHeroRecord } from "@/lib/services-form-data"
 import type { AboutDto } from "@/types/about"
 import type { DonationSettingsDto } from "@/types/donations"
 import type { CollectionDto } from "@/types/image-collections"
@@ -30,12 +31,13 @@ export type FeaturedCatalogCategory = (typeof FEATURED_CATALOG_CATEGORIES)[numbe
  *   hero — a slide in the homepage carousel, drawn from the shared slide cap
  *   page — a highlight on that source's own public page, uncapped
  *
- * A featured service is a hero slide again — it joins the carousel pool and is
- * ordered against the other slides. Featuring it is still free of the
- * server-side cap (the backend never counts services toward
- * `maxFeaturedSlides`), and its flag also keeps highlighting it in the
- * `/services` page rail — one flag, two surfaces. About stays `page`: a
- * featured record only ever leads `/about`.
+ * Services are split per record: the services-PAGE record (serviceType /
+ * navAnchorId "page-hero") is a `hero` slide that promotes `/services` as a
+ * whole, while every section service stays `page` — its featured flag only
+ * lights the `/services` highlight rail; section content is for that page,
+ * not the carousel. About stays `page`: a featured record only ever leads
+ * `/about`. Featuring any service is still free of the server-side cap (the
+ * backend never counts services toward `maxFeaturedSlides`).
  */
 export type FeaturedSurface = "hero" | "page"
 
@@ -50,7 +52,9 @@ export const FEATURED_SURFACE: Record<
   collections: "hero",
   writings: "hero",
   donation: "hero",
-  services: "hero",
+  // Category default only — mapServiceToCatalogItem overrides the page-hero
+  // record to "hero" per item.
+  services: "page",
   about: "page",
 }
 
@@ -265,7 +269,9 @@ export function mapServiceToCatalogItem(
     featured: !!service.featured,
     featuredOrder: service.featuredOrder,
     canFeature: true,
-    surface: FEATURED_SURFACE.services,
+    // The services-page record slides into the home carousel; a section
+    // service's flag only drives the highlight rail on /services.
+    surface: isServicesPageHeroRecord(service) ? "hero" : "page",
     // A service with no gallery image at all is rejected outright.
     strictImage: true,
     detailHref: `/dashboard/services/${service.id}`,
