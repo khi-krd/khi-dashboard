@@ -194,8 +194,21 @@ export function SoundForm({
         toast.success(NS.toast.saved)
         router.push(`/dashboard/sounds/${soundId}`)
       }
-    } catch {
-      toast.error(NS.error.validation)
+    } catch (err) {
+      // Surface the backend's own message when it sends one — the generic
+      // "check the cells" text hid real failures behind a validation look.
+      const data =
+        err && typeof err === "object" && "response" in err
+          ? (err as { response?: { data?: Record<string, unknown> } }).response
+              ?.data
+          : undefined
+      const detail = (data?.details ?? {}) as Record<string, unknown>
+      const msg =
+        (typeof detail.message === "string" && detail.message) ||
+        (typeof data?.messageKu === "string" && data.messageKu) ||
+        (typeof data?.message === "string" && data.message) ||
+        NS.error.validation
+      toast.error(msg)
     } finally {
       setUploadPct(null)
     }

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import { useFieldArray, useFormContext } from "react-hook-form"
 
 
+import { SoundFileBrochures } from "@/components/sounds/sound-file-brochures"
 import { SoundSourcePanel } from "@/components/sounds/sound-source-panel"
 import { NS } from "@/components/sounds/sounds-strings"
 import { Button } from "@/components/ui/button"
@@ -165,12 +166,28 @@ export function SoundFileSheet({
               <div className="space-y-1">
                 <Label className="text-xs">{NS.field.publishment_year}</Label>
                 <Input
-                  type="number"
+                  type="text"
+                  inputMode="numeric"
                   className="h-8"
                   value={draft.publishmentYear ?? ""}
                   onChange={(e) => {
-                    const v = e.target.value
-                    patch({ publishmentYear: v === "" ? null : Number(v) })
+                    // Kurdish/Arabic-Indic digits (٠-٩ / ۰-۹) typed into a
+                    // number input either get rejected or produce NaN — the
+                    // year silently never reached the API. Normalize to ASCII.
+                    const ascii = e.target.value.replace(
+                      /[٠-٩۰-۹]/g,
+                      (d) =>
+                        String(
+                          "٠١٢٣٤٥٦٧٨٩".indexOf(d) >= 0
+                            ? "٠١٢٣٤٥٦٧٨٩".indexOf(d)
+                            : "۰۱۲۳۴۵۶۷۸۹".indexOf(d),
+                        ),
+                    )
+                    const digits = ascii.replace(/\D/g, "")
+                    patch({
+                      publishmentYear:
+                        digits === "" ? null : parseInt(digits, 10),
+                    })
                   }}
                 />
               </div>
@@ -204,11 +221,12 @@ export function SoundFileSheet({
             </div>
           </section>
 
-          {/*
-            Brochures live at the album level now — editors manage them from
-            the main form's بڕۆشێرەکان section. The draft keeps the legacy
-            per-file list so existing data round-trips on save.
-          */}
+          <section>
+            <SoundFileBrochures
+              brochures={draft.brochures ?? []}
+              onChange={(next) => patch({ brochures: next })}
+            />
+          </section>
         </div>
         <SheetFooter className="flex-row justify-between gap-2 sm:justify-between">
           <Button type="button" variant="ghost" className="text-destructive" onClick={onDelete}>
