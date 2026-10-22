@@ -103,6 +103,9 @@ export type WritingDto = {
   hoverCoverUrl?: string | null
   ckbContent?: WritingContentDto | null
   kmrContent?: WritingContentDto | null
+  /** زمانی کتێب — the book's own language, named per dialect. */
+  bookLanguageCkb?: string | null
+  bookLanguageKmr?: string | null
   publishedByInstitute?: boolean
   contentLanguages: Language[]
   tagsCkb?: string[]

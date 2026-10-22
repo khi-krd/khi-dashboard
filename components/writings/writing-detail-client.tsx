@@ -706,6 +706,17 @@ function WritingDetailLoaded({
                     {activeWriter || NS.dash}
                   </dd>
                 </div>
+                <div className="min-w-0">
+                  <dt className="text-muted-foreground/80 text-xs">
+                    {NS.section.book_language}
+                  </dt>
+                  <dd className="text-foreground font-medium">
+                    {(tab === "KMR"
+                      ? writing.bookLanguageKmr || writing.bookLanguageCkb
+                      : writing.bookLanguageCkb || writing.bookLanguageKmr) ||
+                      NS.dash}
+                  </dd>
+                </div>
               </dl>
 
               {(writing.bookGenres ?? []).length > 0 ? (

@@ -40,6 +40,8 @@ export const writingFormSchema = z
       )
       .default([]),
     publishedByInstitute: z.boolean().default(false),
+    bookLanguageCkb: z.string().max(120).default(""),
+    bookLanguageKmr: z.string().max(120).default(""),
     contentLanguages: z
       .array(z.enum(["CKB", "KMR"]))
       .min(1, NS.validation.languageRequired),
@@ -108,6 +110,8 @@ export const defaultWritingFormValues: WritingFormValues = {
   topicIds: [],
   newTopics: [],
   publishedByInstitute: false,
+  bookLanguageCkb: "",
+  bookLanguageKmr: "",
   contentLanguages: ["CKB"],
   ckbContent: { title: "", description: "", writer: "", fileUrl: "", fileSizeBytes: 0, location: "" },
   kmrContent: { title: "", description: "", writer: "", fileUrl: "", fileSizeBytes: 0, location: "" },
@@ -143,6 +147,8 @@ export function writingDtoToFormValues(dto: WritingDto): WritingFormValues {
           : [],
     newTopics: [],
     publishedByInstitute: !!dto.publishedByInstitute,
+    bookLanguageCkb: dto.bookLanguageCkb ?? "",
+    bookLanguageKmr: dto.bookLanguageKmr ?? "",
     contentLanguages: dto.contentLanguages?.length
       ? [...dto.contentLanguages]
       : ["CKB"],

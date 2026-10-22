@@ -370,6 +370,34 @@ export function WritingForm({
               ) : null}
             </section>
 
+            <section className={cn(sectionCard, "space-y-3")}>
+              <Label className="text-muted-foreground block text-xs uppercase">
+                {NS.section.book_language}
+              </Label>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <span className="border-border text-muted-foreground w-11 shrink-0 rounded-md border py-1.5 text-center text-[10px] font-medium">
+                    CKB
+                  </span>
+                  <Input
+                    {...register("bookLanguageCkb")}
+                    placeholder={NS.field.book_language_ckb_ph}
+                    className="h-8 text-sm"
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="border-border text-muted-foreground w-11 shrink-0 rounded-md border py-1.5 text-center text-[10px] font-medium">
+                    KMR
+                  </span>
+                  <Input
+                    {...register("bookLanguageKmr")}
+                    placeholder={NS.field.book_language_kmr_ph}
+                    className="h-8 text-sm"
+                  />
+                </div>
+              </div>
+            </section>
+
             <section className={sectionCard}>
               <WritingSeriesSection
                 seriesMode={seriesMode}

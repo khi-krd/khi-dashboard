@@ -69,6 +69,8 @@ export function writingFormValuesToMultipart(
     // the two coexist, so a save works against either build of the API.
     bookGenres: values.bookGenres,
     publishedByInstitute: values.publishedByInstitute,
+    bookLanguageCkb: values.bookLanguageCkb?.trim() ?? "",
+    bookLanguageKmr: values.bookLanguageKmr?.trim() ?? "",
     contentLanguages: values.contentLanguages,
     tags: { ckb: values.tags.ckb, kmr: values.tags.kmr },
     keywords: { ckb: values.keywords.ckb, kmr: values.keywords.kmr },
