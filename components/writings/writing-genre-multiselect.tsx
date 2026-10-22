@@ -28,6 +28,7 @@ import { formatCkbDigits } from "@/lib/intl-ckb"
 import { cn } from "@/lib/utils"
 import {
   bookGenreLabel,
+  genreNamesBySlug,
   suggestGenreSlug,
   type BookGenreDto,
 } from "@/types/book-genre"
@@ -195,6 +196,7 @@ export function WritingGenreMultiselect({
               <WritingGenrePill
                 key={slug}
                 genre={slug}
+                label={genreNamesBySlug(options).get(slug)}
                 onClick={() => toggle(slug)}
                 className={GENRE_FAMILY_CLASSES[genreFamily(slug)].selected}
               />

@@ -24,6 +24,7 @@ import {
 import { WritingCoverThumb } from "@/components/writings/writing-cover-thumb"
 import { WritingFormatPill } from "@/components/writings/writing-format-pill"
 import { WritingGenrePill } from "@/components/writings/writing-genre-pill"
+import { genreNamesBySlug } from "@/types/book-genre"
 import { WritingListLangChips } from "@/components/writings/writing-language-chip"
 import { NS } from "@/components/writings/writings-strings"
 import {
@@ -299,10 +300,16 @@ export function WritingsDataGrid({
               <span className="text-muted-foreground/60 text-xs">{NS.dash}</span>
             )
           }
+          const nameBySlug = genreNamesBySlug(row.original.genres)
           return (
             <div className="flex max-w-[10rem] flex-wrap gap-1">
               {genres.slice(0, 2).map((g) => (
-                <WritingGenrePill key={g} genre={g} compact />
+                <WritingGenrePill
+                  key={g}
+                  genre={g}
+                  label={nameBySlug.get(g)}
+                  compact
+                />
               ))}
               {genres.length > 2 ? (
                 <span className="text-muted-foreground text-[10px]">

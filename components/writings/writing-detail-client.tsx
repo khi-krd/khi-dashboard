@@ -31,6 +31,7 @@ import {
 import { WritingDeleteDialog } from "@/components/writings/writing-delete-dialog"
 import { WritingDetailSkeleton } from "@/components/writings/writing-detail-skeleton"
 import { WritingGenrePill } from "@/components/writings/writing-genre-pill"
+import { genreNamesBySlug } from "@/types/book-genre"
 import { WritingFormatPill } from "@/components/writings/writing-format-pill"
 import { WritingLanguageChipRow } from "@/components/writings/writing-language-chip"
 import { WritingErrorState } from "@/components/writings/writing-error-state"
@@ -340,7 +341,12 @@ function WritingDetailLoaded({
                 <span className="text-muted-foreground">{NS.dash}</span>
               ) : (
                 writing.bookGenres!.map((g) => (
-                  <WritingGenrePill key={g} genre={g} compact />
+                  <WritingGenrePill
+                    key={g}
+                    genre={g}
+                    label={genreNamesBySlug(writing.genres).get(g)}
+                    compact
+                  />
                 ))
               )}
             </div>
@@ -722,7 +728,11 @@ function WritingDetailLoaded({
               {(writing.bookGenres ?? []).length > 0 ? (
                 <div className="mt-4 flex flex-wrap gap-1.5">
                   {writing.bookGenres!.map((g) => (
-                    <WritingGenrePill key={g} genre={g} />
+                    <WritingGenrePill
+                      key={g}
+                      genre={g}
+                      label={genreNamesBySlug(writing.genres).get(g)}
+                    />
                   ))}
                 </div>
               ) : null}

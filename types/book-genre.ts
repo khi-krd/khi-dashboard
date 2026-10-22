@@ -80,3 +80,18 @@ export function bookGenreLabel(
 ): string {
   return genre.nameCkb?.trim() || genre.nameKmr?.trim() || genre.slug
 }
+
+/**
+ * slug → display name for every genre record a payload carries. Managed
+ * genres never show their machine key — the bilingual name is the only
+ * user-facing identity they have.
+ */
+export function genreNamesBySlug(
+  genres: Pick<BookGenreRefDto, "slug" | "nameCkb" | "nameKmr">[] | undefined,
+): Map<string, string> {
+  const map = new Map<string, string>()
+  for (const genre of genres ?? []) {
+    map.set(genre.slug, bookGenreLabel(genre))
+  }
+  return map
+}

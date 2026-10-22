@@ -11,6 +11,7 @@ import { memo, useCallback } from "react"
 
 import { isOptimizableImageSrc } from "@/lib/image-src"
 import { WritingGenrePill } from "@/components/writings/writing-genre-pill"
+import { genreNamesBySlug } from "@/types/book-genre"
 import { WritingListLangChips } from "@/components/writings/writing-language-chip"
 import { NS } from "@/components/writings/writings-strings"
 import { Button } from "@/components/ui/button"
@@ -106,7 +107,12 @@ const WritingShelfCard = memo(function WritingShelfCard({
           {genres.length > 0 ? (
             <div className="flex flex-wrap gap-1">
               {genres.slice(0, 3).map((g) => (
-                <WritingGenrePill key={g} genre={g} compact />
+                <WritingGenrePill
+                  key={g}
+                  genre={g}
+                  label={genreNamesBySlug(row.genres).get(g)}
+                  compact
+                />
               ))}
               {genres.length > 3 ? (
                 <span className="text-muted-foreground text-[10px]">

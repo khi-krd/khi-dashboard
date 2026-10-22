@@ -59,11 +59,15 @@ const GENRE_ABBR: Partial<Record<KnownBookGenre, string>> = {
 
 export function WritingGenrePill({
   genre,
+  label: resolvedLabel,
   compact,
   className,
   onClick,
 }: {
   genre: BookGenre
+  /** The genre's bilingual name — pass it whenever the record is at hand so
+   *  a managed genre never surfaces its slug. */
+  label?: string
   compact?: boolean
   className?: string
   onClick?: () => void
@@ -73,7 +77,7 @@ export function WritingGenrePill({
   // A genre created from the dashboard has no icon or label of its own, and an
   // undefined component here used to throw rather than render.
   const Icon = GENRE_ICONS[genre as KnownBookGenre] ?? BookOpenIcon
-  const label = genreLabelCkb(genre)
+  const label = resolvedLabel?.trim() || genreLabelCkb(genre)
 
   const pill = (
     <span
