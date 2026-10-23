@@ -115,10 +115,15 @@ export function FeaturedCatalogBrowser({
             >
               <TabsList
                 variant="line"
-                className="h-auto w-full flex-wrap justify-start gap-1"
+                className="grid h-auto w-full grid-cols-3 gap-1 sm:grid-cols-5"
               >
                 {categoryTabs.map((key) => (
-                  <TabsTrigger key={key} value={key} className="text-sm">
+                  <TabsTrigger
+                    key={key}
+                    value={key}
+                    title={FEATURED_CATEGORY_LABELS[key]}
+                    className="w-full min-w-0 truncate px-2 text-[13px] sm:text-sm"
+                  >
                     {FEATURED_CATEGORY_LABELS[key]}
                   </TabsTrigger>
                 ))}

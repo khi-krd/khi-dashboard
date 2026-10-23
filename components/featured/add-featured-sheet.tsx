@@ -144,6 +144,7 @@ export function AddFeaturedSheet({
             }
             compact
             showFilters
+            useCategoryTabs
             emptyMessage={NS.sheet.empty}
             pageIndex={pageIndex}
             pageSize={pageSize}
