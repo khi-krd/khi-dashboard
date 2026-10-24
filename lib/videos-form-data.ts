@@ -45,8 +45,15 @@ export function videoFormValuesToMultipart(
     values.videoType === "VIDEO_CLIP"
       ? values.videoClipItems.filter(clipHasSource)
       : []
-  const clipsHaveMain = sourcedClips.some((c) => c.main)
-  const clips = sourcedClips.map((c, i) => ({
+  // The backend pairs videoFiles[i] with videoClipItems[i] by index, so
+  // staged-file clips must lead the array — clipNumber carries the original
+  // form position, so display order survives the partition.
+  const orderedClips = [
+    ...sourcedClips.filter((c) => c.stagedVideoFile),
+    ...sourcedClips.filter((c) => !c.stagedVideoFile),
+  ]
+  const clipsHaveMain = orderedClips.some((c) => c.main)
+  const clips = orderedClips.map((c, i) => ({
     ...(typeof c.id === "number" && c.id > 0 ? { id: c.id } : {}),
     url: trimOrUndef(extractIframeSrc(c.url)),
     externalUrl: trimOrUndef(c.externalUrl),
@@ -62,6 +69,15 @@ export function videoFormValuesToMultipart(
     descriptionKmr: c.descriptionKmr?.trim() || undefined,
     main: clipsHaveMain ? !!c.main : i === 0,
   }))
+
+  const filmSources =
+    values.videoType === "FILM"
+      ? values.videoSources.filter(sourceHasContent)
+      : []
+  const orderedSources = [
+    ...filmSources.filter((s) => s.stagedVideoFile),
+    ...filmSources.filter((s) => !s.stagedVideoFile),
+  ]
 
   const payload: Partial<VideoDto> & {
     id?: number
@@ -106,9 +122,8 @@ export function videoFormValuesToMultipart(
     const shouldSendSources = mode === "create" || values.sourcesTouched
 
     if (shouldSendSources) {
-      const sources = values.videoSources.filter(sourceHasContent)
-      const hasMain = sources.some((s) => s.main)
-      payload.videoSources = sources.map((s, i) => ({
+      const hasMain = orderedSources.some((s) => s.main)
+      payload.videoSources = orderedSources.map((s, i) => ({
         url: trimOrUndef(extractIframeSrc(s.url)),
         externalUrl: trimOrUndef(s.externalUrl),
         embedUrl: trimOrUndef(normalizeEmbed(s.embedUrl)),
@@ -121,7 +136,7 @@ export function videoFormValuesToMultipart(
 
       const mainIdx = payload.videoSources.findIndex((s) => s.main)
       const mainFormSource =
-        mainIdx >= 0 ? sources[mainIdx] : sources[0]
+        mainIdx >= 0 ? orderedSources[mainIdx] : orderedSources[0]
 
       payload.fileFormat = trimOrUndef(
         mainFormSource?.fileFormat ?? values.fileFormat,
@@ -167,7 +182,7 @@ export function videoFormValuesToMultipart(
   if (values.videoType === "FILM") {
     const shouldSendSources = mode === "create" || values.sourcesTouched
     if (shouldSendSources) {
-      for (const source of values.videoSources) {
+      for (const source of orderedSources) {
         if (source.stagedVideoFile) {
           fd.append("videoFiles", source.stagedVideoFile)
         }
@@ -176,9 +191,9 @@ export function videoFormValuesToMultipart(
   }
 
   if (values.videoType === "VIDEO_CLIP") {
-    for (const clip of values.videoClipItems) {
-      if (clip.stagedVideoFile && clipHasSource(clip)) {
-        fd.append("clipFiles", clip.stagedVideoFile)
+    for (const clip of orderedClips) {
+      if (clip.stagedVideoFile) {
+        fd.append("videoFiles", clip.stagedVideoFile)
       }
     }
   }

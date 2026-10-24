@@ -67,6 +67,7 @@ export function soundFormValuesToMultipart(
     form: trimOrUndef(f.form),
     genre: trimOrUndef(f.genre),
     recordingVenue: trimOrUndef(f.recordingVenue),
+    sizeBytes: f.sizeBytes ?? undefined,
     brochures: f.brochures.map((b, bi) => ({
       ...(typeof b.id === "number" && b.id > 0 ? { id: b.id } : {}),
       imageUrl: trimOrUndef(b.imageUrl),
@@ -94,6 +95,8 @@ export function soundFormValuesToMultipart(
     titleCkb: trimOrUndef(a.titleCkb) ?? trimOrUndef(a.title),
     titleKmr: trimOrUndef(a.titleKmr),
     attachmentType: a.attachmentType ?? "OTHER",
+    sizeBytes: a.sizeBytes ?? undefined,
+    mimeType: trimOrUndef(a.mimeType),
     attachmentOrder: readyAttachments.indexOf(a),
   }))
 

@@ -119,7 +119,11 @@ export async function getTopics(): Promise<TopicDto[]> {
 }
 
 export async function createTopic(payload: NewTopicPayload): Promise<TopicDto> {
-  const { data } = await api.post<unknown>(`${BASE}/topics`, payload)
+  // The endpoint reads @RequestParam, not a JSON body — a body post would
+  // create a nameless topic.
+  const { data } = await api.post<unknown>(`${BASE}/topics`, null, {
+    params: payload,
+  })
   return normalizeTopicDto(data)
 }
 

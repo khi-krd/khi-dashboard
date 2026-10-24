@@ -160,10 +160,16 @@ export function collectionFormValuesToMultipart(
   if (values.kmrCoverFile) fd.append("kmrCoverImage", values.kmrCoverFile)
   if (values.hoverCoverFile) fd.append("hoverCoverImage", values.hoverCoverFile)
 
-  for (const item of orderedAlbumItems(values)) {
-    if (item.stagedBinary) {
-      fd.append("images", item.stagedBinary)
-    }
+  const stagedItems = orderedAlbumItems(values).filter(
+    (item): item is ImageItemFormValues & { stagedBinary: File } =>
+      item.stagedBinary instanceof File,
+  )
+  // SINGLE collections keep only imageAlbum[0] — mirror that in the parts or
+  // the extra files arrive unpaired.
+  const cappedItems =
+    values.collectionType === "SINGLE" ? stagedItems.slice(0, 1) : stagedItems
+  for (const item of cappedItems) {
+    fd.append("images", item.stagedBinary)
   }
 
   return fd
