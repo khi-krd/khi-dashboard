@@ -115,7 +115,7 @@ export function FeaturedCatalogBrowser({
             >
               <TabsList
                 variant="line"
-                className="grid h-auto w-full grid-cols-3 gap-1 sm:grid-cols-5"
+                className="grid! h-auto! w-full grid-cols-3 gap-1 sm:grid-cols-5"
               >
                 {categoryTabs.map((key) => (
                   <TabsTrigger

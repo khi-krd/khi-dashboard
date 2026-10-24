@@ -107,7 +107,7 @@ export function AddFeaturedSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="left"
-        className="flex w-full max-w-none flex-col gap-0 p-0 data-[side=left]:sm:max-w-3xl md:max-w-4xl lg:max-w-5xl"
+        className="flex w-full max-w-none flex-col gap-0 p-0 data-[side=left]:w-full! data-[side=left]:max-w-none! data-[side=left]:sm:max-w-4xl! data-[side=left]:md:max-w-5xl! data-[side=left]:lg:max-w-6xl! data-[side=left]:xl:max-w-7xl!"
       >
         <SheetHeader className="border-border border-b px-5 py-4">
           <SheetTitle>{NS.sheet.title}</SheetTitle>
