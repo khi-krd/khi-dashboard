@@ -39,7 +39,7 @@ export const writingFormSchema = z
         }),
       )
       .default([]),
-    publishedByInstitute: z.boolean().default(false),
+    publishedByInstitute: z.boolean().default(true),
     bookLanguageCkb: z.string().max(120).default(""),
     bookLanguageKmr: z.string().max(120).default(""),
     contentLanguages: z
@@ -109,7 +109,7 @@ export const defaultWritingFormValues: WritingFormValues = {
   bookGenres: [],
   topicIds: [],
   newTopics: [],
-  publishedByInstitute: false,
+  publishedByInstitute: true,
   bookLanguageCkb: "",
   bookLanguageKmr: "",
   contentLanguages: ["CKB"],
