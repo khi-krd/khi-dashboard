@@ -130,3 +130,16 @@ export async function createTopic(payload: NewTopicPayload): Promise<TopicDto> {
 export async function deleteTopic(topicId: number): Promise<void> {
   await api.delete(`${BASE}/topics/${topicId}`)
 }
+
+// No PUT on the videos sub-resource — the generic topic controller handles
+// updates for every entity type and merges (null field = unchanged).
+export async function updateTopic(
+  topicId: number,
+  payload: NewTopicPayload,
+): Promise<TopicDto> {
+  const { data } = await api.put<unknown>(`/api/v1/topics/${topicId}`, {
+    nameCkb: payload.nameCkb ?? null,
+    nameKmr: payload.nameKmr ?? null,
+  })
+  return normalizeTopicDto(data)
+}

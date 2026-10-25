@@ -116,6 +116,7 @@ export function VideoTopicsModulePanel() {
     searchMode: "default",
   })
   const [createOpen, setCreateOpen] = useState(false)
+  const [editTarget, setEditTarget] = useState<VideoTopicDto | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<VideoTopicDto | null>(null)
   const deleteMut = useDeleteVideoTopicMutation()
 
@@ -158,9 +159,19 @@ export function VideoTopicsModulePanel() {
           usageByTopic={usageByTopic}
           isLoading={isLoading}
           onDelete={setDeleteTarget}
+          onEdit={setEditTarget}
         />
       )}
-      <VideoTopicCreateDialog open={createOpen} onOpenChange={setCreateOpen} />
+      <VideoTopicCreateDialog
+        open={createOpen || editTarget != null}
+        onOpenChange={(o) => {
+          if (!o) {
+            setCreateOpen(false)
+            setEditTarget(null)
+          }
+        }}
+        editing={editTarget}
+      />
       <VideoTopicDeleteDialog
         open={deleteTarget != null}
         onOpenChange={(o) => {
@@ -188,6 +199,7 @@ export function SoundTopicsModulePanel() {
   const topicsQ = useSoundTopicsQuery()
   const soundsQ = useSoundsListQuery(soundsListParams)
   const [createOpen, setCreateOpen] = useState(false)
+  const [editTarget, setEditTarget] = useState<SoundTopicDto | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<SoundTopicDto | null>(null)
   const deleteMut = useDeleteSoundTopicMutation()
 
@@ -230,9 +242,19 @@ export function SoundTopicsModulePanel() {
           usageByTopic={usageByTopic}
           isLoading={isLoading}
           onDelete={setDeleteTarget}
+          onEdit={setEditTarget}
         />
       )}
-      <SoundTopicCreateDialog open={createOpen} onOpenChange={setCreateOpen} />
+      <SoundTopicCreateDialog
+        open={createOpen || editTarget != null}
+        onOpenChange={(o) => {
+          if (!o) {
+            setCreateOpen(false)
+            setEditTarget(null)
+          }
+        }}
+        editing={editTarget}
+      />
       <SoundTopicDeleteDialog
         open={deleteTarget != null}
         onOpenChange={(o) => {
@@ -260,6 +282,7 @@ export function WritingTopicsModulePanel() {
   const topicsQ = useWritingTopicsQuery()
   const writingsQ = useWritingsListQuery(writingsListParams)
   const [createOpen, setCreateOpen] = useState(false)
+  const [editTarget, setEditTarget] = useState<WritingTopicDto | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<WritingTopicDto | null>(null)
   const deleteMut = useDeleteWritingTopicMutation()
 
@@ -302,9 +325,19 @@ export function WritingTopicsModulePanel() {
           usageByTopic={usageByTopic}
           isLoading={isLoading}
           onDelete={setDeleteTarget}
+          onEdit={setEditTarget}
         />
       )}
-      <WritingTopicCreateDialog open={createOpen} onOpenChange={setCreateOpen} />
+      <WritingTopicCreateDialog
+        open={createOpen || editTarget != null}
+        onOpenChange={(o) => {
+          if (!o) {
+            setCreateOpen(false)
+            setEditTarget(null)
+          }
+        }}
+        editing={editTarget}
+      />
       <WritingTopicDeleteDialog
         open={deleteTarget != null}
         onOpenChange={(o) => {
@@ -332,6 +365,7 @@ export function CollectionTopicsModulePanel() {
   const topicsQ = useCollectionTopicsQuery()
   const collectionsQ = useCollectionsListQuery(collectionsListParams)
   const [createOpen, setCreateOpen] = useState(false)
+  const [editTarget, setEditTarget] = useState<CollectionTopicDto | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<CollectionTopicDto | null>(null)
   const deleteMut = useDeleteCollectionTopicMutation()
 
@@ -374,9 +408,19 @@ export function CollectionTopicsModulePanel() {
           usageByTopic={usageByTopic}
           isLoading={isLoading}
           onDelete={setDeleteTarget}
+          onEdit={setEditTarget}
         />
       )}
-      <CollectionTopicCreateDialog open={createOpen} onOpenChange={setCreateOpen} />
+      <CollectionTopicCreateDialog
+        open={createOpen || editTarget != null}
+        onOpenChange={(o) => {
+          if (!o) {
+            setCreateOpen(false)
+            setEditTarget(null)
+          }
+        }}
+        editing={editTarget}
+      />
       <CollectionTopicDeleteDialog
         open={deleteTarget != null}
         onOpenChange={(o) => {

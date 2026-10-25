@@ -8,11 +8,13 @@ export function VideosTopicsDataGrid({
   usageByTopic,
   isLoading,
   onDelete,
+  onEdit,
 }: {
   rows: TopicRow[]
   usageByTopic: Map<number, number>
   isLoading: boolean
   onDelete: (topic: TopicRow) => void
+  onEdit: (topic: TopicRow) => void
 }) {
   return (
     <TopicsDataGrid
@@ -20,6 +22,7 @@ export function VideosTopicsDataGrid({
       usageByTopic={usageByTopic}
       isLoading={isLoading}
       onDelete={onDelete}
+      onEdit={onEdit}
       filterListHref={(id) => `/dashboard/videos?topic=${id}`}
       labels={{
         dash: NS.dash,
@@ -27,6 +30,7 @@ export function VideosTopicsDataGrid({
         nameKmr: NS.topic.name_kmr,
         actions: NS.col.actions,
         delete: NS.action.delete,
+        edit: NS.action.edit,
         usage: NS.topic.usage,
         emptyTitle: NS.topics.empty.title,
         emptySubtitle: NS.topics.empty.subtitle,

@@ -25,6 +25,7 @@ import {
   patchSoundFeatured,
   searchSounds,
   updateSound,
+  updateTopic,
 } from "@/services/soundsService"
 import type {
   FeaturedPayload,
@@ -121,6 +122,23 @@ export function useCreateTopicMutation() {
     mutationFn: (payload: NewTopicPayload) => createTopic(payload),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: soundKeys.topics() })
+    },
+  })
+}
+
+export function useUpdateTopicMutation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({
+      topicId,
+      payload,
+    }: {
+      topicId: number
+      payload: NewTopicPayload
+    }) => updateTopic(topicId, payload),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: soundKeys.topics() })
+      void queryClient.invalidateQueries({ queryKey: soundKeys.lists() })
     },
   })
 }

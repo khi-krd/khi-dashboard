@@ -18,6 +18,7 @@ import {
   getCollectionById,
   getCollectionsList,
   getTopics,
+  updateTopic,
 } from "@/services/imageCollectionsService"
 import type {
   CollectionDto,
@@ -157,6 +158,23 @@ export function useCreateTopicMutation() {
     mutationFn: (payload: NewTopicPayload) => createTopic(payload),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: collectionKeys.topics() })
+    },
+  })
+}
+
+export function useUpdateTopicMutation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({
+      topicId,
+      payload,
+    }: {
+      topicId: number
+      payload: NewTopicPayload
+    }) => updateTopic(topicId, payload),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: collectionKeys.topics() })
+      void queryClient.invalidateQueries({ queryKey: collectionKeys.lists() })
     },
   })
 }

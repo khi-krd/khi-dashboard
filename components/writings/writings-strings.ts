@@ -72,6 +72,7 @@ export const NS = {
     },
   },
   topic: {
+    edit_title: "دەستکاری بابەت",
     name_ckb: "ناوی سۆرانی",
     name_kmr: "ناوی کورمانجی",
     usage: (count: string) => `${count} کتێب`,
@@ -287,6 +288,7 @@ export const NS = {
     deleted: "نووسراوە سڕایەوە",
     linked_to_series: "بەو زنجیرە بەسترایەوە",
     topic_created: "بابەت دروستکرا",
+    topic_updated: "بابەت نوێکرایەوە",
     topic_deleted: "بابەت سڕایەوە",
     copied: "لەبەرگیرایەوە",
     view_action: "بینین",

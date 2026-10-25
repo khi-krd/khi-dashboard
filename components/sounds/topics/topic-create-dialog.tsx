@@ -1,8 +1,8 @@
 "use client"
 
-import { useState } from "react"
 import { toast } from "sonner"
 
+import { useSyncedState } from "@/hooks/use-synced-state"
 import { NS } from "@/components/sounds/sounds-strings"
 import { Button } from "@/components/ui/button"
 import {
@@ -15,37 +15,58 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Spinner } from "@/components/ui/spinner"
-import { useCreateTopicMutation } from "@/hooks/useSounds"
+import {
+  useCreateTopicMutation,
+  useUpdateTopicMutation,
+} from "@/hooks/useSounds"
+import type { TopicDto } from "@/types/sounds"
 
 export function TopicCreateDialog({
   open,
   onOpenChange,
+  editing,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
+  editing?: TopicDto | null
 }) {
-  const [nameCkb, setNameCkb] = useState("")
-  const [nameKmr, setNameKmr] = useState("")
+  const editDeps = [open, editing]
+  const [nameCkb, setNameCkb] = useSyncedState(
+    editDeps,
+    () => (open ? (editing?.nameCkb ?? "") : ""),
+    () => "",
+  )
+  const [nameKmr, setNameKmr] = useSyncedState(
+    editDeps,
+    () => (open ? (editing?.nameKmr ?? "") : ""),
+    () => "",
+  )
   const createMut = useCreateTopicMutation()
-
-  function reset() {
-    setNameCkb("")
-    setNameKmr("")
-  }
+  const updateMut = useUpdateTopicMutation()
+  const isPending = createMut.isPending || updateMut.isPending
 
   function handleClose(next: boolean) {
-    if (!next) reset()
     onOpenChange(next)
   }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
+    const ckb = nameCkb.trim()
+    const kmr = nameKmr.trim()
     try {
-      await createMut.mutateAsync({
-        nameCkb: nameCkb.trim() || undefined,
-        nameKmr: nameKmr.trim() || undefined,
-      })
-      toast.success(NS.toast.topic_created)
+      if (editing) {
+        await updateMut.mutateAsync({
+          topicId: editing.id,
+          payload: { nameCkb: ckb, nameKmr: kmr },
+        })
+        toast.success(NS.toast.topic_updated)
+      } else {
+        await createMut.mutateAsync({
+          nameCkb: ckb || undefined,
+          nameKmr: kmr || undefined,
+        })
+        toast.success(NS.toast.topic_created)
+      }
       handleClose(false)
     } catch {
       toast.error(NS.error.generic)
@@ -57,7 +78,9 @@ export function TopicCreateDialog({
       <DialogContent className="max-w-md rounded-lg" dir="rtl">
         <form onSubmit={onSubmit}>
           <DialogHeader>
-            <DialogTitle>{NS.action.new_topic}</DialogTitle>
+            <DialogTitle>
+              {editing ? NS.topic.edit_title : NS.action.new_topic}
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
@@ -85,13 +108,13 @@ export function TopicCreateDialog({
               type="button"
               variant="outline"
               onClick={() => handleClose(false)}
-              disabled={createMut.isPending}
+              disabled={isPending}
             >
               {NS.action.cancel}
             </Button>
-            <Button type="submit" disabled={createMut.isPending} className="gap-2">
-              {createMut.isPending ? <Spinner className="size-4" /> : null}
-              {NS.action.add}
+            <Button type="submit" disabled={isPending} className="gap-2">
+              {isPending ? <Spinner className="size-4" /> : null}
+              {editing ? NS.action.save : NS.action.add}
             </Button>
           </DialogFooter>
         </form>

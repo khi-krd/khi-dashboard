@@ -19,6 +19,7 @@ import {
   getVideosList,
   searchVideosByKeyword,
   searchVideosByTag,
+  updateTopic,
   updateVideo,
 } from "@/services/videosService"
 import type { NewTopicPayload, VideoDto, VideoPage } from "@/types/videos"
@@ -172,6 +173,23 @@ export function useCreateTopicMutation() {
     mutationFn: (payload: NewTopicPayload) => createTopic(payload),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: videoKeys.topics() })
+    },
+  })
+}
+
+export function useUpdateTopicMutation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({
+      topicId,
+      payload,
+    }: {
+      topicId: number
+      payload: NewTopicPayload
+    }) => updateTopic(topicId, payload),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: videoKeys.topics() })
+      void queryClient.invalidateQueries({ queryKey: videoKeys.lists() })
     },
   })
 }

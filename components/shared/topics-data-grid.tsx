@@ -3,6 +3,7 @@
 import {
   ChevronDownIcon,
   ChevronUpIcon,
+  PencilSquareIcon,
   TrashIcon,
 } from "@heroicons/react/24/outline"
 import Link from "next/link"
@@ -37,6 +38,7 @@ export type TopicsDataGridLabels = {
   nameKmr: string
   actions: string
   delete: string
+  edit: string
   usage: (count: string) => string
   emptyTitle: string
   emptySubtitle: string
@@ -67,6 +69,7 @@ export function TopicsDataGrid({
   isLoading,
   filterListHref,
   onDelete,
+  onEdit,
   labels,
 }: {
   rows: TopicRow[]
@@ -74,6 +77,7 @@ export function TopicsDataGrid({
   isLoading: boolean
   filterListHref: (topicId: number) => string
   onDelete: (topic: TopicRow) => void
+  onEdit: (topic: TopicRow) => void
   labels: TopicsDataGridLabels
 }) {
   const [sorting, setSorting] = useState<SortingState>([])
@@ -145,18 +149,28 @@ export function TopicsDataGrid({
       {
         id: "actions",
         enableSorting: false,
-        size: 112,
+        size: 200,
         meta: {
           headerTitle: labels.actions,
-          cellClassName: "w-28",
-          skeleton: <Skeleton className="h-8 w-24" />,
+          cellClassName: "w-52",
+          skeleton: <Skeleton className="h-8 w-44" />,
         },
         header: labels.actions,
         cell: ({ row }) => (
           <div
-            className="flex items-center justify-end"
+            className="flex items-center justify-end gap-1"
             onClick={(e) => e.stopPropagation()}
           >
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="gap-1"
+              onClick={() => onEdit(row.original)}
+            >
+              <PencilSquareIcon className="size-4" />
+              {labels.edit}
+            </Button>
             <Button
               type="button"
               variant="ghost"
@@ -171,7 +185,7 @@ export function TopicsDataGrid({
         ),
       },
     ],
-    [filterListHref, labels, onDelete, usageByTopic],
+    [filterListHref, labels, onDelete, onEdit, usageByTopic],
   )
 
   const table = useReactTable({

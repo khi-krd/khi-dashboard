@@ -38,6 +38,7 @@ export function TopicsList() {
   const writingsQ = useWritingsListQuery(listParams)
 
   const [createOpen, setCreateOpen] = useState(false)
+  const [editTarget, setEditTarget] = useState<TopicDto | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<TopicDto | null>(null)
   const deleteMut = useDeleteTopicMutation()
 
@@ -104,6 +105,7 @@ export function TopicsList() {
               usageByTopic={usageByTopic}
               isLoading={isLoading}
               onDelete={setDeleteTarget}
+              onEdit={setEditTarget}
             />
           )}
         </>
@@ -116,7 +118,16 @@ export function TopicsList() {
         {NS.action.back}
       </Link>
 
-      <TopicCreateDialog open={createOpen} onOpenChange={setCreateOpen} />
+      <TopicCreateDialog
+        open={createOpen || editTarget != null}
+        onOpenChange={(o) => {
+          if (!o) {
+            setCreateOpen(false)
+            setEditTarget(null)
+          }
+        }}
+        editing={editTarget}
+      />
 
       <TopicDeleteDialog
         open={deleteTarget != null}

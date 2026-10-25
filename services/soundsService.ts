@@ -179,3 +179,14 @@ export async function createTopic(payload: NewTopicPayload): Promise<TopicDto> {
 export async function deleteTopic(topicId: number): Promise<void> {
   await api.delete(`${TOPICS_BASE}/${topicId}`)
 }
+
+export async function updateTopic(
+  topicId: number,
+  payload: NewTopicPayload,
+): Promise<TopicDto> {
+  const { data } = await api.put<unknown>(`${TOPICS_BASE}/${topicId}`, {
+    nameCkb: payload.nameCkb ?? null,
+    nameKmr: payload.nameKmr ?? null,
+  })
+  return normalizeTopicDto(data)
+}
