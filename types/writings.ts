@@ -43,6 +43,27 @@ export type BookGenre = string
 
 export type BookFileFormat = "PDF" | "DOCX" | "EPUB" | "TXT" | "OTHER"
 
+export type WritingPersonRole =
+  | "WRITER"
+  | "COLLECTOR"
+  | "TRANSLATOR"
+  | "EDITOR"
+  | "NARRATOR"
+  | "PHOTOGRAPHER"
+  | "OWNER"
+  | "OTHER"
+
+/** A person attached to a book — writer, collector, translator, ... */
+export type WritingPersonDto = {
+  id?: number
+  role?: WritingPersonRole | null
+  nameCkb?: string | null
+  nameKmr?: string | null
+  nicknameCkb?: string | null
+  nicknameKmr?: string | null
+  sortOrder?: number | null
+}
+
 export type WritingContentDto = {
   title?: string | null
   description?: string | null
@@ -118,6 +139,8 @@ export type WritingDto = {
   seriesTotalBooks?: number | null
   parentBookId?: number | null
   seriesInfo?: SeriesInfoDto | null
+  /** People attached to the book — full replace on update. */
+  persons?: WritingPersonDto[]
   createdAt?: string
   updatedAt?: string
   createdBy?: string | null

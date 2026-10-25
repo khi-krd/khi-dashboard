@@ -77,6 +77,16 @@ export function writingFormValuesToMultipart(
     ckbCoverUrl: trimOrUndef(values.ckbCoverUrl),
     kmrCoverUrl: trimOrUndef(values.kmrCoverUrl),
     hoverCoverUrl: trimOrUndef(values.hoverCoverUrl),
+    // People are a replace-set — always sent, so an empty list clears them.
+    persons: values.persons
+      .map((p) => ({
+        role: p.role,
+        nameCkb: trimOrUndef(p.nameCkb),
+        nameKmr: trimOrUndef(p.nameKmr),
+        nicknameCkb: trimOrUndef(p.nicknameCkb),
+        nicknameKmr: trimOrUndef(p.nicknameKmr),
+      }))
+      .filter((p) => p.nameCkb || p.nameKmr),
     ckbContent: values.contentLanguages.includes("CKB")
       ? buildContent("CKB", values, values.ckbBookFile)
       : undefined,

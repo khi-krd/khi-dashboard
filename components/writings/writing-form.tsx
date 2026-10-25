@@ -4,6 +4,7 @@ import {
   CheckIcon,
   ExclamationCircleIcon,
   HashtagIcon,
+  UsersIcon,
 } from "@heroicons/react/24/outline"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -27,6 +28,7 @@ import { WritingErrorState } from "@/components/writings/writing-error-state"
 import { WritingGenreMultiselect } from "@/components/writings/writing-genre-multiselect"
 import { WritingInstituteSwitch } from "@/components/writings/writing-institute-switch"
 import { WritingLanguageToggleChip } from "@/components/writings/writing-language-chip"
+import { WritingPersonsSection } from "@/components/writings/writing-persons-section"
 import { WritingSeriesSection } from "@/components/writings/writing-series-section"
 import { WritingTagInput } from "@/components/writings/writing-tag-input"
 import { TiptapEditor } from "@/components/shared/tiptap-editor-lazy"
@@ -671,6 +673,14 @@ export function WritingForm({
                   />
                 )}
               />
+            </section>
+
+            <section className={cn("mt-6", sectionCard)}>
+              <Label className={cn("mb-3", sectionHeading)}>
+                <UsersIcon className="size-4" />
+                {NS.section.persons}
+              </Label>
+              <WritingPersonsSection />
             </section>
           </div>
         </div>

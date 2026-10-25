@@ -725,6 +725,44 @@ function WritingDetailLoaded({
                 </div>
               </dl>
 
+              {(writing.persons ?? []).length > 0 ? (
+                <div className="mt-4">
+                  <h4 className={sideHeading}>{NS.section.persons}</h4>
+                  <ul className="mt-2 space-y-1.5 text-sm">
+                    {writing.persons!.map((person, i) => {
+                      const name =
+                        (tab === "KMR"
+                          ? person.nameKmr || person.nameCkb
+                          : person.nameCkb || person.nameKmr) || NS.dash
+                      const nickname =
+                        tab === "KMR"
+                          ? person.nicknameKmr || person.nicknameCkb
+                          : person.nicknameCkb || person.nicknameKmr
+                      return (
+                        <li
+                          key={person.id ?? i}
+                          className="flex flex-wrap items-baseline gap-x-2"
+                        >
+                          <span className="text-muted-foreground/80 text-xs">
+                            {NS.person.roles[person.role ?? "OTHER"] ??
+                              person.role}
+                            :
+                          </span>
+                          <span className="text-foreground font-medium">
+                            {name}
+                          </span>
+                          {nickname ? (
+                            <span className="text-muted-foreground text-xs">
+                              ({nickname})
+                            </span>
+                          ) : null}
+                        </li>
+                      )
+                    })}
+                  </ul>
+                </div>
+              ) : null}
+
               {(writing.bookGenres ?? []).length > 0 ? (
                 <div className="mt-4 flex flex-wrap gap-1.5">
                   {writing.bookGenres!.map((g) => (

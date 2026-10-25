@@ -59,6 +59,28 @@ export const writingFormSchema = z
         kmr: z.array(z.string().max(120)).default([]),
       })
       .default({ ckb: [], kmr: [] }),
+    persons: z
+      .array(
+        z.object({
+          role: z
+            .enum([
+              "WRITER",
+              "COLLECTOR",
+              "TRANSLATOR",
+              "EDITOR",
+              "NARRATOR",
+              "PHOTOGRAPHER",
+              "OWNER",
+              "OTHER",
+            ])
+            .default("OTHER"),
+          nameCkb: z.string().max(200).optional(),
+          nameKmr: z.string().max(200).optional(),
+          nicknameCkb: z.string().max(200).optional(),
+          nicknameKmr: z.string().max(200).optional(),
+        }),
+      )
+      .default([]),
     seriesId: z.string().optional(),
     seriesName: z.string().max(300).optional(),
     seriesOrder: z.number().min(0).default(1),
@@ -117,6 +139,7 @@ export const defaultWritingFormValues: WritingFormValues = {
   kmrContent: { title: "", description: "", writer: "", fileUrl: "", fileSizeBytes: 0, location: "" },
   tags: { ckb: [], kmr: [] },
   keywords: { ckb: [], kmr: [] },
+  persons: [],
   seriesOrder: 1,
   parentBookId: null,
   seriesMode: "standalone",
@@ -180,6 +203,13 @@ export function writingDtoToFormValues(dto: WritingDto): WritingFormValues {
       ckb: [...(dto.keywordsCkb ?? [])],
       kmr: [...(dto.keywordsKmr ?? [])],
     },
+    persons: (dto.persons ?? []).map((p) => ({
+      role: p.role ?? "OTHER",
+      nameCkb: p.nameCkb ?? "",
+      nameKmr: p.nameKmr ?? "",
+      nicknameCkb: p.nicknameCkb ?? "",
+      nicknameKmr: p.nicknameKmr ?? "",
+    })),
     seriesId: dto.seriesId ?? undefined,
     seriesName: dto.seriesName ?? undefined,
     seriesOrder: dto.seriesOrder ?? dto.seriesInfo?.seriesOrder ?? 1,

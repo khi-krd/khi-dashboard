@@ -144,6 +144,24 @@ export const NS = {
     preview: "پێشبینین",
     view_series_short: "بینینی زنجیرە",
   },
+  person: {
+    add: "کەس زیاد بکە",
+    remove: "کەسەکە لاببە",
+    role: "ڕۆڵ",
+    full_name: "ناوی تەواو",
+    nickname: "نازناو",
+    empty: "هیچ کەسێک زیاد نەکراوە — نووسەر، کۆکەرەوە، وەرگێڕ…",
+    roles: {
+      WRITER: "نووسەر",
+      COLLECTOR: "کۆکەرەوە",
+      TRANSLATOR: "وەرگێڕ",
+      EDITOR: "سەرنوسەر",
+      NARRATOR: "گێڕەرەوە",
+      PHOTOGRAPHER: "وێنەگر",
+      OWNER: "خاوەن",
+      OTHER: "ڕۆڵی تر",
+    },
+  },
   genre: {
     group: {
       literary: "ئەدەب و داستان",
@@ -199,6 +217,7 @@ export const NS = {
     book_language: "زمانی کتێب",
     topic: "بابەت",
     writer: "نووسەر",
+    persons: "کەسەکان",
     files_format: "فایلەکان و فۆڕمات",
     reader: "خوێندنەوە و داگرتن",
     dates: "بەروارەکان",
@@ -245,6 +264,10 @@ export const NS = {
     series_total_helper: "کۆی کتێبەکانی زنجیرە",
     topic_helper: "بابەتەکان بۆ پۆلبەندی نووسراوەکانن",
     topic_empty: "بێ بابەت",
+    person_name_ckb: "ناوی تەواو بە سۆرانی…",
+    person_name_kmr: "Navê temam bi Kurmancî…",
+    person_nickname_ckb: "نازناو بە سۆرانی…",
+    person_nickname_kmr: "Navenas bi Kurmancî…",
   },
   pages: {
     suffix: "پەڕە",
