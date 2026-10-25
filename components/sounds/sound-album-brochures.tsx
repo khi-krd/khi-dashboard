@@ -15,7 +15,7 @@ import { useFieldArray, useFormContext } from "react-hook-form"
 import { SoundAlbumBrochureRow } from "@/components/sounds/sound-album-brochure-row"
 import { NS } from "@/components/sounds/sounds-strings"
 import { Button } from "@/components/ui/button"
-import { useFileUpload } from "@/hooks/use-file-upload"
+import { MAX_UPLOAD_BYTES, useFileUpload } from "@/hooks/use-file-upload"
 import { formatEnDigits } from "@/lib/intl-ckb"
 import { guessAttachmentTypeFromMime } from "@/lib/sound-format"
 import { cn } from "@/lib/utils"
@@ -64,7 +64,7 @@ export function SoundAlbumBrochuresList() {
   const [{ isDragging }, { handleDragEnter, handleDragLeave, handleDragOver, handleDrop, openFileDialog, getInputProps }] =
     useFileUpload({
       maxFiles: 50,
-      maxSize: 50 * 1024 * 1024,
+      maxSize: MAX_UPLOAD_BYTES,
       multiple: true,
       accept: "image/*,application/pdf",
       onFilesAdded: (added) => {

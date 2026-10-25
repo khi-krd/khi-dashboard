@@ -17,7 +17,7 @@ import { NS } from "@/components/services/services-strings"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { UploadProgressLine } from "@/components/shared/upload-progress-line"
-import { formatBytes, useFileUpload } from "@/hooks/use-file-upload"
+import { formatBytes, MAX_UPLOAD_BYTES, useFileUpload } from "@/hooks/use-file-upload"
 import { formatCkbDigits } from "@/lib/intl-ckb"
 import { cn } from "@/lib/utils"
 import { captureVideoFrame } from "@/lib/video-thumbnail"
@@ -27,7 +27,7 @@ import {
 } from "@/lib/validations/services"
 import { uploadMedia } from "@/services/mediaService"
 
-const MAX_FILE_BYTES = 500 * 1024 * 1024
+const MAX_FILE_BYTES = MAX_UPLOAD_BYTES
 const MAX_GALLERY_FILES = 24
 const VIDEO_EXT = /\.(mp4|webm|mov|m4v|ogv|ogg)$/i
 

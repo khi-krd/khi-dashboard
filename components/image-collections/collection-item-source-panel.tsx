@@ -8,7 +8,7 @@ import { isOptimizableImageSrc } from "@/lib/image-src"
 import { NS } from "@/components/image-collections/collections-strings"
 import { FieldError } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { useFileUpload } from "@/hooks/use-file-upload"
+import { MAX_UPLOAD_BYTES, useFileUpload } from "@/hooks/use-file-upload"
 import { useObjectUrl } from "@/hooks/use-object-url"
 import { applyImageFileMeta } from "@/lib/image-album-utils"
 import { cn } from "@/lib/utils"
@@ -42,7 +42,7 @@ export function CollectionItemSourcePanel({
     },
   ] = useFileUpload({
     maxFiles: 1,
-    maxSize: 20 * 1024 * 1024,
+    maxSize: MAX_UPLOAD_BYTES,
     accept: "image/jpeg,image/png,image/webp",
     multiple: false,
     onFilesAdded: (added) => {

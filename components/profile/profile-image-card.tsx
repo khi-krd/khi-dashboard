@@ -22,6 +22,7 @@ import { Spinner } from "@/components/ui/spinner"
 import { syncCurrentUser } from "@/hooks/use-current-user"
 import {
   formatBytes,
+  MAX_UPLOAD_BYTES,
   useFileUpload,
 } from "@/hooks/use-file-upload"
 import { resolveAvatarSrc } from "@/lib/profile-image"
@@ -33,7 +34,7 @@ import {
 } from "@/services/auth.service"
 import type { UserResponse } from "@/types/auth"
 
-const MAX_BYTES = 5 * 1024 * 1024
+const MAX_BYTES = MAX_UPLOAD_BYTES
 const ACCEPT = "image/png,image/jpeg,image/webp"
 
 function initialsOf(user: UserResponse): string {

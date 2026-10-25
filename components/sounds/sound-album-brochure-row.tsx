@@ -15,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { useFileUpload } from "@/hooks/use-file-upload"
+import { MAX_UPLOAD_BYTES, useFileUpload } from "@/hooks/use-file-upload"
 import { guessAttachmentTypeFromMime } from "@/lib/sound-format"
 import type { SoundFormValues } from "@/lib/validations/sounds"
 import type { AttachmentType } from "@/types/sounds"
@@ -40,7 +40,7 @@ export function SoundAlbumBrochureRow({
 
   const [, { getInputProps, openFileDialog, removeFile }] = useFileUpload({
     maxFiles: 1,
-    maxSize: 50 * 1024 * 1024,
+    maxSize: MAX_UPLOAD_BYTES,
     multiple: false,
     accept: "image/*,application/pdf",
     onFilesAdded: (added) => {

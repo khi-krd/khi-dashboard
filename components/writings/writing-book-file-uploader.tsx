@@ -24,7 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { useFileUpload } from "@/hooks/use-file-upload"
+import { MAX_UPLOAD_BYTES, useFileUpload } from "@/hooks/use-file-upload"
 import {
   guessBookFormatFromFilename,
   humanReadableSize,
@@ -36,7 +36,7 @@ import type { BookFileFormat, Language } from "@/types/writings"
 
 const BOOK_ACCEPT =
   ".pdf,.doc,.docx,.epub,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-const MAX_BYTES = 50 * 1024 * 1024
+const MAX_BYTES = MAX_UPLOAD_BYTES
 
 const FORMATS: BookFileFormat[] = ["PDF", "DOCX", "EPUB", "TXT", "OTHER"]
 

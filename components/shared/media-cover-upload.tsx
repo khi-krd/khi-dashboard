@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button"
 import { FieldError } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useFileUpload } from "@/hooks/use-file-upload"
+import { MAX_UPLOAD_BYTES, useFileUpload } from "@/hooks/use-file-upload"
 import { mediaTypeFromFile } from "@/lib/tiptap-media"
 import { VideoUrlPreview } from "@/components/shared/video-url-preview"
 import { uploadMedia } from "@/services/mediaService"
@@ -24,9 +24,9 @@ import { cn } from "@/lib/utils"
 const DEFAULT_IMAGE_ACCEPT = "image/jpeg,image/png,image/webp,image/gif"
 const DEFAULT_VIDEO_ACCEPT = "video/mp4,video/webm,video/quicktime,video/*"
 const DEFAULT_AUDIO_ACCEPT = "audio/mpeg,audio/wav,audio/ogg,audio/*"
-const DEFAULT_IMAGE_MAX = 20 * 1024 * 1024
-const DEFAULT_VIDEO_MAX = 500 * 1024 * 1024
-const DEFAULT_AUDIO_MAX = 200 * 1024 * 1024
+const DEFAULT_IMAGE_MAX = MAX_UPLOAD_BYTES
+const DEFAULT_VIDEO_MAX = MAX_UPLOAD_BYTES
+const DEFAULT_AUDIO_MAX = MAX_UPLOAD_BYTES
 
 type MediaVariant = "image" | "video" | "audio"
 

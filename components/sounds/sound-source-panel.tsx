@@ -7,7 +7,7 @@ import { useObjectUrl } from "@/hooks/use-object-url"
 import { NS } from "@/components/sounds/sounds-strings"
 import { FieldError } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { useFileUpload } from "@/hooks/use-file-upload"
+import { MAX_UPLOAD_BYTES, useFileUpload } from "@/hooks/use-file-upload"
 import {
   applyAudioFileMeta,
   audioFileMetaFromFile,
@@ -168,7 +168,7 @@ export function SoundSourcePanel({
     },
   ] = useFileUpload({
     maxFiles: 1,
-    maxSize: 100 * 1024 * 1024,
+    maxSize: MAX_UPLOAD_BYTES,
     accept: "audio/*",
     multiple: false,
     onFilesAdded: (added) => {

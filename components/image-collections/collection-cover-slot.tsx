@@ -10,11 +10,11 @@ import {
 } from "@/components/ui/collapsible"
 import { FieldError } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { useFileUpload } from "@/hooks/use-file-upload"
+import { MAX_UPLOAD_BYTES, useFileUpload } from "@/hooks/use-file-upload"
 import { cn } from "@/lib/utils"
 
 const ACCEPT = "image/jpeg,image/png,image/webp"
-const MAX = 5 * 1024 * 1024
+const MAX = MAX_UPLOAD_BYTES
 
 function isRenderablePreview(url: string | null): boolean {
   if (!url?.trim()) return false

@@ -32,14 +32,14 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet"
 import { Switch } from "@/components/ui/switch"
-import { useFileUpload } from "@/hooks/use-file-upload"
+import { MAX_UPLOAD_BYTES, useFileUpload } from "@/hooks/use-file-upload"
 import { applyVideoFileMeta } from "@/lib/video-file-utils"
 import { watchToEmbedUrl } from "@/lib/video-url-helpers"
 import { cn } from "@/lib/utils"
 import type { VideoFormValues } from "@/lib/validations/videos"
 import { VideoUrlPreview } from "@/components/shared/video-url-preview"
 
-const MAX_VIDEO_FILE_BYTES = 500 * 1024 * 1024
+const MAX_VIDEO_FILE_BYTES = MAX_UPLOAD_BYTES
 
 type Source = VideoFormValues["videoSources"][number]
 type SourceMode = "file" | "external" | "embed"

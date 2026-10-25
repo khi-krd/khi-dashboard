@@ -17,7 +17,7 @@ import {
 import { NS } from "@/components/videos/videos-strings"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
-import { formatBytes, useFileUpload } from "@/hooks/use-file-upload"
+import { formatBytes, MAX_UPLOAD_BYTES, useFileUpload } from "@/hooks/use-file-upload"
 import {
   applyVideoFileMeta,
   titleFromVideoFileName,
@@ -26,7 +26,7 @@ import { formatEnDigits } from "@/lib/intl-ckb"
 import { cn } from "@/lib/utils"
 import type { VideoFormValues } from "@/lib/validations/videos"
 
-const MAX_VIDEO_FILE_BYTES = 500 * 1024 * 1024
+const MAX_VIDEO_FILE_BYTES = MAX_UPLOAD_BYTES
 const MAX_SOURCE_FILES = 20
 
 type Source = VideoFormValues["videoSources"][number]

@@ -41,6 +41,9 @@ export type FileUploadState = {
   errors: string[]
 }
 
+/** Single upload ceiling for every entity form — backend/nginx both allow it. */
+export const MAX_UPLOAD_BYTES = 1024 * 1024 * 1024
+
 export type FileUploadActions = {
   addFiles: (files: FileList | File[]) => void
   removeFile: (id: string) => void
@@ -64,7 +67,7 @@ export const useFileUpload = (
 ): [FileUploadState, FileUploadActions] => {
   const {
     maxFiles = Number.POSITIVE_INFINITY,
-    maxSize = Number.POSITIVE_INFINITY,
+    maxSize = MAX_UPLOAD_BYTES,
     accept = "*",
     multiple = false,
     initialFiles = [],
@@ -208,7 +211,7 @@ export const useFileUpload = (
 
           // Skip duplicate files silently
           if (isDuplicate) {
-            return
+            continue
           }
         }
 

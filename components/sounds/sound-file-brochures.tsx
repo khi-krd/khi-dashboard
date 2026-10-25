@@ -22,7 +22,7 @@ import { useObjectUrl } from "@/hooks/use-object-url"
 import { NS } from "@/components/sounds/sounds-strings"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { useFileUpload } from "@/hooks/use-file-upload"
+import { MAX_UPLOAD_BYTES, useFileUpload } from "@/hooks/use-file-upload"
 import type { BrochureFormValues } from "@/lib/validations/sounds"
 
 function newBrochureKey() {
@@ -134,7 +134,7 @@ function BrochureRow({
 
   const [, { getInputProps, openFileDialog, removeFile }] = useFileUpload({
     maxFiles: 1,
-    maxSize: 5 * 1024 * 1024,
+    maxSize: MAX_UPLOAD_BYTES,
     accept: "image/jpeg,image/png,image/webp",
     multiple: false,
     onFilesAdded: (added) => {

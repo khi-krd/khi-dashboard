@@ -1,3 +1,4 @@
+import { MAX_UPLOAD_BYTES } from "@/hooks/use-file-upload"
 import { soundKeys } from "@/lib/sounds-query-keys"
 import { videoKeys } from "@/lib/videos-query-keys"
 
@@ -35,7 +36,7 @@ export const SOUND_REKLAM_VIDEO: ReklamVideoConfig = {
   basePath: "/api/v1/sound-tracks/sound-reklam-video",
   alreadyExistsKey: "sound.reklamVideo.already_exists",
   notFoundKey: "sound.reklamVideo.not_found",
-  maxBytes: 500 * 1024 * 1024,
+  maxBytes: MAX_UPLOAD_BYTES,
   accept: "video/mp4,video/webm,video/quicktime,video/*",
   queryKey: soundKeys.reklamVideo(),
 }
