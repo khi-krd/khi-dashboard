@@ -241,12 +241,34 @@ export function TiptapEditor({
       // Pasted image/video/audio files upload to the entity's R2 folder and
       // insert as figures/media nodes — pasted <img> HTML is upgraded to a
       // figure by the schema itself.
-      handlePaste: (_view, event) => {
+      handlePaste: (view, event) => {
         const files = Array.from(event.clipboardData?.files ?? [])
         const media = files.filter((f) =>
           /^(image|video|audio)\//.test(f.type),
         )
-        if (!media.length) return false
+        if (!media.length) {
+          // Text paste: external copies (web pages, Word…) arrive as plain
+          // text only — no fonts, colors, sizes, headings or links. Two
+          // exceptions fall through to ProseMirror's native handling:
+          //   • `data-pm-slice` marks content cut/copied inside this editor,
+          //     so rearranging formatted blocks keeps their structure;
+          //   • media/table markup (a copied image's <img> becomes a figure).
+          const html = event.clipboardData?.getData("text/html") ?? ""
+          if (html.includes("data-pm-slice")) return false
+          if (/<(img|video|audio|iframe|table)\b/i.test(html)) return false
+          const text = event.clipboardData?.getData("text/plain")
+          if (!text) return false
+          event.preventDefault()
+          const { from, to } = view.state.selection
+          // insertText turns newlines into hard breaks; removeMark strips
+          // any mark the caret position would otherwise inherit.
+          const tr = view.state.tr.insertText(text, from, to)
+          for (const mark of Object.values(view.state.schema.marks)) {
+            tr.removeMark(from, from + text.length, mark)
+          }
+          view.dispatch(tr)
+          return true
+        }
         const ed = editor
         if (!ed || ed.isDestroyed || !ed.isEditable) return false
         event.preventDefault()
