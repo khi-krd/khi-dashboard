@@ -213,7 +213,6 @@ function WritingDetailLoaded({
 
   const activeContent = tab === "CKB" ? writing.ckbContent : writing.kmrContent
   const activeDesc = activeContent?.description ?? ""
-  const activeWriter = activeContent?.writer?.trim() ?? ""
 
   const seriesOrder = writing.seriesOrder ?? writing.seriesInfo?.seriesOrder
   const seriesTotal =
@@ -704,14 +703,6 @@ function WritingDetailLoaded({
               ) : null}
 
               <dl className="text-muted-foreground mt-4 flex flex-wrap gap-x-6 gap-y-2 text-sm">
-                <div className="min-w-0">
-                  <dt className="text-muted-foreground/80 text-xs">
-                    {NS.section.writer}
-                  </dt>
-                  <dd className="text-foreground font-medium">
-                    {activeWriter || NS.dash}
-                  </dd>
-                </div>
                 <div className="min-w-0">
                   <dt className="text-muted-foreground/80 text-xs">
                     {NS.section.book_language}

@@ -87,9 +87,9 @@ function SeriesCard({ parent }: { parent: WritingDto }) {
         <h2 className="line-clamp-2 text-base font-semibold leading-snug">
           {title}
         </h2>
-        {parent.ckbContent?.writer?.trim() ? (
+        {parent.persons?.length ? (
           <p className="text-muted-foreground line-clamp-1 text-sm">
-            {parent.ckbContent.writer}
+            {parent.persons[0].nameCkb || parent.persons[0].nameKmr}
           </p>
         ) : null}
         <span className="text-primary text-xs font-medium group-hover:underline">

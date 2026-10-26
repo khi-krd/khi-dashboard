@@ -494,8 +494,8 @@ export function mapWritingToCatalogItem(
     categoryLabel: FEATURED_CATEGORY_LABELS.writings,
     title: bilingualTitle(writing.ckbContent?.title, writing.kmrContent?.title),
     subtitle:
-      writing.ckbContent?.writer?.trim() ||
-      writing.kmrContent?.writer?.trim() ||
+      writing.persons?.[0]?.nameCkb?.trim() ||
+      writing.persons?.[0]?.nameKmr?.trim() ||
       writing.topicNameCkb?.trim() ||
       writing.topicNameKmr?.trim() ||
       null,

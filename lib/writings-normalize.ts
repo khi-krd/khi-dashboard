@@ -87,7 +87,7 @@ function normalizeContent(raw: unknown): WritingContentDto | null {
   return {
     title: coerceStr(o.title) ?? undefined,
     description: coerceStr(o.description) ?? undefined,
-    writer: coerceStr(o.writer) ?? undefined,
+
     fileUrl: coerceStr(o.fileUrl) ?? coerceStr(o.file_url),
     fileFormat:
       normalizeFileFormat(o.fileFormat) ??

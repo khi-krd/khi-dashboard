@@ -36,8 +36,9 @@ export type WritingAdminTableRow = WritingDto & {
 export function toWritingAdminRow(w: WritingDto): WritingAdminTableRow {
   const titleCkb = w.ckbContent?.title ?? ""
   const titleKmr = w.kmrContent?.title ?? ""
-  const writerCkb = w.ckbContent?.writer ?? ""
-  const writerKmr = w.kmrContent?.writer ?? ""
+  const first = w.persons?.[0]
+  const writerCkb = first?.nameCkb?.trim() || first?.nameKmr?.trim() || ""
+  const writerKmr = first?.nameKmr?.trim() || first?.nameCkb?.trim() || ""
   const created = w.createdAt ? new Date(w.createdAt).getTime() : 0
   return {
     ...w,
@@ -86,10 +87,12 @@ export function isPartOfMultiBookSeries(w: WritingDto): boolean {
 export function deriveDistinctWriters(rows: WritingDto[]): string[] {
   const set = new Set<string>()
   for (const w of rows) {
-    const ckb = w.ckbContent?.writer?.trim()
-    const kmr = w.kmrContent?.writer?.trim()
-    if (ckb) set.add(ckb)
-    if (kmr && kmr !== ckb) set.add(kmr)
+    for (const p of w.persons ?? []) {
+      const ckb = p.nameCkb?.trim()
+      const kmr = p.nameKmr?.trim()
+      if (ckb) set.add(ckb)
+      if (kmr && kmr !== ckb) set.add(kmr)
+    }
   }
   return [...set].sort((a, b) => a.localeCompare(b, "ckb"))
 }
@@ -132,9 +135,9 @@ export function matchesWritingWriterFilter(
   writer: string | null,
 ): boolean {
   if (!writer?.trim()) return true
-  const ckb = w.ckbContent?.writer?.trim()
-  const kmr = w.kmrContent?.writer?.trim()
-  return ckb === writer || kmr === writer
+  return (w.persons ?? []).some(
+    (p) => p.nameCkb?.trim() === writer || p.nameKmr?.trim() === writer,
+  )
 }
 
 export function matchesWritingTopicFilter(
@@ -154,8 +157,12 @@ export function matchesWritingClientSearchFilter(
   const haystack = [
     w.ckbContent?.title,
     w.kmrContent?.title,
-    w.ckbContent?.writer,
-    w.kmrContent?.writer,
+    ...(w.persons ?? []).flatMap((p) => [
+      p.nameCkb,
+      p.nameKmr,
+      p.nicknameCkb,
+      p.nicknameKmr,
+    ]),
     w.seriesName,
     ...(w.tagsCkb ?? []),
     ...(w.tagsKmr ?? []),

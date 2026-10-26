@@ -39,7 +39,10 @@ export function WritingDeleteDialog({
     target.ckbCoverUrl?.trim() ||
     target.kmrCoverUrl?.trim() ||
     null
-  const writer = target.ckbContent?.writer?.trim() || NS.dash
+  const writer =
+    (target.persons ?? [])
+      .map((p) => p.nameCkb?.trim() || p.nameKmr?.trim())
+      .find(Boolean) || NS.dash
   const inSeries = isPartOfMultiBookSeries(target)
 
   return (

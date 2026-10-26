@@ -57,7 +57,6 @@ export type WritingPersonDto = {
 export type WritingContentDto = {
   title?: string | null
   description?: string | null
-  writer?: string | null
   fileUrl?: string | null
   fileFormat?: BookFileFormat | null
   fileSizeBytes?: number | null

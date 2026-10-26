@@ -12,7 +12,6 @@ const optionalPositiveInt = z.preprocess(
 const WritingContentSchema = z.object({
   title: z.string().max(300).optional(),
   description: z.string().optional(),
-  writer: z.string().max(200).optional(),
   fileUrl: z.string().url().optional().or(z.literal("")),
   fileFormat: z.enum(["PDF", "DOCX", "EPUB", "TXT", "OTHER"]).optional(),
   fileSizeBytes: z.number().int().min(0).default(0),
@@ -124,8 +123,8 @@ export const defaultWritingFormValues: WritingFormValues = {
   bookLanguageCkb: "",
   bookLanguageKmr: "",
   contentLanguages: ["CKB"],
-  ckbContent: { title: "", description: "", writer: "", fileUrl: "", fileSizeBytes: 0, location: "" },
-  kmrContent: { title: "", description: "", writer: "", fileUrl: "", fileSizeBytes: 0, location: "" },
+  ckbContent: { title: "", description: "", fileUrl: "", fileSizeBytes: 0, location: "" },
+  kmrContent: { title: "", description: "", fileUrl: "", fileSizeBytes: 0, location: "" },
   tags: { ckb: [], kmr: [] },
   keywords: { ckb: [], kmr: [] },
   persons: [],
@@ -167,7 +166,6 @@ export function writingDtoToFormValues(dto: WritingDto): WritingFormValues {
     ckbContent: {
       title: dto.ckbContent?.title ?? "",
       description: dto.ckbContent?.description ?? "",
-      writer: dto.ckbContent?.writer ?? "",
       fileUrl: dto.ckbContent?.fileUrl ?? "",
       fileFormat: dto.ckbContent?.fileFormat ?? undefined,
       fileSizeBytes: dto.ckbContent?.fileSizeBytes ?? 0,
@@ -177,7 +175,6 @@ export function writingDtoToFormValues(dto: WritingDto): WritingFormValues {
     kmrContent: {
       title: dto.kmrContent?.title ?? "",
       description: dto.kmrContent?.description ?? "",
-      writer: dto.kmrContent?.writer ?? "",
       fileUrl: dto.kmrContent?.fileUrl ?? "",
       fileFormat: dto.kmrContent?.fileFormat ?? undefined,
       fileSizeBytes: dto.kmrContent?.fileSizeBytes ?? 0,

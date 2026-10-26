@@ -17,7 +17,7 @@ function buildContent(
   return {
     title: content.title?.trim() ?? "",
     description: content.description ?? "",
-    writer: trimOrUndef(content.writer),
+
     fileUrl: hasStaged ? null : trimOrUndef(content.fileUrl),
     fileFormat: content.fileFormat ?? undefined,
     fileSizeBytes: content.fileSizeBytes ?? 0,
