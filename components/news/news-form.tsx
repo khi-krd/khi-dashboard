@@ -3,7 +3,7 @@
 import { CheckIcon } from "@heroicons/react/24/outline"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Fragment, useEffect, useMemo, useState } from "react"
+import { Fragment, useEffect, useMemo, useRef, useState } from "react"
 import {
   Controller,
   FormProvider,
@@ -60,6 +60,7 @@ import {
   pushInlineSubcategory,
 } from "@/lib/news-derived-cache"
 import { permissiveResolver } from "@/lib/permissive-resolver"
+import { preventImplicitFormSubmit } from "@/lib/prevent-implicit-submit"
 import { newsFormValuesToPayload } from "@/lib/news-form-data"
 import {
   formatFullTimestampKu,
@@ -215,6 +216,7 @@ export function NewsForm({
   const createCategoryMut = useCreateNewsCategoryMutation()
   const createSubCategoryMut = useCreateNewsSubCategoryMutation()
   const pending = createMut.isPending || updateMut.isPending
+  const addAnotherRef = useRef(false)
 
   const tabMarkers = {
     CKB: Boolean(errors.ckbContent || errors.tags?.ckb || errors.keywords?.ckb),
@@ -231,19 +233,24 @@ export function NewsForm({
       if (mode === "create") {
         const res = await createMut.mutateAsync(payload)
         const newId = res.data?.id
-        toast.success(NS.toast.created, {
-          action:
-            typeof newId === "number"
-              ? {
-                  label: NS.action.view,
-                  onClick: () => router.push(`/dashboard/news/${newId}`),
-                }
-              : undefined,
-        })
-        if (typeof newId === "number") {
-          router.push(`/dashboard/news/${newId}`)
+        if (addAnotherRef.current) {
+          reset(defaultNewsFormValues())
+          toast.success(NS.toast.created)
         } else {
-          router.push("/dashboard/news")
+          toast.success(NS.toast.created, {
+            action:
+              typeof newId === "number"
+                ? {
+                    label: NS.action.view,
+                    onClick: () => router.push(`/dashboard/news/${newId}`),
+                  }
+                : undefined,
+          })
+          if (typeof newId === "number") {
+            router.push(`/dashboard/news/${newId}`)
+          } else {
+            router.push("/dashboard/news")
+          }
         }
         router.refresh()
         return
@@ -260,6 +267,8 @@ export function NewsForm({
       router.refresh()
     } catch {
       toast.error(NS.error.generic)
+    } finally {
+      addAnotherRef.current = false
     }
   }
 
@@ -306,6 +315,7 @@ export function NewsForm({
         className="pb-24 max-sm:pb-28"
         dir="rtl"
         onSubmit={(e) => void handleSubmit(onSubmit)(e)}
+        onKeyDown={preventImplicitFormSubmit}
       >
         <TooltipProvider delay={250}>
           <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
@@ -773,6 +783,24 @@ export function NewsForm({
               >
                 {NS.action.cancel}
               </Button>
+              {mode === "create" ? (
+                <Button
+                  type="submit"
+                  variant="outline"
+                  className="rounded-md gap-2 sm:flex-initial"
+                  disabled={submitDisabled}
+                  onClick={() => {
+                    addAnotherRef.current = true
+                  }}
+                >
+                  {pending ? (
+                    <Spinner className="size-4" aria-hidden />
+                  ) : (
+                    <CheckIcon className="size-4" aria-hidden />
+                  )}
+                  {NS.action.save_new}
+                </Button>
+              ) : null}
               <Button
                 type="submit"
                 variant="default"

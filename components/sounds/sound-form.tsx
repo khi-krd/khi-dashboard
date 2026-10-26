@@ -8,7 +8,7 @@ import {
 } from "@heroicons/react/24/outline"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import {
   Controller,
   FormProvider,
@@ -50,6 +50,7 @@ import {
   formatRelativeTimeKu,
 } from "@/lib/news-relative-time"
 import { permissiveResolver } from "@/lib/permissive-resolver"
+import { preventImplicitFormSubmit } from "@/lib/prevent-implicit-submit"
 import { soundFormValuesToMultipart } from "@/lib/sounds-form-data"
 import {
   defaultSoundFormValues,
@@ -146,6 +147,7 @@ export function SoundForm({
 
   const pending = createMut.isPending || updateMut.isPending
   const submitDisabled = !isDirty || pending
+  const addAnotherRef = useRef(false)
   const [uploadPct, setUploadPct] = useState<number | null>(null)
   const errorCount = countFormErrors(errors)
 
@@ -177,13 +179,18 @@ export function SoundForm({
           onProgress: setUploadPct,
         })
         if (res.id) {
-          toast.success(NS.toast.saved, {
-            action: {
-              label: NS.toast.view_action,
-              onClick: () => router.push(`/dashboard/sounds/${res.id}`),
-            },
-          })
-          router.push(`/dashboard/sounds/${res.id}`)
+          if (addAnotherRef.current) {
+            reset(defaultSoundFormValues)
+            toast.success(NS.toast.saved)
+          } else {
+            toast.success(NS.toast.saved, {
+              action: {
+                label: NS.toast.view_action,
+                onClick: () => router.push(`/dashboard/sounds/${res.id}`),
+              },
+            })
+            router.push(`/dashboard/sounds/${res.id}`)
+          }
         }
       } else if (soundId) {
         await updateMut.mutateAsync({
@@ -210,6 +217,7 @@ export function SoundForm({
         NS.error.validation
       toast.error(msg)
     } finally {
+      addAnotherRef.current = false
       setUploadPct(null)
     }
   }
@@ -240,7 +248,12 @@ export function SoundForm({
 
   return (
     <FormProvider {...form}>
-      <form dir="rtl" className="pb-24" onSubmit={handleSubmit(onSubmit)}>
+      <form
+        dir="rtl"
+        className="pb-24"
+        onSubmit={handleSubmit(onSubmit)}
+        onKeyDown={preventImplicitFormSubmit}
+      >
         <header className="border-border bg-background/95 supports-backdrop-filter:backdrop-blur sticky top-0 z-30 border-b">
           <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 lg:px-6">
             <SoundBreadcrumbBar
@@ -623,6 +636,24 @@ export function SoundForm({
               >
                 {NS.action.cancel}
               </Button>
+              {mode === "create" ? (
+                <Button
+                  type="submit"
+                  variant="outline"
+                  disabled={submitDisabled}
+                  className="gap-2"
+                  onClick={() => {
+                    addAnotherRef.current = true
+                  }}
+                >
+                  {pending ? (
+                    <Spinner className="size-4" />
+                  ) : (
+                    <CheckIcon className="size-4" />
+                  )}
+                  {NS.action.save_new}
+                </Button>
+              ) : null}
               <Button type="submit" disabled={submitDisabled} className="gap-2">
                 {pending ? (
                   <Spinner className="size-4" />

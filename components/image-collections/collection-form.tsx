@@ -7,7 +7,7 @@ import {
 } from "@heroicons/react/24/outline"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import {
   Controller,
   FormProvider,
@@ -43,6 +43,7 @@ import {
   useUpdateCollection,
 } from "@/hooks/useImageCollections"
 import { permissiveResolver } from "@/lib/permissive-resolver"
+import { preventImplicitFormSubmit } from "@/lib/prevent-implicit-submit"
 import { extractApiErrorText } from "@/lib/api-error"
 import { formatCkbDigits, formatEnDigits } from "@/lib/intl-ckb"
 import {
@@ -145,6 +146,7 @@ export function CollectionForm({
 
   const pending = createMut.isPending || updateMut.isPending
   const submitDisabled = !isDirty || pending
+  const addAnotherRef = useRef(false)
   const [uploadPct, setUploadPct] = useState<number | null>(null)
   const errorCount = countFormErrors(errors)
   const langLabel = activeLang === "CKB" ? NS.lang.ckb : NS.lang.kmr
@@ -172,14 +174,19 @@ export function CollectionForm({
           onProgress: setUploadPct,
         })
         if (res.id) {
-          toast.success(NS.toast.created, {
-            action: {
-              label: NS.toast.view_action,
-              onClick: () =>
-                router.push(`/dashboard/image-collections/${res.id}`),
-            },
-          })
-          router.push(`/dashboard/image-collections/${res.id}`)
+          if (addAnotherRef.current) {
+            reset(defaultCollectionFormValues())
+            toast.success(NS.toast.created)
+          } else {
+            toast.success(NS.toast.created, {
+              action: {
+                label: NS.toast.view_action,
+                onClick: () =>
+                  router.push(`/dashboard/image-collections/${res.id}`),
+              },
+            })
+            router.push(`/dashboard/image-collections/${res.id}`)
+          }
         }
       } else if (collectionId) {
         await updateMut.mutateAsync({
@@ -193,6 +200,7 @@ export function CollectionForm({
     } catch (err) {
       toast.error(extractApiErrorText(err) ?? NS.error.validation)
     } finally {
+      addAnotherRef.current = false
       setUploadPct(null)
     }
   }
@@ -223,7 +231,12 @@ export function CollectionForm({
 
   return (
     <FormProvider {...form}>
-      <form dir="rtl" className="pb-24" onSubmit={handleSubmit(onSubmit)}>
+      <form
+        dir="rtl"
+        className="pb-24"
+        onSubmit={handleSubmit(onSubmit)}
+        onKeyDown={preventImplicitFormSubmit}
+      >
         <header className="border-border bg-background/95 supports-backdrop-filter:backdrop-blur sticky top-0 z-30 border-b">
           <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 lg:px-6">
             <CollectionBreadcrumbBar
@@ -574,6 +587,20 @@ export function CollectionForm({
               >
                 {NS.action.cancel}
               </Button>
+              {mode === "create" ? (
+                <Button
+                  type="submit"
+                  variant="outline"
+                  disabled={submitDisabled}
+                  className="shrink-0 gap-2"
+                  onClick={() => {
+                    addAnotherRef.current = true
+                  }}
+                >
+                  {pending ? <Spinner className="size-4" /> : <CheckIcon className="size-4" />}
+                  {NS.action.save_new}
+                </Button>
+              ) : null}
               <Button
                 type="submit"
                 disabled={submitDisabled}

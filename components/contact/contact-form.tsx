@@ -32,6 +32,7 @@ import {
   useUpdateContact,
 } from "@/hooks/useContact"
 import { permissiveResolver } from "@/lib/permissive-resolver"
+import { preventImplicitFormSubmit } from "@/lib/prevent-implicit-submit"
 import {
   contactFormValuesToPayload,
   contactSaveErrorText,
@@ -199,7 +200,12 @@ export function ContactForm({
 
   return (
     <FormProvider {...form}>
-      <form dir="rtl" className="pb-24" onSubmit={handleSubmit(onSubmit)}>
+      <form
+        dir="rtl"
+        className="pb-24"
+        onSubmit={handleSubmit(onSubmit)}
+        onKeyDown={preventImplicitFormSubmit}
+      >
         <header className="border-border bg-background/95 supports-backdrop-filter:backdrop-blur sticky top-0 z-30 border-b">
           <div className="mx-auto flex max-w-[1280px] flex-wrap items-center justify-between gap-3 px-4 py-3 lg:px-6">
             <ContactBreadcrumbBar

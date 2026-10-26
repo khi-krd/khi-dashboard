@@ -25,6 +25,7 @@ import {
 } from "@/components/about/about-breadcrumb"
 import Image from "next/image"
 import { permissiveResolver } from "@/lib/permissive-resolver"
+import { preventImplicitFormSubmit } from "@/lib/prevent-implicit-submit"
 import { isOptimizableImageSrc } from "@/lib/image-src"
 import { AboutErrorState } from "@/components/about/about-error-state"
 import { AboutFormSidebar } from "@/components/about/about-form-sidebar"
@@ -509,6 +510,7 @@ export function AboutForm({
         dir="rtl"
         className={embedded ? "space-y-4" : "pb-24"}
         onSubmit={handleSubmit(onSubmit)}
+        onKeyDown={preventImplicitFormSubmit}
       >
         {!embedded ? (
           <header className="border-border bg-background/95 supports-backdrop-filter:backdrop-blur sticky top-0 z-30 border-b">
