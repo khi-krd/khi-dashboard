@@ -166,7 +166,16 @@ export function AlbumGalleryEditor({ showKmrFields }: { showKmrFields?: boolean 
 
   async function ingestFiles(fileList: FileList | null) {
     if (!fileList?.length) return
+    const staged = new Set(
+      fields
+        .map((f) => f.stagedBinary)
+        .filter((f): f is File => !!f)
+        .map((f) => `${f.name}:${f.size}:${f.lastModified}`),
+    )
     for (const file of Array.from(fileList)) {
+      const key = `${file.name}:${file.size}:${file.lastModified}`
+      if (staged.has(key)) continue
+      staged.add(key)
       const meta = await applyImageFileMeta(file)
       append({
         ...createEmptyAlbumItem(fields.length),

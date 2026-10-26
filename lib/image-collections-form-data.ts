@@ -37,7 +37,17 @@ function itemHasSource(item: ImageItemFormValues): boolean {
 export function orderedAlbumItems(
   values: CollectionFormValues,
 ): ImageItemFormValues[] {
-  const sourced = values.imageAlbum.filter(itemHasSource)
+  const seenSources = new Set<string>()
+  const sourced = values.imageAlbum.filter((item) => {
+    if (!itemHasSource(item)) return false
+    const key =
+      item.stagedBinary
+        ? `file:${item.stagedBinary.name}:${item.stagedBinary.size}:${item.stagedBinary.lastModified}`
+        : item.imageUrl?.trim() || item.externalUrl?.trim() || item.embedUrl?.trim() || ""
+    if (key && seenSources.has(key)) return false
+    if (key) seenSources.add(key)
+    return true
+  })
   return [
     ...sourced.filter((item) => item.stagedBinary),
     ...sourced.filter((item) => !item.stagedBinary),
