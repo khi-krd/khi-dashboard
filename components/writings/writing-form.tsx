@@ -525,7 +525,7 @@ export function WritingForm({
                 ) : null}
                 <div className="space-y-1">
                   <Label className="text-xs">{NS.section.persons}</Label>
-                  <WritingPersonsSection />
+                  <WritingPersonsSection lang="CKB" />
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs">{NS.field.location}</Label>
@@ -557,7 +557,7 @@ export function WritingForm({
                 ) : null}
                 <div className="space-y-1">
                   <Label className="text-xs">{NS.section.persons}</Label>
-                  <WritingPersonsSection />
+                  <WritingPersonsSection lang="KMR" />
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs">{NS.field.location}</Label>

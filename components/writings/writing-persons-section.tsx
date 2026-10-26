@@ -11,11 +11,12 @@ import type { WritingFormValues } from "@/lib/validations/writings"
 
 /**
  * People attached to a book — a book can carry several (writer, collector,
- * translator, ...). Name and nickname are entered per script like every other
- * writing field; role is free text typed by the editor.
+ * translator, ...). Name and nickname follow the active language tab like the
+ * surrounding fields; role is free text typed by the editor.
  */
-export function WritingPersonsSection() {
+export function WritingPersonsSection({ lang }: { lang: "CKB" | "KMR" }) {
   const { control, register } = useFormContext<WritingFormValues>()
+  const isKmr = lang === "KMR"
   const { fields, append, remove } = useFieldArray({
     control,
     name: "persons",
@@ -32,46 +33,37 @@ export function WritingPersonsSection() {
       {fields.map((field, index) => (
         <div
           key={field.id}
-          className="border-border/70 bg-background/60 grid grid-cols-1 gap-3 rounded-lg border p-3 sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,10rem)_auto] lg:items-end"
+          dir={isKmr ? "ltr" : "rtl"}
+          className="border-border/70 bg-background/60 grid grid-cols-1 gap-3 rounded-lg border p-3 sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_auto] lg:items-end"
         >
           <div>
             <Label className="text-muted-foreground text-[11px]">
-              {NS.person.full_name} (سۆرانی)
+              {NS.person.full_name}
             </Label>
             <Input
               className="mt-1 h-9"
-              placeholder={NS.field.person_name_ckb}
-              {...register(`persons.${index}.nameCkb`)}
+              placeholder={
+                isKmr ? NS.field.person_name_kmr : NS.field.person_name_ckb
+              }
+              {...register(
+                `persons.${index}.${isKmr ? "nameKmr" : "nameCkb"}`,
+              )}
             />
           </div>
           <div>
             <Label className="text-muted-foreground text-[11px]">
-              {NS.person.nickname} (سۆرانی)
+              {NS.person.nickname}
             </Label>
             <Input
               className="mt-1 h-9"
-              placeholder={NS.field.person_nickname_ckb}
-              {...register(`persons.${index}.nicknameCkb`)}
-            />
-          </div>
-          <div dir="ltr">
-            <Label className="text-muted-foreground text-[11px]">
-              {NS.person.full_name} (کورمانجی)
-            </Label>
-            <Input
-              className="mt-1 h-9"
-              placeholder={NS.field.person_name_kmr}
-              {...register(`persons.${index}.nameKmr`)}
-            />
-          </div>
-          <div dir="ltr">
-            <Label className="text-muted-foreground text-[11px]">
-              {NS.person.nickname} (کورمانجی)
-            </Label>
-            <Input
-              className="mt-1 h-9"
-              placeholder={NS.field.person_nickname_kmr}
-              {...register(`persons.${index}.nicknameKmr`)}
+              placeholder={
+                isKmr
+                  ? NS.field.person_nickname_kmr
+                  : NS.field.person_nickname_ckb
+              }
+              {...register(
+                `persons.${index}.${isKmr ? "nicknameKmr" : "nicknameCkb"}`,
+              )}
             />
           </div>
           <div>
