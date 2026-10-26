@@ -12,6 +12,7 @@ import type {
   WritingContentDto,
   WritingDto,
   WritingPage,
+  WritingPersonDto,
 } from "@/types/writings"
 
 function coerceStr(v: unknown): string | null {
@@ -137,6 +138,21 @@ function normalizeTags(raw: unknown): {
   }
 }
 
+function normalizePerson(raw: unknown): WritingPersonDto | null {
+  if (!raw || typeof raw !== "object") return null
+  const o = raw as Record<string, unknown>
+  return {
+    id: coerceNum(o.id) ?? undefined,
+    roleCkb: coerceStr(o.roleCkb) ?? coerceStr(o.role_ckb),
+    roleKmr: coerceStr(o.roleKmr) ?? coerceStr(o.role_kmr),
+    nameCkb: coerceStr(o.nameCkb) ?? coerceStr(o.name_ckb),
+    nameKmr: coerceStr(o.nameKmr) ?? coerceStr(o.name_kmr),
+    nicknameCkb: coerceStr(o.nicknameCkb) ?? coerceStr(o.nickname_ckb),
+    nicknameKmr: coerceStr(o.nicknameKmr) ?? coerceStr(o.nickname_kmr),
+    sortOrder: coerceNum(o.sortOrder) ?? coerceNum(o.sort_order),
+  }
+}
+
 function normalizeTopicEmbed(raw: unknown): TopicDto | null {
   if (!raw || typeof raw !== "object") return null
   const o = raw as Record<string, unknown>
@@ -254,6 +270,11 @@ export function normalizeWritingDto(raw: unknown): WritingDto {
     contentLanguages: normalizeLanguages(
       o.contentLanguages ?? o.content_languages,
     ),
+    persons: Array.isArray(o.persons)
+      ? o.persons
+          .map(normalizePerson)
+          .filter((p): p is WritingPersonDto => p != null)
+      : [],
     tagsCkb: tagData.tagsCkb,
     tagsKmr: tagData.tagsKmr,
     keywordsCkb: tagData.keywordsCkb,
