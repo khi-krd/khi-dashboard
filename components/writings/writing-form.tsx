@@ -4,7 +4,6 @@ import {
   CheckIcon,
   ExclamationCircleIcon,
   HashtagIcon,
-  UsersIcon,
 } from "@heroicons/react/24/outline"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -525,13 +524,6 @@ export function WritingForm({
                   <FieldError>{errors.ckbContent.title.message}</FieldError>
                 ) : null}
                 <div className="space-y-1">
-                  <Label className="text-xs">{NS.section.writer}</Label>
-                  <Input
-                    placeholder={NS.field.writer_ckb}
-                    {...register("ckbContent.writer")}
-                  />
-                </div>
-                <div className="space-y-1">
                   <Label className="text-xs">{NS.field.location}</Label>
                   <Input
                     placeholder={NS.field.location_ckb}
@@ -560,14 +552,6 @@ export function WritingForm({
                   <FieldError>{errors.kmrContent.title.message}</FieldError>
                 ) : null}
                 <div className="space-y-1">
-                  <Label className="text-xs">{NS.section.writer}</Label>
-                  <Input
-                    dir="ltr"
-                    placeholder={NS.field.writer_kmr}
-                    {...register("kmrContent.writer")}
-                  />
-                </div>
-                <div className="space-y-1">
                   <Label className="text-xs">{NS.field.location}</Label>
                   <Input
                     dir="ltr"
@@ -586,6 +570,11 @@ export function WritingForm({
                 />
               </div>
             )}
+
+            <section className={cn("mt-6", sectionCard)}>
+              <h2 className={cn("mb-3", sectionHeading)}>{NS.section.persons}</h2>
+              <WritingPersonsSection />
+            </section>
 
             <section className={cn("mt-6", sectionCard)}>
               <h2 className={cn("mb-3", sectionHeading)}>{NS.section.book_files}</h2>
@@ -675,13 +664,6 @@ export function WritingForm({
               />
             </section>
 
-            <section className={cn("mt-6", sectionCard)}>
-              <Label className={cn("mb-3", sectionHeading)}>
-                <UsersIcon className="size-4" />
-                {NS.section.persons}
-              </Label>
-              <WritingPersonsSection />
-            </section>
           </div>
         </div>
 
