@@ -744,9 +744,7 @@ function WritingDetailLoaded({
                           className="flex flex-wrap items-baseline gap-x-2"
                         >
                           <span className="text-muted-foreground/80 text-xs">
-                            {NS.person.roles[person.role ?? "OTHER"] ??
-                              person.role}
-                            :
+                            {person.role || NS.dash}:
                           </span>
                           <span className="text-foreground font-medium">
                             {name}

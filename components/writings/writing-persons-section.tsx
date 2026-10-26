@@ -1,37 +1,18 @@
 "use client"
 
 import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline"
-import { Controller, useFieldArray, useFormContext } from "react-hook-form"
+import { useFieldArray, useFormContext } from "react-hook-form"
 
 import { NS } from "@/components/writings/writings-strings"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import type { WritingFormValues } from "@/lib/validations/writings"
-import type { WritingPersonRole } from "@/types/writings"
-
-const ROLE_KEYS: WritingPersonRole[] = [
-  "WRITER",
-  "COLLECTOR",
-  "TRANSLATOR",
-  "EDITOR",
-  "NARRATOR",
-  "PHOTOGRAPHER",
-  "OWNER",
-  "OTHER",
-]
 
 /**
  * People attached to a book — a book can carry several (writer, collector,
  * translator, ...). Name and nickname are entered per script like every other
- * writing field; role is a code, localized at display time.
+ * writing field; role is free text typed by the editor.
  */
 export function WritingPersonsSection() {
   const { control, register } = useFormContext<WritingFormValues>()
@@ -97,26 +78,10 @@ export function WritingPersonsSection() {
             <Label className="text-muted-foreground text-[11px]">
               {NS.person.role}
             </Label>
-            <Controller
-              control={control}
-              name={`persons.${index}.role`}
-              render={({ field: roleField }) => (
-                <Select
-                  value={roleField.value ?? "OTHER"}
-                  onValueChange={roleField.onChange}
-                >
-                  <SelectTrigger className="mt-1 h-9 w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent dir="rtl">
-                    {ROLE_KEYS.map((role) => (
-                      <SelectItem key={role} value={role}>
-                        {NS.person.roles[role]}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
+            <Input
+              className="mt-1 h-9"
+              placeholder={NS.field.person_role}
+              {...register(`persons.${index}.role`)}
             />
           </div>
           <Button
@@ -139,7 +104,7 @@ export function WritingPersonsSection() {
         className="gap-1.5"
         onClick={() =>
           append({
-            role: "WRITER",
+            role: "",
             nameCkb: "",
             nameKmr: "",
             nicknameCkb: "",

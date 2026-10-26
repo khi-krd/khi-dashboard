@@ -524,6 +524,10 @@ export function WritingForm({
                   <FieldError>{errors.ckbContent.title.message}</FieldError>
                 ) : null}
                 <div className="space-y-1">
+                  <Label className="text-xs">{NS.section.persons}</Label>
+                  <WritingPersonsSection />
+                </div>
+                <div className="space-y-1">
                   <Label className="text-xs">{NS.field.location}</Label>
                   <Input
                     placeholder={NS.field.location_ckb}
@@ -552,6 +556,10 @@ export function WritingForm({
                   <FieldError>{errors.kmrContent.title.message}</FieldError>
                 ) : null}
                 <div className="space-y-1">
+                  <Label className="text-xs">{NS.section.persons}</Label>
+                  <WritingPersonsSection />
+                </div>
+                <div className="space-y-1">
                   <Label className="text-xs">{NS.field.location}</Label>
                   <Input
                     dir="ltr"
@@ -570,11 +578,6 @@ export function WritingForm({
                 />
               </div>
             )}
-
-            <section className={cn("mt-6", sectionCard)}>
-              <h2 className={cn("mb-3", sectionHeading)}>{NS.section.persons}</h2>
-              <WritingPersonsSection />
-            </section>
 
             <section className={cn("mt-6", sectionCard)}>
               <h2 className={cn("mb-3", sectionHeading)}>{NS.section.book_files}</h2>

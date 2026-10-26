@@ -43,20 +43,10 @@ export type BookGenre = string
 
 export type BookFileFormat = "PDF" | "DOCX" | "EPUB" | "TXT" | "OTHER"
 
-export type WritingPersonRole =
-  | "WRITER"
-  | "COLLECTOR"
-  | "TRANSLATOR"
-  | "EDITOR"
-  | "NARRATOR"
-  | "PHOTOGRAPHER"
-  | "OWNER"
-  | "OTHER"
-
 /** A person attached to a book — writer, collector, translator, ... */
 export type WritingPersonDto = {
   id?: number
-  role?: WritingPersonRole | null
+  role?: string | null
   nameCkb?: string | null
   nameKmr?: string | null
   nicknameCkb?: string | null

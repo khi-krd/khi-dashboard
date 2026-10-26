@@ -151,16 +151,6 @@ export const NS = {
     full_name: "ناوی تەواو",
     nickname: "نازناو",
     empty: "هیچ کەسێک زیاد نەکراوە — نووسەر، کۆکەرەوە، وەرگێڕ…",
-    roles: {
-      WRITER: "نووسەر",
-      COLLECTOR: "کۆکەرەوە",
-      TRANSLATOR: "وەرگێڕ",
-      EDITOR: "سەرنوسەر",
-      NARRATOR: "گێڕەرەوە",
-      PHOTOGRAPHER: "وێنەگر",
-      OWNER: "خاوەن",
-      OTHER: "ڕۆڵی تر",
-    },
   },
   genre: {
     group: {
@@ -268,6 +258,7 @@ export const NS = {
     person_name_kmr: "Navê temam bi Kurmancî…",
     person_nickname_ckb: "نازناو بە سۆرانی…",
     person_nickname_kmr: "Navenas bi Kurmancî…",
+    person_role: "بۆ نموونە: نووسەر، کۆکەرەوە، وەرگێڕ…",
   },
   pages: {
     suffix: "پەڕە",
