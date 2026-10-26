@@ -259,6 +259,7 @@ export const NS = {
     person_nickname_ckb: "نازناو بە سۆرانی…",
     person_nickname_kmr: "Navenas bi Kurmancî…",
     person_role: "بۆ نموونە: نووسەر، کۆکەرەوە، وەرگێڕ…",
+    person_role_kmr: "Bo nimûne: nivîskar, kolekter, wergêr…",
   },
   pages: {
     suffix: "پەڕە",

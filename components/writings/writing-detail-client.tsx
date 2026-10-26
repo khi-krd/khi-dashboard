@@ -729,13 +729,17 @@ function WritingDetailLoaded({
                         tab === "KMR"
                           ? person.nicknameKmr || person.nicknameCkb
                           : person.nicknameCkb || person.nicknameKmr
+                      const role =
+                        tab === "KMR"
+                          ? person.roleKmr || person.roleCkb
+                          : person.roleCkb || person.roleKmr
                       return (
                         <li
                           key={person.id ?? i}
                           className="flex flex-wrap items-baseline gap-x-2"
                         >
                           <span className="text-muted-foreground/80 text-xs">
-                            {person.role || NS.dash}:
+                            {role || NS.dash}:
                           </span>
                           <span className="text-foreground font-medium">
                             {name}

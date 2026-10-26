@@ -80,7 +80,8 @@ export function writingFormValuesToMultipart(
     // People are a replace-set — always sent, so an empty list clears them.
     persons: values.persons
       .map((p) => ({
-        role: trimOrUndef(p.role),
+        roleCkb: trimOrUndef(p.roleCkb),
+        roleKmr: trimOrUndef(p.roleKmr),
         nameCkb: trimOrUndef(p.nameCkb),
         nameKmr: trimOrUndef(p.nameKmr),
         nicknameCkb: trimOrUndef(p.nicknameCkb),

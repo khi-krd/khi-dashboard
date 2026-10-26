@@ -72,8 +72,12 @@ export function WritingPersonsSection({ lang }: { lang: "CKB" | "KMR" }) {
             </Label>
             <Input
               className="mt-1 h-9"
-              placeholder={NS.field.person_role}
-              {...register(`persons.${index}.role`)}
+              placeholder={
+                isKmr ? NS.field.person_role_kmr : NS.field.person_role
+              }
+              {...register(
+                `persons.${index}.${isKmr ? "roleKmr" : "roleCkb"}`,
+              )}
             />
           </div>
           <Button
@@ -96,7 +100,8 @@ export function WritingPersonsSection({ lang }: { lang: "CKB" | "KMR" }) {
         className="gap-1.5"
         onClick={() =>
           append({
-            role: "",
+            roleCkb: "",
+            roleKmr: "",
             nameCkb: "",
             nameKmr: "",
             nicknameCkb: "",

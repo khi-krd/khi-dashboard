@@ -61,7 +61,8 @@ export const writingFormSchema = z
     persons: z
       .array(
         z.object({
-          role: z.string().max(120).optional(),
+          roleCkb: z.string().max(120).optional(),
+          roleKmr: z.string().max(120).optional(),
           nameCkb: z.string().max(200).optional(),
           nameKmr: z.string().max(200).optional(),
           nicknameCkb: z.string().max(200).optional(),
@@ -190,7 +191,8 @@ export function writingDtoToFormValues(dto: WritingDto): WritingFormValues {
       kmr: [...(dto.keywordsKmr ?? [])],
     },
     persons: (dto.persons ?? []).map((p) => ({
-      role: p.role ?? "",
+      roleCkb: p.roleCkb ?? "",
+      roleKmr: p.roleKmr ?? "",
       nameCkb: p.nameCkb ?? "",
       nameKmr: p.nameKmr ?? "",
       nicknameCkb: p.nicknameCkb ?? "",

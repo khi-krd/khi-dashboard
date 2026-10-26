@@ -46,7 +46,8 @@ export type BookFileFormat = "PDF" | "DOCX" | "EPUB" | "TXT" | "OTHER"
 /** A person attached to a book — writer, collector, translator, ... */
 export type WritingPersonDto = {
   id?: number
-  role?: string | null
+  roleCkb?: string | null
+  roleKmr?: string | null
   nameCkb?: string | null
   nameKmr?: string | null
   nicknameCkb?: string | null
