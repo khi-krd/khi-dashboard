@@ -112,7 +112,7 @@ function DataGridTableHead({ children }: { children: ReactNode }) {
 }
 
 function DataGridTableHeadRow({ children }: { children: ReactNode }) {
-  return <tr className="border-border border-b">{children}</tr>
+  return <tr className="border-border bg-muted/30 border-b">{children}</tr>
 }
 
 function DataGridTableHeadRowCell({
