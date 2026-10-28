@@ -95,6 +95,10 @@ export function DashboardBreadcrumbs() {
     return null
   }
 
+  if (pathname.startsWith("/dashboard/menu")) {
+    return null
+  }
+
   if (pathname.startsWith("/dashboard/settings/social")) {
     return null
   }
