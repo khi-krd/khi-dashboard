@@ -25,6 +25,8 @@ import { ProjectStatusPill } from "@/components/projects/project-status-pill"
 import { MediaGalleryEditor } from "@/components/shared/media-gallery-editor"
 import { MediaCoverUpload } from "@/components/shared/media-cover-upload"
 import { ProjectTagInput } from "@/components/projects/project-tag-input"
+import { DRAFT_NS } from "@/components/shared/draft-strings"
+import { DraftStatus } from "@/components/shared/draft-status"
 import { TiptapEditor } from "@/components/shared/tiptap-editor-lazy"
 import { ProjectTypeCombobox } from "@/components/projects/project-type-combobox"
 import { ProjectsErrorState } from "@/components/projects/projects-error-state"
@@ -34,6 +36,7 @@ import { FieldError } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Spinner } from "@/components/ui/spinner"
+import { useFormDraft } from "@/hooks/use-form-draft"
 import {
   useCreateProject,
   useProjectDetailQuery,
@@ -59,6 +62,7 @@ import {
 } from "@/lib/validations/projects"
 import { formatCkbDigits } from "@/lib/intl-ckb"
 import { cn } from "@/lib/utils"
+import { useAuthStore } from "@/store/auth.store"
 import type { Language, MediaKind, ProjectDto } from "@/types/projects"
 import { normalizeProjectStatus } from "@/types/projects"
 import { galleryDtoToFormValues } from "@/types/media-gallery"
@@ -188,12 +192,26 @@ export function ProjectForm({
     watch,
     setValue,
     reset,
-    formState: { errors, isDirty },
+    formState: { errors, isDirty, isSubmitting },
   } = form
 
   useEffect(() => {
     if (editDto) reset(dtoToFormValues(editDto))
   }, [editDto, reset])
+
+  const userKey = useAuthStore((s) => s.user?.username)
+  const draft = useFormDraft<ProjectFormValues>({
+    entity: "projects",
+    recordId: mode === "edit" ? projectId : undefined,
+    form,
+    userKey,
+    enabled: mode === "create" || Boolean(editDto),
+    recordUpdatedAt: editDto?.updatedAt,
+  })
+
+  useEffect(() => {
+    if (draft.restored) toast.info(DRAFT_NS.toast.restored)
+  }, [draft.restored])
 
   const [activeLang, setActiveLang] = useState<Language>("CKB")
   const contentLanguages = watch("contentLanguages")
@@ -208,7 +226,7 @@ export function ProjectForm({
     (existingCoverUrl?.trim() ? existingCoverUrl.trim() : null)
 
   const pending = createMut.isPending || updateMut.isPending
-  const submitDisabled = !isDirty || pending
+  const submitDisabled = !isDirty || pending || isSubmitting
   const addAnotherRef = useRef(false)
   const errorCount = countFormErrors(errors)
 
@@ -232,6 +250,7 @@ export function ProjectForm({
       if (mode === "create") {
         const res = await createMut.mutateAsync(payload)
         if (res.success && res.data?.id) {
+          draft.clear()
           if (addAnotherRef.current) {
             reset(defaultProjectFormValues())
             toast.success(NS.toast.saved)
@@ -248,6 +267,7 @@ export function ProjectForm({
       } else if (projectId) {
         const res = await updateMut.mutateAsync({ id: projectId, payload })
         if (res.success) {
+          draft.clear()
           toast.success(NS.toast.saved)
           router.push(`/dashboard/projects/${projectId}`)
         }
@@ -706,6 +726,7 @@ export function ProjectForm({
                   {formatCkbDigits(errorCount)} هەڵە
                 </span>
               ) : null}
+              <DraftStatus status={draft.status} restored={draft.restored} />
             </div>
             <div className="grid w-full grid-cols-2 gap-2 sm:ms-auto sm:flex sm:w-auto">
               <Button

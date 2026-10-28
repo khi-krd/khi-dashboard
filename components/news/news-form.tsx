@@ -28,6 +28,8 @@ import { NS } from "@/components/news/news-strings"
 import { MediaGalleryEditor } from "@/components/shared/media-gallery-editor"
 import { MediaCoverUpload } from "@/components/shared/media-cover-upload"
 import { NewsTagInput } from "@/components/news/news-tag-input"
+import { DRAFT_NS } from "@/components/shared/draft-strings"
+import { DraftStatus } from "@/components/shared/draft-status"
 import { TiptapEditor } from "@/components/shared/tiptap-editor-lazy"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { FieldError } from "@/components/ui/field"
@@ -41,6 +43,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { useFormDraft } from "@/hooks/use-form-draft"
 import {
   useCreateNews,
   useNewsDetailQuery,
@@ -73,6 +76,7 @@ import {
 } from "@/lib/validations/news"
 import { formatCkbDigits } from "@/lib/intl-ckb"
 import { cn } from "@/lib/utils"
+import { useAuthStore } from "@/store/auth.store"
 import { galleryDtoToFormValues } from "@/types/media-gallery"
 import type { Language, MediaKind, NewsDto } from "@/types/news"
 import { useQueryClient } from "@tanstack/react-query"
@@ -170,13 +174,27 @@ export function NewsForm({
     watch,
     reset,
     setValue,
-    formState: { errors, isDirty },
+    formState: { errors, isDirty, isSubmitting },
   } = formMethods
 
   useEffect(() => {
     if (mode !== "edit" || !editDto?.id) return
     reset(dtoToFormValues(editDto))
   }, [editDto, mode, reset])
+
+  const userKey = useAuthStore((s) => s.user?.username)
+  const draft = useFormDraft<NewsFormValues>({
+    entity: "news",
+    recordId: mode === "edit" ? newsId : undefined,
+    form: formMethods,
+    userKey,
+    enabled: mode === "create" || Boolean(editDto?.id),
+    recordUpdatedAt: editDto?.updatedAt,
+  })
+
+  useEffect(() => {
+    if (draft.restored) toast.info(DRAFT_NS.toast.restored)
+  }, [draft.restored])
 
   const contentLanguages = watch("contentLanguages")
   const category = watch("category")
@@ -233,6 +251,7 @@ export function NewsForm({
       if (mode === "create") {
         const res = await createMut.mutateAsync(payload)
         const newId = res.data?.id
+        draft.clear()
         if (addAnotherRef.current) {
           reset(defaultNewsFormValues())
           toast.success(NS.toast.created)
@@ -257,6 +276,7 @@ export function NewsForm({
       }
       if (!newsId) return
       await updateMut.mutateAsync({ id: newsId, payload })
+      draft.clear()
       toast.success(NS.toast.updated, {
         action: {
           label: NS.action.view,
@@ -304,7 +324,7 @@ export function NewsForm({
     )
   }
 
-  const submitDisabled = !isDirty || pending
+  const submitDisabled = !isDirty || pending || isSubmitting
 
   const bothLangActive =
     contentLanguages.includes("CKB") && contentLanguages.includes("KMR")
@@ -772,6 +792,7 @@ export function NewsForm({
                   </span>
                 </>
               ) : null}
+              <DraftStatus status={draft.status} restored={draft.restored} />
             </div>
             <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-nowrap sm:justify-end sm:gap-3 lg:flex-initial">
               <Button

@@ -26,6 +26,8 @@ import { CollectionCoverTrio } from "@/components/image-collections/collection-c
 import { CollectionCreditsInlineRow } from "@/components/image-collections/collection-credits-editor"
 import { CollectionErrorState } from "@/components/image-collections/collection-error-state"
 import { CollectionLanguageToggleChip } from "@/components/image-collections/collection-language-chip"
+import { DRAFT_NS } from "@/components/shared/draft-strings"
+import { DraftStatus } from "@/components/shared/draft-status"
 import { TiptapEditor } from "@/components/shared/tiptap-editor-lazy"
 import { UploadProgressLine } from "@/components/shared/upload-progress-line"
 import { CollectionTopicCombobox } from "@/components/image-collections/collection-topic-combobox"
@@ -37,6 +39,7 @@ import { FieldError } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Spinner } from "@/components/ui/spinner"
+import { useFormDraft } from "@/hooks/use-form-draft"
 import {
   useCollectionDetailQuery,
   useCreateCollection,
@@ -59,6 +62,7 @@ import {
   type CollectionFormValues,
 } from "@/lib/validations/image-collections"
 import { cn } from "@/lib/utils"
+import { useAuthStore } from "@/store/auth.store"
 import type { CollectionDto, Language } from "@/types/image-collections"
 
 const sectionCard =
@@ -117,12 +121,26 @@ export function CollectionForm({
     watch,
     setValue,
     reset,
-    formState: { errors, isDirty },
+    formState: { errors, isDirty, isSubmitting },
   } = form
 
   useEffect(() => {
     if (editDto) reset(collectionDtoToFormValues(editDto))
   }, [editDto, reset])
+
+  const userKey = useAuthStore((s) => s.user?.username)
+  const draft = useFormDraft<CollectionFormValues>({
+    entity: "collections",
+    recordId: mode === "edit" ? collectionId : undefined,
+    form,
+    userKey,
+    enabled: mode === "create" || Boolean(editDto),
+    recordUpdatedAt: editDto?.updatedAt,
+  })
+
+  useEffect(() => {
+    if (draft.restored) toast.info(DRAFT_NS.toast.restored)
+  }, [draft.restored])
 
   const [activeLang, setActiveLang] = useState<Language>("CKB")
 
@@ -145,7 +163,7 @@ export function CollectionForm({
   }, [collectionType, imageAlbum, setValue])
 
   const pending = createMut.isPending || updateMut.isPending
-  const submitDisabled = !isDirty || pending
+  const submitDisabled = !isDirty || pending || isSubmitting
   const addAnotherRef = useRef(false)
   const [uploadPct, setUploadPct] = useState<number | null>(null)
   const errorCount = countFormErrors(errors)
@@ -174,6 +192,7 @@ export function CollectionForm({
           onProgress: setUploadPct,
         })
         if (res.id) {
+          draft.clear()
           if (addAnotherRef.current) {
             reset(defaultCollectionFormValues())
             toast.success(NS.toast.created)
@@ -194,6 +213,7 @@ export function CollectionForm({
           values,
           onProgress: setUploadPct,
         })
+        draft.clear()
         toast.success(NS.toast.updated)
         router.push(`/dashboard/image-collections/${collectionId}`)
       }
@@ -571,6 +591,7 @@ export function CollectionForm({
                   {formatCkbDigits(errorCount)} هەڵە
                 </span>
               ) : null}
+              <DraftStatus status={draft.status} restored={draft.restored} />
             </div>
             <div className="grid w-full grid-cols-2 gap-2 sm:ms-auto sm:flex sm:w-auto">
               <Button

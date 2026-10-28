@@ -28,6 +28,8 @@ import { VideoLanguageToggleChip } from "@/components/videos/video-language-chip
 import { VideoMetadataGrid } from "@/components/videos/video-metadata-grid"
 import { VideoSourceList } from "@/components/videos/video-source-list"
 import { VideoTagInput } from "@/components/videos/video-tag-input"
+import { DRAFT_NS } from "@/components/shared/draft-strings"
+import { DraftStatus } from "@/components/shared/draft-status"
 import { TiptapEditor } from "@/components/shared/tiptap-editor-lazy"
 import { UploadProgressLine } from "@/components/shared/upload-progress-line"
 import { VideoTopicCombobox } from "@/components/videos/video-topic-combobox"
@@ -39,6 +41,7 @@ import { FieldError } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Spinner } from "@/components/ui/spinner"
+import { useFormDraft } from "@/hooks/use-form-draft"
 import {
   useCreateVideo,
   useUpdateVideo,
@@ -59,6 +62,7 @@ import {
 } from "@/lib/validations/videos"
 import { formatCkbDigits } from "@/lib/intl-ckb"
 import { cn } from "@/lib/utils"
+import { useAuthStore } from "@/store/auth.store"
 import type { Language, VideoDto } from "@/types/videos"
 
 const sectionCard =
@@ -122,12 +126,26 @@ export function VideoForm({
     watch,
     setValue,
     reset,
-    formState: { errors, isDirty },
+    formState: { errors, isDirty, isSubmitting },
   } = form
 
   useEffect(() => {
     if (editDto) reset(videoDtoToFormValues(editDto))
   }, [editDto, reset])
+
+  const userKey = useAuthStore((s) => s.user?.username)
+  const draft = useFormDraft<VideoFormValues>({
+    entity: "videos",
+    recordId: mode === "edit" ? videoId : undefined,
+    form,
+    userKey,
+    enabled: mode === "create" || Boolean(editDto),
+    recordUpdatedAt: editDto?.updatedAt,
+  })
+
+  useEffect(() => {
+    if (draft.restored) toast.info(DRAFT_NS.toast.restored)
+  }, [draft.restored])
 
   const [activeLang, setActiveLang] = useState<Language>("CKB")
 
@@ -143,7 +161,7 @@ export function VideoForm({
   }, [contentLanguages, activeLang])
 
   const pending = createMut.isPending || updateMut.isPending
-  const submitDisabled = !isDirty || pending
+  const submitDisabled = !isDirty || pending || isSubmitting
   const addAnotherRef = useRef(false)
   const [uploadPct, setUploadPct] = useState<number | null>(null)
   const errorCount = countFormErrors(errors)
@@ -176,6 +194,7 @@ export function VideoForm({
           onProgress: setUploadPct,
         })
         if (res.id) {
+          draft.clear()
           if (addAnotherRef.current) {
             reset(defaultVideoFormValues)
             toast.success(NS.toast.saved)
@@ -195,6 +214,7 @@ export function VideoForm({
           formData: fd,
           onProgress: setUploadPct,
         })
+        draft.clear()
         toast.success(NS.toast.saved)
         router.push(`/dashboard/videos/${videoId}`)
       }
@@ -630,6 +650,7 @@ export function VideoForm({
                   {formatCkbDigits(errorCount)} هەڵە
                 </span>
               ) : null}
+              <DraftStatus status={draft.status} restored={draft.restored} />
             </div>
             <div className="grid w-full grid-cols-2 gap-2 sm:ms-auto sm:flex sm:w-auto">
               <Button

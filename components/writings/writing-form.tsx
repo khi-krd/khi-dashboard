@@ -30,6 +30,8 @@ import { WritingLanguageToggleChip } from "@/components/writings/writing-languag
 import { WritingPersonsSection } from "@/components/writings/writing-persons-section"
 import { WritingSeriesSection } from "@/components/writings/writing-series-section"
 import { WritingTagInput } from "@/components/writings/writing-tag-input"
+import { DRAFT_NS } from "@/components/shared/draft-strings"
+import { DraftStatus } from "@/components/shared/draft-status"
 import { TiptapEditor } from "@/components/shared/tiptap-editor-lazy"
 import { UploadProgressLine } from "@/components/shared/upload-progress-line"
 import { WritingTopicCombobox } from "@/components/writings/writing-topic-combobox"
@@ -40,6 +42,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Spinner } from "@/components/ui/spinner"
 import { useBookGenresQuery } from "@/hooks/useBookGenres"
+import { useFormDraft } from "@/hooks/use-form-draft"
 import { useServerFormSync } from "@/hooks/use-server-form-sync"
 import {
   useCreateWriting,
@@ -62,6 +65,7 @@ import {
 } from "@/lib/validations/writings"
 import { formatCkbDigits } from "@/lib/intl-ckb"
 import { cn } from "@/lib/utils"
+import { useAuthStore } from "@/store/auth.store"
 import type { Language, WritingDto } from "@/types/writings"
 
 const sectionCard =
@@ -120,7 +124,7 @@ export function WritingForm({
     watch,
     setValue,
     reset,
-    formState: { errors, isDirty },
+    formState: { errors, isDirty, isSubmitting },
   } = form
 
   // Re-seed from the server record whenever it changes — a bare `useEffect`
@@ -131,6 +135,20 @@ export function WritingForm({
     reset,
     isDirty,
   })
+
+  const userKey = useAuthStore((s) => s.user?.username)
+  const draft = useFormDraft<WritingFormValues>({
+    entity: "writings",
+    recordId: mode === "edit" ? writingId : undefined,
+    form,
+    userKey,
+    enabled: mode === "create" || Boolean(editDto),
+    recordUpdatedAt: editDto?.updatedAt,
+  })
+
+  useEffect(() => {
+    if (draft.restored) toast.info(DRAFT_NS.toast.restored)
+  }, [draft.restored])
 
   const [activeLang, setActiveLang] = useState<Language>("CKB")
 
@@ -146,7 +164,7 @@ export function WritingForm({
   }, [contentLanguages, activeLang])
 
   const pending = createMut.isPending || updateMut.isPending
-  const submitDisabled = !isDirty || pending
+  const submitDisabled = !isDirty || pending || isSubmitting
   const addAnotherRef = useRef(false)
   const errorCount = countFormErrors(errors)
   const [uploadPct, setUploadPct] = useState<number | null>(null)
@@ -184,6 +202,7 @@ export function WritingForm({
           onProgress: setUploadPct,
         })
         if (res.id) {
+          draft.clear()
           if (addAnotherRef.current) {
             addAnotherRef.current = false
             reset(defaultWritingFormValues)
@@ -204,6 +223,7 @@ export function WritingForm({
           formData: fd,
           onProgress: setUploadPct,
         })
+        draft.clear()
         toast.success(NS.toast.saved)
         router.push(`/dashboard/writings/${writingId}`)
       }
@@ -713,6 +733,7 @@ export function WritingForm({
                   {formatCkbDigits(errorCount)} هەڵە
                 </span>
               ) : null}
+              <DraftStatus status={draft.status} restored={draft.restored} />
             </div>
             <div className="grid w-full grid-cols-2 gap-2 sm:ms-auto sm:flex sm:w-auto">
               <Button
