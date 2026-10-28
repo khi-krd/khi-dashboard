@@ -271,9 +271,11 @@ export function videoDtoToFormValues(d: import("@/types/videos").VideoDto): Vide
     ckbCoverFile: null,
     kmrCoverFile: null,
     hoverCoverFile: null,
-    ckbCoverUrl: "",
-    kmrCoverUrl: "",
-    hoverCoverUrl: "",
+    // Seed the URL inputs with the persisted URL — the backend resolves a
+    // re-sent identical URL as a no-op, and a staged file wins over it.
+    ckbCoverUrl: d.ckbCoverUrl ?? "",
+    kmrCoverUrl: d.kmrCoverUrl ?? "",
+    hoverCoverUrl: d.hoverCoverUrl ?? "",
     existingCkbCoverUrl: d.ckbCoverUrl ?? null,
     existingKmrCoverUrl: d.kmrCoverUrl ?? null,
     existingHoverCoverUrl: d.hoverCoverUrl ?? null,

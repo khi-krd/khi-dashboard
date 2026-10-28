@@ -208,9 +208,11 @@ export function writingDtoToFormValues(dto: WritingDto): WritingFormValues {
     ckbCoverFile: null,
     kmrCoverFile: null,
     hoverCoverFile: null,
-    ckbCoverUrl: "",
-    kmrCoverUrl: "",
-    hoverCoverUrl: "",
+    // Seed the URL inputs with the persisted URL — the backend resolves a
+    // re-sent identical URL as a no-op, and a staged file wins over it.
+    ckbCoverUrl: dto.ckbCoverUrl ?? "",
+    kmrCoverUrl: dto.kmrCoverUrl ?? "",
+    hoverCoverUrl: dto.hoverCoverUrl ?? "",
     existingCkbCoverUrl: dto.ckbCoverUrl ?? null,
     existingKmrCoverUrl: dto.kmrCoverUrl ?? null,
     existingHoverCoverUrl: dto.hoverCoverUrl ?? null,

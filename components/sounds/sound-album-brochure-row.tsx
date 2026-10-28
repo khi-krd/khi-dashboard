@@ -47,7 +47,6 @@ export function SoundAlbumBrochureRow({
       const entry = added[0]
       if (!entry?.file || !(entry.file instanceof File)) return
       setValue(`${base}.stagedFile`, entry.file, { shouldDirty: true })
-      setValue(`${base}.fileUrl`, "", { shouldDirty: true })
       setValue(`${base}.mimeType`, entry.file.type, { shouldDirty: true })
       setValue(`${base}.sizeBytes`, entry.file.size, { shouldDirty: true })
       setValue(
@@ -106,13 +105,9 @@ export function SoundAlbumBrochureRow({
           </span>
         </div>
         <Input
-          {...register(`${base}.fileUrl`, {
-            onChange: () => {
-              setValue(`${base}.stagedFile`, null, { shouldDirty: true })
-            },
-          })}
-          placeholder="https://"
-          className="h-8 text-xs"
+          {...register(`${base}.fileUrl`)}
+          placeholder="https://…"
+          className="h-8 font-mono text-xs"
           dir="ltr"
         />
       </div>

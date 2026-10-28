@@ -52,7 +52,6 @@ export function SoundAttachmentRow({
       const entry = added[0]
       if (!entry?.file || !(entry.file instanceof File)) return
       setValue(`${base}.stagedAttachmentFile`, entry.file, { shouldDirty: true })
-      setValue(`${base}.fileUrl`, "", { shouldDirty: true })
       setValue(`${base}.mimeType`, entry.file.type, { shouldDirty: true })
       setValue(`${base}.sizeBytes`, entry.file.size, { shouldDirty: true })
       setValue(
@@ -111,13 +110,10 @@ export function SoundAttachmentRow({
           <span className="text-muted-foreground min-w-0 truncate text-xs">{fileLabel}</span>
         </div>
         <Input
-          {...register(`${base}.fileUrl`, {
-            onChange: () => {
-              setValue(`${base}.stagedAttachmentFile`, null, { shouldDirty: true })
-            },
-          })}
-          placeholder="https://"
-          className="h-8 text-xs"
+          {...register(`${base}.fileUrl`)}
+          dir="ltr"
+          placeholder="https://…"
+          className="h-8 font-mono text-xs"
         />
       </div>
       <div className="space-y-1">

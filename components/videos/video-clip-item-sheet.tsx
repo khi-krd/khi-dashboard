@@ -1,7 +1,7 @@
 "use client"
 
 import { CloudArrowUpIcon } from "@heroicons/react/24/outline"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 
 import { useSyncedState } from "@/hooks/use-synced-state"
 import { useObjectUrl } from "@/hooks/use-object-url"
@@ -186,9 +186,11 @@ export function VideoClipItemSheet({
               <div className="space-y-1">
                 <p className="text-muted-foreground text-xs">{NS.source.s3_helper}</p>
                 <Input
+                  dir="ltr"
                   value={draft.url ?? ""}
                   onChange={(e) => patch({ url: e.target.value })}
-                  placeholder="https://"
+                  placeholder="https://…"
+                  className="font-mono text-xs"
                 />
               </div>
               {uploadErrors[0] ? (
@@ -198,16 +200,20 @@ export function VideoClipItemSheet({
           ) : null}
           {mode === "external" ? (
             <Input
+              dir="ltr"
               value={draft.externalUrl ?? ""}
               onChange={(e) => patch({ externalUrl: e.target.value })}
               placeholder={NS.field.external_placeholder}
+              className="font-mono text-xs"
             />
           ) : null}
           {mode === "embed" ? (
             <Input
+              dir="ltr"
               value={draft.embedUrl ?? ""}
               onChange={(e) => patch({ embedUrl: e.target.value })}
               placeholder={NS.field.embed_placeholder}
+              className="font-mono text-xs"
             />
           ) : null}
           {mode !== "file" ? (

@@ -6,19 +6,15 @@ function trimOrUndef(s: string | null | undefined) {
   return t || undefined
 }
 
-function buildContent(
-  lang: "CKB" | "KMR",
-  values: WritingFormValues,
-  stagedFile: File | null | undefined,
-) {
+function buildContent(lang: "CKB" | "KMR", values: WritingFormValues) {
   const content = lang === "CKB" ? values.ckbContent : values.kmrContent
   if (!content) return undefined
-  const hasStaged = !!stagedFile
   return {
     title: content.title?.trim() ?? "",
     description: content.description ?? "",
 
-    fileUrl: hasStaged ? null : trimOrUndef(content.fileUrl),
+    // A staged book file wins server-side; the typed URL still goes along.
+    fileUrl: trimOrUndef(content.fileUrl),
     fileFormat: content.fileFormat ?? undefined,
     fileSizeBytes: content.fileSizeBytes ?? 0,
     pageCount: content.pageCount ?? undefined,
@@ -89,10 +85,10 @@ export function writingFormValuesToMultipart(
       }))
       .filter((p) => p.nameCkb || p.nameKmr),
     ckbContent: values.contentLanguages.includes("CKB")
-      ? buildContent("CKB", values, values.ckbBookFile)
+      ? buildContent("CKB", values)
       : undefined,
     kmrContent: values.contentLanguages.includes("KMR")
-      ? buildContent("KMR", values, values.kmrBookFile)
+      ? buildContent("KMR", values)
       : undefined,
   }
 

@@ -64,7 +64,6 @@ export function WritingCoverSlot({
       const entry = added[0]
       if (!entry?.file || !(entry.file instanceof File)) return
       clearErrors()
-      onUrlChange("")
       onFileChange(entry.file)
       queueMicrotask(() => removeFile(entry.id))
     },
@@ -149,10 +148,11 @@ export function WritingCoverSlot({
         </CollapsibleTrigger>
         <CollapsibleContent className="pt-2">
           <Input
+            dir="ltr"
             value={urlValue}
             onChange={(e) => onUrlChange(e.target.value)}
-            placeholder="https://"
-            className="h-8 text-xs"
+            placeholder="https://…"
+            className="h-8 font-mono text-xs"
             disabled={inactive}
           />
           <FieldError>{urlError}</FieldError>

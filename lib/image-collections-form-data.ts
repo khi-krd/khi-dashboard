@@ -61,14 +61,11 @@ function buildAlbumPayload(values: CollectionFormValues) {
 
   let album = orderedAlbumItems(values).map((item) => ({
     ...(typeof item.id === "number" && item.id > 0 ? { id: item.id } : {}),
-    // URL fields on a staged item are ignored by the backend — omit them.
-    ...(item.stagedBinary
-      ? {}
-      : {
-          imageUrl: trimOrUndef(item.imageUrl),
-          externalUrl: trimOrUndef(item.externalUrl),
-          embedUrl: trimOrUndef(item.embedUrl),
-        }),
+    // A staged file part wins server-side, but the typed URL still goes
+    // along — the backend resolves the precedence.
+    imageUrl: trimOrUndef(item.imageUrl),
+    externalUrl: trimOrUndef(item.externalUrl),
+    embedUrl: trimOrUndef(item.embedUrl),
     captionCkb: trimOrUndef(item.captionCkb),
     captionKmr: trimOrUndef(item.captionKmr),
     descriptionCkb: item.descriptionCkb?.trim() || undefined,

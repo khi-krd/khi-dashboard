@@ -255,9 +255,11 @@ export function VideoSourceItemSheet({
               <Field>
                 <FieldLabel>{NS.source.s3_helper}</FieldLabel>
                 <Input
+                  dir="ltr"
                   value={draft.url ?? ""}
                   onChange={(e) => patch({ url: e.target.value })}
-                  placeholder="https://"
+                  placeholder="https://…"
+                  className="font-mono text-xs"
                 />
               </Field>
               {uploadErrors.length > 0 ? (
@@ -274,9 +276,11 @@ export function VideoSourceItemSheet({
             <Field>
               <FieldLabel>{NS.source.mode.external}</FieldLabel>
               <Input
+                dir="ltr"
                 value={draft.externalUrl ?? ""}
                 onChange={(e) => patch({ externalUrl: e.target.value })}
                 placeholder={NS.field.external_placeholder}
+                className="font-mono text-xs"
               />
             </Field>
           ) : null}
@@ -285,9 +289,11 @@ export function VideoSourceItemSheet({
             <Field>
               <FieldLabel>{NS.source.mode.embed}</FieldLabel>
               <Input
+                dir="ltr"
                 value={draft.embedUrl ?? ""}
                 onChange={(e) => patch({ embedUrl: e.target.value })}
                 placeholder={NS.field.embed_placeholder}
+                className="font-mono text-xs"
               />
             </Field>
           ) : null}

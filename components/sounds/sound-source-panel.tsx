@@ -5,8 +5,10 @@ import { useCallback, useEffect, useRef, useState } from "react"
 
 import { useObjectUrl } from "@/hooks/use-object-url"
 import { NS } from "@/components/sounds/sounds-strings"
+import { TIPTAP_NS } from "@/components/shared/tiptap-strings"
 import { FieldError } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { MAX_UPLOAD_BYTES, useFileUpload } from "@/hooks/use-file-upload"
 import {
   applyAudioFileMeta,
@@ -79,7 +81,6 @@ export function SoundSourcePanel({
       const { title: id3Title, ...rest } = meta
       applyMetaPatch({
         stagedAudioFile: staged,
-        fileUrl: "",
         ...rest,
         ...(id3Title && !file.titleCkb?.trim() && !file.title?.trim()
           ? { titleCkb: id3Title }
@@ -177,7 +178,6 @@ export function SoundSourcePanel({
       const audioFile = entry.file
       applyMetaPatch({
         stagedAudioFile: audioFile,
-        fileUrl: "",
         ...audioFileMetaFromFile(audioFile),
       })
       const gen = ++probeGenRef.current
@@ -186,7 +186,6 @@ export function SoundSourcePanel({
         const { title: id3Title, ...rest } = meta
         applyMetaPatch({
           stagedAudioFile: audioFile,
-          fileUrl: "",
           ...rest,
           ...(id3Title && !file.titleCkb?.trim() && !file.title?.trim()
             ? { titleCkb: id3Title }
@@ -265,7 +264,7 @@ export function SoundSourcePanel({
           </div>
           {staged ? (
             <div className="flex gap-3 text-xs">
-              <span>{staged.name}</span>
+              <span className="min-w-0 truncate">{staged.name}</span>
               <button type="button" className="underline" onClick={openFileDialog}>
                 {NS.action.change}
               </button>
@@ -275,35 +274,45 @@ export function SoundSourcePanel({
                 onClick={() => {
                   clearFiles()
                   probeGenRef.current += 1
-                  onChange({ stagedAudioFile: null, fileUrl: "" })
+                  onChange({ stagedAudioFile: null })
                 }}
               >
                 {NS.action.delete}
               </button>
             </div>
-          ) : (
+          ) : null}
+          <div className="space-y-1">
+            <Label className="text-muted-foreground text-xs">
+              {TIPTAP_NS.audio.urlLabel}
+            </Label>
             <Input
+              dir="ltr"
               value={file.fileUrl ?? ""}
-              onChange={(e) => onChange({ fileUrl: e.target.value, stagedAudioFile: null })}
-              placeholder="https://"
+              onChange={(e) => onChange({ fileUrl: e.target.value })}
+              placeholder="https://…"
+              className="font-mono text-xs"
             />
-          )}
+          </div>
         </div>
       ) : null}
 
       {mode === "external" ? (
         <Input
+          dir="ltr"
           value={file.externalUrl ?? ""}
           onChange={(e) => onChange({ externalUrl: e.target.value })}
-          placeholder="https://"
+          placeholder="https://…"
+          className="font-mono text-xs"
         />
       ) : null}
 
       {mode === "embed" ? (
         <Input
+          dir="ltr"
           value={file.embedUrl ?? ""}
           onChange={(e) => onChange({ embedUrl: e.target.value })}
-          placeholder="https://"
+          placeholder="https://…"
+          className="font-mono text-xs"
         />
       ) : null}
 

@@ -2,12 +2,14 @@
 
 import { CloudArrowUpIcon } from "@heroicons/react/24/outline"
 import Image from "next/image"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 
 import { isOptimizableImageSrc } from "@/lib/image-src"
 import { NS } from "@/components/image-collections/collections-strings"
+import { TIPTAP_NS } from "@/components/shared/tiptap-strings"
 import { FieldError } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { MAX_UPLOAD_BYTES, useFileUpload } from "@/hooks/use-file-upload"
 import { useObjectUrl } from "@/hooks/use-object-url"
 import { applyImageFileMeta } from "@/lib/image-album-utils"
@@ -52,9 +54,6 @@ export function CollectionItemSourcePanel({
       void applyImageFileMeta(file).then((meta) => {
         onChange({
           stagedBinary: file,
-          imageUrl: "",
-          externalUrl: "",
-          embedUrl: "",
           ...meta,
         })
       })
@@ -96,46 +95,66 @@ export function CollectionItemSourcePanel({
       </div>
 
       {mode === "file" ? (
-        <div
-          className={cn(
-            "relative flex flex-col items-center justify-center overflow-hidden rounded-xl border border-dashed p-4 transition-colors",
-            isDragging && "border-primary bg-primary/5",
-          )}
-          onDragEnter={handleDragEnter}
-          onDragLeave={handleDragLeave}
-          onDragOver={handleDragOver}
-          onDrop={handleDrop}
-        >
-          <input {...getInputProps()} className="sr-only" />
-          {preview ? (
-            <div className="relative aspect-[4/3] w-full max-w-sm">
-              <Image
-                src={preview}
-                alt=""
-                fill
-                className="rounded-lg object-contain"
-                unoptimized={!isOptimizableImageSrc(preview)}
-              />
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={openFileDialog}
-              className="text-muted-foreground flex flex-col items-center gap-2 py-6 text-sm"
-            >
-              <CloudArrowUpIcon className="size-10 opacity-50" />
-              {NS.field.single_drop}
-            </button>
-          )}
-          {preview ? (
-            <button
-              type="button"
-              className="text-primary mt-3 text-xs underline"
-              onClick={openFileDialog}
-            >
-              {NS.action.change}
-            </button>
-          ) : null}
+        <div className="space-y-3">
+          <div
+            className={cn(
+              "relative flex flex-col items-center justify-center overflow-hidden rounded-xl border border-dashed p-4 transition-colors",
+              isDragging && "border-primary bg-primary/5",
+            )}
+            onDragEnter={handleDragEnter}
+            onDragLeave={handleDragLeave}
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
+          >
+            <input {...getInputProps()} className="sr-only" />
+            {preview ? (
+              <div className="relative aspect-[4/3] w-full max-w-sm">
+                <Image
+                  src={preview}
+                  alt=""
+                  fill
+                  className="rounded-lg object-contain"
+                  unoptimized={!isOptimizableImageSrc(preview)}
+                />
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={openFileDialog}
+                className="text-muted-foreground flex flex-col items-center gap-2 py-6 text-sm"
+              >
+                <CloudArrowUpIcon className="size-10 opacity-50" />
+                {NS.field.single_drop}
+              </button>
+            )}
+            {preview ? (
+              <button
+                type="button"
+                className="text-primary mt-3 text-xs underline"
+                onClick={openFileDialog}
+              >
+                {NS.action.change}
+              </button>
+            ) : null}
+          </div>
+          <div className="space-y-1">
+            <Label className="text-muted-foreground text-xs">
+              {TIPTAP_NS.cover.urlLabel}
+            </Label>
+            <Input
+              dir="ltr"
+              value={item.imageUrl ?? ""}
+              onChange={(e) =>
+                onChange({
+                  imageUrl: e.target.value,
+                  externalUrl: "",
+                  embedUrl: "",
+                })
+              }
+              placeholder="https://…"
+              className="font-mono text-xs"
+            />
+          </div>
         </div>
       ) : mode === "external" ? (
         <Input

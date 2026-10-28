@@ -140,7 +140,7 @@ function BrochureRow({
     onFilesAdded: (added) => {
       const entry = added[0]
       if (!entry?.file || !(entry.file instanceof File)) return
-      onPatch({ stagedImageFile: entry.file, imageUrl: "" })
+      onPatch({ stagedImageFile: entry.file })
       queueMicrotask(() => removeFile(entry.id))
     },
   })
@@ -180,12 +180,11 @@ function BrochureRow({
           dir="ltr"
         />
         <Input
+          dir="ltr"
           value={brochure.imageUrl ?? ""}
-          onChange={(e) =>
-            onPatch({ imageUrl: e.target.value, stagedImageFile: null })
-          }
-          placeholder="https://"
-          className="h-8 text-xs"
+          onChange={(e) => onPatch({ imageUrl: e.target.value })}
+          placeholder="https://…"
+          className="h-8 font-mono text-xs"
         />
       </div>
       <button

@@ -89,7 +89,6 @@ export function WritingBookFileUploader({
       const format = guessBookFormatFromFilename(entry.file.name)
       onStagedFileChange(entry.file)
       onContentChange({
-        fileUrl: "",
         fileFormat: format,
         fileSizeBytes: entry.file.size,
       })
@@ -168,7 +167,6 @@ export function WritingBookFileUploader({
                 onClick={() => {
                   onStagedFileChange(null)
                   onContentChange({
-                    fileUrl: "",
                     fileFormat: undefined,
                     fileSizeBytes: 0,
                   })
@@ -254,12 +252,9 @@ export function WritingBookFileUploader({
           <Input
             dir="ltr"
             value={content.fileUrl ?? ""}
-            onChange={(e) => {
-              onStagedFileChange(null)
-              onContentChange({ fileUrl: e.target.value })
-            }}
-            placeholder="https://"
-            disabled={hasStaged}
+            onChange={(e) => onContentChange({ fileUrl: e.target.value })}
+            placeholder="https://…"
+            className="font-mono text-xs"
           />
         </CollapsibleContent>
       </Collapsible>

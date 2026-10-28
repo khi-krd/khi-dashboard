@@ -193,30 +193,30 @@ export function AlbumGalleryEditor({ showKmrFields }: { showKmrFields?: boolean 
         <h2 className="text-sm font-medium">
           {NS.section.gallery} ({formatCkbDigits(fields.length)})
         </h2>
-        {fields.length > 0 ? (
-          <div className="flex flex-wrap gap-2">
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              onClick={() => bulkRef.current?.click()}
-            >
-              <CloudArrowUpIcon className="size-4" />
-              {NS.action.upload_files}
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              onClick={() => {
-                append(createEmptyAlbumItem(fields.length))
-                setSheetIdx(fields.length)
-              }}
-            >
-              <PlusIcon className="size-4" />
-              {NS.action.new_image}
-            </Button>
-          </div>
-        ) : null}
+        {/* Always visible — a URL-only item can only be created through
+            "new image" → sheet, even when the gallery is empty. */}
+        <div className="flex flex-wrap gap-2">
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={() => bulkRef.current?.click()}
+          >
+            <CloudArrowUpIcon className="size-4" />
+            {NS.action.upload_files}
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            onClick={() => {
+              append(createEmptyAlbumItem(fields.length))
+              setSheetIdx(fields.length)
+            }}
+          >
+            <PlusIcon className="size-4" />
+            {NS.action.new_image}
+          </Button>
+        </div>
       </div>
 
       <input
