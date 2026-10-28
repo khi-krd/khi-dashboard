@@ -64,9 +64,13 @@ export function soundFormValuesToMultipart(
     bitRate: trimOrUndef(f.bitRate),
     sampleRate: trimOrUndef(f.sampleRate),
     audioChannel: f.audioChannel ?? undefined,
-    form: trimOrUndef(f.form),
-    genre: trimOrUndef(f.genre),
-    recordingVenue: trimOrUndef(f.recordingVenue),
+    // Sent even when blank: each language is independent, so "" clears just that one.
+    formCkb: f.formCkb?.trim() ?? "",
+    formKmr: f.formKmr?.trim() ?? "",
+    genreCkb: f.genreCkb?.trim() ?? "",
+    genreKmr: f.genreKmr?.trim() ?? "",
+    recordingVenueCkb: f.recordingVenueCkb?.trim() ?? "",
+    recordingVenueKmr: f.recordingVenueKmr?.trim() ?? "",
     sizeBytes: f.sizeBytes ?? undefined,
     brochures: f.brochures.map((b, bi) => ({
       ...(typeof b.id === "number" && b.id > 0 ? { id: b.id } : {}),
@@ -147,7 +151,8 @@ export function soundFormValuesToMultipart(
           description: values.kmrContent?.description ?? "",
         }
       : undefined,
-    locations: values.locations.map((l) => l.trim()).filter(Boolean),
+    locationsCkb: values.locationsCkb.map((l) => l.trim()).filter(Boolean),
+    locationsKmr: values.locationsKmr.map((l) => l.trim()).filter(Boolean),
     files: filesPayload,
     attachments: attachmentsPayload,
     brochures: brochuresPayload,

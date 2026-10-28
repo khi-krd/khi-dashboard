@@ -38,9 +38,12 @@ export type SoundFileDto = {
   bitRate?: string | null
   sampleRate?: string | null
   audioChannel?: AudioChannel | null
-  form?: string | null
-  genre?: string | null
-  recordingVenue?: string | null
+  formCkb?: string | null
+  formKmr?: string | null
+  genreCkb?: string | null
+  genreKmr?: string | null
+  recordingVenueCkb?: string | null
+  recordingVenueKmr?: string | null
   sortOrder?: number | null
   brochures?: BrochureDto[]
 }
@@ -116,7 +119,8 @@ export type SoundDto = {
   files?: SoundFileDto[]
   attachments?: AttachmentDto[]
   brochures?: AlbumBrochureDto[]
-  locations?: string[]
+  locationsCkb?: string[]
+  locationsKmr?: string[]
   createdAt?: string
   updatedAt?: string
   createdBy?: string | null

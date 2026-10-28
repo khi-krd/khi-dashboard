@@ -191,34 +191,46 @@ export function SoundFileSheet({
                   }}
                 />
               </div>
-              <div className="space-y-1">
-                <Label className="text-xs">{NS.field.form}</Label>
-                <Input
-                  className="h-8"
-                  value={draft.form ?? ""}
-                  onChange={(e) => patch({ form: e.target.value })}
-                  placeholder={NS.field.form_placeholder}
-                />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs">{NS.field.genre}</Label>
-                <Input
-                  className="h-8"
-                  value={draft.genre ?? ""}
-                  onChange={(e) => patch({ genre: e.target.value })}
-                  placeholder={NS.field.genre_placeholder}
-                />
-              </div>
-              <div className="col-span-2 space-y-1">
-                <Label className="text-xs">{NS.field.recording_venue}</Label>
-                <Input
-                  className="h-8"
-                  value={draft.recordingVenue ?? ""}
-                  onChange={(e) => patch({ recordingVenue: e.target.value })}
-                  placeholder={NS.field.recording_venue_placeholder}
-                />
-              </div>
             </div>
+            {/* Each language is fully independent — nothing is shared or
+                copied between the Sorani and Kurmanji values. */}
+            {(
+              [
+                ["formCkb", "formKmr", NS.field.form, NS.field.form_placeholder],
+                ["genreCkb", "genreKmr", NS.field.genre, NS.field.genre_placeholder],
+                [
+                  "recordingVenueCkb",
+                  "recordingVenueKmr",
+                  NS.field.recording_venue,
+                  NS.field.recording_venue_placeholder,
+                ],
+              ] as const
+            ).map(([ckbKey, kmrKey, label, placeholder]) => (
+              <div key={ckbKey} className="grid gap-3 sm:grid-cols-2">
+                <div className="space-y-1">
+                  <Label className="text-xs">
+                    {label} · {NS.lang.ckb}
+                  </Label>
+                  <Input
+                    className="h-8"
+                    value={draft[ckbKey] ?? ""}
+                    onChange={(e) => patch({ [ckbKey]: e.target.value })}
+                    placeholder={placeholder}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">
+                    {label} · {NS.lang.kmr}
+                  </Label>
+                  <Input
+                    className="h-8"
+                    dir="ltr"
+                    value={draft[kmrKey] ?? ""}
+                    onChange={(e) => patch({ [kmrKey]: e.target.value })}
+                  />
+                </div>
+              </div>
+            ))}
           </section>
 
           <section>

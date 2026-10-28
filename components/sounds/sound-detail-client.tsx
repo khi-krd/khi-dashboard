@@ -543,18 +543,31 @@ function SoundDetailLoaded({
             </section>
           ) : null}
 
-          {(sound.locations?.length ?? 0) > 0 ? (
+          {(sound.locationsCkb?.length ?? 0) + (sound.locationsKmr?.length ?? 0) > 0 ? (
             <section className={cn(sectionDivider, "mt-10")}>
               <h2 className="mb-3 text-sm font-medium">{NS.credits.locations}</h2>
-              <div className="flex flex-wrap gap-2">
-                {sound.locations!.map((loc) => (
-                  <span
-                    key={loc}
-                    className="border-border bg-muted inline-flex rounded-md border px-2 py-0.5 text-xs"
-                  >
-                    {loc}
-                  </span>
-                ))}
+              <div className="space-y-2">
+                {(
+                  [
+                    [NS.lang.ckb, sound.locationsCkb ?? [], "rtl"],
+                    [NS.lang.kmr, sound.locationsKmr ?? [], "ltr"],
+                  ] as const
+                ).map(([label, list, dir]) =>
+                  list.length > 0 ? (
+                    <div key={label} className="flex flex-wrap items-center gap-2">
+                      <span className="text-muted-foreground text-xs">{label}</span>
+                      {list.map((loc) => (
+                        <span
+                          key={loc}
+                          dir={dir}
+                          className="border-border bg-muted inline-flex rounded-md border px-2 py-0.5 text-xs"
+                        >
+                          {loc}
+                        </span>
+                      ))}
+                    </div>
+                  ) : null,
+                )}
               </div>
             </section>
           ) : null}

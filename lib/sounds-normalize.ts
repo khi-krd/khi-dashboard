@@ -113,10 +113,12 @@ function normalizeFile(raw: unknown): SoundFileDto {
       channel === "MONO" || channel === "STEREO"
         ? (channel as AudioChannel)
         : null,
-    form: coerceStr(o.form),
-    genre: coerceStr(o.genre),
-    recordingVenue:
-      coerceStr(o.recordingVenue) ?? coerceStr(o.recording_venue),
+    formCkb: coerceStr(o.formCkb),
+    formKmr: coerceStr(o.formKmr),
+    genreCkb: coerceStr(o.genreCkb),
+    genreKmr: coerceStr(o.genreKmr),
+    recordingVenueCkb: coerceStr(o.recordingVenueCkb),
+    recordingVenueKmr: coerceStr(o.recordingVenueKmr),
     sortOrder:
       coerceNum(o.sortOrder) ??
       coerceNum(o.sort_order) ??
@@ -263,7 +265,8 @@ export function normalizeSoundDto(raw: unknown): SoundDto {
     brochures: brochures.sort(
       (a, b) => (a.brochureOrder ?? 0) - (b.brochureOrder ?? 0),
     ),
-    locations: coerceStringArray(o.locations),
+    locationsCkb: coerceStringArray(o.locationsCkb),
+    locationsKmr: coerceStringArray(o.locationsKmr),
     createdAt: coerceStr(o.createdAt) ?? coerceStr(o.created_at) ?? undefined,
     updatedAt: coerceStr(o.updatedAt) ?? coerceStr(o.updated_at) ?? undefined,
     createdBy: coerceStr(o.createdBy) ?? coerceStr(o.created_by),

@@ -95,14 +95,20 @@ export function SoundDetailFilesList({
                   ) : null}
                 </p>
                 <div className="mt-1 flex flex-wrap gap-2 text-xs">
-                  {file.genre ? (
-                    <span className="text-muted-foreground">{file.genre}</span>
-                  ) : null}
-                  {file.recordingVenue ? (
-                    <span className="text-muted-foreground">
-                      {file.recordingVenue}
-                    </span>
-                  ) : null}
+                  {[file.genreCkb, file.recordingVenueCkb].map((v) =>
+                    v ? (
+                      <span key={`ckb-${v}`} className="text-muted-foreground">
+                        {v}
+                      </span>
+                    ) : null,
+                  )}
+                  {[file.genreKmr, file.recordingVenueKmr].map((v) =>
+                    v ? (
+                      <span key={`kmr-${v}`} dir="ltr" className="text-muted-foreground">
+                        {v}
+                      </span>
+                    ) : null,
+                  )}
                 </div>
               </div>
               {(file.brochures?.length ?? 0) > 0 ? (

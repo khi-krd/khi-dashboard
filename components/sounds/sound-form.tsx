@@ -478,7 +478,7 @@ export function SoundForm({
                   <MapPinIcon className="text-muted-foreground mt-2 size-4 shrink-0" />
                   <div className="min-w-0 flex-1">
                     <Controller
-                      name="locations"
+                      name="locationsCkb"
                       control={control}
                       render={({ field }) => (
                         <SoundTagInput
@@ -522,7 +522,7 @@ export function SoundForm({
                   <MapPinIcon className="text-muted-foreground mt-2 size-4 shrink-0" />
                   <div className="min-w-0 flex-1">
                     <Controller
-                      name="locations"
+                      name="locationsKmr"
                       control={control}
                       render={({ field }) => (
                         <SoundTagInput
