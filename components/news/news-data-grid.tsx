@@ -578,7 +578,7 @@ export function NewsDataGrid({
             if (clicked.id != null) onView(clicked)
           }}
         >
-          <DataGridScrollArea className="max-h-[70vh] min-h-[320px]">
+          <DataGridScrollArea>
             <DataGridTable />
           </DataGridScrollArea>
           <NewsListPaginationFooter />
