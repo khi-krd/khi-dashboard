@@ -56,6 +56,8 @@ export const NS = {
     backToPreview: "گەڕانەوە بۆ پیشاندان",
     saving: "پاشەکەوتکردن…",
     cancel: "هەڵوەشاندنەوە",
+    reorder: "ڕیزکردن",
+    done: "تەواو",
     change: "گۆڕین",
     reset_filters: "پاککردنەوەی فلتەرەکان",
     add_collection: "کۆکراوەی نوێ",
@@ -320,6 +322,7 @@ export const NS = {
     bulkDeleted: (count: string) => `${count} خزمەتگوزاری سڕایەوە`,
     copied: "لەبەرگیرایەوە",
     viewAction: "بینین",
+    orderSaved: "ڕیزکردن بەسەرکەوتوویی پاشەکەوتکرا",
   },
   dialog: {
     deleteTitle: "سڕینەوەی ئەم خزمەتگوزارییە؟",

@@ -1,7 +1,12 @@
 "use client"
 
-import { Suspense, useMemo, useState } from "react"
-import { PencilSquareIcon, PlusIcon } from "@heroicons/react/24/outline"
+import { Suspense, useCallback, useMemo, useState } from "react"
+import { useQueryClient } from "@tanstack/react-query"
+import {
+  Bars2Icon,
+  PencilSquareIcon,
+  PlusIcon,
+} from "@heroicons/react/24/outline"
 import { toast } from "sonner"
 
 import {
@@ -23,6 +28,9 @@ import {
   useDeleteServiceMutation,
   useServicesListQuery,
 } from "@/hooks/useServices"
+import { RecordReorderPanel } from "@/components/shared/record-reorder-panel"
+import { reorderServices } from "@/services/servicesService"
+import { servicesKeys } from "@/lib/services-query-keys"
 import { formatCkbDigits } from "@/lib/intl-ckb"
 import { toastApiError } from "@/lib/toast"
 import { splitPageHeroAndSections } from "@/lib/services-page-hero"
@@ -47,9 +55,13 @@ export function ServicesListClient() {
 }
 
 function ServicesListClientInner() {
+  const queryClient = useQueryClient()
   const listQuery = useServicesListQuery({ page: 0, size: 100, keyword: "" })
   const deleteMut = useDeleteServiceMutation()
   const [pageMode, setPageMode] = useState<"view" | "edit">("view")
+  // Reorder mode swaps the preview/editor for a flat drag list of every
+  // section — ordering is a global operation, so the page hero stays out.
+  const [reordering, setReordering] = useState(false)
   /**
    * One stable id per unsaved draft card, not a count. With a count, saving
    * the *first* of two drafts dropped the last React key (`draft-1`), so the
@@ -81,6 +93,40 @@ function ServicesListClientInner() {
     })
     return { heroRecord: hero, sections: sorted }
   }, [listQuery.data])
+
+  const reorderItems = useMemo(
+    () =>
+      sections
+        .filter((s) => s.id != null)
+        .map((s) => ({
+          id: s.id!,
+          title:
+            s.contents.find((c) => c.languageCode === "CKB")?.title?.trim() ||
+            s.contents.find((c) => c.languageCode === "KMR")?.title?.trim() ||
+            NS.dash,
+          subtitle: s.serviceType || null,
+          coverUrl:
+            s.thumbnailUrls?.[0] ??
+            s.galleryMedia?.[0]?.url ??
+            s.heroPosterUrl ??
+            null,
+        })),
+    [sections],
+  )
+
+  const onSaveOrder = useCallback(
+    async (orderedIds: number[]) => {
+      try {
+        await reorderServices(orderedIds)
+        void queryClient.invalidateQueries({ queryKey: servicesKeys.lists() })
+        toast.success(NS.toast.orderSaved)
+      } catch (err) {
+        toastApiError(err, NS.error.generic)
+        throw new Error("reorder failed")
+      }
+    },
+    [queryClient],
+  )
 
   const nextSortOrder = useMemo(() => {
     const orders = sections
@@ -137,6 +183,15 @@ function ServicesListClientInner() {
           </p>
         </div>
         <div className="flex shrink-0 gap-2">
+          <Button
+            type="button"
+            variant={reordering ? "default" : "outline"}
+            size="sm"
+            onClick={() => setReordering((v) => !v)}
+          >
+            <Bars2Icon className="size-4" aria-hidden />
+            {reordering ? NS.action.done : NS.action.reorder}
+          </Button>
           {pageMode === "view" ? (
             <>
               <Button type="button" variant="outline" onClick={addSection}>
@@ -181,6 +236,14 @@ function ServicesListClientInner() {
       */}
       {listQuery.isError && !hasRows ? (
         <ServicesErrorState onRetry={() => void listQuery.refetch()} />
+      ) : reordering ? (
+        <RecordReorderPanel
+          items={reorderItems}
+          isLoading={listQuery.isLoading}
+          isSaving={listQuery.isFetching}
+          onReorder={onSaveOrder}
+          dragLabel={NS.action.reorder}
+        />
       ) : pageMode === "view" ? (
         <ServicesPagePreview
           hero={heroRecord}

@@ -1,12 +1,13 @@
 "use client"
 
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react"
-import { useQueryClient } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import type { PaginationState, SortingState } from "@tanstack/react-table"
 import { toast } from "sonner"
 import {
+  Bars2Icon,
   Bars3Icon,
   BookOpenIcon,
   Cog6ToothIcon,
@@ -41,6 +42,9 @@ import {
   useWritingsListQuery,
 } from "@/hooks/useWritings"
 import { writingsKeys } from "@/lib/writings-query-keys"
+import { RecordReorderPanel } from "@/components/shared/record-reorder-panel"
+import { fetchAllPages } from "@/lib/paged-fetch"
+import { getWritingsList, reorderWritings } from "@/services/writingsService"
 import {
   getStoredViewMode,
   setStoredViewMode,
@@ -145,6 +149,10 @@ function WritingsListClientInner() {
     null,
   )
 
+  // Reorder mode swaps the paged shelf/grid for a flat drag list of every
+  // record — ordering is a global operation, so filters/pagination don't apply.
+  const [reordering, setReordering] = useState(false)
+
   const listQuery = useWritingsListQuery({
     page: pagination.pageIndex,
     size: pagination.pageSize,
@@ -153,6 +161,43 @@ function WritingsListClientInner() {
     topicId,
     languageFilter: language,
   })
+
+  const reorderQuery = useQuery({
+    queryKey: [...writingsKeys.lists(), "reorder-all"],
+    queryFn: () => fetchAllPages((p, s) => getWritingsList(p, s)),
+    enabled: reordering,
+    staleTime: 0,
+  })
+
+  const reorderItems = useMemo(
+    () =>
+      (reorderQuery.data ?? [])
+        .filter((w) => w.id != null)
+        .map((w) => ({
+          id: w.id!,
+          title:
+            w.ckbContent?.title?.trim() ||
+            w.kmrContent?.title?.trim() ||
+            NS.dash,
+          subtitle: w.topicNameCkb || w.topicNameKmr || null,
+          coverUrl: w.ckbCoverUrl || w.kmrCoverUrl || w.hoverCoverUrl || null,
+        })),
+    [reorderQuery.data],
+  )
+
+  const onSaveOrder = useCallback(
+    async (orderedIds: number[]) => {
+      try {
+        await reorderWritings(orderedIds)
+        void queryClient.invalidateQueries({ queryKey: writingsKeys.lists() })
+        toast.success(NS.toast.order_saved)
+      } catch (err) {
+        toastApiError(err, NS.error.generic)
+        throw new Error("reorder failed")
+      }
+    },
+    [queryClient],
+  )
 
   const topicsQuery = useWritingTopicsQuery()
   const topics = topicsQuery.data ?? []
@@ -296,6 +341,15 @@ function WritingsListClientInner() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
+          <Button
+            type="button"
+            variant={reordering ? "default" : "outline"}
+            size="sm"
+            onClick={() => setReordering((v) => !v)}
+          >
+            <Bars2Icon className="size-4" aria-hidden />
+            {reordering ? NS.action.done : NS.action.reorder}
+          </Button>
           <Link
             href="/dashboard/featured"
             className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 text-xs transition-colors"
@@ -337,6 +391,16 @@ function WritingsListClientInner() {
         </div>
       </header>
 
+      {reordering ? (
+        <RecordReorderPanel
+          items={reorderItems}
+          isLoading={reorderQuery.isLoading}
+          isSaving={reorderQuery.isFetching}
+          onReorder={onSaveOrder}
+          dragLabel={NS.action.reorder}
+        />
+      ) : (
+        <>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="bg-muted/50 inline-flex rounded-lg p-1">
           <button
@@ -460,6 +524,8 @@ function WritingsListClientInner() {
           onEdit={onEdit}
           onDeleteOne={setDeleteTarget}
         />
+      )}
+        </>
       )}
 
       <WritingDeleteDialog

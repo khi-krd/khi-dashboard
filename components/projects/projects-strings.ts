@@ -30,6 +30,8 @@ export const NS = {
     reset_filters: "پاککردنەوەی فلتەرەکان",
     add_link: "زیادکردنی لینکی دەرەکی",
     add_file: "بارکردنی فایل",
+    reorder: "ڕیزکردن",
+    done: "تەواو",
     add_media: "زیادکردنی میدیا",
     add_type: "زیادکردنی جۆری نوێ",
     add: "زیادکردن",
@@ -143,6 +145,7 @@ export const NS = {
     deleted: "پڕۆژە سڕایەوە",
     copied: "لەبەرگیرایەوە",
     view_action: "بینین",
+    order_saved: "ڕیزکردن بەسەرکەوتوویی پاشەکەوتکرا",
   },
   dialog: {
     delete: {

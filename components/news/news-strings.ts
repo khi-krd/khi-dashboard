@@ -18,6 +18,8 @@ export const NS = {
     reset_filters: "پاککردنەوەی فلتەرەکان",
     add_link: "زیادکردنی لینکی دەرەکی",
     change: "گۆڕین",
+    reorder: "ڕیزکردن",
+    done: "تەواو",
     share: "هاوبەشکردن",
     copy_url: "لەبەرگرتنەوەی ناونیشانی URL",
     view_on_site: "بینین لە سایت",
@@ -163,6 +165,7 @@ export const NS = {
     deleted: "هەواڵ سڕایەوە",
     bulk_deleted: (count: string) => `${count} هەواڵ سڕایەوە`,
     undo: "گەڕاندنەوە",
+    order_saved: "ڕیزکردن بەسەرکەوتوویی پاشەکەوتکرا",
   },
   dialog: {
     delete: {

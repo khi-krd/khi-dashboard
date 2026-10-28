@@ -138,6 +138,10 @@ export async function bulkDeleteServices(ids: number[]): Promise<void> {
   }
 }
 
+export async function reorderServices(orderedIds: number[]): Promise<void> {
+  await api.put(`${BASE}/order`, { orderedIds })
+}
+
 export async function patchServiceFeatured(
   id: number,
   payload: FeaturedPayload,

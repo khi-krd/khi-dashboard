@@ -77,6 +77,10 @@ export async function deleteNews(id: number): Promise<ApiResponse<null>> {
   return data
 }
 
+export async function reorderNews(orderedIds: number[]): Promise<void> {
+  await api.put(`${BASE}/order`, { orderedIds })
+}
+
 export async function patchNewsFeatured(
   id: number,
   payload: FeaturedPayload,

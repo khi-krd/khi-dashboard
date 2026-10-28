@@ -1,12 +1,13 @@
 "use client"
 
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react"
-import { useQueryClient } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import type { PaginationState, SortingState } from "@tanstack/react-table"
 import { toast } from "sonner"
 import {
+  Bars2Icon,
   BriefcaseIcon,
   MagnifyingGlassIcon,
   PlusIcon,
@@ -37,6 +38,9 @@ import {
 import { useProjectsDerivedTypes } from "@/hooks/useProjectsDerivedTypes"
 import { mergeProjectsDerivedTypes } from "@/lib/projects-derived-cache"
 import { projectKeys } from "@/lib/projects-query-keys"
+import { RecordReorderPanel } from "@/components/shared/record-reorder-panel"
+import { fetchAllPages } from "@/lib/paged-fetch"
+import { getProjectsList, reorderProjects } from "@/services/projectsService"
 import { formatCkbDigits } from "@/lib/intl-ckb"
 import { cn } from "@/lib/utils"
 import { toastApiError } from "@/lib/toast"
@@ -125,6 +129,10 @@ function ProjectsListClientInner() {
     null,
   )
 
+  // Reorder mode swaps the paged grid for a flat drag list of every record —
+  // ordering is a global operation, so filters and pagination don't apply here.
+  const [reordering, setReordering] = useState(false)
+
   const searchMode = urlTag?.trim()
     ? ("tag" as const)
     : urlKeyword?.trim()
@@ -140,6 +148,47 @@ function ProjectsListClientInner() {
     keyword: listKeyword,
     searchMode,
   })
+
+  const reorderQuery = useQuery({
+    queryKey: [...projectKeys.lists(), "reorder-all"],
+    queryFn: () =>
+      fetchAllPages(async (p, s) => {
+        const resp = await getProjectsList(p, s)
+        return resp.data ?? { content: [] }
+      }),
+    enabled: reordering,
+    staleTime: 0,
+  })
+
+  const reorderItems = useMemo(
+    () =>
+      (reorderQuery.data ?? [])
+        .filter((p) => p.id != null)
+        .map((p) => ({
+          id: p.id!,
+          title:
+            p.ckbContent?.title?.trim() ||
+            p.kmrContent?.title?.trim() ||
+            NS.dash,
+          subtitle: p.projectTypeCkb || p.projectTypeKmr || null,
+          coverUrl: p.coverUrl || null,
+        })),
+    [reorderQuery.data],
+  )
+
+  const onSaveOrder = useCallback(
+    async (orderedIds: number[]) => {
+      try {
+        await reorderProjects(orderedIds)
+        void queryClient.invalidateQueries({ queryKey: projectKeys.lists() })
+        toast.success(NS.toast.order_saved)
+      } catch (err) {
+        toastApiError(err, NS.error.generic)
+        throw new Error("reorder failed")
+      }
+    },
+    [queryClient],
+  )
 
   const apiEnvelope = listQuery.data
   const rawRows = useMemo(
@@ -305,6 +354,15 @@ function ProjectsListClientInner() {
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
+            <Button
+              type="button"
+              variant={reordering ? "default" : "outline"}
+              size="sm"
+              onClick={() => setReordering((v) => !v)}
+            >
+              <Bars2Icon className="size-4" aria-hidden />
+              {reordering ? NS.action.done : NS.action.reorder}
+            </Button>
             <Link
               href="/dashboard/featured"
               className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 text-xs transition-colors"
@@ -325,6 +383,16 @@ function ProjectsListClientInner() {
           </div>
       </header>
 
+      {reordering ? (
+        <RecordReorderPanel
+          items={reorderItems}
+          isLoading={reorderQuery.isLoading}
+          isSaving={reorderQuery.isFetching}
+          onReorder={onSaveOrder}
+          dragLabel={NS.action.reorder}
+        />
+      ) : (
+        <>
       <ProjectsFiltersToolbar
         search={searchRaw}
         onSearchChange={setSearchRaw}
@@ -401,6 +469,8 @@ function ProjectsListClientInner() {
           onEdit={onEdit}
           onDeleteOne={(row) => setDeleteTarget(row)}
         />
+      )}
+        </>
       )}
 
       <ProjectDeleteDialog

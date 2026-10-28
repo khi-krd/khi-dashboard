@@ -37,6 +37,10 @@ export type ReorderItem = {
  * is not paged inside this panel — ordering must see the whole set) and an
  * `onReorder` that persists `orderedIds`. The visual order updates
  * optimistically and rolls back when the save rejects.
+ *
+ * Each row offers two ways to reorder, both writing the same state: a drag
+ * handle and a numeric position input (type a 1-based rank, Enter/blur to
+ * commit — the row moves to that position and saves).
  */
 export function RecordReorderPanel({
   items,
@@ -44,12 +48,15 @@ export function RecordReorderPanel({
   isSaving,
   onReorder,
   dragLabel,
+  positionLabel,
 }: {
   items: ReorderItem[]
   isLoading?: boolean
   isSaving?: boolean
   onReorder: (orderedIds: number[]) => Promise<void>
   dragLabel: string
+  /** Accessible label for the numeric position input; falls back to dragLabel. */
+  positionLabel?: string
 }) {
   // Local order re-seeds whenever the fetched set changes — `items` must be a
   // stable reference between renders or the drag result is wiped mid-flight.
@@ -65,12 +72,16 @@ export function RecordReorderPanel({
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
   )
 
-  async function handleDragEnd(event: DragEndEvent) {
-    const { active, over } = event
-    if (!over || active.id === over.id) return
-    const oldIndex = ordered.findIndex((item) => item.id === active.id)
-    const newIndex = ordered.findIndex((item) => item.id === over.id)
-    if (oldIndex < 0 || newIndex < 0) return
+  async function moveItem(oldIndex: number, newIndex: number) {
+    if (
+      oldIndex === newIndex ||
+      oldIndex < 0 ||
+      newIndex < 0 ||
+      oldIndex >= ordered.length ||
+      newIndex >= ordered.length
+    ) {
+      return
+    }
 
     const previous = ordered
     const next = arrayMove(ordered, oldIndex, newIndex)
@@ -83,6 +94,14 @@ export function RecordReorderPanel({
     } finally {
       setPending(false)
     }
+  }
+
+  async function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+    const oldIndex = ordered.findIndex((item) => item.id === active.id)
+    const newIndex = ordered.findIndex((item) => item.id === over.id)
+    await moveItem(oldIndex, newIndex)
   }
 
   if (isLoading) {
@@ -111,8 +130,11 @@ export function RecordReorderPanel({
               key={item.id}
               item={item}
               order={index}
+              total={ordered.length}
               disabled={busy}
               dragLabel={dragLabel}
+              positionLabel={positionLabel ?? dragLabel}
+              onMove={(targetIndex) => void moveItem(index, targetIndex)}
             />
           ))}
         </div>
@@ -124,13 +146,19 @@ export function RecordReorderPanel({
 function SortableRow({
   item,
   order,
+  total,
   disabled,
   dragLabel,
+  positionLabel,
+  onMove,
 }: {
   item: ReorderItem
   order: number
+  total: number
   disabled?: boolean
   dragLabel: string
+  positionLabel: string
+  onMove: (targetIndex: number) => void
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: item.id })
@@ -176,9 +204,12 @@ function SortableRow({
 
       <div className="min-w-0 flex-1">
         <div className="mb-1 flex items-center gap-2">
-          <span className="bg-primary/10 text-primary inline-flex size-7 shrink-0 items-center justify-center rounded-full font-mono text-xs font-semibold tabular-nums">
-            {formatCkbDigits(order + 1)}
-          </span>
+          <PositionInput
+            order={order}
+            total={total}
+            label={positionLabel}
+            onCommit={onMove}
+          />
         </div>
         <p className="line-clamp-1 text-base font-medium">{item.title || "—"}</p>
         {item.subtitle ? (
@@ -188,5 +219,62 @@ function SortableRow({
         ) : null}
       </div>
     </div>
+  )
+}
+
+/**
+ * Editable 1-based rank. Free typing is kept locally; Enter or blur commits:
+ * the value is clamped into [1, total] and the row moves to that index.
+ * Re-syncs to the live position whenever `order` changes (e.g. after a drag
+ * or another row's move saved).
+ */
+function PositionInput({
+  order,
+  total,
+  label,
+  onCommit,
+}: {
+  order: number
+  total: number
+  label: string
+  onCommit: (targetIndex: number) => void
+}) {
+  const [text, setText] = useSyncedState<string>(
+    [order],
+    () => String(order + 1),
+    () => String(order + 1),
+  )
+
+  function commit(raw: string) {
+    const parsed = Number.parseInt(raw.trim(), 10)
+    if (!Number.isFinite(parsed)) {
+      setText(String(order + 1))
+      return
+    }
+    const clamped = Math.min(Math.max(parsed, 1), Math.max(total, 1))
+    setText(String(clamped))
+    if (clamped - 1 !== order) onCommit(clamped - 1)
+  }
+
+  return (
+    <input
+      type="number"
+      step={1}
+      inputMode="numeric"
+      dir="ltr"
+      aria-label={label}
+      value={text}
+      onChange={(e) => setText(e.target.value)}
+      onBlur={(e) => commit(e.target.value)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") {
+          e.preventDefault()
+          commit((e.target as HTMLInputElement).value)
+          ;(e.target as HTMLInputElement).blur()
+        }
+      }}
+      className="bg-primary/10 text-primary border-primary/20 focus-visible:ring-ring inline-flex h-7 w-14 shrink-0 items-center justify-center rounded-full border text-center font-mono text-xs font-semibold tabular-nums focus-visible:outline-none focus-visible:ring-2"
+      title={formatCkbDigits(order + 1)}
+    />
   )
 }

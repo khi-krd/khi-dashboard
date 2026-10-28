@@ -98,6 +98,10 @@ export async function deleteProject(id: number) {
   return data
 }
 
+export async function reorderProjects(orderedIds: number[]): Promise<void> {
+  await api.put(`${BASE}/order`, { orderedIds })
+}
+
 export async function patchProjectFeatured(
   id: number,
   payload: FeaturedPayload,

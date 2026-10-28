@@ -130,6 +130,8 @@ export const NS = {
     saving: "پاشەکەوتکردن…",
     save_new: "پاشەکەوت و تۆماری تر",
     cancel: "هەڵوەشاندنەوە",
+    reorder: "ڕیزکردن",
+    done: "تەواو",
     change: "گۆڕین",
     add: "زیادکردن",
     reset_filters: "پاککردنەوەی فلتەرەکان",
@@ -308,6 +310,7 @@ export const NS = {
     topic_deleted: "بابەت سڕایەوە",
     copied: "لەبەرگیرایەوە",
     view_action: "بینین",
+    order_saved: "ڕیزکردن بەسەرکەوتوویی پاشەکەوتکرا",
   },
   dialog: {
     delete: {

@@ -98,6 +98,10 @@ export async function deleteWriting(id: number): Promise<void> {
   await api.delete(`${BASE}/${id}`)
 }
 
+export async function reorderWritings(orderedIds: number[]): Promise<void> {
+  await api.put(`${BASE}/order`, { orderedIds })
+}
+
 export async function patchWritingFeatured(
   id: number,
   payload: FeaturedPayload,

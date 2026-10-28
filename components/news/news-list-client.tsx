@@ -1,14 +1,14 @@
 "use client"
 
 import { Suspense } from "react"
-import { useQueryClient } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import type { PaginationState, SortingState } from "@tanstack/react-table"
 import { toast } from "sonner"
 
-import { MagnifyingGlassIcon, NewspaperIcon, PlusIcon, SparklesIcon } from "@heroicons/react/24/outline"
+import { Bars2Icon, MagnifyingGlassIcon, NewspaperIcon, PlusIcon, SparklesIcon } from "@heroicons/react/24/outline"
 
 import { useSyncedState } from "@/hooks/use-synced-state"
 import type { NewsCategoryFilterOption } from "@/components/news/news-filters"
@@ -32,6 +32,10 @@ import {
 } from "@/hooks/useNews"
 import { useNewsDerivedCategories } from "@/hooks/useNewsDerivedTaxonomy"
 import { mergeNewsDerivedTaxonomy } from "@/lib/news-derived-cache"
+import { RecordReorderPanel } from "@/components/shared/record-reorder-panel"
+import { fetchAllPages } from "@/lib/paged-fetch"
+import { getNewsList, reorderNews } from "@/services/newsService"
+import { newsKeys } from "@/lib/news-query-keys"
 import { formatCkbDigits } from "@/lib/intl-ckb"
 import { cn } from "@/lib/utils"
 import { toastApiError } from "@/lib/toast"
@@ -177,11 +181,56 @@ function NewsListClientInner() {
     | null
   >(null)
 
+  // Reorder mode swaps the paged grid for a flat drag list of every record —
+  // ordering is a global operation, so filters and pagination don't apply here.
+  const [reordering, setReordering] = useState(false)
+
   const listQuery = useNewsListQuery({
     page: pagination.pageIndex,
     size: pagination.pageSize,
     keyword: debouncedKw,
   })
+
+  const reorderQuery = useQuery({
+    queryKey: [...newsKeys.lists(), "reorder-all"],
+    queryFn: () =>
+      fetchAllPages(async (p, s) => {
+        const resp = await getNewsList(p, s)
+        return resp.data ?? { content: [] }
+      }),
+    enabled: reordering,
+    staleTime: 0,
+  })
+
+  const reorderItems = useMemo(
+    () =>
+      (reorderQuery.data ?? [])
+        .filter((n) => n.id != null)
+        .map((n) => ({
+          id: n.id!,
+          title:
+            n.ckbContent?.title?.trim() ||
+            n.kmrContent?.title?.trim() ||
+            NS.dash,
+          subtitle: n.category?.ckbName || n.category?.kmrName || null,
+          coverUrl: n.coverUrl || null,
+        })),
+    [reorderQuery.data],
+  )
+
+  const onSaveOrder = useCallback(
+    async (orderedIds: number[]) => {
+      try {
+        await reorderNews(orderedIds)
+        void queryClient.invalidateQueries({ queryKey: newsKeys.lists() })
+        toast.success(NS.toast.order_saved)
+      } catch (err) {
+        toastApiError(err, NS.error.generic)
+        throw new Error("reorder failed")
+      }
+    },
+    [queryClient],
+  )
 
   const apiEnvelope = listQuery.data
 
@@ -414,6 +463,15 @@ function NewsListClientInner() {
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
+            <Button
+              type="button"
+              variant={reordering ? "default" : "outline"}
+              size="sm"
+              onClick={() => setReordering((v) => !v)}
+            >
+              <Bars2Icon className="size-4" aria-hidden />
+              {reordering ? NS.action.done : NS.action.reorder}
+            </Button>
             <Link
               href="/dashboard/featured"
               className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 text-xs transition-colors"
@@ -438,6 +496,16 @@ function NewsListClientInner() {
         </p>
       </div>
 
+      {reordering ? (
+        <RecordReorderPanel
+          items={reorderItems}
+          isLoading={reorderQuery.isLoading}
+          isSaving={reorderQuery.isFetching}
+          onReorder={onSaveOrder}
+          dragLabel={NS.action.reorder}
+        />
+      ) : (
+        <>
       <NewsFiltersToolbar
         search={searchRaw}
         onSearchChange={setSearchRaw}
@@ -522,6 +590,8 @@ function NewsListClientInner() {
             setDeleteDlg({ mode: "single", item: row })
           }}
         />
+      )}
+        </>
       )}
 
       <NewsDeleteDialog
