@@ -81,7 +81,7 @@ function DonationsListInner() {
   const debouncedKw = useDebouncedValue(searchRaw.trim(), 300)
   const [statusFilter, setStatusFilter] = useState<DonationUiStatusFilter>("all")
   const [pageIndex, setPageIndex] = useState(0)
-  const pageSize = 20
+  const pageSize = 50
 
   const [archiveSheetRow, setArchiveSheetRow] = useState<ArchiveDonationRow | null>(
     null,

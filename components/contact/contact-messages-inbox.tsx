@@ -19,7 +19,7 @@ import { formatRelativeTimeKu } from "@/lib/news-relative-time"
 import { cn } from "@/lib/utils"
 import type { ContactMessageDto } from "@/types/contact"
 
-const PAGE_SIZE = 20
+const PAGE_SIZE = 50
 
 function InboxSkeleton() {
   return (

@@ -440,7 +440,7 @@ export function CollectionsDataGrid({
       }}
     >
       <DataGridContainer border={false} className="overflow-hidden rounded-lg border">
-        <DataGridScrollArea>
+        <DataGridScrollArea className="max-h-[70vh] min-h-[320px]">
           <DataGridTable />
         </DataGridScrollArea>
         <CollectionsListPaginationFooter />

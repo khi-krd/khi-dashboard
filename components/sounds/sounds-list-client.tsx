@@ -98,7 +98,7 @@ function SoundsListClientInner() {
 
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
-    pageSize: 20,
+    pageSize: 50,
   })
   const [sorting, setSorting] = useState<SortingState>([
     { id: "date", desc: true },
