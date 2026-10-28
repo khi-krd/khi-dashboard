@@ -332,6 +332,9 @@ function SortableGalleryRow<T extends FieldValues>({
   const externalUrl = watch(
     `${name}.${index}.externalUrl` as Path<T>,
   ) as string
+  const thumbnailUrl = watch(
+    `${name}.${index}.thumbnailUrl` as Path<T>,
+  ) as string
 
   // Which source tab is shown for VIDEO/AUDIO rows — seeded from whichever
   // field already holds a value; all three stay in the form so switching
@@ -498,15 +501,19 @@ function SortableGalleryRow<T extends FieldValues>({
       )}
 
       {isMedia ? (
-        <div>
-          <Label className="text-xs">وێنەی بچووک (thumbnail)</Label>
-          <Input
-            className="mt-1 h-9 text-xs"
-            dir="ltr"
-            placeholder="https://…"
-            {...register(`${name}.${index}.thumbnailUrl` as Path<T>)}
-          />
-        </div>
+        <MediaCoverUpload
+          entity={entity}
+          label="وێنەی بچووک (thumbnail)"
+          variant="image"
+          aspectClass="aspect-video max-w-[280px]"
+          previewUrl={thumbnailUrl?.trim() || null}
+          urlValue={thumbnailUrl ?? ""}
+          onUrlChange={(s) =>
+            setValue(`${name}.${index}.thumbnailUrl` as Path<T>, s as never, {
+              shouldDirty: true,
+            })
+          }
+        />
       ) : null}
 
       <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
