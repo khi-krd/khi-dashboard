@@ -75,7 +75,11 @@ export function VideoClipBulkUploader({
           fileFormat: meta.fileFormat,
           fileSizeMb: meta.fileSizeMb,
           titleCkb: contentLanguages.includes("CKB") ? title : "",
-          titleKmr: contentLanguages.includes("KMR") ? title : "",
+          titleKmr:
+            !contentLanguages.includes("CKB") &&
+            contentLanguages.includes("KMR")
+              ? title
+              : "",
           descriptionCkb: "",
           descriptionKmr: "",
           main: existing.length === 0 && newClips.length === 0,

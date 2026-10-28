@@ -119,7 +119,7 @@ function dtoToFormValues(d: ProjectDto): ProjectFormValues {
           ? [
               {
                 nameCkb: d.projectTypeCkb,
-                nameKmr: d.projectTypeKmr ?? d.projectTypeCkb,
+                nameKmr: d.projectTypeKmr ?? "",
               },
             ]
           : [],

@@ -47,7 +47,7 @@ export function ProjectTypeCombobox({
     const c = ckb.trim()
     if (!c) return
     if (values.some((v) => v.nameCkb === c)) return
-    onChange([...values, { nameCkb: c, nameKmr: kmr.trim() || c }])
+    onChange([...values, { nameCkb: c, nameKmr: kmr.trim() }])
   }
   const removeValue = (ckb: string) =>
     onChange(values.filter((v) => v.nameCkb !== ckb))
@@ -109,7 +109,7 @@ export function ProjectTypeCombobox({
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   e.preventDefault()
-                  addValue(typed, typed)
+                  addValue(typed, "")
                   setTyped("")
                 }
               }}
@@ -120,7 +120,7 @@ export function ProjectTypeCombobox({
               variant="outline"
               className="h-9 shrink-0"
               onClick={() => {
-                addValue(typed, typed)
+                addValue(typed, "")
                 setTyped("")
               }}
             >
@@ -197,9 +197,9 @@ export function ProjectTypeCombobox({
                   const kmr = draftKmr.trim()
                   onCreateInline?.({
                     projectTypeCkb: ckb,
-                    projectTypeKmr: kmr || ckb,
+                    projectTypeKmr: kmr,
                   })
-                  addValue(ckb, kmr || ckb)
+                  addValue(ckb, kmr)
                   setDraftCkb("")
                   setDraftKmr("")
                   setShowCreate(false)

@@ -39,7 +39,7 @@ export function projectFormValuesToPayload(
     projectTypes: values.projectTypes
       .map((t) => ({
         nameCkb: t.nameCkb.trim(),
-        nameKmr: t.nameKmr.trim() || t.nameCkb.trim(),
+        nameKmr: t.nameKmr.trim(),
       }))
       .filter((t) => t.nameCkb),
     contentLanguages: values.contentLanguages,
