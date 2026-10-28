@@ -72,6 +72,7 @@ export function MediaCoverUpload({
   helperText,
   variant = "image",
   entity,
+  compact = false,
 }: {
   label?: string
   previewUrl: string | null
@@ -85,6 +86,8 @@ export function MediaCoverUpload({
   variant?: MediaVariant
   /** Owning entity for the R2 folder layout ("news" → news/images/…). */
   entity?: string
+  /** Small horizontal layout: thumb + controls side by side. */
+  compact?: boolean
 }) {
   const resolvedAccept = accept ?? VARIANT_ACCEPT[variant]
   const resolvedMaxSize = maxSize ?? VARIANT_MAX[variant]
@@ -142,6 +145,97 @@ export function MediaCoverUpload({
     clearFiles()
     clearErrors()
     onUrlChange("")
+  }
+
+  if (compact) {
+    return (
+      <div className="flex items-start gap-3">
+        <div
+          className={cn(
+            "relative w-36 shrink-0 overflow-hidden rounded-lg border transition-colors",
+            "aspect-video",
+            isDragging
+              ? "border-primary border-dashed bg-primary/5"
+              : "border-border bg-muted/30",
+          )}
+          onDragEnter={handleDragEnter}
+          onDragLeave={handleDragLeave}
+          onDragOver={handleDragOver}
+          onDrop={handleDrop}
+        >
+          <input {...getInputProps()} className="sr-only" />
+          {preview ? (
+            variant === "video" ? (
+              <VideoUrlPreview url={preview} />
+            ) : variant === "audio" ? (
+              <div className="text-muted-foreground flex size-full items-center justify-center p-2">
+                <SpeakerWaveIcon className="size-8 opacity-40" />
+              </div>
+            ) : (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={preview} alt="" className="size-full object-cover" />
+            )
+          ) : (
+            <button
+              type="button"
+              onClick={openFileDialog}
+              aria-label={texts.upload}
+              className="text-muted-foreground flex size-full flex-col items-center justify-center gap-1 p-2 text-[11px]"
+            >
+              {variant === "video" ? (
+                <VideoCameraIcon className="size-6 opacity-40" />
+              ) : variant === "audio" ? (
+                <SpeakerWaveIcon className="size-6 opacity-40" />
+              ) : (
+                <PhotoIcon className="size-6 opacity-40" />
+              )}
+              <span className="line-clamp-1">{helperText ?? texts.upload}</span>
+            </button>
+          )}
+          {uploading ? (
+            <div className="bg-background/70 absolute inset-0 flex items-center justify-center p-2">
+              <UploadProgressLine value={progress} className="w-full" />
+            </div>
+          ) : null}
+        </div>
+        <div className="min-w-0 flex-1 space-y-1.5">
+          {label ? (
+            <Label className="text-muted-foreground text-xs">{label}</Label>
+          ) : null}
+          <div className="flex items-center gap-1.5">
+            <Input
+              dir="ltr"
+              className="h-8 flex-1 font-mono text-xs"
+              placeholder="https://…"
+              value={urlValue}
+              onChange={(e) => onUrlChange(e.target.value)}
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={uploading}
+              onClick={openFileDialog}
+            >
+              <ArrowUpTrayIcon className="size-4" />
+              {texts.upload}
+            </Button>
+            {preview ? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={handleRemove}
+              >
+                {TIPTAP_NS.cover.remove}
+              </Button>
+            ) : null}
+          </div>
+          {urlError ? <FieldError>{urlError}</FieldError> : null}
+          {errors.length > 0 ? <FieldError>{errors[0]}</FieldError> : null}
+        </div>
+      </div>
+    )
   }
 
   return (

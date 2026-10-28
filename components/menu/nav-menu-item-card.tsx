@@ -87,14 +87,13 @@ export function NavMenuItemCard({
         </Button>
       </div>
 
-      <div className="mt-4">
-        <MediaCoverUpload entity="nav"
+      <div className="mt-3">
+        <MediaCoverUpload entity="nav" compact
           label={NM.field.image}
           previewUrl={imageUrl || null}
           urlValue={imageUrl}
           onUrlChange={setImageUrl}
           helperText={NM.field.imageHint}
-          aspectClass="aspect-[21/9]"
         />
       </div>
     </section>

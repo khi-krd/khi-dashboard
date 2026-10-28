@@ -35,7 +35,7 @@ export function NavMenuListClient() {
   const items = useMemo(() => listQuery.data ?? [], [listQuery.data])
 
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 pb-16" dir="rtl">
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 pb-16" dir="rtl">
       <ServiceBreadcrumbBar
         segments={[
           { label: NM.breadcrumb.dashboard, href: dashboardServicesCrumbHref() },
@@ -69,9 +69,9 @@ export function NavMenuListClient() {
           {listQuery.isLoading ? (
             <ListSkeleton />
           ) : (
-            <div className="space-y-3">
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
               {items.length === 0 ? (
-                <p className="text-muted-foreground/70 py-8 text-center text-sm">
+                <p className="text-muted-foreground/70 py-8 text-center text-sm md:col-span-2">
                   {NM.page.empty}
                 </p>
               ) : null}
