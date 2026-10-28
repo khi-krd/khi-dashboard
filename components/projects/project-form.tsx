@@ -130,6 +130,7 @@ function dtoToFormValues(d: ProjectDto): ProjectFormValues {
     existingCoverThumbnailUrl: d.coverThumbnailUrl ?? null,
     mediaGallery: galleryDtoToFormValues(d.mediaGallery),
     projectDate: date || undefined,
+    resultUrl: d.resultUrl ?? "",
     ckbContent: {
       title: d.ckbContent?.title ?? "",
       description: d.ckbContent?.description ?? "",
@@ -368,6 +369,25 @@ export function ProjectForm({
                   </button>
                 ))}
               </div>
+            </section>
+
+            <section className={sectionCard}>
+              <Label
+                htmlFor="project-result-url"
+                className={cn(sectionHeading, "mb-2")}
+              >
+                {NS.field.result_url}
+              </Label>
+              <Input
+                id="project-result-url"
+                dir="ltr"
+                className="h-9 font-mono text-xs"
+                placeholder="https://…"
+                {...register("resultUrl")}
+              />
+              <p className="text-muted-foreground mt-1 text-xs">
+                {NS.field.result_helper}
+              </p>
             </section>
 
             <section className={sectionCard}>

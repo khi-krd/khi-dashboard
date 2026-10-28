@@ -50,6 +50,7 @@ export function projectFormValuesToPayload(
     projectDate: values.projectDate
       ? toIsoMiddayUtc(values.projectDate)
       : undefined,
+    resultUrl: values.resultUrl?.trim() || undefined,
     tagsCkb: values.tags.ckb,
     tagsKmr: values.tags.kmr,
     keywordsCkb: values.keywords.ckb,

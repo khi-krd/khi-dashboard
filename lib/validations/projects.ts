@@ -30,6 +30,7 @@ export const projectFormSchema = z
     existingCoverThumbnailUrl: z.string().optional().nullable(),
     mediaGallery: mediaGalleryFieldSchema,
     projectDate: z.string().optional().nullable(),
+    resultUrl: z.string().optional().nullable(),
     ckbContent: z
       .object({
         title: z.string(),
@@ -109,6 +110,7 @@ export function defaultProjectFormValues(): ProjectFormValues {
     existingCoverThumbnailUrl: null,
     mediaGallery: [],
     projectDate: undefined,
+    resultUrl: "",
     ckbContent: { title: "", description: "", location: "" },
     kmrContent: { title: "", description: "", location: "" },
     tags: { ckb: [], kmr: [] },

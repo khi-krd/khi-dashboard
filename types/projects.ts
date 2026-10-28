@@ -53,6 +53,8 @@ export type ProjectDto = {
   sortOrder?: number | null
   /** Hero picture for the homepage carousel; falls back to the cover when unset. */
   featureImageUrl?: string | null
+  /** Link to the finished project's result — shared across languages. */
+  resultUrl?: string | null
 }
 
 export function normalizeProjectStatus(

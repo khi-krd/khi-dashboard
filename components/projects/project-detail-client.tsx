@@ -331,6 +331,24 @@ export function ProjectDetailClient({ projectId }: { projectId: number }) {
                 ) : null}
               </section>
 
+              {dto.resultUrl?.trim() ? (
+                <section className={cn(sectionDivider, "space-y-2")}>
+                  <h4 className="text-muted-foreground text-xs uppercase tracking-wide">
+                    {NS.field.result_url}
+                  </h4>
+                  <a
+                    href={dto.resultUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    dir="ltr"
+                    className="text-primary inline-flex max-w-full items-center gap-1.5 font-mono text-xs underline underline-offset-4 hover:opacity-80"
+                  >
+                    <ArrowTopRightOnSquareIcon className="size-3.5 shrink-0" />
+                    <span className="min-w-0 truncate">{dto.resultUrl}</span>
+                  </a>
+                </section>
+              ) : null}
+
               {(dto.projectTypes?.length || typeCkb || typeKmr) ? (
                 <section className={cn(sectionDivider, "space-y-2")}>
                   <h4 className="text-muted-foreground text-xs uppercase tracking-wide">

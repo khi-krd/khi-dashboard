@@ -58,6 +58,10 @@ export function normalizeProjectDto(d: ProjectDto): ProjectDto {
       d.coverThumbnailUrl ??
       coerceStr(raw.coverThumbnailUrl) ??
       coerceStr(raw.cover_thumbnail_url),
+    resultUrl:
+      d.resultUrl ??
+      coerceStr(raw.resultUrl) ??
+      coerceStr(raw.result_url),
     mediaGallery,
   }
 }

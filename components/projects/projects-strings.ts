@@ -94,6 +94,8 @@ export const NS = {
     location_kmr: "Cih an navçe…",
     type_helper: "بۆ نموونە: توێژینەوە، دۆکیومینتاری، فیستیڤاڵ…",
     schedule_helper: "بەرواری دەستپێکردن یان ئەنجامدانی پڕۆژە",
+    result_url: "ئەنجامی پڕۆژە",
+    result_helper: "لینکی بەرهەم یان ئەنجامی کۆتایی پڕۆژەکە",
     caption: "نووسە",
     caption_placeholder: "نووسەی میدیا…",
     tag_helper: "Enter یان `,` بۆ زیادکردن",
