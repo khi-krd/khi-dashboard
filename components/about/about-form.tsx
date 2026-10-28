@@ -72,6 +72,7 @@ import {
 } from "@/lib/validations/about"
 import { formatCkbDigits } from "@/lib/intl-ckb"
 import { cn } from "@/lib/utils"
+import { toastApiError } from "@/lib/toast"
 import type { AboutDto, Language } from "@/types/about"
 import type { AboutPartnerDto, AboutTeamMemberDto } from "@/types/about"
 
@@ -347,8 +348,8 @@ export function AboutForm({
       }
       toast.success(NS.toast.saved)
       setTeamDialogOpen(false)
-    } catch {
-      toast.error(NS.error.validation)
+    } catch (err) {
+      toastApiError(err, NS.error.validation)
     }
   }
 
@@ -399,8 +400,8 @@ export function AboutForm({
       }
       toast.success(NS.toast.saved)
       setPartnerDialogOpen(false)
-    } catch {
-      toast.error(NS.error.validation)
+    } catch (err) {
+      toastApiError(err, NS.error.validation)
     }
   }
 
@@ -426,8 +427,8 @@ export function AboutForm({
           router.push("/dashboard/about")
         }
       }
-    } catch {
-      toast.error(NS.error.validation)
+    } catch (err) {
+      toastApiError(err, NS.error.validation)
     }
   }
 

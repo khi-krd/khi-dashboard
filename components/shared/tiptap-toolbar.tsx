@@ -2,7 +2,6 @@
 
 import { useRef, useState, type ReactNode } from "react"
 import type { Editor } from "@tiptap/react"
-import { toast } from "sonner"
 import {
   ArrowUturnLeftIcon,
   ArrowUturnRightIcon,
@@ -58,6 +57,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
+import { toastApiError } from "@/lib/toast"
 
 function ToolbarSep({ className }: { className?: string }) {
   return (
@@ -162,8 +162,8 @@ function MediaUploadButton({
             ),
           ]
       onInsert(editor, results)
-    } catch {
-      toast.error(TIPTAP_NS.error.uploadFailed)
+    } catch (err) {
+      toastApiError(err, TIPTAP_NS.error.uploadFailed)
     } finally {
       setUploading(false)
       onProgressChange?.(null)

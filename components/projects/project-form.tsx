@@ -48,9 +48,11 @@ import {
   mergeProjectsDerivedTypes,
   pushInlineProjectType,
 } from "@/lib/projects-derived-cache"
+import { applyServerFieldErrors } from "@/lib/api-errors"
 import { permissiveResolver } from "@/lib/permissive-resolver"
 import { preventImplicitFormSubmit } from "@/lib/prevent-implicit-submit"
 import { projectFormValuesToPayload } from "@/lib/projects-form-data"
+import { toastApiError } from "@/lib/toast"
 import {
   formatFullTimestampKu,
   formatRelativeTimeKu,
@@ -272,8 +274,9 @@ export function ProjectForm({
           router.push(`/dashboard/projects/${projectId}`)
         }
       }
-    } catch {
-      toast.error(NS.validation.generic)
+    } catch (err) {
+      applyServerFieldErrors(form, err)
+      toastApiError(err, NS.validation.generic)
     } finally {
       addAnotherRef.current = false
     }

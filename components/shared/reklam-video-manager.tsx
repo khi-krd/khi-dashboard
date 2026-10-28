@@ -32,6 +32,7 @@ import {
   useUpdateReklamVideoMutation,
 } from "@/hooks/useReklamVideo"
 import { extractApiErrorMessage, extractApiErrorReason } from "@/lib/api-error"
+import { toastApiError } from "@/lib/toast"
 import {
   formatFullTimestampKu,
   formatRelativeTimeKu,
@@ -177,7 +178,7 @@ export function ReklamVideoManager({
           toast.warning(strings.conflict)
           return
         }
-        toast.error(errorText(err))
+        toastApiError(err, errorText(err))
       },
     })
   }
@@ -187,8 +188,8 @@ export function ReklamVideoManager({
     try {
       await navigator.clipboard.writeText(video.videoUrl)
       toast.success(strings.toastCopied)
-    } catch {
-      toast.error(strings.errorGeneric)
+    } catch (err) {
+      toastApiError(err, strings.errorGeneric)
     }
   }
 
@@ -526,7 +527,7 @@ export function ReklamVideoManager({
                     )
                     setDeleteOpen(false)
                   },
-                  onError: (err) => toast.error(errorText(err)),
+                  onError: (err) => toastApiError(err, errorText(err)),
                 })
               }}
             >

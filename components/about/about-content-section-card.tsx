@@ -22,9 +22,8 @@ import { useUpdateAbout } from "@/hooks/useAbout"
 import { permissiveResolver } from "@/lib/permissive-resolver"
 import { aboutPatchToPayload } from "@/lib/about-page-data"
 import { aboutSiteBaseUrl } from "@/lib/about-url-helpers"
-import { extractApiErrorMessage } from "@/lib/api-error"
 import { formatCkbDigits } from "@/lib/intl-ckb"
-import { toastError } from "@/lib/toast"
+import { toastApiError, toastError } from "@/lib/toast"
 import { cn } from "@/lib/utils"
 import {
   aboutFormSchema,
@@ -109,7 +108,7 @@ export function AboutContentSectionCard({
             onSaved()
           },
           onError: (err) => {
-            toastError(extractApiErrorMessage(err) ?? NS.error.validation)
+            toastApiError(err, NS.error.validation)
           },
         },
       )

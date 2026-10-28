@@ -29,6 +29,7 @@ import {
   useWritingsListQuery,
 } from "@/hooks/useWritings"
 import type { WritingDto } from "@/types/writings"
+import { toastApiError } from "@/lib/toast"
 
 export type SeriesLinkMode = "fromBook" | "fromSeries"
 
@@ -93,8 +94,8 @@ export function WritingSeriesLinkDialog({
       toast.success(NS.toast.linked_to_series)
       onOpenChange(false)
       onSuccess?.()
-    } catch {
-      toast.error(NS.error.generic)
+    } catch (err) {
+      toastApiError(err, NS.error.generic)
     }
   }
 

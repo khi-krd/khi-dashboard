@@ -24,9 +24,8 @@ import {
 } from "@/hooks/useServices"
 import { permissiveResolver } from "@/lib/permissive-resolver"
 import { serviceFormValuesToPayload } from "@/lib/services-form-data"
-import { extractApiErrorMessage } from "@/lib/api-error"
 import { formatCkbDigits } from "@/lib/intl-ckb"
-import { toastError } from "@/lib/toast"
+import { toastApiError, toastError } from "@/lib/toast"
 import { cn } from "@/lib/utils"
 import {
   defaultServiceFormValues,
@@ -221,7 +220,7 @@ export function ServiceSectionCard({
       }
 
       const onError = (err: unknown) => {
-        toastError(extractApiErrorMessage(err) ?? NS.error.generic)
+        toastApiError(err, NS.error.generic)
       }
 
       if (mode === "create") {

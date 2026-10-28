@@ -20,7 +20,7 @@ import { Spinner } from "@/components/ui/spinner"
 import { useUpdateFinancialDonationStatusMutation } from "@/hooks/useDonations"
 import { formatCkbDigits } from "@/lib/intl-ckb"
 import { formatFullTimestampKu } from "@/lib/news-relative-time"
-import { toastError } from "@/lib/toast"
+import { toastApiError } from "@/lib/toast"
 import type { FinancialDonationRow } from "@/types/donations-ui"
 import type { DonationStatus } from "@/types/donations"
 
@@ -74,7 +74,7 @@ export function DonationsFinancialSheet({
           onStatusUpdated?.()
           onOpenChange(false)
         },
-        onError: () => toastError(NS.error.generic),
+        onError: (err) => toastApiError(err, NS.error.generic),
       },
     )
   }

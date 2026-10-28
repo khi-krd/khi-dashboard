@@ -8,7 +8,6 @@ import { NS } from "@/components/settings/settings-strings"
 import { UploadProgressLine } from "@/components/shared/upload-progress-line"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
-import { extractApiErrorMessage } from "@/lib/api-error"
 import {
   useCreateSiteFontMutation,
   useDeleteSiteFontMutation,
@@ -21,6 +20,7 @@ import {
 import { uploadMedia } from "@/services/mediaService"
 import type { SiteFontDto, SiteFontLanguage } from "@/types/site-fonts"
 import { cn } from "@/lib/utils"
+import { toastApiError } from "@/lib/toast"
 
 const FONT_ACCEPT = ".woff2,.woff,.ttf,.otf"
 const FONT_FORMATS: Record<string, string> = {
@@ -125,7 +125,7 @@ function FontLangColumn({
     updateMut.mutate(activatePayload(font), {
       onSuccess: () => toast.success(NS.fonts.toast.activated),
       onError: (err) =>
-        toast.error(extractApiErrorMessage(err) ?? NS.error.generic),
+        toastApiError(err, NS.error.generic),
     })
   }
 
@@ -133,7 +133,7 @@ function FontLangColumn({
     updateMut.mutate(activatePayload(null), {
       onSuccess: () => toast.success(NS.fonts.toast.deactivated),
       onError: (err) =>
-        toast.error(extractApiErrorMessage(err) ?? NS.error.generic),
+        toastApiError(err, NS.error.generic),
     })
   }
 
@@ -152,7 +152,7 @@ function FontLangColumn({
         updateMut.mutate(activatePayload(font))
       }
     } catch (err) {
-      toast.error(extractApiErrorMessage(err) ?? NS.fonts.uploadFailed)
+      toastApiError(err, NS.fonts.uploadFailed)
     } finally {
       setProgress(null)
       if (fileRef.current) fileRef.current.value = ""
@@ -213,9 +213,7 @@ function FontLangColumn({
                 deleteMut.mutate(font.id, {
                   onSuccess: () => toast.success(NS.fonts.toast.removed),
                   onError: (err) =>
-                    toast.error(
-                      extractApiErrorMessage(err) ?? NS.error.generic,
-                    ),
+                    toastApiError(err, NS.error.generic),
                 })
               }
             />

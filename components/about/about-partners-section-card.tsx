@@ -38,6 +38,7 @@ import {
   useUpdateAboutPartner,
 } from "@/hooks/useAbout"
 import { cn } from "@/lib/utils"
+import { toastApiError } from "@/lib/toast"
 import type { AboutPartnerDto } from "@/types/about"
 
 function clean(v?: string | null) {
@@ -110,8 +111,8 @@ export function AboutPartnersSectionCard({ index }: { index: number }) {
       }
       toast.success(NS.toast.saved)
       setDialogOpen(false)
-    } catch {
-      toast.error(NS.error.validation)
+    } catch (err) {
+      toastApiError(err, NS.error.validation)
     }
   }
 
@@ -203,8 +204,7 @@ export function AboutPartnersSectionCard({ index }: { index: number }) {
                           if (!item.id) return
                           deleteMut.mutate(item.id, {
                             onSuccess: () => toast.success(NS.toast.deleted),
-                            onError: () =>
-                              toast.error(NS.error.deleteFailed),
+                            onError: (err) => toastApiError(err, NS.error.deleteFailed),
                           })
                         }}
                       >

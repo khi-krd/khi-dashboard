@@ -58,6 +58,7 @@ import {
 } from "@/lib/sanitize-news-html"
 import { formatNewsDateLong, formatNewsDateShort, formatCkbDigits } from "@/lib/intl-ckb"
 import { cn } from "@/lib/utils"
+import { toastApiError } from "@/lib/toast"
 import type { Language, ServiceDto } from "@/types/services"
 import { getServiceContent } from "@/types/services-ui"
 import { VideoUrlPreview } from "@/components/shared/video-url-preview"
@@ -182,7 +183,7 @@ export function ServiceDetailClient({ serviceId }: { serviceId: number }) {
         onSuccess: () => {
           toast(value ? NS.active.toggleOn : NS.active.toggleOff)
         },
-        onError: () => toast.error(NS.error.generic),
+        onError: (err) => toastApiError(err, NS.error.generic),
       },
     )
   }

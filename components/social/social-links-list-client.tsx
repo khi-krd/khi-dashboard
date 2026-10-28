@@ -19,7 +19,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { useDeleteSocialLink, useSocialLinksQuery } from "@/hooks/useSocialLinks"
 import { extractApiErrorMessage } from "@/lib/api-error"
 import { formatCkbDigits } from "@/lib/intl-ckb"
-import { toastError, toastSuccess } from "@/lib/toast"
+import { toastApiError, toastSuccess } from "@/lib/toast"
 import { normalizePlatformKey, type SocialLinkDto } from "@/types/social-links"
 
 function ListSkeleton() {
@@ -74,7 +74,7 @@ export function SocialLinksListClient() {
         setDeleteTarget(null)
       },
       onError: (err) => {
-        toastError(extractApiErrorMessage(err) ?? SL.error.generic)
+        toastApiError(err, SL.error.generic)
         setDeleteTarget(null)
       },
     })

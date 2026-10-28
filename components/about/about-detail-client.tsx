@@ -49,6 +49,7 @@ import {
   sanitizeNewsBodyHtml,
 } from "@/lib/sanitize-news-html"
 import { cn } from "@/lib/utils"
+import { toastApiError } from "@/lib/toast"
 import { aboutContentLanguages } from "@/types/about-ui"
 import type { Language } from "@/types/about"
 import { VideoUrlPreview } from "@/components/shared/video-url-preview"
@@ -458,8 +459,8 @@ export function AboutDetailClient({ aboutId }: { aboutId: number }) {
             await deleteMut.mutateAsync(about.id)
             toast.success(NS.toast.deleted)
             router.push("/dashboard/about")
-          } catch {
-            toast.error(NS.error.validation)
+          } catch (err) {
+            toastApiError(err, NS.error.validation)
           }
         }}
       />

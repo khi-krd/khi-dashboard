@@ -36,6 +36,7 @@ import {
   useUpdateSoundTypeMutation,
 } from "@/hooks/useTaxonomy"
 import { formatCkbDigits } from "@/lib/intl-ckb"
+import { toastApiError } from "@/lib/toast"
 import type {
   NewsTaxonomyCategoryDto,
   NewsTaxonomySubCategoryDto,
@@ -281,7 +282,7 @@ export function TaxonomyClient() {
     const d = nameDialog
     if (!d) return
     const close = () => setNameDialog(null)
-    const onError = () => toast.error(TX.toast.error)
+    const onError = (err: Error) => toastApiError(err, TX.toast.error)
     if (d.kind === "category" && d.mode === "create") {
       createCatMut.mutate(payload, {
         onSuccess: () => {
@@ -371,7 +372,7 @@ export function TaxonomyClient() {
     const d = deleteState
     if (!d) return
     const close = () => setDeleteState(null)
-    const onError = () => toast.error(TX.toast.error)
+    const onError = (err: Error) => toastApiError(err, TX.toast.error)
     const onSuccess = () => {
       toast.success(TX.toast.deleted)
       close()

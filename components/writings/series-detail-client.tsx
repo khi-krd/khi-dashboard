@@ -38,6 +38,7 @@ import {
 } from "@/hooks/useWritings"
 import { formatCkbDigits } from "@/lib/intl-ckb"
 import { cn } from "@/lib/utils"
+import { toastApiError } from "@/lib/toast"
 import type { SeriesBookSummary } from "@/types/writings"
 import type { WritingsListQueryKeyParts } from "@/types/writings-ui"
 
@@ -145,8 +146,8 @@ function SeriesLinkDialog({
       toast.success(NS.toast.linked_to_series)
       onLinked()
       handleClose(false)
-    } catch {
-      toast.error(NS.error.generic)
+    } catch (err) {
+      toastApiError(err, NS.error.generic)
     }
   }
 

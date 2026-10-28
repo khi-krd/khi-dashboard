@@ -48,7 +48,7 @@ import {
 } from "@/lib/writings-view-mode"
 import { formatCkbDigits } from "@/lib/intl-ckb"
 import { cn } from "@/lib/utils"
-import { toastError } from "@/lib/toast"
+import { toastApiError } from "@/lib/toast"
 import type { BookGenre, WritingDto } from "@/types/writings"
 import type {
   WritingAdminTableRow,
@@ -144,7 +144,6 @@ function WritingsListClientInner() {
   const [deleteTarget, setDeleteTarget] = useState<WritingAdminTableRow | null>(
     null,
   )
-
 
   const listQuery = useWritingsListQuery({
     page: pagination.pageIndex,
@@ -476,7 +475,7 @@ function WritingsListClientInner() {
           setDeleteTarget(null)
           deleteMut.mutate(id, {
             onSuccess: () => toast(NS.toast.deleted),
-            onError: () => toastError(NS.error.generic),
+            onError: (err) => toastApiError(err, NS.error.generic),
           })
         }}
       />

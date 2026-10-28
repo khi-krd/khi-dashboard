@@ -20,6 +20,7 @@ import {
   useUpdateTopicMutation,
 } from "@/hooks/useImageCollections"
 import type { TopicDto } from "@/types/image-collections"
+import { toastApiError } from "@/lib/toast"
 
 export function TopicCreateDialog({
   open,
@@ -67,8 +68,8 @@ export function TopicCreateDialog({
         toast.success(NS.toast.topic_created)
       }
       handleClose(false)
-    } catch {
-      toast.error(NS.error.generic)
+    } catch (err) {
+      toastApiError(err, NS.error.generic)
     }
   }
 

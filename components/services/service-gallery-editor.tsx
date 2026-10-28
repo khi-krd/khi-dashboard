@@ -33,6 +33,7 @@ import {
 import { cn } from "@/lib/utils"
 import { createEmptyGallerySlot } from "@/lib/validations/services"
 import type { ServiceFormValues } from "@/lib/validations/services"
+import { toastApiError } from "@/lib/toast"
 import { patchServiceGalleryMedia } from "@/services/servicesService"
 import { toast } from "sonner"
 
@@ -93,8 +94,8 @@ export function ServiceGalleryEditor({ serviceId }: { serviceId?: number }) {
           })),
       )
       toast.success(NS.gallery.patchSaved)
-    } catch {
-      toast.error(NS.gallery.patchFailed)
+    } catch (err) {
+      toastApiError(err, NS.gallery.patchFailed)
     } finally {
       setPatching(false)
     }

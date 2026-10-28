@@ -49,9 +49,10 @@ import {
   useUpdateWriting,
   useWritingDetailQuery,
 } from "@/hooks/useWritings"
+import { applyServerFieldErrors } from "@/lib/api-errors"
 import { permissiveResolver } from "@/lib/permissive-resolver"
 import { preventImplicitFormSubmit } from "@/lib/prevent-implicit-submit"
-import { extractApiErrorMessage } from "@/lib/api-error"
+import { toastApiError } from "@/lib/toast"
 import {
   formatFullTimestampKu,
   formatRelativeTimeKu,
@@ -228,7 +229,8 @@ export function WritingForm({
         router.push(`/dashboard/writings/${writingId}`)
       }
     } catch (err) {
-      toast.error(extractApiErrorMessage(err) ?? NS.error.validation)
+      applyServerFieldErrors(form, err)
+      toastApiError(err, NS.error.validation)
     } finally {
       addAnotherRef.current = false
       setUploadPct(null)

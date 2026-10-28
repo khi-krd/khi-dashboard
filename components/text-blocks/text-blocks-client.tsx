@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { toastApiError } from "@/lib/toast"
 
 const LOCALES = ["ckb", "ku"] as const
 type Locale = (typeof LOCALES)[number]
@@ -176,8 +177,8 @@ export function TextBlocksClient() {
       await queryClient.invalidateQueries({ queryKey: QUERY_KEY })
       setDrafts(null)
       toast.success(`${entries.length} دەق نوێکرانەوە`)
-    } catch {
-      toast.error("پاشەکەوتکردن سەرکەوتوو نەبوو")
+    } catch (err) {
+      toastApiError(err, "پاشەکەوتکردن سەرکەوتوو نەبوو")
     } finally {
       setSaving(false)
     }
@@ -196,8 +197,8 @@ export function TextBlocksClient() {
       setNewKey("")
       setDrafts(null)
       toast.success("کلیل زیادکرا")
-    } catch {
-      toast.error("زیادکردن سەرکەوتوو نەبوو")
+    } catch (err) {
+      toastApiError(err, "زیادکردن سەرکەوتوو نەبوو")
     } finally {
       setSaving(false)
     }
@@ -214,8 +215,8 @@ export function TextBlocksClient() {
         await queryClient.invalidateQueries({ queryKey: QUERY_KEY })
         setDrafts(null)
         toast.success("سڕایەوە")
-      } catch {
-        toast.error("سڕینەوە سەرکەوتوو نەبوو")
+      } catch (err) {
+        toastApiError(err, "سڕینەوە سەرکەوتوو نەبوو")
       } finally {
         setSaving(false)
       }

@@ -18,10 +18,9 @@ import {
 } from "@/components/ui/sheet"
 import { Spinner } from "@/components/ui/spinner"
 import { useUpdateContactMessageStatusMutation } from "@/hooks/useContact"
-import { extractApiErrorMessage } from "@/lib/api-error"
 import { formatCkbDigits } from "@/lib/intl-ckb"
 import { formatFullTimestampKu } from "@/lib/news-relative-time"
-import { toastError } from "@/lib/toast"
+import { toastApiError } from "@/lib/toast"
 import type { ContactMessageDto } from "@/types/contact"
 import { isDonationStatus, type DonationStatus } from "@/types/donations"
 
@@ -69,7 +68,7 @@ export function ContactMessageSheet({
           onOpenChange(false)
         },
         onError: (err) =>
-          toastError(extractApiErrorMessage(err) ?? NS.error.validation),
+          toastApiError(err, NS.error.validation),
       },
     )
   }

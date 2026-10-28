@@ -51,8 +51,10 @@ import {
   formatFullTimestampKu,
   formatRelativeTimeKu,
 } from "@/lib/news-relative-time"
+import { applyServerFieldErrors } from "@/lib/api-errors"
 import { permissiveResolver } from "@/lib/permissive-resolver"
 import { preventImplicitFormSubmit } from "@/lib/prevent-implicit-submit"
+import { toastApiError } from "@/lib/toast"
 import { videoFormValuesToMultipart } from "@/lib/videos-form-data"
 import {
   defaultVideoFormValues,
@@ -218,8 +220,9 @@ export function VideoForm({
         toast.success(NS.toast.saved)
         router.push(`/dashboard/videos/${videoId}`)
       }
-    } catch {
-      toast.error(NS.validation.generic)
+    } catch (err) {
+      applyServerFieldErrors(form, err)
+      toastApiError(err, NS.validation.generic)
     } finally {
       addAnotherRef.current = false
       setUploadPct(null)

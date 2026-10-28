@@ -21,6 +21,7 @@ import {
   useVideosListQuery,
 } from "@/hooks/useVideos"
 import { cn } from "@/lib/utils"
+import { toastApiError } from "@/lib/toast"
 import type { TopicDto } from "@/types/videos"
 
 export function TopicsList() {
@@ -140,7 +141,7 @@ export function TopicsList() {
               toast.success(NS.toast.topic_deleted)
               setDeleteTarget(null)
             },
-            onError: () => toast.error(NS.error.generic),
+            onError: (err) => toastApiError(err, NS.error.generic),
           })
         }}
       />

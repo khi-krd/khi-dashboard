@@ -8,10 +8,9 @@ import { MediaCoverUpload } from "@/components/shared/media-cover-upload"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { useUpdateNavMenuItem } from "@/hooks/useNavMenu"
-import { extractApiErrorMessage } from "@/lib/api-error"
 import { formatCkbDigits } from "@/lib/intl-ckb"
 import { navMenuImagePayload } from "@/lib/nav-menu-form-data"
-import { toastError, toastSuccess } from "@/lib/toast"
+import { toastApiError, toastSuccess } from "@/lib/toast"
 import type { NavMenuItemDto } from "@/types/nav-menu"
 
 /**
@@ -45,7 +44,7 @@ export function NavMenuItemCard({
           onSaved()
         },
         onError: (err) =>
-          toastError(extractApiErrorMessage(err) ?? NM.error.generic),
+          toastApiError(err, NM.error.generic),
       },
     )
   }

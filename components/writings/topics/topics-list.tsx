@@ -21,6 +21,7 @@ import {
   useWritingsListQuery,
 } from "@/hooks/useWritings"
 import { cn } from "@/lib/utils"
+import { toastApiError } from "@/lib/toast"
 import type { TopicDto } from "@/types/writings"
 import type { WritingsListQueryKeyParts } from "@/types/writings-ui"
 
@@ -145,7 +146,7 @@ export function TopicsList() {
               toast.success(NS.toast.topic_deleted)
               setDeleteTarget(null)
             },
-            onError: () => toast.error(NS.error.generic),
+            onError: (err) => toastApiError(err, NS.error.generic),
           })
         }}
       />

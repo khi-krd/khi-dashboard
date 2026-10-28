@@ -62,9 +62,11 @@ import {
   pushInlineCategory,
   pushInlineSubcategory,
 } from "@/lib/news-derived-cache"
+import { applyServerFieldErrors } from "@/lib/api-errors"
 import { permissiveResolver } from "@/lib/permissive-resolver"
 import { preventImplicitFormSubmit } from "@/lib/prevent-implicit-submit"
 import { newsFormValuesToPayload } from "@/lib/news-form-data"
+import { toastApiError } from "@/lib/toast"
 import {
   formatFullTimestampKu,
   formatRelativeTimeKu,
@@ -285,8 +287,9 @@ export function NewsForm({
       })
       router.push(`/dashboard/news/${newsId}`)
       router.refresh()
-    } catch {
-      toast.error(NS.error.generic)
+    } catch (err) {
+      applyServerFieldErrors(formMethods, err)
+      toastApiError(err, NS.error.generic)
     } finally {
       addAnotherRef.current = false
     }

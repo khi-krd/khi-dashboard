@@ -45,9 +45,10 @@ import {
   useCreateCollection,
   useUpdateCollection,
 } from "@/hooks/useImageCollections"
+import { applyServerFieldErrors } from "@/lib/api-errors"
 import { permissiveResolver } from "@/lib/permissive-resolver"
 import { preventImplicitFormSubmit } from "@/lib/prevent-implicit-submit"
-import { extractApiErrorText } from "@/lib/api-error"
+import { toastApiError } from "@/lib/toast"
 import { formatCkbDigits, formatEnDigits } from "@/lib/intl-ckb"
 import {
   formatFullTimestampKu,
@@ -218,7 +219,8 @@ export function CollectionForm({
         router.push(`/dashboard/image-collections/${collectionId}`)
       }
     } catch (err) {
-      toast.error(extractApiErrorText(err) ?? NS.error.validation)
+      applyServerFieldErrors(form, err)
+      toastApiError(err, NS.error.validation)
     } finally {
       addAnotherRef.current = false
       setUploadPct(null)

@@ -16,14 +16,13 @@ import {
   usePatchFeaturedMutation,
 } from "@/hooks/useFeatured"
 import { useMaxFeaturedSlides } from "@/hooks/useSiteSettings"
-import { extractApiErrorReason } from "@/lib/api-error"
 import {
   countsTowardSlideCap,
   type FeaturedCatalogCategory,
   type FeaturedCatalogItem,
 } from "@/lib/featured-catalog"
 import { nextFeaturedOrder } from "@/lib/featured-utils"
-import { toastError } from "@/lib/toast"
+import { toastApiError, toastError } from "@/lib/toast"
 import type { FeaturedPayload } from "@/types/featured"
 
 const FEATURED_PAGE_SIZE = 100
@@ -108,7 +107,7 @@ function FeaturedListClientInner() {
       } catch (err) {
         // `details.reason` names the actual cause — the cap, a missing hero
         // picture, unsaved donation settings — so it beats a generic retry.
-        toastError(extractApiErrorReason(err) ?? NS.error.generic)
+        toastApiError(err, NS.error.generic)
         throw new Error("patch failed")
       } finally {
         setPendingKey(null)

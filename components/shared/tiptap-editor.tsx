@@ -7,8 +7,6 @@ import {
   EyeIcon,
 } from "@heroicons/react/24/outline"
 import { marked } from "marked"
-import { toast } from "sonner"
-
 import { tiptapContentType } from "@/components/shared/tiptap-content"
 import {
   getEditorHtml,
@@ -29,6 +27,7 @@ import {
 } from "@/components/ui/dialog"
 import { Field, FieldError, FieldLabel } from "@/components/ui/field"
 import { cn } from "@/lib/utils"
+import { toastApiError } from "@/lib/toast"
 
 export type TiptapEditorProps = {
   value: string
@@ -232,8 +231,8 @@ export function TiptapEditor({
             const chain = ed.chain().focus()
             if (dropPos != null) chain.insertContentAt(dropPos, content).run()
             else chain.insertContent(content).run()
-          } catch {
-            toast.error(TIPTAP_NS.error.uploadFailed)
+          } catch (err) {
+            toastApiError(err, TIPTAP_NS.error.uploadFailed)
           }
         })()
         return true
@@ -292,8 +291,8 @@ export function TiptapEditor({
                   .run()
               }
             }
-          } catch {
-            toast.error(TIPTAP_NS.error.uploadFailed)
+          } catch (err) {
+            toastApiError(err, TIPTAP_NS.error.uploadFailed)
           }
         })()
         return true

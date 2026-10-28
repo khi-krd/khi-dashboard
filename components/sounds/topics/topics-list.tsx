@@ -21,6 +21,7 @@ import {
   useSoundsListQuery,
 } from "@/hooks/useSounds"
 import { cn } from "@/lib/utils"
+import { toastApiError } from "@/lib/toast"
 import type { TopicDto } from "@/types/sounds"
 import type { SoundsListQueryKeyParts } from "@/types/sounds-ui"
 
@@ -146,7 +147,7 @@ export function TopicsList() {
               toast.success(NS.toast.topic_deleted)
               setDeleteTarget(null)
             },
-            onError: () => toast.error(NS.error.generic),
+            onError: (err) => toastApiError(err, NS.error.generic),
           })
         }}
       />

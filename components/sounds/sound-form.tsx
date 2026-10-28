@@ -52,9 +52,11 @@ import {
   formatFullTimestampKu,
   formatRelativeTimeKu,
 } from "@/lib/news-relative-time"
+import { applyServerFieldErrors } from "@/lib/api-errors"
 import { permissiveResolver } from "@/lib/permissive-resolver"
 import { preventImplicitFormSubmit } from "@/lib/prevent-implicit-submit"
 import { soundFormValuesToMultipart } from "@/lib/sounds-form-data"
+import { toastApiError } from "@/lib/toast"
 import {
   defaultSoundFormValues,
   soundDtoToFormValues,
@@ -222,20 +224,8 @@ export function SoundForm({
         router.push(`/dashboard/sounds/${soundId}`)
       }
     } catch (err) {
-      // Surface the backend's own message when it sends one — the generic
-      // "check the cells" text hid real failures behind a validation look.
-      const data =
-        err && typeof err === "object" && "response" in err
-          ? (err as { response?: { data?: Record<string, unknown> } }).response
-              ?.data
-          : undefined
-      const detail = (data?.details ?? {}) as Record<string, unknown>
-      const msg =
-        (typeof detail.message === "string" && detail.message) ||
-        (typeof data?.messageKu === "string" && data.messageKu) ||
-        (typeof data?.message === "string" && data.message) ||
-        NS.error.validation
-      toast.error(msg)
+      applyServerFieldErrors(form, err)
+      toastApiError(err, NS.error.validation)
     } finally {
       addAnotherRef.current = false
       setUploadPct(null)

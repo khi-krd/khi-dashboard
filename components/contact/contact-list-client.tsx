@@ -20,9 +20,8 @@ import {
   useContactListQuery,
   useDeleteContactMutation,
 } from "@/hooks/useContact"
-import { extractApiErrorMessage } from "@/lib/api-error"
 import { formatCkbDigits } from "@/lib/intl-ckb"
-import { toastError } from "@/lib/toast"
+import { toastApiError } from "@/lib/toast"
 import { cn } from "@/lib/utils"
 import type { ContactDto } from "@/types/contact"
 
@@ -99,7 +98,7 @@ function ContactListClientInner() {
         void listQuery.refetch()
       },
       onError: (err) =>
-        toastError(extractApiErrorMessage(err) ?? NS.error.validation),
+        toastApiError(err, NS.error.validation),
     })
   }
 

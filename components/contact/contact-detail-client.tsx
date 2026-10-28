@@ -31,7 +31,6 @@ import {
   useContactDetailQuery,
   useDeleteContactMutation,
 } from "@/hooks/useContact"
-import { extractApiErrorMessage } from "@/lib/api-error"
 import { contactDisplayTitle } from "@/lib/contact-normalize"
 import { formatCkbDigits } from "@/lib/intl-ckb"
 import { formatRelativeTimeKu } from "@/lib/news-relative-time"
@@ -40,6 +39,7 @@ import {
   sanitizeNewsBodyHtml,
 } from "@/lib/sanitize-news-html"
 import { cn } from "@/lib/utils"
+import { toastApiError } from "@/lib/toast"
 import { contactContentLanguages } from "@/types/contact-ui"
 import type { Language } from "@/types/contact"
 
@@ -304,7 +304,7 @@ export function ContactDetailClient({ contactId }: { contactId: number }) {
             toast.success(NS.toast.deleted)
             router.push("/dashboard/contact")
           } catch (err) {
-            toast.error(extractApiErrorMessage(err) ?? NS.error.validation)
+            toastApiError(err, NS.error.validation)
           }
         }}
       />

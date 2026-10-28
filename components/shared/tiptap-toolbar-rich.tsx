@@ -2,7 +2,6 @@
 
 import { useRef, useState, type ReactNode } from "react"
 import type { Editor } from "@tiptap/react"
-import { toast } from "sonner"
 import {
   ArrowUpTrayIcon,
   ChevronDownIcon,
@@ -49,6 +48,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { extractIframeSrc, toAudioEmbedUrl } from "@/lib/embed-url"
 import { uploadMedia } from "@/services/mediaService"
 import { cn } from "@/lib/utils"
+import { toastApiError } from "@/lib/toast"
 
 /* ------------------------------------------------------------------ */
 /* Shared primitives                                                   */
@@ -370,8 +370,8 @@ function ImageInsertBody({
     try {
       const result = await uploadMedia(file, entity ?? "image", setProgress)
       setSrc(result.fileUrl)
-    } catch {
-      toast.error(TIPTAP_NS.error.uploadFailed)
+    } catch (err) {
+      toastApiError(err, TIPTAP_NS.error.uploadFailed)
     } finally {
       setProgress(null)
       if (fileRef.current) fileRef.current.value = ""
@@ -555,8 +555,8 @@ function AudioInsertBody({
       const result = await uploadMedia(file, entity ?? "audio", setProgress)
       setUrl(result.fileUrl)
       setMode("url")
-    } catch {
-      toast.error(TIPTAP_NS.error.uploadFailed)
+    } catch (err) {
+      toastApiError(err, TIPTAP_NS.error.uploadFailed)
     } finally {
       setProgress(null)
       if (fileRef.current) fileRef.current.value = ""

@@ -44,6 +44,7 @@ import {
   useUpdateAboutTeamMember,
 } from "@/hooks/useAbout"
 import { cn } from "@/lib/utils"
+import { toastApiError } from "@/lib/toast"
 import type { AboutTeamMemberDto } from "@/types/about"
 
 function clean(v?: string | null) {
@@ -223,8 +224,8 @@ export function AboutTeamSectionCard({ index }: { index: number }) {
       }
       toast.success(NS.toast.saved)
       setDialogOpen(false)
-    } catch {
-      toast.error(NS.error.validation)
+    } catch (err) {
+      toastApiError(err, NS.error.validation)
     }
   }
 
@@ -259,7 +260,7 @@ export function AboutTeamSectionCard({ index }: { index: number }) {
     if (!item.id) return
     deleteMut.mutate(item.id, {
       onSuccess: () => toast.success(NS.toast.deleted),
-      onError: () => toast.error(NS.error.deleteFailed),
+      onError: (err) => toastApiError(err, NS.error.deleteFailed),
     })
   }
 

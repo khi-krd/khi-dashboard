@@ -7,8 +7,6 @@ import {
   VideoCameraIcon,
 } from "@heroicons/react/24/outline"
 import { useState } from "react"
-import { toast } from "sonner"
-
 import { TIPTAP_NS } from "@/components/shared/tiptap-strings"
 import { UploadProgressLine } from "@/components/shared/upload-progress-line"
 import { Button } from "@/components/ui/button"
@@ -20,6 +18,7 @@ import { mediaTypeFromFile } from "@/lib/tiptap-media"
 import { VideoUrlPreview } from "@/components/shared/video-url-preview"
 import { uploadMedia } from "@/services/mediaService"
 import { cn } from "@/lib/utils"
+import { toastApiError } from "@/lib/toast"
 
 const DEFAULT_IMAGE_ACCEPT = "image/jpeg,image/png,image/webp,image/gif"
 const DEFAULT_VIDEO_ACCEPT = "video/mp4,video/webm,video/quicktime,video/*"
@@ -131,8 +130,8 @@ export function MediaCoverUpload({
         setProgress,
       )
       onUrlChange(result.fileUrl)
-    } catch {
-      toast.error(TIPTAP_NS.error.uploadFailed)
+    } catch (err) {
+      toastApiError(err, TIPTAP_NS.error.uploadFailed)
     } finally {
       setUploading(false)
       setProgress(null)

@@ -16,8 +16,7 @@ import { Label } from "@/components/ui/label"
 import { Spinner } from "@/components/ui/spinner"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useBookGenresQuery, useCreateBookGenre } from "@/hooks/useBookGenres"
-import { extractApiErrorMessage } from "@/lib/api-error"
-import { toastError, toastSuccess } from "@/lib/toast"
+import { toastApiError, toastError, toastSuccess } from "@/lib/toast"
 import {
   GENRE_FAMILY_CLASSES,
   GENRE_GROUPS,
@@ -128,7 +127,7 @@ export function WritingGenreMultiselect({
           }
         },
         onError: (err) =>
-          toastError(extractApiErrorMessage(err) ?? BG.error.generic),
+          toastApiError(err, BG.error.generic),
       },
     )
   }

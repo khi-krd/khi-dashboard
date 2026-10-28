@@ -4,6 +4,9 @@ import {
   type ToasterProps,
 } from "sonner"
 
+import { classifyApiError, extractApiErrorText } from "@/lib/api-error"
+import { ERROR_NS } from "@/lib/error-strings"
+
 export type { ToasterProps }
 export { SonnerPrimitive }
 
@@ -13,6 +16,28 @@ export function toastSuccess(message: string, description?: string): void {
 
 export function toastError(message: string, description?: string): void {
   sonnerToast.error(message, description ? { description } : undefined)
+}
+
+/**
+ * The standard way to surface a failed API call: the server's own sentence
+ * when it sent one (localized via Accept-Language), otherwise the caller's
+ * generic fallback, otherwise the classified category label. The description
+ * line always adds the category hint and — when the backend echoed one — the
+ * correlation id so a report can be traced: `… · #a1b2c3d4`.
+ */
+export function toastApiError(error: unknown, fallback?: string): void {
+  const classified = classifyApiError(error)
+  const serverText = extractApiErrorText(error)
+  const label = ERROR_NS[classified.category].title
+  const description = [
+    // Category tag only earns a line when a real sentence leads the toast.
+    serverText || fallback ? label : null,
+    ERROR_NS[classified.category].hint,
+    classified.requestId ? `#${classified.requestId.slice(0, 8)}` : null,
+  ]
+    .filter(Boolean)
+    .join(" · ")
+  toastError(serverText ?? fallback ?? label, description || undefined)
 }
 
 export function toastInfo(message: string, description?: string): void {

@@ -24,7 +24,7 @@ import {
   useServicesListQuery,
 } from "@/hooks/useServices"
 import { formatCkbDigits } from "@/lib/intl-ckb"
-import { toastError } from "@/lib/toast"
+import { toastApiError } from "@/lib/toast"
 import { splitPageHeroAndSections } from "@/lib/services-page-hero"
 import type { ServiceDto } from "@/types/services"
 
@@ -98,7 +98,7 @@ function ServicesListClientInner() {
         setDeleteDlg(null)
         void listQuery.refetch()
       },
-      onError: () => toastError(NS.error.generic),
+      onError: (err) => toastApiError(err, NS.error.generic),
     })
   }
 

@@ -39,7 +39,7 @@ import { mergeProjectsDerivedTypes } from "@/lib/projects-derived-cache"
 import { projectKeys } from "@/lib/projects-query-keys"
 import { formatCkbDigits } from "@/lib/intl-ckb"
 import { cn } from "@/lib/utils"
-import { toastError } from "@/lib/toast"
+import { toastApiError } from "@/lib/toast"
 import type { ProjectDto } from "@/types/projects"
 import type {
   ProjectAdminTableRow,
@@ -153,7 +153,6 @@ function ProjectsListClientInner() {
   useEffect(() => {
     mergeProjectsDerivedTypes(queryClient, rawRows)
   }, [queryClient, rawRows])
-
 
   const recordCount =
     apiEnvelope?.success === true && apiEnvelope.data
@@ -428,7 +427,7 @@ function ProjectsListClientInner() {
             onSuccess: () => {
               toast(NS.toast.deleted)
             },
-            onError: () => toastError(NS.error.generic),
+            onError: (err) => toastApiError(err, NS.error.generic),
           })
         }}
       />

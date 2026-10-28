@@ -34,7 +34,7 @@ import { useNewsDerivedCategories } from "@/hooks/useNewsDerivedTaxonomy"
 import { mergeNewsDerivedTaxonomy } from "@/lib/news-derived-cache"
 import { formatCkbDigits } from "@/lib/intl-ckb"
 import { cn } from "@/lib/utils"
-import { toastError } from "@/lib/toast"
+import { toastApiError } from "@/lib/toast"
 import type {
   NewsUiLanguageFilter,
   NewsUiStatusFilter,
@@ -292,9 +292,9 @@ function NewsListClientInner() {
       const timeout = globalThis.setTimeout(() => {
         deleteTimers.current.delete(id)
         deleteMut.mutate(id, {
-          onError: () => {
+          onError: (err) => {
             revealIds([id])
-            toastError(NS.error.generic)
+            toastApiError(err, NS.error.generic)
           },
         })
       }, 5000)
@@ -328,9 +328,9 @@ function NewsListClientInner() {
         timeout: globalThis.setTimeout(() => {
           bulkTimer.current = null
           bulkDeleteMut.mutate(ids, {
-            onError: () => {
+            onError: (err) => {
               revealIds(ids)
-              toastError(NS.error.generic)
+              toastApiError(err, NS.error.generic)
             },
           })
         }, 5000),

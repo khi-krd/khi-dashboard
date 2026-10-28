@@ -13,8 +13,7 @@ import { useServerFormSync } from "@/hooks/use-server-form-sync"
 import { useUpdateAbout } from "@/hooks/useAbout"
 import { permissiveResolver } from "@/lib/permissive-resolver"
 import { aboutPatchToPayload } from "@/lib/about-page-data"
-import { extractApiErrorMessage } from "@/lib/api-error"
-import { toastError } from "@/lib/toast"
+import { toastApiError, toastError } from "@/lib/toast"
 import { cn } from "@/lib/utils"
 import {
   aboutFormSchema,
@@ -83,7 +82,7 @@ export function AboutFounderSectionCard({
             onSaved()
           },
           onError: (err) => {
-            toastError(extractApiErrorMessage(err) ?? NS.error.validation)
+            toastApiError(err, NS.error.validation)
           },
         },
       )

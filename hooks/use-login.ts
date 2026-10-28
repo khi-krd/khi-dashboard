@@ -6,7 +6,7 @@ import { useCallback, useState } from "react"
 import { useForm } from "react-hook-form"
 
 import { permissiveResolver } from "@/lib/permissive-resolver"
-import { toastError } from "@/lib/toast"
+import { toastApiError } from "@/lib/toast"
 import { loginSchema, type LoginFormValues } from "@/lib/schemas/login.schema"
 import { getMe, login } from "@/services/auth.service"
 import { useAuthStore } from "@/store/auth.store"
@@ -78,7 +78,7 @@ export function useLogin() {
           const status = error.response.status
           setServerError(getLoginErrorMessage(status, error.response.data))
         } else {
-          toastError("کێشەی پەیوەندی", "تکایە دووبارە هەوڵبدەرەوە")
+          toastApiError(error)
         }
       } finally {
         setIsLoading(false)

@@ -60,6 +60,7 @@ import {
 } from "@/lib/sanitize-news-html"
 import { formatCkbDigits, formatNewsDateLong, formatNewsDateShort } from "@/lib/intl-ckb"
 import { cn } from "@/lib/utils"
+import { toastApiError } from "@/lib/toast"
 import type { Language, NewsDto } from "@/types/news"
 import { newsRowStatus } from "@/types/news-ui"
 import { useQueryClient } from "@tanstack/react-query"
@@ -746,8 +747,8 @@ export function NewsDetailClient({ newsId }: { newsId: number }) {
                 toast.success(NS.toast.deleted)
                 router.replace("/dashboard/news")
               },
-              onError: () => {
-                toast.error(NS.error.generic)
+              onError: (err) => {
+                toastApiError(err, NS.error.generic)
               },
             })
           }}

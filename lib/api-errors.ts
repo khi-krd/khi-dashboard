@@ -1,7 +1,13 @@
 import { isAxiosError } from "axios"
-import type { FieldValues, Path, UseFormSetError } from "react-hook-form"
+import type {
+  FieldValues,
+  Path,
+  UseFormReturn,
+  UseFormSetError,
+} from "react-hook-form"
 
-import { toastError } from "@/lib/toast"
+import { classifyApiError } from "@/lib/api-error"
+import { toastApiError } from "@/lib/toast"
 import type { ApiFieldError } from "@/types/auth"
 
 const DEFAULT_FALLBACK = "هەڵەیەک ڕوویدا، تکایە دووبارە هەوڵبدەرەوە"
@@ -76,11 +82,46 @@ export function applyApiErrors<T extends FieldValues>(
         return
       }
       if (message) {
-        toastError(fallback, message)
+        toastApiError(error, fallback)
         return
       }
     }
   }
 
-  toastError(fallback)
+  toastApiError(error, fallback)
+}
+
+/**
+ * Convert a backend field path (`contents[0].titleCkb`) into a
+ * react-hook-form path (`contents.0.titleCkb`).
+ */
+export function toRhfFieldPath(field: string): string {
+  return field
+    .replace(/\[(\d+)\]/g, ".$1")
+    .replace(/^\.+/, "")
+    .trim()
+}
+
+/**
+ * Write every `fieldErrors[]` entry the server sent onto the matching form
+ * inputs (`type: "server"` so they clear on the next edit). Returns how many
+ * were applied — callers can still toast the generic message afterwards, so
+ * both signals fire. Form values are never touched.
+ */
+export function applyServerFieldErrors<T extends FieldValues>(
+  form: Pick<UseFormReturn<T>, "setError">,
+  error: unknown,
+): number {
+  const { fieldErrors } = classifyApiError(error)
+  let applied = 0
+  for (const fieldError of fieldErrors) {
+    const path = toRhfFieldPath(fieldError.field)
+    if (!path) continue
+    form.setError(path as Path<T>, {
+      type: "server",
+      message: fieldError.message || "هەڵە لەم خانەیەدا",
+    })
+    applied++
+  }
+  return applied
 }

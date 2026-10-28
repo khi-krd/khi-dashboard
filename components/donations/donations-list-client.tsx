@@ -30,6 +30,7 @@ import {
   useFinancialDonationsListQuery,
 } from "@/hooks/useDonations"
 import { formatCkbDigits } from "@/lib/intl-ckb"
+import { toastApiError } from "@/lib/toast"
 import {
   matchesArchiveSearch,
   matchesDonationStatusFilter,
@@ -114,7 +115,7 @@ function DonationsListInner() {
         }
         setDeleteTarget(null)
       },
-      onError: () => toast.error(NS.toast.deleteFailed),
+      onError: (err) => toastApiError(err, NS.toast.deleteFailed),
     })
   }
 

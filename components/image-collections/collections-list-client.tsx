@@ -52,7 +52,7 @@ import {
 } from "@/lib/image-collections-view-mode"
 import { formatCkbDigits } from "@/lib/intl-ckb"
 import { cn } from "@/lib/utils"
-import { toastError } from "@/lib/toast"
+import { toastApiError } from "@/lib/toast"
 import type { CollectionDto } from "@/types/image-collections"
 import type {
   CollectionAdminTableRow,
@@ -133,7 +133,6 @@ function CollectionsListClientInner() {
   // ordering is a global operation, so filters and pagination don't apply here.
   const [reordering, setReordering] = useState(false)
 
-
   const listQuery = useCollectionsListQuery({
     page: pagination.pageIndex,
     size: pagination.pageSize,
@@ -174,8 +173,8 @@ function CollectionsListClientInner() {
         await reorderCollections(orderedIds)
         void queryClient.invalidateQueries({ queryKey: collectionKeys.lists() })
         toast.success(NS.toast.order_saved)
-      } catch {
-        toastError(NS.error.generic)
+      } catch (err) {
+        toastApiError(err, NS.error.generic)
         throw new Error("reorder failed")
       }
     },
@@ -472,7 +471,7 @@ function CollectionsListClientInner() {
           setDeleteTarget(null)
           deleteMut.mutate(id, {
             onSuccess: () => toast(NS.toast.deleted),
-            onError: () => toastError(NS.error.generic),
+            onError: (err) => toastApiError(err, NS.error.generic),
           })
         }}
       />

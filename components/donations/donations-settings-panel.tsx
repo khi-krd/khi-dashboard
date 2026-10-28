@@ -21,7 +21,7 @@ import {
   useUpdateDonationSettingsMutation,
 } from "@/hooks/useDonations"
 import { permissiveResolver } from "@/lib/permissive-resolver"
-import { toastError } from "@/lib/toast"
+import { toastApiError } from "@/lib/toast"
 import {
   defaultDonationSettingsValues,
   donationSettingsSchema,
@@ -49,7 +49,7 @@ export function DonationsSettingsPanel() {
       onSave={(payload) =>
         updateMut.mutate(payload, {
           onSuccess: () => toast.success(NS.settings.saved),
-          onError: () => toastError(NS.error.generic),
+          onError: (err) => toastApiError(err, NS.error.generic),
         })
       }
     />

@@ -15,14 +15,13 @@ import { useServerFormSync } from "@/hooks/use-server-form-sync"
 import { useCreateAbout, useUpdateAbout } from "@/hooks/useAbout"
 import { permissiveResolver } from "@/lib/permissive-resolver"
 import { heroFormValuesToAboutPayload } from "@/lib/about-page-data"
-import { extractApiErrorMessage } from "@/lib/api-error"
 import {
   aboutDtoToHeroFormValues,
   aboutPageHeroSchema,
   defaultAboutPageHeroValues,
   type AboutPageHeroFormValues,
 } from "@/lib/validations/about-page"
-import { toastError } from "@/lib/toast"
+import { toastApiError } from "@/lib/toast"
 import { cn } from "@/lib/utils"
 import type { AboutDto } from "@/types/about"
 
@@ -75,7 +74,7 @@ export function AboutPageHeroEditor({
       onSaved()
     }
     const onError = (err: unknown) => {
-      toastError(extractApiErrorMessage(err) ?? NS.error.validation)
+      toastApiError(err, NS.error.validation)
     }
 
     if (aboutDto?.id) {

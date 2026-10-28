@@ -22,7 +22,7 @@ import { Spinner } from "@/components/ui/spinner"
 import { useUpdateArchiveDonationStatusMutation } from "@/hooks/useDonations"
 import { formatCkbDigits } from "@/lib/intl-ckb"
 import { formatFullTimestampKu } from "@/lib/news-relative-time"
-import { toastError } from "@/lib/toast"
+import { toastApiError } from "@/lib/toast"
 import { ARCHIVE_MATERIAL_LABELS } from "@/types/donations-ui"
 import type { ArchiveDonationRow } from "@/types/donations-ui"
 import type { DonationStatus } from "@/types/donations"
@@ -71,7 +71,7 @@ export function DonationsArchiveSheet({
           onStatusUpdated?.()
           onOpenChange(false)
         },
-        onError: () => toastError(NS.error.generic),
+        onError: (err) => toastApiError(err, NS.error.generic),
       },
     )
   }

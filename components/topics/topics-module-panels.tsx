@@ -54,6 +54,7 @@ import type { SoundsListQueryKeyParts } from "@/types/sounds-ui"
 import type { TopicDto as VideoTopicDto } from "@/types/videos"
 import type { TopicDto as WritingTopicDto } from "@/types/writings"
 import type { WritingsListQueryKeyParts } from "@/types/writings-ui"
+import { toastApiError } from "@/lib/toast"
 
 const soundsListParams: SoundsListQueryKeyParts = {
   page: 0,
@@ -187,7 +188,7 @@ export function VideoTopicsModulePanel() {
               toast.success(VideosNS.toast.topic_deleted)
               setDeleteTarget(null)
             },
-            onError: () => toast.error(VideosNS.error.generic),
+            onError: (err) => toastApiError(err, VideosNS.error.generic),
           })
         }}
       />
@@ -270,7 +271,7 @@ export function SoundTopicsModulePanel() {
               toast.success(SoundsNS.toast.topic_deleted)
               setDeleteTarget(null)
             },
-            onError: () => toast.error(SoundsNS.error.generic),
+            onError: (err) => toastApiError(err, SoundsNS.error.generic),
           })
         }}
       />
@@ -353,7 +354,7 @@ export function WritingTopicsModulePanel() {
               toast.success(WritingsNS.toast.topic_deleted)
               setDeleteTarget(null)
             },
-            onError: () => toast.error(WritingsNS.error.generic),
+            onError: (err) => toastApiError(err, WritingsNS.error.generic),
           })
         }}
       />
@@ -438,7 +439,7 @@ export function CollectionTopicsModulePanel() {
               toast.success(CollectionsNS.toast.topic_deleted)
               setDeleteTarget(null)
             },
-            onError: () => toast.error(CollectionsNS.error.generic),
+            onError: (err) => toastApiError(err, CollectionsNS.error.generic),
           })
         }}
       />

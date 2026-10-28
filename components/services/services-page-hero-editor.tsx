@@ -14,7 +14,6 @@ import { Textarea } from "@/components/ui/textarea"
 import { useServerFormSync } from "@/hooks/use-server-form-sync"
 import { useCreateService, useUpdateService } from "@/hooks/useServices"
 import { permissiveResolver } from "@/lib/permissive-resolver"
-import { extractApiErrorMessage } from "@/lib/api-error"
 import {
   heroFormValuesToServicePayload,
   serviceDtoToHeroFormValues,
@@ -24,7 +23,7 @@ import {
   servicesPageHeroSchema,
   type ServicesPageHeroFormValues,
 } from "@/lib/validations/services-page"
-import { toastError } from "@/lib/toast"
+import { toastApiError, toastError } from "@/lib/toast"
 import { cn } from "@/lib/utils"
 import type { Language, ServiceDto } from "@/types/services"
 
@@ -81,7 +80,7 @@ export function ServicesPageHeroEditor({
     }
 
     const onError = (err: unknown) => {
-      toastError(extractApiErrorMessage(err) ?? NS.error.generic)
+      toastApiError(err, NS.error.generic)
     }
 
     if (heroDto?.id) {

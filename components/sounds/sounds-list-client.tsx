@@ -41,7 +41,7 @@ import { getSoundsList, reorderSounds } from "@/services/soundsService"
 import { soundKeys } from "@/lib/sounds-query-keys"
 import { formatCkbDigits } from "@/lib/intl-ckb"
 import { cn } from "@/lib/utils"
-import { toastError } from "@/lib/toast"
+import { toastApiError } from "@/lib/toast"
 import type { SoundDto } from "@/types/sounds"
 import type {
   SoundAdminTableRow,
@@ -122,7 +122,6 @@ function SoundsListClientInner() {
   // ordering is a global operation, so filters and pagination don't apply here.
   const [reordering, setReordering] = useState(false)
 
-
   const listQuery = useSoundsListQuery({
     page: pagination.pageIndex,
     size: pagination.pageSize,
@@ -170,8 +169,8 @@ function SoundsListClientInner() {
         await reorderSounds(orderedIds)
         void queryClient.invalidateQueries({ queryKey: soundKeys.lists() })
         toast.success(NS.toast.order_saved)
-      } catch {
-        toastError(NS.error.generic)
+      } catch (err) {
+        toastApiError(err, NS.error.generic)
         throw new Error("reorder failed")
       }
     },
@@ -442,7 +441,7 @@ function SoundsListClientInner() {
           setDeleteTarget(null)
           deleteMut.mutate(id, {
             onSuccess: () => toast(NS.toast.deleted),
-            onError: () => toastError(NS.error.generic),
+            onError: (err) => toastApiError(err, NS.error.generic),
           })
         }}
       />

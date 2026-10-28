@@ -24,8 +24,8 @@ import {
   useUpdateSiteSettingsMutation,
 } from "@/hooks/useSiteSettings"
 import { permissiveResolver } from "@/lib/permissive-resolver"
-import { extractApiErrorMessage } from "@/lib/api-error"
 import { cn } from "@/lib/utils"
+import { toastApiError } from "@/lib/toast"
 import {
   defaultSiteSettingsValues,
   formValuesToSiteSettingsPayload,
@@ -67,13 +67,13 @@ export function BrandingPanel() {
           onError: (err) => {
             // `403` comes back with an empty body — this endpoint is ADMIN and
             // up — so it needs its own copy rather than degrading into a
-            // generic failure.
+            // generic failure. classifyApiError already reads the status, so
+            // only the title needs the custom forbidden copy.
             const status = (err as { response?: { status?: number } })?.response
               ?.status
-            toast.error(
-              status === 403
-                ? NS.error.forbidden
-                : (extractApiErrorMessage(err) ?? NS.error.generic),
+            toastApiError(
+              err,
+              status === 403 ? NS.error.forbidden : NS.error.generic,
             )
           },
         })

@@ -28,7 +28,7 @@ import {
 import { Separator } from "@/components/ui/separator"
 import { Spinner } from "@/components/ui/spinner"
 import { endClientSession } from "@/lib/session"
-import { toastError } from "@/lib/toast"
+import { toastApiError } from "@/lib/toast"
 import { deleteAccount, logoutAll } from "@/services/auth.service"
 
 export function DangerZone() {
@@ -39,9 +39,9 @@ export function DangerZone() {
     try {
       await logoutAll()
       await endClientSession("manual")
-    } catch {
+    } catch (err) {
       setBusy(null)
-      toastError("نەتوانرا دەربچیت", "تکایە دووبارە هەوڵبدەرەوە")
+      toastApiError(err, "نەتوانرا دەربچیت")
     }
   }
 
@@ -50,9 +50,9 @@ export function DangerZone() {
     try {
       await deleteAccount()
       await endClientSession("deleted")
-    } catch {
+    } catch (err) {
       setBusy(null)
-      toastError("هەژمار نەسڕایەوە", "تکایە دووبارە هەوڵبدەرەوە")
+      toastApiError(err, "هەژمار نەسڕایەوە")
     }
   }
 

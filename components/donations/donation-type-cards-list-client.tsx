@@ -39,7 +39,7 @@ import {
   moveDonationTypeCard,
 } from "@/lib/donation-type-card-form-data"
 import { formatCkbDigits } from "@/lib/intl-ckb"
-import { toastError, toastSuccess } from "@/lib/toast"
+import { toastApiError, toastError, toastSuccess } from "@/lib/toast"
 import { cn } from "@/lib/utils"
 import {
   isFeaturedCardIndex,
@@ -118,7 +118,7 @@ export function DonationTypeCardsListClient() {
         onSuccess: () =>
           toastSuccess(next ? DTC.toast.activated : DTC.toast.deactivated),
         onError: (err) =>
-          toastError(extractApiErrorMessage(err) ?? DTC.error.generic),
+          toastApiError(err, DTC.error.generic),
         onSettled: () => setTogglingId(null),
       },
     )
@@ -133,7 +133,7 @@ export function DonationTypeCardsListClient() {
         setDeleteTarget(null)
       },
       onError: (err) => {
-        toastError(extractApiErrorMessage(err) ?? DTC.error.generic)
+        toastApiError(err, DTC.error.generic)
         setDeleteTarget(null)
       },
     })

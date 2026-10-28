@@ -34,6 +34,7 @@ import {
 } from "@/lib/video-url-helpers"
 import { cn } from "@/lib/utils"
 import type { ServiceGalleryMediaFormValues } from "@/lib/validations/services"
+import { toastApiError } from "@/lib/toast"
 import { uploadMedia } from "@/services/mediaService"
 
 type Slot = ServiceGalleryMediaFormValues
@@ -108,8 +109,8 @@ export function ServiceGallerySlotDialog({
     try {
       const result = await uploadMedia(file, "services", setPosterProgress)
       patch({ posterUrl: result.fileUrl })
-    } catch {
-      toast.error(NS.gallery.posterFailed)
+    } catch (err) {
+      toastApiError(err, NS.gallery.posterFailed)
     } finally {
       setPosterUploading(false)
       setPosterProgress(null)
@@ -129,8 +130,8 @@ export function ServiceGallerySlotDialog({
       setPosterUploading(true)
       const result = await uploadMedia(frame, "services")
       patch({ posterUrl: result.fileUrl })
-    } catch {
-      toast.error(NS.gallery.captureFailed)
+    } catch (err) {
+      toastApiError(err, NS.gallery.captureFailed)
     } finally {
       setCapturing(false)
       setPosterUploading(false)

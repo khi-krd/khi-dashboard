@@ -36,7 +36,7 @@ import {
   moveBookGenre,
 } from "@/lib/book-genre-form-data"
 import { formatCkbDigits } from "@/lib/intl-ckb"
-import { toastError, toastSuccess } from "@/lib/toast"
+import { toastApiError, toastError, toastSuccess } from "@/lib/toast"
 import { cn } from "@/lib/utils"
 import { normalizeGenreSlug, type BookGenreDto } from "@/types/book-genre"
 import type { WritingsListQueryKeyParts } from "@/types/writings-ui"
@@ -144,7 +144,7 @@ export function BookGenresList() {
         onSuccess: () =>
           toastSuccess(next ? BG.toast.activated : BG.toast.deactivated),
         onError: (err) =>
-          toastError(extractApiErrorMessage(err) ?? BG.error.generic),
+          toastApiError(err, BG.error.generic),
         onSettled: () => setTogglingId(null),
       },
     )
@@ -159,7 +159,7 @@ export function BookGenresList() {
         setDeleteTarget(null)
       },
       onError: (err) => {
-        toastError(extractApiErrorMessage(err) ?? BG.error.generic)
+        toastApiError(err, BG.error.generic)
         setDeleteTarget(null)
       },
     })

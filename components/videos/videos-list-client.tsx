@@ -40,7 +40,7 @@ import { getVideosList, reorderVideos } from "@/services/videosService"
 import { videoKeys } from "@/lib/videos-query-keys"
 import { formatCkbDigits } from "@/lib/intl-ckb"
 import { cn } from "@/lib/utils"
-import { toastError } from "@/lib/toast"
+import { toastApiError } from "@/lib/toast"
 import type { VideoDto } from "@/types/videos"
 import type {
   VideoAdminTableRow,
@@ -132,7 +132,6 @@ function VideosListClientInner() {
   const [reordering, setReordering] = useState(false)
 
 
-
   const searchMode = urlTag?.trim()
     ? ("tag" as const)
     : urlKeyword?.trim()
@@ -186,8 +185,8 @@ function VideosListClientInner() {
         await reorderVideos(orderedIds)
         void queryClient.invalidateQueries({ queryKey: videoKeys.lists() })
         toast.success(NS.toast.order_saved)
-      } catch {
-        toastError(NS.error.generic)
+      } catch (err) {
+        toastApiError(err, NS.error.generic)
         throw new Error("reorder failed")
       }
     },
@@ -482,7 +481,7 @@ function VideosListClientInner() {
           setDeleteTarget(null)
           deleteMut.mutate(id, {
             onSuccess: () => toast(NS.toast.deleted),
-            onError: () => toastError(NS.error.generic),
+            onError: (err) => toastApiError(err, NS.error.generic),
           })
         }}
       />
