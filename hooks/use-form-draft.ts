@@ -11,6 +11,12 @@ const DEBOUNCE_MS = 1500
 export interface StoredFormDraft {
   values: Record<string, unknown>
   savedAt: string
+  /**
+   * The record's `updatedAt` at the moment the draft was written. Restoring
+   * only trusts drafts whose baseline matches the current record — immune to
+   * client/server clock skew, unlike comparing savedAt to updatedAt.
+   */
+  baseUpdatedAt?: string | null
 }
 
 export function formDraftKey(
@@ -186,6 +192,7 @@ export function useFormDraft<TValues extends FieldValues>({
       const payload: StoredFormDraft = {
         values: isPlainObject(values) ? values : {},
         savedAt: new Date().toISOString(),
+        baseUpdatedAt: recordId != null ? (recordUpdatedAt ?? null) : null,
       }
       window.localStorage.setItem(storageKey, JSON.stringify(payload))
       setDraftSavedAt(payload.savedAt)
@@ -193,7 +200,7 @@ export function useFormDraft<TValues extends FieldValues>({
     } catch {
       setStatus("error")
     }
-  }, [form, storageKey])
+  }, [form, storageKey, recordId, recordUpdatedAt])
 
   const scheduleWrite = useCallback(() => {
     setStatus("saving")
@@ -210,22 +217,34 @@ export function useFormDraft<TValues extends FieldValues>({
     if (attemptedKeysRef.current.has(storageKey)) return
     attemptedKeysRef.current.add(storageKey)
 
-    const draft = readStoredDraft(storageKey)
+    // The user slot fills in asynchronously after a refresh — a draft saved
+    // while the store was still hydrating lives under the `anon` key, so fall
+    // back to it when the resolved key holds nothing.
+    const draft =
+      readStoredDraft(storageKey) ??
+      readStoredDraft(formDraftKey(entity, recordId, null))
     if (!draft) return
-    // A draft older than the record's last update was already saved upstream.
-    if (recordId != null && recordUpdatedAt) {
-      const saved = Date.parse(draft.savedAt)
-      const updated = Date.parse(recordUpdatedAt)
-      if (
-        !Number.isNaN(saved) &&
-        !Number.isNaN(updated) &&
-        saved <= updated
-      ) {
-        return
-      }
+    // Stale guard: for an existing record the draft is trusted when it was
+    // written against the same record version (string equality — no clock
+    // comparison, so client/server skew can never discard a real draft).
+    // Drafts without a baseline (written before this field existed) restore
+    // leniently, and new records accept any draft.
+    if (
+      recordId != null &&
+      recordUpdatedAt != null &&
+      draft.baseUpdatedAt != null &&
+      draft.baseUpdatedAt !== recordUpdatedAt
+    ) {
+      return
     }
-    // Never restore over typing that is already in progress.
-    if (form.formState.isDirty) return
+    // Never restore over typing that is already in progress. Compare the
+    // actual values rather than `isDirty` — schema defaults can leave a
+    // fresh form technically dirty and must not block a restore.
+    const current = stableSerialize(sanitizeDraftValues(form.getValues()))
+    const defaults = stableSerialize(
+      sanitizeDraftValues(form.formState.defaultValues ?? {}),
+    )
+    if (current !== defaults) return
 
     const merged = mergeDraftValues(form.getValues(), draft.values) as TValues
     // keepDefaultValues: the server snapshot stays the dirty baseline, so the
@@ -238,7 +257,7 @@ export function useFormDraft<TValues extends FieldValues>({
       setDraftSavedAt(draft.savedAt)
       setStatus("saved")
     })
-  }, [enabled, storageKey, recordId, recordUpdatedAt, form])
+  }, [enabled, entity, storageKey, recordId, recordUpdatedAt, form])
 
   // Debounced autosave driven by the watch subscription; a pending write is
   // flushed synchronously on unmount (SPA navigation) and beforeunload
