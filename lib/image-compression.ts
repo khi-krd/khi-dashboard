@@ -215,8 +215,36 @@ export async function compressImage(
     libOptions.maxWidthOrHeight = maxWidthOrHeight
   }
 
-  const out = await runLibrary(file, libOptions)
+  let out = await runLibrary(file, libOptions)
   if (signal?.aborted) throw new Error("aborted")
+
+  // Target unmet → escalate: WebP first (PNG photographs shrink ~80%), then a
+  // resolution cap. Only runs when an explicit target exists — with no cap
+  // the user's exact settings stand untouched.
+  const targetBytes =
+    typeof maxSizeKB === "number" && maxSizeKB > 0 ? maxSizeKB * 1024 : 0
+  let escalated = false
+  if (out && out.size > targetBytes && targetBytes > 0) {
+    const steps: LibOptions[] = []
+    if (targetType !== "image/webp") {
+      steps.push({ ...libOptions, fileType: "image/webp" })
+    }
+    steps.push({
+      ...libOptions,
+      fileType: "image/webp",
+      alwaysKeepResolution: false,
+      maxWidthOrHeight: 2560,
+    })
+    for (const step of steps) {
+      const cand = await runLibrary(file, step)
+      if (signal?.aborted) throw new Error("aborted")
+      if (cand && cand.size > 0 && cand.size < out.size) {
+        out = cand
+        escalated = true
+      }
+      if (out.size <= targetBytes) break
+    }
+  }
 
   // Never upload bigger than the original — keep the source bytes.
   if (!out || out.size === 0 || out.size >= file.size) {
@@ -233,17 +261,19 @@ export async function compressImage(
     }
   }
 
+  const isWebP = out.type === "image/webp"
   const outFile =
-    convertToWebP && !out.name.toLowerCase().endsWith(".webp")
+    isWebP && !out.name.toLowerCase().endsWith(".webp")
       ? new File([out], swapExtension(file.name, "webp"), {
           type: out.type || "image/webp",
           lastModified: out.lastModified,
         })
       : out
 
-  const outDims = keepDimensions
-    ? { width, height }
-    : await probeImageSize(outFile).catch(() => ({ width, height }))
+  const outDims =
+    keepDimensions && !escalated
+      ? { width, height }
+      : await probeImageSize(outFile).catch(() => ({ width, height }))
 
   return {
     file: outFile,
