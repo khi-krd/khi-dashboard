@@ -197,15 +197,25 @@ export async function compressImage(
     }
   }
 
+  // The library renames after the MIME type (photo.jpg → photo.jpeg) —
+  // keep the original filename and extension so the stored object matches.
+  const outFile =
+    out.name !== file.name
+      ? new File([out], file.name, {
+          type: out.type || file.type,
+          lastModified: out.lastModified ?? file.lastModified,
+        })
+      : out
+
   return {
-    file: out,
-    blob: out,
+    file: outFile,
+    blob: outFile,
     width,
     height,
     outWidth: width,
     outHeight: height,
     originalSize: file.size,
-    outputSize: out.size,
+    outputSize: outFile.size,
     reduced: true,
   }
 }
