@@ -11,12 +11,10 @@ import imageCompression, {
  * - Never upload bigger than the original: when the compressed output is
  *   >= the input bytes, the original `File` is returned with
  *   `reduced: false`.
- * - Never resize unless the caller explicitly opts in: `maxWidthOrHeight` is
- *   only forwarded to the library when `keepDimensions === false` AND a
- *   positive explicit bound is given. Otherwise `alwaysKeepResolution` pins
- *   the source dimensions.
- * - PNG/transparency is preserved by default — `fileType` is only overridden
- *   when `convertToWebP` is explicitly chosen.
+ * - Never resizes or converts: `alwaysKeepResolution` pins the source
+ *   dimensions and `fileType` keeps the source format — a PNG stays a PNG
+ *   at full size; only quality is traded for bytes.
+ * - PNG/transparency is preserved — no format conversion ever happens.
  * - Animated formats (GIF) and vectors (SVG) are returned untouched — a
  *   canvas round-trip would flatten animation / rasterize the vector.
  */
@@ -48,12 +46,6 @@ export type CompressImageOptions = {
   quality?: number
   /** Target output size in KB. `undefined`/`<=0` → no size cap. Default 500. */
   maxSizeKB?: number
-  /** Re-encode as WebP. Default false — keeps the source type (PNG stays PNG). */
-  convertToWebP?: boolean
-  /** Keep source dimensions. Default true — never resizes. */
-  keepDimensions?: boolean
-  /** Explicit pixel bound, honored ONLY when `keepDimensions === false`. */
-  maxWidthOrHeight?: number
   /** Abort the compression (used by the hook's cancel). */
   signal?: AbortSignal
   /** 0–100 progress from the library. */
@@ -84,19 +76,12 @@ export type CompressionSettings = {
   qualityPct: number
   /** Target KB; `null` → no size cap. */
   maxSizeKB: number | null
-  keepDimensions: boolean
-  /** Explicit pixel bound used only when keepDimensions is off. */
-  maxWidthOrHeight: number | null
-  convertToWebP: boolean
 }
 
 export const DEFAULT_COMPRESSION_SETTINGS: CompressionSettings = {
   enabled: true,
   qualityPct: 80,
   maxSizeKB: 500,
-  keepDimensions: true,
-  maxWidthOrHeight: null,
-  convertToWebP: false,
 }
 
 export function compressionSettingsToOptions(
@@ -105,9 +90,6 @@ export function compressionSettingsToOptions(
   return {
     quality: settings.qualityPct / 100,
     maxSizeKB: settings.maxSizeKB ?? undefined,
-    convertToWebP: settings.convertToWebP,
-    keepDimensions: settings.keepDimensions,
-    maxWidthOrHeight: settings.maxWidthOrHeight ?? undefined,
   }
 }
 
@@ -139,12 +121,6 @@ export async function probeImageSize(
   }
 }
 
-function swapExtension(name: string, ext: string): string {
-  const dot = name.lastIndexOf(".")
-  const base = dot > 0 ? name.slice(0, dot) : name
-  return `${base}.${ext}`
-}
-
 async function runLibrary(
   file: File,
   options: LibOptions,
@@ -164,15 +140,7 @@ export async function compressImage(
   file: File,
   options: CompressImageOptions = {},
 ): Promise<CompressedImageResult> {
-  const {
-    quality = 0.8,
-    maxSizeKB = 500,
-    convertToWebP = false,
-    keepDimensions = true,
-    maxWidthOrHeight,
-    signal,
-    onProgress,
-  } = options
+  const { quality = 0.8, maxSizeKB = 500, signal, onProgress } = options
 
   if (file.size === 0) {
     throw new Error("empty file")
@@ -195,7 +163,8 @@ export async function compressImage(
     }
   }
 
-  const targetType = convertToWebP ? "image/webp" : file.type
+  // Quality-only compression: same format, same dimensions — no conversion,
+  // no resizing. `alwaysKeepResolution` pins the source pixels.
   const libOptions: LibOptions = {
     maxSizeMB:
       typeof maxSizeKB === "number" && maxSizeKB > 0
@@ -204,47 +173,14 @@ export async function compressImage(
     initialQuality: Math.min(1, Math.max(0.05, quality)),
     useWebWorker: true,
     libURL: workerLibUrl(),
-    alwaysKeepResolution: keepDimensions,
-    fileType: targetType,
+    alwaysKeepResolution: true,
+    fileType: file.type,
     signal,
     onProgress,
   }
-  // Resize is opt-in only: forwarded solely when the caller turned
-  // keepDimensions off AND gave an explicit positive bound.
-  if (!keepDimensions && typeof maxWidthOrHeight === "number" && maxWidthOrHeight > 0) {
-    libOptions.maxWidthOrHeight = maxWidthOrHeight
-  }
 
-  let out = await runLibrary(file, libOptions)
+  const out = await runLibrary(file, libOptions)
   if (signal?.aborted) throw new Error("aborted")
-
-  // Target unmet → escalate: WebP first (PNG photographs shrink ~80%), then a
-  // resolution cap. Only runs when an explicit target exists — with no cap
-  // the user's exact settings stand untouched.
-  const targetBytes =
-    typeof maxSizeKB === "number" && maxSizeKB > 0 ? maxSizeKB * 1024 : 0
-  let escalated = false
-  if (out && out.size > targetBytes && targetBytes > 0) {
-    const steps: LibOptions[] = []
-    if (targetType !== "image/webp") {
-      steps.push({ ...libOptions, fileType: "image/webp" })
-    }
-    steps.push({
-      ...libOptions,
-      fileType: "image/webp",
-      alwaysKeepResolution: false,
-      maxWidthOrHeight: 2560,
-    })
-    for (const step of steps) {
-      const cand = await runLibrary(file, step)
-      if (signal?.aborted) throw new Error("aborted")
-      if (cand && cand.size > 0 && cand.size < out.size) {
-        out = cand
-        escalated = true
-      }
-      if (out.size <= targetBytes) break
-    }
-  }
 
   // Never upload bigger than the original — keep the source bytes.
   if (!out || out.size === 0 || out.size >= file.size) {
@@ -261,29 +197,15 @@ export async function compressImage(
     }
   }
 
-  const isWebP = out.type === "image/webp"
-  const outFile =
-    isWebP && !out.name.toLowerCase().endsWith(".webp")
-      ? new File([out], swapExtension(file.name, "webp"), {
-          type: out.type || "image/webp",
-          lastModified: out.lastModified,
-        })
-      : out
-
-  const outDims =
-    keepDimensions && !escalated
-      ? { width, height }
-      : await probeImageSize(outFile).catch(() => ({ width, height }))
-
   return {
-    file: outFile,
-    blob: outFile,
+    file: out,
+    blob: out,
     width,
     height,
-    outWidth: outDims.width,
-    outHeight: outDims.height,
+    outWidth: width,
+    outHeight: height,
     originalSize: file.size,
-    outputSize: outFile.size,
+    outputSize: out.size,
     reduced: true,
   }
 }

@@ -123,85 +123,29 @@ export function CompressionToggle({
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <Label className="text-muted-foreground text-[11px]">
-                  {NS.targetSize}
-                </Label>
-                <Input
-                  type="number"
-                  dir="ltr"
-                  min={0}
-                  className="h-8 font-mono text-xs"
-                  placeholder={NS.targetPlaceholder}
-                  disabled={disabled}
-                  value={value.maxSizeKB ?? ""}
-                  onChange={(e) => {
-                    const raw = e.target.value.trim()
-                    const parsed = Number(raw)
-                    patch({
-                      maxSizeKB:
-                        raw === "" || Number.isNaN(parsed) || parsed <= 0
-                          ? null
-                          : parsed,
-                    })
-                  }}
-                />
-              </div>
-              {!value.keepDimensions ? (
-                <div className="space-y-1">
-                  <Label className="text-muted-foreground text-[11px]">
-                    {NS.maxDimension}
-                  </Label>
-                  <Input
-                    type="number"
-                    dir="ltr"
-                    min={0}
-                    className="h-8 font-mono text-xs"
-                    placeholder="2048"
-                    disabled={disabled}
-                    value={value.maxWidthOrHeight ?? ""}
-                    onChange={(e) => {
-                      const raw = e.target.value.trim()
-                      const parsed = Number(raw)
-                      patch({
-                        maxWidthOrHeight:
-                          raw === "" || Number.isNaN(parsed) || parsed <= 0
-                            ? null
-                            : parsed,
-                      })
-                    }}
-                  />
-                </div>
-              ) : null}
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <span className="flex items-center gap-2">
-                <Switch
-                  size="sm"
-                  checked={value.keepDimensions}
-                  onCheckedChange={(checked) =>
-                    patch({ keepDimensions: checked === true })
-                  }
-                  disabled={disabled}
-                />
-                <span className="text-[11px]">{NS.keepDimensions}</span>
-              </span>
-              <span className="flex items-center gap-2">
-                <Switch
-                  size="sm"
-                  checked={value.convertToWebP}
-                  onCheckedChange={(checked) =>
-                    patch({ convertToWebP: checked === true })
-                  }
-                  disabled={disabled}
-                />
-                <span className="text-[11px]">{NS.webp}</span>
-                <span className="text-muted-foreground text-[10px]">
-                  {NS.webpHint}
-                </span>
-              </span>
+            <div className="space-y-1">
+              <Label className="text-muted-foreground text-[11px]">
+                {NS.targetSize}
+              </Label>
+              <Input
+                type="number"
+                dir="ltr"
+                min={0}
+                className="h-8 w-32 font-mono text-xs"
+                placeholder={NS.targetPlaceholder}
+                disabled={disabled}
+                value={value.maxSizeKB ?? ""}
+                onChange={(e) => {
+                  const raw = e.target.value.trim()
+                  const parsed = Number(raw)
+                  patch({
+                    maxSizeKB:
+                      raw === "" || Number.isNaN(parsed) || parsed <= 0
+                        ? null
+                        : parsed,
+                  })
+                }}
+              />
             </div>
 
             <div className="flex justify-end">
