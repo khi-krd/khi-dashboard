@@ -174,25 +174,7 @@ export function CompressionToggle({
                   }}
                 />
               </div>
-              <label className="flex items-start gap-2">
-                <Switch
-                  size="sm"
-                  className="mt-0.5"
-                  checked={value.pngReducedColors}
-                  onCheckedChange={(checked) =>
-                    patch({ pngReducedColors: checked === true })
-                  }
-                  disabled={disabled}
-                />
-                <span className="space-y-0.5">
-                  <span className="block text-[11px]">{NS.pngReduced}</span>
-                  <span className="text-muted-foreground block text-[10px] leading-relaxed">
-                    {value.pngReducedColors
-                      ? NS.pngReducedHint
-                      : NS.pngLosslessHint}
-                  </span>
-                </span>
-              </label>
+
             </div>
 
             <div className="flex justify-end">

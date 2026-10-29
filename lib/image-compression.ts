@@ -101,7 +101,8 @@ export type CompressionSettings = {
   maxSizeKB: number | null
   /** PNG target KB; `null` → no target. */
   pngMaxSizeKB: number | null
-  /** Opt-in lossy palette reduction for PNGs (stays PNG, keeps alpha). */
+  /** Palette reduction for PNGs when lossless misses the target (stays PNG,
+   * keeps alpha). On by default. */
   pngReducedColors: boolean
 }
 
@@ -110,7 +111,7 @@ export const DEFAULT_COMPRESSION_SETTINGS: CompressionSettings = {
   qualityPct: 80,
   maxSizeKB: 500,
   pngMaxSizeKB: DEFAULT_PNG_TARGET_BYTES / 1024,
-  pngReducedColors: false,
+  pngReducedColors: true,
 }
 
 export function compressionSettingsToOptions(
@@ -175,7 +176,7 @@ export async function compressImage(
     quality = 0.8,
     maxSizeKB = 500,
     pngMaxSizeKB = DEFAULT_PNG_TARGET_BYTES / 1024,
-    pngReducedColors = false,
+    pngReducedColors = true,
     signal,
     onProgress,
   } = options

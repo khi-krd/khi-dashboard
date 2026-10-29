@@ -9,11 +9,6 @@ export const COMPRESS_NS = {
     targetPlaceholder: "بێ سنوور",
     pngSection: "وێنەی PNG",
     pngTarget: "قەبارەی ئامانجی PNG (KB)",
-    pngReduced: "کەمکردنەوەی ژمارەی ڕەنگەکان",
-    pngReducedHint:
-      "قەبارە زۆرتر کەم دەکاتەوە بەڵام جۆرایەتی کەمێک دادەبەزێت — فایلەکە هەر PNG دەمێنێتەوە و ڕوونی (شەفافیەت) دەپارێزرێت",
-    pngLosslessHint:
-      "بە شێوەی بنەڕەتی بێ لەدەستدانی هیچ پیکسڵێک کەم دەکرێتەوە",
     reset: "گەڕانەوە بۆ بنەڕەتی",
     originalBadge: "بنەڕەتی",
   },
@@ -36,8 +31,6 @@ export const COMPRESS_NS = {
     targetMissed: "نەگەیشتە ئامانجی",
     lossless: "بێ لەدەستدانی جۆرایەتی",
     colors: "ڕەنگ",
-    enableReducedHint:
-      "بۆ بچووککردنەوەی زیاتر، «کەمکردنەوەی ژمارەی ڕەنگەکان» لە ڕێکخستنی زیاتر چالاک بکە",
   },
   batch: {
     total: "کۆی گشتی",

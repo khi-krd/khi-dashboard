@@ -114,11 +114,6 @@ function TargetLine({ result }: { result: CompressedImageResult }) {
           </>
         ) : null}
       </p>
-      {missed && result.pngMethod && result.pngMethod !== "reduced" ? (
-        <p className="text-muted-foreground text-[10px]">
-          {NS.enableReducedHint}
-        </p>
-      ) : null}
     </div>
   )
 }
