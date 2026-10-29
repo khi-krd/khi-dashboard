@@ -21,10 +21,11 @@ import type {
 
 const NS = COMPRESS_NS.card
 
-function shortMime(mime: string | undefined): string {
-  if (!mime) return "—"
-  const sub = mime.split("/")[1] ?? mime
-  return sub.toUpperCase().replace("SVG+XML", "SVG")
+function fileFormat(file: File): string {
+  const ext = file.name.split(".").pop()
+  if (ext && ext !== file.name && ext.length <= 5) return ext.toUpperCase()
+  const sub = file.type?.split("/")[1]
+  return sub ? sub.toUpperCase().replace("SVG+XML", "SVG") : "—"
 }
 
 function dims(item: { width: number | null; height: number | null }): string {
@@ -65,7 +66,7 @@ function Thumb({
 function MetaLine({ item }: { item: StagedImageItem }) {
   return (
     <span className="text-muted-foreground flex flex-wrap items-center gap-x-1.5 text-[11px]">
-      <span>{shortMime(item.file.type)}</span>
+      <span>{fileFormat(item.file)}</span>
       {dims(item) ? (
         <>
           <span aria-hidden>·</span>
@@ -160,7 +161,7 @@ export function CompressionCompareCard({
                 className="size-9"
               />
               <span className="text-muted-foreground flex flex-wrap items-center gap-x-1.5 text-[11px]">
-                <span>{shortMime(result.file.type)}</span>
+                <span>{fileFormat(result.file)}</span>
                 <span aria-hidden>·</span>
                 <span dir="ltr" className="font-medium text-emerald-600 dark:text-emerald-400">
                   {formatBytes(result.outputSize)}
