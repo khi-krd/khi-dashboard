@@ -12,6 +12,7 @@ import { COMPRESS_NS } from "@/components/shared/compress-strings"
 import { UploadProgressLine } from "@/components/shared/upload-progress-line"
 import { Spinner } from "@/components/ui/spinner"
 import { formatBytes } from "@/hooks/use-file-upload"
+import type { CompressedImageResult } from "@/lib/image-compression"
 import { formatEnDigits } from "@/lib/intl-ckb"
 import { cn } from "@/lib/utils"
 import type {
@@ -76,6 +77,49 @@ function MetaLine({ item }: { item: StagedImageItem }) {
       <span aria-hidden>·</span>
       <span dir="ltr">{formatBytes(item.file.size)}</span>
     </span>
+  )
+}
+
+/** Honest target report: met/missed against the real output bytes, plus how
+ * a PNG was produced (lossless vs N-colour palette). */
+function TargetLine({ result }: { result: CompressedImageResult }) {
+  const target = result.targetBytes ?? 0
+  const method =
+    result.pngMethod === "reduced" && result.pngColors
+      ? `${formatEnDigits(result.pngColors)} ${NS.colors}`
+      : result.pngMethod === "lossless"
+        ? NS.lossless
+        : null
+  if (target <= 0 && !method) return null
+  const missed = target > 0 && result.targetMet === false
+  return (
+    <div className="space-y-0.5 text-[11px]">
+      <p className="flex flex-wrap items-center gap-x-1.5">
+        {target > 0 ? (
+          <span
+            className={cn(
+              missed
+                ? "text-amber-700 dark:text-amber-400"
+                : "text-emerald-600 dark:text-emerald-400",
+            )}
+          >
+            {missed ? NS.targetMissed : NS.targetMet}{" "}
+            <span dir="ltr">{formatBytes(target)}</span>
+          </span>
+        ) : null}
+        {method ? (
+          <>
+            {target > 0 ? <span aria-hidden>·</span> : null}
+            <span className="text-muted-foreground">{method}</span>
+          </>
+        ) : null}
+      </p>
+      {missed && result.pngMethod && result.pngMethod !== "reduced" ? (
+        <p className="text-muted-foreground text-[10px]">
+          {NS.enableReducedHint}
+        </p>
+      ) : null}
+    </div>
   )
 }
 
@@ -182,6 +226,12 @@ export function CompressionCompareCard({
               </span>
               {item.passthrough ? NS.passthrough : NS.unchanged}
             </p>
+          ) : null}
+
+          {(status === "done" || status === "unchanged") &&
+          result &&
+          !item.passthrough ? (
+            <TargetLine result={result} />
           ) : null}
 
           {status === "error" ? (

@@ -2,6 +2,14 @@ import imageCompression, {
   type Options as LibOptions,
 } from "browser-image-compression"
 
+import {
+  compressPng,
+  DEFAULT_PNG_TARGET_BYTES,
+  isPngFile,
+  PngFormatError,
+  type PngMethod,
+} from "@/lib/png-compression"
+
 /**
  * Client-side image compression built on `browser-image-compression`.
  *
@@ -15,6 +23,9 @@ import imageCompression, {
  *   dimensions and `fileType` keeps the source format — a PNG stays a PNG
  *   at full size; only quality is traded for bytes.
  * - PNG/transparency is preserved — no format conversion ever happens.
+ *   PNGs (detected by their signature bytes, not the name/MIME) take a
+ *   dedicated path: lossless oxipng, plus an opt-in reduced-colour stage
+ *   (`lib/png-compression.ts`), with their own target (default 250 KB).
  * - Animated formats (GIF) and vectors (SVG) are returned untouched — a
  *   canvas round-trip would flatten animation / rasterize the vector.
  */
@@ -46,6 +57,10 @@ export type CompressImageOptions = {
   quality?: number
   /** Target output size in KB. `undefined`/`<=0` → no size cap. Default 500. */
   maxSizeKB?: number
+  /** PNG target in KB. `undefined`/`<=0` → no target. Default 250. */
+  pngMaxSizeKB?: number
+  /** Allow the lossy palette stage for PNGs. Default false (lossless only). */
+  pngReducedColors?: boolean
   /** Abort the compression (used by the hook's cancel). */
   signal?: AbortSignal
   /** 0–100 progress from the library. */
@@ -67,6 +82,14 @@ export type CompressedImageResult = {
   outputSize: number
   /** True only when the output is strictly smaller than the input. */
   reduced: boolean
+  /** Target that applied, in bytes (0/undefined → no target). */
+  targetBytes?: number
+  /** Whether `outputSize` fits `targetBytes` — reported, never assumed. */
+  targetMet?: boolean
+  /** PNG path only: how the bytes were produced. */
+  pngMethod?: PngMethod
+  /** PNG path only: palette size when `pngMethod === "reduced"`. */
+  pngColors?: number | null
 }
 
 /** User-facing toggle state — percent quality for the 50–100 slider. */
@@ -76,12 +99,18 @@ export type CompressionSettings = {
   qualityPct: number
   /** Target KB; `null` → no size cap. */
   maxSizeKB: number | null
+  /** PNG target KB; `null` → no target. */
+  pngMaxSizeKB: number | null
+  /** Opt-in lossy palette reduction for PNGs (stays PNG, keeps alpha). */
+  pngReducedColors: boolean
 }
 
 export const DEFAULT_COMPRESSION_SETTINGS: CompressionSettings = {
   enabled: true,
   qualityPct: 80,
   maxSizeKB: 500,
+  pngMaxSizeKB: DEFAULT_PNG_TARGET_BYTES / 1024,
+  pngReducedColors: false,
 }
 
 export function compressionSettingsToOptions(
@@ -90,6 +119,8 @@ export function compressionSettingsToOptions(
   return {
     quality: settings.qualityPct / 100,
     maxSizeKB: settings.maxSizeKB ?? undefined,
+    pngMaxSizeKB: settings.pngMaxSizeKB ?? 0,
+    pngReducedColors: settings.pngReducedColors,
   }
 }
 
@@ -140,7 +171,14 @@ export async function compressImage(
   file: File,
   options: CompressImageOptions = {},
 ): Promise<CompressedImageResult> {
-  const { quality = 0.8, maxSizeKB = 500, signal, onProgress } = options
+  const {
+    quality = 0.8,
+    maxSizeKB = 500,
+    pngMaxSizeKB = DEFAULT_PNG_TARGET_BYTES / 1024,
+    pngReducedColors = false,
+    signal,
+    onProgress,
+  } = options
 
   if (file.size === 0) {
     throw new Error("empty file")
@@ -148,20 +186,51 @@ export async function compressImage(
 
   const { width, height } = await probeImageSize(file)
 
+  const original = (targetBytes = 0): CompressedImageResult => ({
+    file,
+    blob: file,
+    width,
+    height,
+    outWidth: width,
+    outHeight: height,
+    originalSize: file.size,
+    outputSize: file.size,
+    reduced: false,
+    targetBytes,
+    targetMet: targetBytes <= 0 || file.size <= targetBytes,
+  })
+
   // GIF animation / SVG vectors: a canvas pass would destroy them — original.
-  if (!isCompressibleImage(file)) {
+  if (!isCompressibleImage(file)) return original()
+
+  // PNG — routed by content, so a mislabelled file can't slip into the
+  // wrong encoder. Output stays PNG with the original name.
+  const isPng = await isPngFile(file)
+  if (file.type === "image/png" && !isPng) {
+    throw new PngFormatError("file is labelled PNG but is not PNG data")
+  }
+  if (isPng) {
+    const png = await compressPng(file, {
+      targetBytes: pngMaxSizeKB > 0 ? Math.round(pngMaxSizeKB * 1024) : 0,
+      allowReducedColors: pngReducedColors,
+      signal,
+    })
+    onProgress?.(100)
+    const reduced = png.finalSize < file.size
     return {
-      file,
-      blob: file,
-      width,
-      height,
-      outWidth: width,
-      outHeight: height,
-      originalSize: file.size,
-      outputSize: file.size,
-      reduced: false,
+      ...original(png.targetBytes),
+      file: png.file,
+      blob: png.file,
+      outputSize: png.finalSize,
+      reduced,
+      targetMet: png.targetMet,
+      pngMethod: png.method,
+      pngColors: png.colors,
     }
   }
+
+  const targetBytes =
+    typeof maxSizeKB === "number" && maxSizeKB > 0 ? maxSizeKB * 1024 : 0
 
   // Quality-only compression: same format, same dimensions — no conversion,
   // no resizing. `alwaysKeepResolution` pins the source pixels.
@@ -184,17 +253,7 @@ export async function compressImage(
 
   // Never upload bigger than the original — keep the source bytes.
   if (!out || out.size === 0 || out.size >= file.size) {
-    return {
-      file,
-      blob: file,
-      width,
-      height,
-      outWidth: width,
-      outHeight: height,
-      originalSize: file.size,
-      outputSize: file.size,
-      reduced: false,
-    }
+    return original(targetBytes)
   }
 
   // The library renames after the MIME type (photo.jpg → photo.jpeg) —
@@ -208,14 +267,11 @@ export async function compressImage(
       : out
 
   return {
+    ...original(targetBytes),
     file: outFile,
     blob: outFile,
-    width,
-    height,
-    outWidth: width,
-    outHeight: height,
-    originalSize: file.size,
     outputSize: outFile.size,
     reduced: true,
+    targetMet: targetBytes <= 0 || outFile.size <= targetBytes,
   }
 }

@@ -64,7 +64,12 @@ function stageId(): string {
 }
 
 function optionsKey(o: CompressImageOptions): string {
-  return JSON.stringify([o.quality ?? null, o.maxSizeKB ?? null])
+  return JSON.stringify([
+    o.quality ?? null,
+    o.maxSizeKB ?? null,
+    o.pngMaxSizeKB ?? null,
+    o.pngReducedColors ?? false,
+  ])
 }
 
 /** The bytes a staged item uploads: compressed output when it exists,

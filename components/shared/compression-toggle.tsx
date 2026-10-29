@@ -148,6 +148,53 @@ export function CompressionToggle({
               />
             </div>
 
+            <div className="border-border/60 space-y-2 border-t pt-3">
+              <span className="text-[11px] font-medium">{NS.pngSection}</span>
+              <div className="space-y-1">
+                <Label className="text-muted-foreground text-[11px]">
+                  {NS.pngTarget}
+                </Label>
+                <Input
+                  type="number"
+                  dir="ltr"
+                  min={0}
+                  className="h-8 w-32 font-mono text-xs"
+                  placeholder={NS.targetPlaceholder}
+                  disabled={disabled}
+                  value={value.pngMaxSizeKB ?? ""}
+                  onChange={(e) => {
+                    const raw = e.target.value.trim()
+                    const parsed = Number(raw)
+                    patch({
+                      pngMaxSizeKB:
+                        raw === "" || Number.isNaN(parsed) || parsed <= 0
+                          ? null
+                          : parsed,
+                    })
+                  }}
+                />
+              </div>
+              <label className="flex items-start gap-2">
+                <Switch
+                  size="sm"
+                  className="mt-0.5"
+                  checked={value.pngReducedColors}
+                  onCheckedChange={(checked) =>
+                    patch({ pngReducedColors: checked === true })
+                  }
+                  disabled={disabled}
+                />
+                <span className="space-y-0.5">
+                  <span className="block text-[11px]">{NS.pngReduced}</span>
+                  <span className="text-muted-foreground block text-[10px] leading-relaxed">
+                    {value.pngReducedColors
+                      ? NS.pngReducedHint
+                      : NS.pngLosslessHint}
+                  </span>
+                </span>
+              </label>
+            </div>
+
             <div className="flex justify-end">
               <button
                 type="button"

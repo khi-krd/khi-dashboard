@@ -17,6 +17,9 @@ export function buildCsp(nonce: string, isDev: boolean): string {
       "'self'",
       `'nonce-${nonce}'`,
       "'strict-dynamic'",
+      // WebAssembly compilation only (oxipng PNG optimiser) — does NOT allow
+      // JS eval(); that stays dev-only below.
+      "'wasm-unsafe-eval'",
       ...(isDev ? ["'unsafe-eval'"] : []),
     ],
 
