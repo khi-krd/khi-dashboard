@@ -590,7 +590,7 @@ export function AboutForm({
                         : undefined
                     }
                   />
-                  <MediaCoverUpload entity="about"
+                  <MediaCoverUpload entity="about" compressOptions
                     label={NS.form.hero_poster}
                     previewUrl={heroPosterUrl.trim() || null}
                     urlValue={heroPosterUrl}
@@ -906,7 +906,7 @@ export function AboutForm({
                     />
                   </div>
                 </div>
-                <MediaCoverUpload entity="about"
+                <MediaCoverUpload entity="about" compressOptions
                   label={NS.form.founder_image}
                   previewUrl={founderImageUrl.trim() || null}
                   urlValue={founderImageUrl}
@@ -954,7 +954,7 @@ export function AboutForm({
                 </div>
               </div>
               <div className="mt-6">
-                <MediaCoverUpload entity="about"
+                <MediaCoverUpload entity="about" compressOptions
                   label={NS.form.founder_image}
                   previewUrl={founderImageUrl.trim() || null}
                   urlValue={founderImageUrl}
@@ -996,7 +996,7 @@ export function AboutForm({
                       : undefined
                   }
                 />
-                <MediaCoverUpload entity="about"
+                <MediaCoverUpload entity="about" compressOptions
                   label={NS.form.hero_poster}
                   previewUrl={heroPosterUrl.trim() || null}
                   urlValue={heroPosterUrl}
@@ -1364,7 +1364,7 @@ export function AboutForm({
               </div>
             </div>
             <Separator />
-            <MediaCoverUpload entity="about"
+            <MediaCoverUpload entity="about" compressOptions
               label={NS.form.team_image}
               previewUrl={teamForm.imageUrl.trim() || null}
               urlValue={teamForm.imageUrl}
@@ -1442,7 +1442,7 @@ export function AboutForm({
               </div>
             </div>
             <Separator />
-            <MediaCoverUpload entity="about"
+            <MediaCoverUpload entity="about" compressOptions
               label={NS.form.partner_logo}
               previewUrl={partnerForm.logoUrl.trim() || null}
               urlValue={partnerForm.logoUrl}

@@ -28,11 +28,26 @@ import {
   type Path,
 } from "react-hook-form"
 
+import {
+  CompressionBatchStrip,
+  CompressionCompareCard,
+} from "@/components/shared/compression-compare"
+import { CompressionToggle } from "@/components/shared/compression-toggle"
+import { COMPRESS_NS } from "@/components/shared/compress-strings"
 import { MediaCoverUpload } from "@/components/shared/media-cover-upload"
-import { UploadProgressLine } from "@/components/shared/upload-progress-line"
 import { Button } from "@/components/ui/button"
-import { Spinner } from "@/components/ui/spinner"
 import { useFileUpload } from "@/hooks/use-file-upload"
+import {
+  isUploadable,
+  stagedUploadFile,
+  useImageCompression,
+} from "@/hooks/use-image-compression"
+import {
+  compressionSettingsToOptions,
+  DEFAULT_COMPRESSION_SETTINGS,
+  type CompressionSettings,
+} from "@/lib/image-compression"
+import { formatEnDigits } from "@/lib/intl-ckb"
 import { uploadMedia } from "@/services/mediaService"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -126,41 +141,68 @@ export function MediaGalleryEditor<T extends FieldValues>({
     name: name as never,
   })
 
-  const [busyCount, setBusyCount] = useState(0)
-  const [progress, setProgress] = useState<number | null>(null)
-
-  // Multi-file upload: every picked/dropped file uploads to the entity's
-  // folder and becomes its own gallery row (kind follows the MIME type).
-  const addFiles = useCallback(
-    async (files: File[]) => {
-      if (files.length === 0) return
-      setBusyCount(files.length)
-      setProgress(0)
-      const share = 100 / files.length
-      const base = (getValues(name) as unknown[] | undefined)?.length ?? 0
-      const added: MediaGalleryItemFormValues[] = []
-      for (const [i, file] of files.entries()) {
-        try {
-          const res = await uploadMedia(
-            file,
-            entity ?? "content",
-            (pct) => setProgress(i * share + (pct / 100) * share),
-          )
-          added.push({
-            ...createEmptyGalleryItem(base + added.length),
-            kind: kindFromFile(file),
-            url: res.fileUrl,
-          })
-        } catch {
-          // skip failed uploads; the row just isn't created
-        }
-      }
-      added.forEach((item) => append(item as never))
-      setBusyCount(0)
-      setProgress(null)
-    },
-    [append, entity, getValues, name],
+  const [settings, setSettings] = useState<CompressionSettings>(
+    DEFAULT_COMPRESSION_SETTINGS,
   )
+  const compression = useImageCompression(
+    compressionSettingsToOptions(settings),
+  )
+  const [uploading, setUploading] = useState(false)
+
+  // Multi-file flow: picked/dropped files are staged first — images get a
+  // before-upload compression pass, then "بارکردنی هەموو" sends each staged
+  // file to the entity folder and appends a gallery row per success.
+  const stageFiles = useCallback(
+    (files: File[]) => {
+      if (files.length === 0) return
+      compression.addFiles(files, settings.enabled)
+    },
+    [compression, settings.enabled],
+  )
+
+  const uploadable = compression.items.filter(isUploadable)
+  const canUpload =
+    uploadable.length > 0 && !compression.isCompressing && !uploading
+  const busy = uploading
+
+  const uploadAll = useCallback(async () => {
+    const ready = compression.items.filter(isUploadable)
+    if (ready.length === 0) return
+    setUploading(true)
+    const base = (getValues(name) as unknown[] | undefined)?.length ?? 0
+    const added: MediaGalleryItemFormValues[] = []
+    for (const item of ready) {
+      compression.updateItem(item.id, {
+        uploadStatus: "uploading",
+        uploadProgress: 0,
+      })
+      try {
+        const res = await uploadMedia(
+          stagedUploadFile(item),
+          entity ?? "content",
+          (pct) => compression.updateItem(item.id, { uploadProgress: pct }),
+        )
+        added.push({
+          ...createEmptyGalleryItem(base + added.length),
+          kind: kindFromFile(item.file),
+          url: res.fileUrl,
+        })
+        compression.updateItem(item.id, {
+          uploadStatus: "done",
+          uploadProgress: 100,
+        })
+      } catch {
+        // Failed siblings stay as error cards; the rest still land.
+        compression.updateItem(item.id, {
+          uploadStatus: "error",
+          uploadProgress: null,
+        })
+      }
+    }
+    added.forEach((item) => append(item as never))
+    setUploading(false)
+    compression.removeFinished()
+  }, [append, compression, entity, getValues, name])
 
   const [
     { isDragging },
@@ -181,7 +223,7 @@ export function MediaGalleryEditor<T extends FieldValues>({
       const files = added
         .map((entry) => entry.file)
         .filter((file): file is File => file instanceof File)
-      void addFiles(files)
+      stageFiles(files)
       queueMicrotask(() => clearFiles())
     },
   })
@@ -218,7 +260,7 @@ export function MediaGalleryEditor<T extends FieldValues>({
       onDragOver={handleDragOver}
       onDrop={handleDrop}
     >
-      <input {...getInputProps({ disabled: busyCount > 0 })} className="sr-only" />
+      <input {...getInputProps({ disabled: busy })} className="sr-only" />
       <div className="flex items-center justify-between gap-2">
         <h2 className="text-sm font-semibold">{title}</h2>
         <div className="flex items-center gap-2">
@@ -227,7 +269,7 @@ export function MediaGalleryEditor<T extends FieldValues>({
             variant="outline"
             size="sm"
             className="h-8 gap-1"
-            disabled={busyCount > 0}
+            disabled={busy}
             onClick={openFileDialog}
           >
             <CloudArrowUpIcon className="size-3.5" />
@@ -248,29 +290,68 @@ export function MediaGalleryEditor<T extends FieldValues>({
         </div>
       </div>
 
-      {busyCount > 0 ? (
-        <div className="border-border bg-muted/10 flex items-center gap-3 rounded-lg border border-dashed p-3">
-          <Spinner className="size-4" />
-          <div className="min-w-0 flex-1">
-            <p className="text-muted-foreground text-xs">
-              {busyCount} فایل بار دەکرێت…
-            </p>
-            <UploadProgressLine value={progress} className="mt-1.5" />
+      <button
+        type="button"
+        onClick={openFileDialog}
+        disabled={busy}
+        className={cn(
+          "border-border text-muted-foreground hover:border-primary/40 hover:text-foreground flex w-full items-center justify-center gap-2 rounded-lg border border-dashed p-3 text-xs transition-colors disabled:opacity-60",
+          isDragging && "border-primary text-primary",
+        )}
+      >
+        <CloudArrowUpIcon className="size-4" />
+        فایلەکان ئێرە دابنێ یان کلیک بکە — وێنە، ڤیدیۆ و دەنگ پێکەوە
+      </button>
+
+      <CompressionToggle
+        value={settings}
+        onChange={setSettings}
+        disabled={uploading}
+      />
+
+      {compression.items.length > 0 ? (
+        <div className="space-y-2">
+          <div className="grid grid-cols-1 gap-2 lg:grid-cols-2">
+            {compression.items.map((item) => (
+              <CompressionCompareCard
+                key={item.id}
+                item={item}
+                onRemove={
+                  uploading ? undefined : () => compression.remove(item.id)
+                }
+                onRetry={
+                  item.status === "error" && !uploading
+                    ? () => compression.requeue(item.id)
+                    : undefined
+                }
+              />
+            ))}
+          </div>
+          <CompressionBatchStrip stats={compression.stats} />
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              size="sm"
+              disabled={!canUpload}
+              onClick={() => void uploadAll()}
+            >
+              {COMPRESS_NS.batch.uploadAll}
+              {uploadable.length > 0
+                ? ` (${formatEnDigits(uploadable.length)})`
+                : ""}
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              disabled={uploading}
+              onClick={() => compression.clear()}
+            >
+              هەڵوەشاندنەوە
+            </Button>
           </div>
         </div>
-      ) : (
-        <button
-          type="button"
-          onClick={openFileDialog}
-          className={cn(
-            "border-border text-muted-foreground hover:border-primary/40 hover:text-foreground flex w-full items-center justify-center gap-2 rounded-lg border border-dashed p-3 text-xs transition-colors",
-            isDragging && "border-primary text-primary",
-          )}
-        >
-          <CloudArrowUpIcon className="size-4" />
-          فایلەکان ئێرە دابنێ یان کلیک بکە — وێنە، ڤیدیۆ و دەنگ پێکەوە
-        </button>
-      )}
+      ) : null}
 
       {fields.length === 0 ? (
         <p className="text-muted-foreground text-sm">{emptyLabel}</p>
@@ -485,6 +566,7 @@ function SortableGalleryRow<T extends FieldValues>({
         </div>
       ) : (
         <MediaCoverUpload
+          compressOptions
           label={KIND_URL_LABELS[kind ?? "IMAGE"]}
           previewUrl={url?.trim() || null}
           urlValue={url ?? ""}
@@ -502,6 +584,7 @@ function SortableGalleryRow<T extends FieldValues>({
 
       {isMedia ? (
         <MediaCoverUpload
+          compressOptions
           entity={entity}
           label="وێنەی بچووک (thumbnail)"
           variant="image"

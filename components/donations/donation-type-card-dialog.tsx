@@ -252,7 +252,7 @@ function DonationTypeCardDialogBody({
             control={control}
             name="imageUrl"
             render={({ field }) => (
-              <MediaCoverUpload entity="donations"
+              <MediaCoverUpload entity="donations" compressOptions
                 previewUrl={field.value?.trim() || null}
                 urlValue={field.value ?? ""}
                 onUrlChange={field.onChange}

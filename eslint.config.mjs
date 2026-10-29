@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Vendored third-party UMD build loaded by the compression worker —
+    // minified, never linted.
+    "public/vendor/**",
   ]),
 ]);
 

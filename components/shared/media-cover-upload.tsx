@@ -6,7 +6,9 @@ import {
   SpeakerWaveIcon,
   VideoCameraIcon,
 } from "@heroicons/react/24/outline"
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
+import { CompressionCompareCard } from "@/components/shared/compression-compare"
+import { CompressionToggle } from "@/components/shared/compression-toggle"
 import { TIPTAP_NS } from "@/components/shared/tiptap-strings"
 import { UploadProgressLine } from "@/components/shared/upload-progress-line"
 import { Button } from "@/components/ui/button"
@@ -14,6 +16,16 @@ import { FieldError } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { MAX_UPLOAD_BYTES, useFileUpload } from "@/hooks/use-file-upload"
+import {
+  isUploadable,
+  stagedUploadFile,
+  useImageCompression,
+} from "@/hooks/use-image-compression"
+import {
+  compressionSettingsToOptions,
+  DEFAULT_COMPRESSION_SETTINGS,
+  type CompressionSettings,
+} from "@/lib/image-compression"
 import { mediaTypeFromFile } from "@/lib/tiptap-media"
 import { VideoUrlPreview } from "@/components/shared/video-url-preview"
 import { uploadMedia } from "@/services/mediaService"
@@ -73,6 +85,7 @@ export function MediaCoverUpload({
   variant = "image",
   entity,
   compact = false,
+  compressOptions,
 }: {
   label?: string
   previewUrl: string | null
@@ -88,6 +101,13 @@ export function MediaCoverUpload({
   entity?: string
   /** Small horizontal layout: thumb + controls side by side. */
   compact?: boolean
+  /**
+   * When truthy, enables the pre-upload image-compression UI: a
+   * "باشکردنی وێنە پێش بارکردن" toggle + a before-upload compare card.
+   * Pass an object to seed `DEFAULT_COMPRESSION_SETTINGS`. Only rendered
+   * for `variant="image"` in the non-compact layout.
+   */
+  compressOptions?: boolean | Partial<CompressionSettings>
 }) {
   const resolvedAccept = accept ?? VARIANT_ACCEPT[variant]
   const resolvedMaxSize = maxSize ?? VARIANT_MAX[variant]
@@ -95,6 +115,51 @@ export function MediaCoverUpload({
   const [uploading, setUploading] = useState(false)
   const [progress, setProgress] = useState<number | null>(null)
   const preview = previewUrl?.trim() || null
+
+  const compressionEnabled =
+    !!compressOptions && variant === "image" && !compact
+  const [settings, setSettings] = useState<CompressionSettings>(() => ({
+    ...DEFAULT_COMPRESSION_SETTINGS,
+    ...(typeof compressOptions === "object" ? compressOptions : {}),
+  }))
+  const compression = useImageCompression(
+    compressionSettingsToOptions(settings),
+  )
+  const staged = compression.items[0] ?? null
+  const stagedBusy =
+    staged != null &&
+    (staged.status === "idle" || staged.status === "compressing")
+  const busy = uploading || stagedBusy
+  // Guards StrictMode double-effects and settings-change requeues: each
+  // staged file uploads exactly once.
+  const uploadStartedRef = useRef(new Set<string>())
+  const uploadingIdRef = useRef<string | null>(null)
+
+  // Declared before `useFileUpload` (which references it in onFilesAdded) so
+  // no binding is accessed ahead of its declaration.
+  async function uploadFile(file: File): Promise<boolean> {
+    setUploading(true)
+    setProgress(0)
+    try {
+      const result = await uploadMedia(
+        file,
+        entity ?? mediaTypeFromFile(file),
+        (pct) => {
+          setProgress(pct)
+          const id = uploadingIdRef.current
+          if (id) compression.updateItem(id, { uploadProgress: pct })
+        },
+      )
+      onUrlChange(result.fileUrl)
+      return true
+    } catch (err) {
+      toastApiError(err, TIPTAP_NS.error.uploadFailed)
+      return false
+    } finally {
+      setUploading(false)
+      setProgress(null)
+    }
+  }
 
   const [
     { isDragging, errors },
@@ -117,33 +182,43 @@ export function MediaCoverUpload({
     onFilesAdded: (added) => {
       const entry = added[0]
       if (!entry?.file || !(entry.file instanceof File)) return
-      void uploadFile(entry.file)
+      clearErrors()
+      if (compressionEnabled) {
+        // Stage the pick — the card shows the before/after bytes, then the
+        // effect below pushes the result through the same upload path.
+        compression.clear()
+        compression.addFiles([entry.file], settings.enabled)
+      } else {
+        void uploadFile(entry.file)
+      }
       queueMicrotask(() => removeFile(entry.id))
     },
   })
 
-  async function uploadFile(file: File) {
-    clearErrors()
-    setUploading(true)
-    setProgress(0)
-    try {
-      const result = await uploadMedia(
-        file,
-        entity ?? mediaTypeFromFile(file),
-        setProgress,
-      )
-      onUrlChange(result.fileUrl)
-    } catch (err) {
-      toastApiError(err, TIPTAP_NS.error.uploadFailed)
-    } finally {
-      setUploading(false)
-      setProgress(null)
-    }
-  }
+  // Once the staged file settles (compressed / unchanged / failed), send it:
+  // the compressed File when it shrank, the original bytes otherwise.
+  useEffect(() => {
+    if (!compressionEnabled || !staged || !isUploadable(staged)) return
+    if (uploadStartedRef.current.has(staged.id)) return
+    uploadStartedRef.current.add(staged.id)
+    uploadingIdRef.current = staged.id
+    compression.updateItem(staged.id, {
+      uploadStatus: "uploading",
+      uploadProgress: 0,
+    })
+    void uploadFile(stagedUploadFile(staged)).then((ok) => {
+      compression.updateItem(staged.id, {
+        uploadStatus: ok ? "done" : "error",
+        uploadProgress: null,
+      })
+      uploadingIdRef.current = null
+    })
+  })
 
   function handleRemove() {
     clearFiles()
     clearErrors()
+    compression.clear()
     onUrlChange("")
   }
 
@@ -254,7 +329,7 @@ export function MediaCoverUpload({
         onDragOver={handleDragOver}
         onDrop={handleDrop}
       >
-        <input {...getInputProps()} className="sr-only" />
+        <input {...getInputProps({ disabled: busy })} className="sr-only" />
         {preview ? (
           variant === "video" ? (
             <VideoUrlPreview url={preview} />
@@ -291,7 +366,7 @@ export function MediaCoverUpload({
           type="button"
           variant="outline"
           size="sm"
-          disabled={uploading}
+          disabled={busy}
           onClick={openFileDialog}
         >
           <ArrowUpTrayIcon className="size-4" />
@@ -308,6 +383,33 @@ export function MediaCoverUpload({
           </Button>
         ) : null}
       </div>
+      {compressionEnabled ? (
+        <>
+          <CompressionToggle
+            value={settings}
+            onChange={setSettings}
+            disabled={uploading}
+          />
+          {staged ? (
+            <CompressionCompareCard
+              item={staged}
+              onRemove={uploading ? undefined : () => compression.clear()}
+              onRetry={
+                staged.status === "error" && !uploading
+                  ? () => compression.requeue(staged.id)
+                  : staged.uploadStatus === "error" && !uploading
+                    ? () => {
+                        uploadStartedRef.current.delete(staged.id)
+                        compression.updateItem(staged.id, {
+                          uploadStatus: "idle",
+                        })
+                      }
+                    : undefined
+              }
+            />
+          ) : null}
+        </>
+      ) : null}
       <div className="space-y-1">
         <Label className="text-muted-foreground text-xs">
           {texts.urlLabel}

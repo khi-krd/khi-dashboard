@@ -280,7 +280,7 @@ export function AboutPartnersSectionCard({ index }: { index: number }) {
               </div>
             </div>
             <Separator />
-            <MediaCoverUpload entity="about"
+            <MediaCoverUpload entity="about" compressOptions
               label={NS.form.partner_logo}
               previewUrl={form.logoUrl.trim() || null}
               urlValue={form.logoUrl}

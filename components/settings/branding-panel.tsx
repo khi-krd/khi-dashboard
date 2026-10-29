@@ -161,7 +161,7 @@ function BrandingForm({
           name="logoUrl"
           render={({ field }) => (
             <div className="space-y-3">
-              <MediaCoverUpload entity="brandings"
+              <MediaCoverUpload entity="brandings" compressOptions
                 label={NS.logo.label}
                 aspectClass="aspect-square"
                 helperText={NS.logo.hint}
@@ -196,7 +196,7 @@ function BrandingForm({
           name="donateImageUrl"
           render={({ field }) => (
             <div className="space-y-3">
-              <MediaCoverUpload entity="brandings"
+              <MediaCoverUpload entity="brandings" compressOptions
                 label={NS.donate.label}
                 aspectClass="aspect-[4/3]"
                 helperText={NS.donate.hint}

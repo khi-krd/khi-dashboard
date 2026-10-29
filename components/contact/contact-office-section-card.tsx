@@ -284,7 +284,7 @@ export function ContactOfficeSectionCard({
             control={control}
             name="heroImageUrl"
             render={({ field, fieldState }) => (
-              <MediaCoverUpload entity="contact"
+              <MediaCoverUpload entity="contact" compressOptions
                 previewUrl={field.value?.trim() || null}
                 urlValue={field.value ?? ""}
                 onUrlChange={field.onChange}

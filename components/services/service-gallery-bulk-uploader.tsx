@@ -13,12 +13,26 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@/components/reui/alert"
+import {
+  CompressionBatchStrip,
+  CompressionCompareCard,
+} from "@/components/shared/compression-compare"
+import { CompressionToggle } from "@/components/shared/compression-toggle"
+import { COMPRESS_NS } from "@/components/shared/compress-strings"
 import { NS } from "@/components/services/services-strings"
 import { Button } from "@/components/ui/button"
-import { Spinner } from "@/components/ui/spinner"
-import { UploadProgressLine } from "@/components/shared/upload-progress-line"
 import { formatBytes, MAX_UPLOAD_BYTES, useFileUpload } from "@/hooks/use-file-upload"
+import {
+  isUploadable,
+  stagedUploadFile,
+  useImageCompression,
+} from "@/hooks/use-image-compression"
 import { formatCkbDigits } from "@/lib/intl-ckb"
+import {
+  compressionSettingsToOptions,
+  DEFAULT_COMPRESSION_SETTINGS,
+  type CompressionSettings,
+} from "@/lib/image-compression"
 import { cn } from "@/lib/utils"
 import { captureVideoFrame } from "@/lib/video-thumbnail"
 import {
@@ -46,71 +60,96 @@ export function ServiceGalleryBulkUploader({
   compact?: boolean
 }) {
   const { watch, setValue } = useFormContext<ServiceFormValues>()
-  const [processingCount, setProcessingCount] = useState(0)
-  const [pendingNames, setPendingNames] = useState<string[]>([])
-  const [progress, setProgress] = useState<number | null>(null)
+  const [settings, setSettings] = useState<CompressionSettings>(
+    DEFAULT_COMPRESSION_SETTINGS,
+  )
+  const compression = useImageCompression(
+    compressionSettingsToOptions(settings),
+  )
+  const [uploading, setUploading] = useState(false)
 
   const remainingSlots = Math.max(0, MAX_GALLERY_FILES - slotCount)
+  const stagedSlots = compression.items.length
+  const openSlots = Math.max(0, remainingSlots - stagedSlots)
 
-  const addFilesAsSlots = useCallback(
-    async (files: File[]) => {
-      if (files.length === 0 || remainingSlots <= 0) return
+  const stageFiles = useCallback(
+    (files: File[]) => {
+      if (files.length === 0 || openSlots <= 0) return
+      compression.addFiles(
+        files.slice(0, openSlots),
+        settings.enabled,
+      )
+    },
+    [compression, openSlots, settings.enabled],
+  )
 
-      const toProcess = files.slice(0, remainingSlots)
-      setProcessingCount(toProcess.length)
-      setPendingNames(toProcess.map((f) => f.name))
+  const uploadable = compression.items.filter(isUploadable)
+  const canUpload =
+    uploadable.length > 0 && !compression.isCompressing && !uploading
 
-      const existing = watch("galleryMedia") ?? []
-      const newSlots = []
-      const perFileShare = 100 / toProcess.length
-      setProgress(0)
+  const uploadAll = useCallback(async () => {
+    const ready = compression.items.filter(isUploadable)
+    if (ready.length === 0) return
+    setUploading(true)
 
-      for (const [index, file] of toProcess.entries()) {
-        const base = index * perFileShare
-        try {
-          const result = await uploadMedia(
-            file,
-            "services",
-            (pct) => setProgress(base + (pct / 100) * perFileShare),
-          )
-          const type = typeFromFile(file)
-          // Video files get an auto poster: grab a frame from the LOCAL file
-          // (blob URL — no CORS taint) and upload it alongside the video.
-          let posterUrl = ""
-          if (type === "VIDEO") {
-            const frame = await captureVideoFrame({ kind: "file", file })
-            if (frame) {
-              try {
-                posterUrl = (await uploadMedia(frame, "services")).fileUrl
-              } catch {
-                posterUrl = ""
-              }
+    const existing = watch("galleryMedia") ?? []
+    const newSlots = []
+
+    for (const item of ready) {
+      compression.updateItem(item.id, {
+        uploadStatus: "uploading",
+        uploadProgress: 0,
+      })
+      try {
+        const file = stagedUploadFile(item)
+        const result = await uploadMedia(file, "services", (pct) =>
+          compression.updateItem(item.id, { uploadProgress: pct }),
+        )
+        const type = typeFromFile(item.file)
+        // Video files get an auto poster: grab a frame from the LOCAL file
+        // (blob URL — no CORS taint) and upload it alongside the video.
+        let posterUrl = ""
+        if (type === "VIDEO") {
+          const frame = await captureVideoFrame({ kind: "file", file: item.file })
+          if (frame) {
+            try {
+              posterUrl = (await uploadMedia(frame, "services")).fileUrl
+            } catch {
+              posterUrl = ""
             }
           }
-          newSlots.push({
-            ...createEmptyGallerySlot(),
-            type,
-            url: result.fileUrl,
-            posterUrl,
-          })
-        } catch {
-          // skip failed uploads
         }
-      }
-
-      if (newSlots.length > 0) {
-        setValue("galleryMedia", [...existing, ...newSlots], {
-          shouldDirty: true,
-          shouldValidate: true,
+        newSlots.push({
+          ...createEmptyGallerySlot(),
+          type,
+          url: result.fileUrl,
+          posterUrl,
+        })
+        compression.updateItem(item.id, {
+          uploadStatus: "done",
+          uploadProgress: 100,
+        })
+      } catch {
+        // Failed sibling stays visible as an error card and never reaches
+        // the gallery — the rest still land.
+        compression.updateItem(item.id, {
+          uploadStatus: "error",
+          uploadProgress: null,
         })
       }
+    }
 
-      setProcessingCount(0)
-      setPendingNames([])
-      setProgress(null)
-    },
-    [remainingSlots, setValue, watch],
-  )
+    if (newSlots.length > 0) {
+      setValue("galleryMedia", [...existing, ...newSlots], {
+        shouldDirty: true,
+        shouldValidate: true,
+      })
+    }
+
+    setUploading(false)
+    // Uploaded cards clear; failed ones stay for remove/retry.
+    compression.removeFinished()
+  }, [compression, setValue, watch])
 
   const [
     { isDragging, errors: uploadErrors },
@@ -124,7 +163,7 @@ export function ServiceGalleryBulkUploader({
       clearFiles,
     },
   ] = useFileUpload({
-    maxFiles: remainingSlots,
+    maxFiles: openSlots,
     maxSize: MAX_FILE_BYTES,
     accept: "image/*,video/*",
     multiple: true,
@@ -132,13 +171,12 @@ export function ServiceGalleryBulkUploader({
       const files = added
         .map((entry) => entry.file)
         .filter((file): file is File => file instanceof File)
-      void addFilesAsSlots(files)
+      stageFiles(files)
       queueMicrotask(() => clearFiles())
     },
   })
 
-  const isProcessing = processingCount > 0
-  const disabled = remainingSlots <= 0 || isProcessing
+  const disabled = openSlots <= 0 || uploading
 
   return (
     <div className="flex flex-col gap-2">
@@ -156,50 +194,85 @@ export function ServiceGalleryBulkUploader({
         onDrop={disabled ? undefined : handleDrop}
       >
         <input {...getInputProps({ disabled })} className="sr-only" />
-        {isProcessing ? (
-          <div className="flex w-full flex-col items-center gap-3 p-4">
-            <div className="flex items-center gap-3">
-              <Spinner className="size-5" />
-              <p className="text-muted-foreground text-sm">
-                {NS.gallery.bulkProcessing(formatCkbDigits(processingCount))}
-              </p>
-            </div>
-            <UploadProgressLine
-              value={progress}
-              className="w-full max-w-md"
-            />
-          </div>
-        ) : (
-          <button
-            type="button"
-            disabled={disabled}
-            onClick={openFileDialog}
-            className={cn(
-              "text-muted-foreground flex w-full items-center justify-center gap-3 p-4 text-sm",
-              compact && "flex-col gap-1.5 sm:flex-row",
+        <button
+          type="button"
+          disabled={disabled}
+          onClick={openFileDialog}
+          className={cn(
+            "text-muted-foreground flex w-full items-center justify-center gap-3 p-4 text-sm",
+            compact && "flex-col gap-1.5 sm:flex-row",
+          )}
+        >
+          <HugeiconsIcon
+            icon={CloudUploadIcon}
+            strokeWidth={2}
+            className={cn("opacity-50", compact ? "size-7" : "size-10")}
+          />
+          <span className="text-center">
+            <span className="font-medium">{NS.gallery.bulkDrop}</span>
+            {!compact ? (
+              <>
+                <br />
+                <span className="text-xs">{NS.gallery.bulkHelper}</span>
+              </>
+            ) : (
+              <span className="text-muted-foreground block text-xs">
+                {NS.gallery.bulkHelper}
+              </span>
             )}
-          >
-            <HugeiconsIcon
-              icon={CloudUploadIcon}
-              strokeWidth={2}
-              className={cn("opacity-50", compact ? "size-7" : "size-10")}
-            />
-            <span className="text-center">
-              <span className="font-medium">{NS.gallery.bulkDrop}</span>
-              {!compact ? (
-                <>
-                  <br />
-                  <span className="text-xs">{NS.gallery.bulkHelper}</span>
-                </>
-              ) : (
-                <span className="text-muted-foreground block text-xs">
-                  {NS.gallery.bulkHelper}
-                </span>
-              )}
-            </span>
-          </button>
-        )}
+          </span>
+        </button>
       </div>
+
+      <CompressionToggle
+        value={settings}
+        onChange={setSettings}
+        disabled={uploading}
+      />
+
+      {compression.items.length > 0 ? (
+        <div className="space-y-2">
+          <div className="grid grid-cols-1 gap-2 lg:grid-cols-2">
+            {compression.items.map((item) => (
+              <CompressionCompareCard
+                key={item.id}
+                item={item}
+                onRemove={
+                  uploading ? undefined : () => compression.remove(item.id)
+                }
+                onRetry={
+                  item.status === "error" && !uploading
+                    ? () => compression.requeue(item.id)
+                    : undefined
+                }
+              />
+            ))}
+          </div>
+          <CompressionBatchStrip stats={compression.stats} />
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              size="sm"
+              disabled={!canUpload}
+              onClick={() => void uploadAll()}
+            >
+              {COMPRESS_NS.batch.uploadAll}
+              {uploadable.length > 0
+                ? ` (${formatCkbDigits(uploadable.length)})`
+                : ""}
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              disabled={uploading}
+              onClick={() => compression.clear()}
+            >
+              {NS.action.cancel}
+            </Button>
+          </div>
+        </div>
+      ) : null}
 
       {!compact ? (
         <div className="flex flex-wrap items-center justify-between gap-2">

@@ -548,7 +548,7 @@ export function NewsForm({
                   name="coverUrl"
                   control={control}
                   render={({ field }) => (
-                    <MediaCoverUpload entity="news"
+                    <MediaCoverUpload entity="news" compressOptions
                       variant={
                         coverMediaType === "VIDEO"
                           ? "video"
@@ -612,7 +612,7 @@ export function NewsForm({
                     name="coverThumbnailUrl"
                     control={control}
                     render={({ field }) => (
-                      <MediaCoverUpload entity="news"
+                      <MediaCoverUpload entity="news" compressOptions
                         label={NS.field.cover_thumbnail}
                         previewUrl={
                           field.value?.trim() ||

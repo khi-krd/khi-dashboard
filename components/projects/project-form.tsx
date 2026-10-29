@@ -530,7 +530,7 @@ export function ProjectForm({
               })}
             </div>
 
-            <MediaCoverUpload entity="projects"
+            <MediaCoverUpload entity="projects" compressOptions
               variant={
                 coverMediaType === "VIDEO"
                   ? "video"
@@ -589,7 +589,7 @@ export function ProjectForm({
                   name="coverThumbnailUrl"
                   control={control}
                   render={({ field }) => (
-                    <MediaCoverUpload entity="projects"
+                    <MediaCoverUpload entity="projects" compressOptions
                       label={NS.field.cover_thumbnail}
                       previewUrl={
                         field.value?.trim() ||
