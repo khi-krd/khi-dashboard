@@ -46,7 +46,7 @@ export function isCompressibleImage(file: File): boolean {
 export type CompressImageOptions = {
   /** 0–1, mapped to the library `initialQuality`. Default 0.8. */
   quality?: number
-  /** Target output size in KB. `undefined`/`<=0` → no size cap. Default 300. */
+  /** Target output size in KB. `undefined`/`<=0` → no size cap. Default 500. */
   maxSizeKB?: number
   /** Re-encode as WebP. Default false — keeps the source type (PNG stays PNG). */
   convertToWebP?: boolean
@@ -93,7 +93,7 @@ export type CompressionSettings = {
 export const DEFAULT_COMPRESSION_SETTINGS: CompressionSettings = {
   enabled: true,
   qualityPct: 80,
-  maxSizeKB: 300,
+  maxSizeKB: 500,
   keepDimensions: true,
   maxWidthOrHeight: null,
   convertToWebP: false,
@@ -166,7 +166,7 @@ export async function compressImage(
 ): Promise<CompressedImageResult> {
   const {
     quality = 0.8,
-    maxSizeKB = 300,
+    maxSizeKB = 500,
     convertToWebP = false,
     keepDimensions = true,
     maxWidthOrHeight,
