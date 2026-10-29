@@ -168,6 +168,27 @@ async function runLibrary(
   }
 }
 
+/**
+ * Compress an image file for upload, returning the File to send. Uses the
+ * default dashboard settings when none are given. Never throws — on any
+ * failure the original file comes back unchanged (backend stays the judge).
+ */
+export async function compressFileForUpload(
+  file: File,
+  options?: CompressImageOptions | null,
+): Promise<File> {
+  if (options === null) return file
+  try {
+    const result = await compressImage(
+      file,
+      options ?? compressionSettingsToOptions(DEFAULT_COMPRESSION_SETTINGS),
+    )
+    return result.file
+  } catch {
+    return file
+  }
+}
+
 export async function compressImage(
   file: File,
   options: CompressImageOptions = {},

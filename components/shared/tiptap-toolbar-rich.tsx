@@ -47,6 +47,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { extractIframeSrc, toAudioEmbedUrl } from "@/lib/embed-url"
 import { uploadMedia } from "@/services/mediaService"
+import { compressFileForUpload } from "@/lib/image-compression"
 import { cn } from "@/lib/utils"
 import { toastApiError } from "@/lib/toast"
 
@@ -368,7 +369,11 @@ function ImageInsertBody({
     if (!file) return
     setProgress(0)
     try {
-      const result = await uploadMedia(file, entity ?? "image", setProgress)
+      const result = await uploadMedia(
+        await compressFileForUpload(file),
+        entity ?? "image",
+        setProgress,
+      )
       setSrc(result.fileUrl)
     } catch (err) {
       toastApiError(err, TIPTAP_NS.error.uploadFailed)

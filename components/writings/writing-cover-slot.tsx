@@ -13,6 +13,10 @@ import {
 import { FieldError } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { MAX_UPLOAD_BYTES, useFileUpload } from "@/hooks/use-file-upload"
+import {
+  compressFileForUpload,
+  type CompressImageOptions,
+} from "@/lib/image-compression"
 import { cn } from "@/lib/utils"
 
 const ACCEPT = "image/jpeg,image/png,image/webp"
@@ -26,6 +30,7 @@ export function WritingCoverSlot({
   previewUrl,
   urlValue,
   onFileChange,
+  compressOptions,
   onUrlChange,
   urlError,
 }: {
@@ -37,6 +42,9 @@ export function WritingCoverSlot({
   previewUrl: string | null
   urlValue: string
   onFileChange: (f: File | null) => void
+  /** Staged files are run through the compression pipeline first;
+   * `null` disables compression entirely. */
+  compressOptions?: CompressImageOptions | null
   onUrlChange: (s: string) => void
   urlError?: string
 }) {
@@ -64,8 +72,8 @@ export function WritingCoverSlot({
       const entry = added[0]
       if (!entry?.file || !(entry.file instanceof File)) return
       clearErrors()
-      onFileChange(entry.file)
       queueMicrotask(() => removeFile(entry.id))
+      void compressFileForUpload(entry.file, compressOptions).then(onFileChange)
     },
   })
 

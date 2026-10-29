@@ -47,6 +47,7 @@ import {
   insertUploadedVideo,
 } from "@/lib/tiptap-media"
 import { uploadMedia, uploadMediaMultiple } from "@/services/mediaService"
+import { compressFileForUpload } from "@/lib/image-compression"
 import type { MediaUploadResultDto, MediaUploadType } from "@/types/media"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
@@ -147,7 +148,11 @@ function MediaUploadButton({
 
   async function handleFiles(files: FileList | null) {
     if (!files?.length) return
-    const list = Array.from(files)
+    const list = await Promise.all(
+      Array.from(files).map((f) =>
+        f.type.startsWith("image/") ? compressFileForUpload(f) : f,
+      ),
+    )
     const hint = entity ?? type
     setUploading(true)
     onProgressChange?.(0)

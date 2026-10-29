@@ -26,6 +26,15 @@ import {
   useFileUpload,
 } from "@/hooks/use-file-upload"
 import { resolveAvatarSrc } from "@/lib/profile-image"
+import {
+  CompressionToggle,
+  DEFAULT_COMPRESSION_SETTINGS,
+  type CompressionSettings,
+} from "@/components/shared/compression-toggle"
+import {
+  compressFileForUpload,
+  compressionSettingsToOptions,
+} from "@/lib/image-compression"
 import { cn } from "@/lib/utils"
 import { systemToast } from "@/lib/toast"
 import {
@@ -46,6 +55,11 @@ function initialsOf(user: UserResponse): string {
 export function ProfileImageCard({ user }: { user: UserResponse }) {
   const queryClient = useQueryClient()
   const [busy, setBusy] = React.useState<"upload" | "delete" | null>(null)
+  const [compressSettings, setCompressSettings] =
+    React.useState<CompressionSettings>(DEFAULT_COMPRESSION_SETTINGS)
+  const compressOptions = compressSettings.enabled
+    ? compressionSettingsToOptions(compressSettings)
+    : null
 
   const currentSrc = resolveAvatarSrc(user)
   const hasImage = currentSrc.length > 0
@@ -71,7 +85,9 @@ export function ProfileImageCard({ user }: { user: UserResponse }) {
     onFilesAdded: (added) => {
       const entry = added[0]
       if (!entry?.file || !(entry.file instanceof File)) return
-      void uploadFile(entry.file, entry.id)
+      void compressFileForUpload(entry.file, compressOptions).then((f) =>
+        uploadFile(f, entry.id),
+      )
     },
   })
 
@@ -182,6 +198,13 @@ export function ProfileImageCard({ user }: { user: UserResponse }) {
               </Button>
             ) : null}
           </div>
+
+          <CompressionToggle
+            value={compressSettings}
+            onChange={setCompressSettings}
+            disabled={busy !== null}
+            className="w-full"
+          />
 
           <div className="flex flex-col gap-0.5 text-center">
             <p className="text-sm font-medium">

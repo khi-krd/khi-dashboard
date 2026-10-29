@@ -36,6 +36,15 @@ import { cn } from "@/lib/utils"
 import type { ServiceGalleryMediaFormValues } from "@/lib/validations/services"
 import { toastApiError } from "@/lib/toast"
 import { uploadMedia } from "@/services/mediaService"
+import {
+  CompressionToggle,
+  DEFAULT_COMPRESSION_SETTINGS,
+  type CompressionSettings,
+} from "@/components/shared/compression-toggle"
+import {
+  compressFileForUpload,
+  compressionSettingsToOptions,
+} from "@/lib/image-compression"
 
 type Slot = ServiceGalleryMediaFormValues
 
@@ -65,6 +74,11 @@ export function ServiceGallerySlotDialog({
   const [posterUploading, setPosterUploading] = useState(false)
   const [capturing, setCapturing] = useState(false)
   const [posterProgress, setPosterProgress] = useState<number | null>(null)
+  const [compressSettings, setCompressSettings] =
+    useState<CompressionSettings>(DEFAULT_COMPRESSION_SETTINGS)
+  const compressOptions = compressSettings.enabled
+    ? compressionSettingsToOptions(compressSettings)
+    : null
   const posterInputRef = useRef<HTMLInputElement>(null)
   const openedKeyRef = useRef<string | null>(null)
 
@@ -107,7 +121,8 @@ export function ServiceGallerySlotDialog({
     setPosterUploading(true)
     setPosterProgress(0)
     try {
-      const result = await uploadMedia(file, "services", setPosterProgress)
+      const processed = await compressFileForUpload(file, compressOptions)
+      const result = await uploadMedia(processed, "services", setPosterProgress)
       patch({ posterUrl: result.fileUrl })
     } catch (err) {
       toastApiError(err, NS.gallery.posterFailed)
@@ -128,7 +143,8 @@ export function ServiceGallerySlotDialog({
         return
       }
       setPosterUploading(true)
-      const result = await uploadMedia(frame, "services")
+      const processed = await compressFileForUpload(frame, compressOptions)
+      const result = await uploadMedia(processed, "services")
       patch({ posterUrl: result.fileUrl })
     } catch (err) {
       toastApiError(err, NS.gallery.captureFailed)
@@ -234,6 +250,11 @@ export function ServiceGallerySlotDialog({
                       if (f) void uploadPosterFile(f)
                       e.target.value = ""
                     }}
+                  />
+                  <CompressionToggle
+                    value={compressSettings}
+                    onChange={setCompressSettings}
+                    disabled={posterUploading || capturing}
                   />
                   <div className="flex flex-wrap gap-1.5">
                     <Button
