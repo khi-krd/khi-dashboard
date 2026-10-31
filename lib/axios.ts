@@ -104,8 +104,36 @@ api.interceptors.request.use(
   (error: unknown) => Promise.reject(error),
 )
 
+const SESSION_MS = 7 * 24 * 60 * 60 * 1000
+
+/**
+ * The backend slides sessions forward: once a token passes half its lifetime
+ * it answers with `X-Renewed-Token` carrying a fresh JWT for the same session.
+ * Adopt it everywhere the old one lives — the in-memory auth store, the
+ * memoized direct-upload token, and the httpOnly cookie via the session
+ * route — so the renewal is invisible to the user.
+ */
+function adoptRenewedToken(token: string) {
+  recoveredToken = token
+  useAuthStore.getState().setAuth(token, SESSION_MS)
+  void fetch("/api/auth/session", {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token }),
+  }).catch(() => {
+    /* ignore — the in-memory token still covers this page */
+  })
+}
+
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    const renewed = response.headers["x-renewed-token"]
+    if (typeof renewed === "string" && renewed.length > 10) {
+      adoptRenewedToken(renewed)
+    }
+    return response
+  },
   (error: AxiosError) => {
     if (error.response?.status === 401) {
       const reqPath = error.config?.url ?? ""
