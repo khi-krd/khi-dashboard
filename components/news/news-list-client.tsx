@@ -57,11 +57,7 @@ import type { NewsDto } from "@/types/news"
 function toAdminRow(dto: NewsDto): NewsAdminTableRow {
   const titleCkb = dto.ckbContent?.title ?? ""
   const titleKmr = dto.kmrContent?.title ?? ""
-  const t = dto.datePublished
-    ? new Date(dto.datePublished).getTime()
-    : dto.createdAt
-      ? new Date(dto.createdAt).getTime()
-      : 0
+  const t = dto.createdAt ? new Date(dto.createdAt).getTime() : 0
   return {
     ...dto,
     titleCkb,

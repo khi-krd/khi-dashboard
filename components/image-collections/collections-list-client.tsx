@@ -114,7 +114,7 @@ function CollectionsListClientInner() {
     pageSize: 50,
   })
   const [sorting, setSorting] = useState<SortingState>([
-    { id: "sortDate", desc: true },
+    { id: "date", desc: true },
   ])
 
   const [typeFilter, setTypeFilter] = useState<CollectionsUiTypeFilter>("all")

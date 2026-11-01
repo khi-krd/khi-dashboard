@@ -28,7 +28,7 @@ export type CollectionAdminTableRow = CollectionDto & {
 export function toCollectionAdminRow(c: CollectionDto): CollectionAdminTableRow {
   const titleCkb = c.ckbContent?.title ?? ""
   const titleKmr = c.kmrContent?.title ?? ""
-  const date = c.publishmentDate ? new Date(c.publishmentDate).getTime() : 0
+  const date = c.createdAt ? new Date(c.createdAt).getTime() : 0
   return {
     ...c,
     itemCount: c.imageAlbum?.length ?? 0,

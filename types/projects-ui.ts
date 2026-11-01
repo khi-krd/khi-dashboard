@@ -133,11 +133,7 @@ export type ProjectAdminTableRow = ProjectDto & {
 export function toProjectAdminRow(dto: ProjectDto): ProjectAdminTableRow {
   const titleCkb = dto.ckbContent?.title ?? ""
   const titleKmr = dto.kmrContent?.title ?? ""
-  const t = dto.projectDate
-    ? new Date(dto.projectDate).getTime()
-    : dto.createdAt
-      ? new Date(dto.createdAt).getTime()
-      : 0
+  const t = dto.createdAt ? new Date(dto.createdAt).getTime() : 0
   return {
     ...dto,
     titleCkb,

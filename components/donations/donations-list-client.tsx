@@ -132,6 +132,11 @@ function DonationsListInner() {
     return (archiveQ.data?.content ?? [])
       .map(toArchiveDonationRow)
       .filter((r): r is ArchiveDonationRow => r != null)
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt ?? 0).getTime() -
+          new Date(a.createdAt ?? 0).getTime(),
+      )
       .filter(
         (r) =>
           matchesDonationStatusFilter(r.status, statusFilter) &&
@@ -143,6 +148,11 @@ function DonationsListInner() {
     return (financialQ.data?.content ?? [])
       .map(toFinancialDonationRow)
       .filter((r): r is FinancialDonationRow => r != null)
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt ?? 0).getTime() -
+          new Date(a.createdAt ?? 0).getTime(),
+      )
       .filter(
         (r) =>
           matchesDonationStatusFilter(r.status, statusFilter) &&

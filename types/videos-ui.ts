@@ -66,11 +66,7 @@ export type VideoAdminTableRow = VideoDto & {
 export function toVideoAdminRow(v: VideoDto): VideoAdminTableRow {
   const titleCkb = v.ckbContent?.title ?? ""
   const titleKmr = v.kmrContent?.title ?? ""
-  const pub = v.publishmentDate
-    ? new Date(v.publishmentDate).getTime()
-    : v.createdAt
-      ? new Date(v.createdAt).getTime()
-      : 0
+  const pub = v.createdAt ? new Date(v.createdAt).getTime() : 0
   return {
     ...v,
     clipCount: v.videoClipItems?.length ?? 0,

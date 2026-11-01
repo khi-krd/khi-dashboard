@@ -369,8 +369,8 @@ export function VideosDataGrid({
         ),
         cell: ({ row }) => (
           <span className="font-mono text-xs tabular-nums">
-            {row.original.publishmentDate
-              ? formatNewsDateShort(row.original.publishmentDate)
+            {row.original.createdAt
+              ? formatNewsDateShort(row.original.createdAt)
               : NS.dash}
           </span>
         ),

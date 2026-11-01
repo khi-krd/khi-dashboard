@@ -388,7 +388,7 @@ export function NewsDataGrid({
         ),
         cell: ({ row }) => (
           <span className="font-mono text-xs tabular-nums">
-            {formatNewsDateShort(row.original.datePublished)}
+            {formatNewsDateShort(row.original.createdAt)}
           </span>
         ),
       },
