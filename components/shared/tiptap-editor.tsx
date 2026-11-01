@@ -19,7 +19,6 @@ import { TiptapBubbleMenus } from "@/components/shared/tiptap-bubble-menu"
 import { TiptapToolbar } from "@/components/shared/tiptap-toolbar"
 import { fileNameFromUrl } from "@/lib/tiptap-media"
 import { uploadMedia } from "@/services/mediaService"
-import { compressFileForUpload } from "@/lib/image-compression"
 import {
   Dialog,
   DialogContent,
@@ -206,24 +205,14 @@ export function TiptapEditor({
             // A single image goes through insertImageFigure so it lands
             // selected with its placement bar already showing.
             if (files.length === 1 && files[0].type.startsWith("image/")) {
-              const res = await uploadMedia(
-                await compressFileForUpload(files[0]),
-                hint,
-              )
+              const res = await uploadMedia(files[0], hint)
               const chain = ed.chain().focus()
               if (dropPos != null) chain.setTextSelection(dropPos)
               chain.insertImageFigure({ src: res.fileUrl }).run()
               return
             }
             const results = await Promise.all(
-              files.map(async (f) =>
-                uploadMedia(
-                  f.type.startsWith("image/")
-                    ? await compressFileForUpload(f)
-                    : f,
-                  hint,
-                ),
-              ),
+              files.map((f) => uploadMedia(f, hint)),
             )
             const content = files.map((f, i) => {
               const mime = f.type.toLowerCase()
@@ -286,12 +275,7 @@ export function TiptapEditor({
         void (async () => {
           try {
             for (const file of media) {
-              const res = await uploadMedia(
-                file.type.startsWith("image/")
-                  ? await compressFileForUpload(file)
-                  : file,
-                hint,
-              )
+              const res = await uploadMedia(file, hint)
               const mime = file.type.toLowerCase()
               if (mime.startsWith("image/")) {
                 ed.chain().focus().insertImageFigure({ src: res.fileUrl }).run()

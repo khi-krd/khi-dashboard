@@ -1,14 +1,6 @@
 "use client"
 
-import { useState } from "react"
-
 import { useObjectUrl } from "@/hooks/use-object-url"
-import {
-  CompressionToggle,
-  DEFAULT_COMPRESSION_SETTINGS,
-  type CompressionSettings,
-} from "@/components/shared/compression-toggle"
-import { compressionSettingsToOptions } from "@/lib/image-compression"
 import { CollectionCoverSlot } from "@/components/image-collections/collection-cover-slot"
 import { NS } from "@/components/image-collections/collections-strings"
 import type { Language } from "@/types/image-collections"
@@ -48,12 +40,6 @@ export function CollectionCoverTrio({
   onKmrUrlChange: (s: string) => void
   onHoverUrlChange: (s: string) => void
 }) {
-  const [compressSettings, setCompressSettings] =
-    useState<CompressionSettings>(DEFAULT_COMPRESSION_SETTINGS)
-  const compressOptions = compressSettings.enabled
-    ? compressionSettingsToOptions(compressSettings)
-    : null
-
   const ckbBlob = useObjectUrl(ckbCoverFile)
   const kmrBlob = useObjectUrl(kmrCoverFile)
   const hoverBlob = useObjectUrl(hoverCoverFile)
@@ -71,10 +57,6 @@ export function CollectionCoverTrio({
   return (
     <section className="space-y-3">
       <h2 className="text-sm font-medium">{NS.section.cover_trio}</h2>
-      <CompressionToggle
-        value={compressSettings}
-        onChange={setCompressSettings}
-      />
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <CollectionCoverSlot
           label={NS.cover.ckb}
@@ -85,7 +67,6 @@ export function CollectionCoverTrio({
           urlValue={ckbCoverUrl}
           onFileChange={onCkbFileChange}
           onUrlChange={onCkbUrlChange}
-        compressOptions={compressOptions}
         />
         <CollectionCoverSlot
           label={NS.cover.kmr}
@@ -96,7 +77,6 @@ export function CollectionCoverTrio({
           urlValue={kmrCoverUrl}
           onFileChange={onKmrFileChange}
           onUrlChange={onKmrUrlChange}
-        compressOptions={compressOptions}
         />
         <CollectionCoverSlot
           label={NS.cover.hover}
@@ -108,7 +88,6 @@ export function CollectionCoverTrio({
           urlValue={hoverCoverUrl}
           onFileChange={onHoverFileChange}
           onUrlChange={onHoverUrlChange}
-        compressOptions={compressOptions}
         />
       </div>
     </section>

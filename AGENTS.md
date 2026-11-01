@@ -189,23 +189,14 @@ multipart services (writings/videos/sounds/collections/profile) are
 entity-scoped server-side already. Archive bucket follows the same
 entity-first layout (`khi-archive-platform-folders/<entity>/<code>/`).
 
-## Image compression pipeline
+## Uploads — no client/server image processing
 
 - `npm test` runs vitest (node env, `lib/**/*.test.ts`).
-- JPEG/non-PNG: `browser-image-compression`, quality-only, never resizes or
-  converts, default target 500 KB. PNGs take a dedicated path
-  (`lib/png-compression.ts` → `png-compression.worker.ts` →
-  `png-compression-core.ts`): oxipng WASM lossless by default (every pixel +
-  alpha preserved), optional `pngReducedColors` palette stage (256/128/64,
-  alpha kept via tRNS, floor 64) when the 250 KB default target is missed.
-  PNG is detected by signature bytes, never by name/MIME; a mislabelled
-  "png" throws `PngFormatError` and the original is sent. The compare card
-  reports target met/missed and method honestly — lossless cannot guarantee
-  the target on photographic PNGs. CSP carries `'wasm-unsafe-eval'` for the
-  oxipng WASM compile.
-- Backend (`khi_backend`): `PngCompressionService` inside `S3Service` — the
-  single write path — streams structural validation (CRCs, IHDR caps,
-  decompression-bomb bound) and lossless `optipng` for every PNG. Fake PNGs
-  are 400 `media.png.invalid`. Stored objects are always `image/png` with
-  the final byte count; `PUT /api/v1/media/upload` returns actual stored
-  size/type. `enforce-target` exists but is off.
+- **There is no image compression/resizing anywhere** — it was removed
+  entirely. Every upload path sends the user's original file bytes to
+  `uploadMedia` (or the entity's multipart save) untouched: no quality
+  reduction, no resizing, no PNG optimisation, no format conversion. Do not
+  reintroduce a pre-upload processing step without the user asking.
+- The backend stores objects as received (`S3Service` — the single write
+  path — only remuxes MP4-family media to faststart; everything else goes
+  to R2 verbatim with the client's claimed content type).

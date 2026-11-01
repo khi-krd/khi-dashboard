@@ -11,7 +11,6 @@ import { FieldError } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { MAX_UPLOAD_BYTES, useFileUpload } from "@/hooks/use-file-upload"
-import { compressFileForUpload } from "@/lib/image-compression"
 import { useObjectUrl } from "@/hooks/use-object-url"
 import { applyImageFileMeta } from "@/lib/image-album-utils"
 import { cn } from "@/lib/utils"
@@ -53,13 +52,10 @@ export function CollectionItemSourcePanel({
       const file = entry?.file
       if (!file || !(file instanceof File)) return
       queueMicrotask(() => removeFile(entry.id))
-      void compressFileForUpload(file).then(async (processed) => {
-        const meta = await applyImageFileMeta(processed)
-        onChange({
-          stagedBinary: processed,
-          ...meta,
-        })
-      })
+      void (async () => {
+        const meta = await applyImageFileMeta(file)
+        onChange({ stagedBinary: file, ...meta })
+      })()
     },
   })
 

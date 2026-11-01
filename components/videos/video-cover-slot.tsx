@@ -15,10 +15,6 @@ import {
 import { FieldError } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { MAX_UPLOAD_BYTES, useFileUpload } from "@/hooks/use-file-upload"
-import {
-  compressFileForUpload,
-  type CompressImageOptions,
-} from "@/lib/image-compression"
 import { cn } from "@/lib/utils"
 
 const ACCEPT = "image/jpeg,image/png,image/webp"
@@ -33,7 +29,6 @@ export function VideoCoverSlot({
   previewUrl,
   urlValue,
   onFileChange,
-  compressOptions,
   onUrlChange,
   urlError,
 }: {
@@ -45,9 +40,6 @@ export function VideoCoverSlot({
   previewUrl: string | null
   urlValue: string
   onFileChange: (f: File | null) => void
-  /** Staged files are run through the compression pipeline first;
-   * `null` disables compression entirely. */
-  compressOptions?: CompressImageOptions | null
   onUrlChange: (s: string) => void
   urlError?: string
 }) {
@@ -76,7 +68,7 @@ export function VideoCoverSlot({
       if (!entry?.file || !(entry.file instanceof File)) return
       clearErrors()
       queueMicrotask(() => removeFile(entry.id))
-      void compressFileForUpload(entry.file, compressOptions).then(onFileChange)
+      onFileChange(entry.file)
     },
   })
 

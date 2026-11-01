@@ -29,25 +29,9 @@ import { useFieldArray, useFormContext } from "react-hook-form"
 
 import { AlbumItemSheet } from "@/components/image-collections/album-item-sheet"
 import { NS } from "@/components/image-collections/collections-strings"
-import {
-  CompressionBatchStrip,
-  CompressionCompareCard,
-} from "@/components/shared/compression-compare"
-import { CompressionToggle } from "@/components/shared/compression-toggle"
-import { COMPRESS_NS } from "@/components/shared/compress-strings"
 import { Button } from "@/components/ui/button"
 import { FieldError } from "@/components/ui/field"
-import {
-  isUploadable,
-  stagedUploadFile,
-  useImageCompression,
-} from "@/hooks/use-image-compression"
-import { formatCkbDigits, formatEnDigits } from "@/lib/intl-ckb"
-import {
-  compressionSettingsToOptions,
-  DEFAULT_COMPRESSION_SETTINGS,
-  type CompressionSettings,
-} from "@/lib/image-compression"
+import { formatCkbDigits } from "@/lib/intl-ckb"
 import { albumItemSrc, applyImageFileMeta } from "@/lib/image-album-utils"
 import {
   createEmptyAlbumItem,
@@ -163,12 +147,6 @@ export function AlbumGalleryEditor({ showKmrFields }: { showKmrFields?: boolean 
   })
   const [sheetIdx, setSheetIdx] = useState<number | null>(null)
   const bulkRef = useRef<HTMLInputElement>(null)
-  const [settings, setSettings] = useState<CompressionSettings>(
-    DEFAULT_COMPRESSION_SETTINGS,
-  )
-  const compression = useImageCompression(
-    compressionSettingsToOptions(settings),
-  )
   const [ingesting, setIngesting] = useState(false)
 
   const sensors = useSensors(
@@ -187,52 +165,39 @@ export function AlbumGalleryEditor({ showKmrFields }: { showKmrFields?: boolean 
     move(oldIdx, newIdx)
   }
 
-  function stageFiles(fileList: FileList | null) {
-    if (!fileList?.length) return
-    compression.addFiles(Array.from(fileList), settings.enabled)
-  }
-
-  const uploadable = compression.items.filter(isUploadable)
-  const canIngest =
-    uploadable.length > 0 && !compression.isCompressing && !ingesting
-
-  // "بارکردنی هەموو" for the album: the file rides the collection's multipart
-  // PUT, so ingesting means appending the compressed File as `stagedBinary`.
-  async function ingestAll() {
-    const ready = compression.items.filter(isUploadable)
-    if (ready.length === 0) return
+  // Picked files land straight in the album as `stagedBinary` — they ride the
+  // collection's multipart PUT on save. Duplicates of already-staged files
+  // are skipped by their name:size:lastModified key.
+  async function stageFiles(fileList: FileList | null) {
+    if (!fileList?.length || ingesting) return
     setIngesting(true)
-    const staged = new Set(
-      fields
-        .map((f) => f.stagedBinary)
-        .filter((f): f is File => !!f)
-        .map((f) => `${f.name}:${f.size}:${f.lastModified}`),
-    )
-    const toAppend: Parameters<typeof append>[0][] = []
-    for (const item of ready) {
-      compression.updateItem(item.id, { uploadStatus: "uploading" })
-      try {
-        const file = stagedUploadFile(item)
+    try {
+      const staged = new Set(
+        fields
+          .map((f) => f.stagedBinary)
+          .filter((f): f is File => !!f)
+          .map((f) => `${f.name}:${f.size}:${f.lastModified}`),
+      )
+      const toAppend: Parameters<typeof append>[0][] = []
+      for (const file of Array.from(fileList)) {
         const key = `${file.name}:${file.size}:${file.lastModified}`
-        if (staged.has(key)) {
-          compression.updateItem(item.id, { uploadStatus: "done" })
-          continue
-        }
+        if (staged.has(key)) continue
         staged.add(key)
-        const meta = await applyImageFileMeta(file)
-        toAppend.push({
-          ...createEmptyAlbumItem(fields.length + toAppend.length),
-          stagedBinary: file,
-          ...meta,
-        })
-        compression.updateItem(item.id, { uploadStatus: "done" })
-      } catch {
-        compression.updateItem(item.id, { uploadStatus: "error" })
+        try {
+          const meta = await applyImageFileMeta(file)
+          toAppend.push({
+            ...createEmptyAlbumItem(fields.length + toAppend.length),
+            stagedBinary: file,
+            ...meta,
+          })
+        } catch {
+          /* unreadable file — skip it */
+        }
       }
+      for (const item of toAppend) append(item)
+    } finally {
+      setIngesting(false)
     }
-    for (const item of toAppend) append(item)
-    setIngesting(false)
-    compression.removeFinished()
   }
 
   const sheetItem = sheetIdx != null ? watch(`imageAlbum.${sheetIdx}`) : null
@@ -280,56 +245,6 @@ export function AlbumGalleryEditor({ showKmrFields }: { showKmrFields?: boolean 
           e.target.value = ""
         }}
       />
-
-      <CompressionToggle
-        value={settings}
-        onChange={setSettings}
-        disabled={ingesting}
-      />
-
-      {compression.items.length > 0 ? (
-        <div className="space-y-2">
-          <div className="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-3">
-            {compression.items.map((item) => (
-              <CompressionCompareCard
-                key={item.id}
-                item={item}
-                onRemove={
-                  ingesting ? undefined : () => compression.remove(item.id)
-                }
-                onRetry={
-                  item.status === "error" && !ingesting
-                    ? () => compression.requeue(item.id)
-                    : undefined
-                }
-              />
-            ))}
-          </div>
-          <CompressionBatchStrip stats={compression.stats} />
-          <div className="flex items-center gap-2">
-            <Button
-              type="button"
-              size="sm"
-              disabled={!canIngest}
-              onClick={() => void ingestAll()}
-            >
-              {COMPRESS_NS.batch.addToAlbum}
-              {uploadable.length > 0
-                ? ` (${formatEnDigits(uploadable.length)})`
-                : ""}
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              disabled={ingesting}
-              onClick={() => compression.clear()}
-            >
-              {NS.action.cancel}
-            </Button>
-          </div>
-        </div>
-      ) : null}
 
       {fields.length === 0 ? (
         <div className="border-muted-foreground/35 flex w-full flex-col items-center gap-3 rounded-lg border border-dashed px-6 py-12 text-center">

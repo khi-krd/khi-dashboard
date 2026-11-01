@@ -122,7 +122,7 @@ export function AboutPageHeroEditor({
           name="heroPosterUrl"
           control={control}
           render={({ field }) => (
-            <MediaCoverUpload entity="about" compressOptions
+            <MediaCoverUpload entity="about"
               label={NS.page.heroImage}
               variant="image"
               previewUrl={field.value?.trim() || null}
