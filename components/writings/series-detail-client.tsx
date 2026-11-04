@@ -1,6 +1,7 @@
 "use client"
 
 import { BookOpenIcon, LinkIcon } from "@heroicons/react/24/outline"
+import Image from "next/image"
 import Link from "next/link"
 import { useMemo, useState } from "react"
 import { toast } from "sonner"
@@ -37,10 +38,14 @@ import {
   useWritingsListQuery,
 } from "@/hooks/useWritings"
 import { formatCkbDigits } from "@/lib/intl-ckb"
+import { isOptimizableImageSrc } from "@/lib/image-src"
 import { cn } from "@/lib/utils"
 import { toastApiError } from "@/lib/toast"
 import type { SeriesBookSummary } from "@/types/writings"
-import type { WritingsListQueryKeyParts } from "@/types/writings-ui"
+import {
+  isPartOfMultiBookSeries,
+  type WritingsListQueryKeyParts,
+} from "@/types/writings-ui"
 
 const listParams: WritingsListQueryKeyParts = {
   page: 0,
@@ -64,6 +69,7 @@ function ShelfBookCard({
 }) {
   const order = book.seriesOrder ?? 0
   const title = bookTitle(book)
+  const cover = book.ckbCoverUrl?.trim() || book.kmrCoverUrl?.trim() || null
 
   return (
     <Link
@@ -71,9 +77,25 @@ function ShelfBookCard({
       className="group relative w-[120px] shrink-0"
     >
       <div className="bg-muted relative aspect-[2/3] overflow-hidden rounded-lg border shadow-sm transition-shadow group-hover:shadow-md">
-        <div className="text-muted-foreground/50 flex h-full items-center justify-center">
-          <BookOpenIcon className="size-10" aria-hidden />
-        </div>
+        {cover ? (
+          <Image
+            src={cover}
+            alt=""
+            fill
+            sizes="120px"
+            className="object-cover"
+            unoptimized={!isOptimizableImageSrc(cover)}
+          />
+        ) : (
+          <div className="text-muted-foreground/50 flex h-full items-center justify-center">
+            <BookOpenIcon className="size-10" aria-hidden />
+          </div>
+        )}
+        {book.isParent ? (
+          <span className="bg-primary text-primary-foreground absolute end-2 top-2 rounded-md px-1.5 py-0.5 text-[10px] font-medium shadow-sm">
+            {NS.series.parent_badge}
+          </span>
+        ) : null}
         {order > 0 ? (
           <span className="bg-background/95 text-foreground absolute start-2 top-2 rounded-md px-1.5 py-0.5 font-mono text-xs shadow-sm">
             {formatCkbDigits(order)}
@@ -123,11 +145,11 @@ function SeriesLinkDialog({
   const [bookId, setBookId] = useState<string>("")
 
   const candidates = useMemo(() => {
-    return (writingsQ.data?.content ?? []).filter((w) => {
-      if (!w.id || existingBookIds.has(w.id)) return false
-      const sid = w.seriesId?.trim() || w.seriesInfo?.seriesId?.trim()
-      return !sid
-    })
+    // Only true standalone books are offered — moving a book between series
+    // happens by unlinking it first, not by silently re-parenting here.
+    return (writingsQ.data?.content ?? []).filter(
+      (w) => w.id != null && !existingBookIds.has(w.id) && !isPartOfMultiBookSeries(w),
+    )
   }, [writingsQ.data?.content, existingBookIds])
 
   function handleClose(next: boolean) {
@@ -211,6 +233,10 @@ export function SeriesDetailClient({ seriesId }: { seriesId: string }) {
   const seriesName = series?.seriesName?.trim() || NS.breadcrumb.series
 
   const parentBookId = useMemo(() => {
+    // The series summary marks the primary book — fall back to the parents
+    // listing or the lowest-ordered member for older records.
+    const marked = books.find((b) => b.isParent)?.id
+    if (marked) return marked
     const parent = (parentsQ.data ?? []).find(
       (p) =>
         (p.seriesId?.trim() || p.seriesInfo?.seriesId?.trim()) === seriesId,

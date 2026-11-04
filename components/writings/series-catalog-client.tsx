@@ -112,7 +112,11 @@ function SeriesCatalogSkeleton() {
 
 export function SeriesCatalogClient() {
   const seriesQ = useSeriesParentsQuery()
-  const parents = seriesQ.data ?? []
+  // The parents endpoint lists every parentless book — keep only the ones
+  // that genuinely head a series (primary roots, marked by the backend).
+  const parents = (seriesQ.data ?? []).filter(
+    (p) => p.seriesInfo?.isParent === true,
+  )
 
   return (
     <div dir="rtl" className="space-y-8 px-4 py-6 lg:px-6">

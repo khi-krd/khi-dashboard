@@ -195,6 +195,10 @@ export function WritingForm({
       mode === "edit" ? writingId : undefined,
       values,
       genresQ.data,
+      {
+        wasChild:
+          (editDto?.parentBookId ?? editDto?.seriesInfo?.parentBookId) != null,
+      },
     )
     setUploadPct(0)
     try {
@@ -446,17 +450,28 @@ export function WritingForm({
                 onParentBookIdChange={(id) =>
                   setValue("parentBookId", id, { shouldDirty: true })
                 }
-                seriesName={watch("seriesName") ?? ""}
-                onSeriesNameChange={(s) =>
-                  setValue("seriesName", s, { shouldDirty: true })
-                }
-                seriesOrder={watch("seriesOrder") ?? 1}
-                onSeriesOrderChange={(n) =>
-                  setValue("seriesOrder", n, { shouldDirty: true })
-                }
                 seriesTotalBooks={watch("seriesTotalBooks")}
                 onSeriesTotalBooksChange={(n) =>
                   setValue("seriesTotalBooks", n, { shouldDirty: true })
+                }
+                bookTitle={watch("ckbContent.title") ?? ""}
+                savedParentId={
+                  editDto?.parentBookId ?? editDto?.seriesInfo?.parentBookId
+                }
+                savedOrder={watch("seriesOrder") ?? null}
+                savedTotal={
+                  editDto?.seriesInfo?.totalBooks ??
+                  editDto?.seriesTotalBooks ??
+                  null
+                }
+                savedSeriesName={
+                  editDto?.seriesName ?? editDto?.seriesInfo?.seriesName
+                }
+                rootChildCount={
+                  editDto?.seriesInfo?.isParent === true &&
+                  (editDto?.seriesInfo?.memberCount ?? 0) > 1
+                    ? (editDto?.seriesInfo?.memberCount ?? 1) - 1
+                    : undefined
                 }
                 excludeId={editDto?.id}
               />

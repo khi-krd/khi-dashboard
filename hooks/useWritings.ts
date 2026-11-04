@@ -153,7 +153,7 @@ export function useDeleteTopicMutation() {
 export function useSeriesParentsQuery() {
   return useQuery({
     queryKey: writingsKeys.seriesParents(),
-    queryFn: () => getSeriesParents(0, 100),
+    queryFn: () => getSeriesParents(0, 500),
     staleTime: 1000 * 60 * 2,
   })
 }

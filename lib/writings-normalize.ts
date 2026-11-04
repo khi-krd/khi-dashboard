@@ -175,11 +175,14 @@ function normalizeSeriesInfo(raw: unknown): WritingDto["seriesInfo"] {
     coerceNum(o.total_books) ??
     coerceNum(o.seriesTotalBooks) ??
     coerceNum(o.series_total_books)
+  // Lombok's `isParent` serializes as the plain `parent` key — the website's
+  // schema already reads it that way; accept every spelling here too.
   const isPartOfSeries =
     coerceBool(o.isPartOfSeries) ||
     coerceBool(o.is_part_of_series) ||
     coerceBool(o.isParent) ||
     coerceBool(o.is_parent) ||
+    coerceBool(o.parent) ||
     (totalBooks != null && totalBooks > 1)
   return {
     seriesId: coerceStr(o.seriesId) ?? coerceStr(o.series_id),
@@ -187,10 +190,18 @@ function normalizeSeriesInfo(raw: unknown): WritingDto["seriesInfo"] {
     seriesOrder:
       coerceNum(o.seriesOrder) ?? coerceNum(o.series_order) ?? undefined,
     seriesTotalBooks: totalBooks ?? undefined,
+    plannedTotal:
+      coerceNum(o.plannedTotal) ?? coerceNum(o.planned_total) ?? undefined,
+    memberCount:
+      coerceNum(o.memberCount) ?? coerceNum(o.member_count) ?? undefined,
     parentBookId:
       coerceNum(o.parentBookId) ?? coerceNum(o.parent_book_id) ?? undefined,
     isPartOfSeries,
-    isParent: coerceBool(o.isParent) || coerceBool(o.is_parent),
+    isParent:
+      coerceBool(o.isParent) ||
+      coerceBool(o.is_parent) ||
+      coerceBool(o.parent) ||
+      undefined,
     totalBooks: totalBooks ?? undefined,
   }
 }
@@ -348,6 +359,17 @@ function normalizeSeriesBookSummary(raw: unknown): SeriesBookSummary {
     titleKmr,
     seriesOrder:
       coerceNum(o.seriesOrder) ?? coerceNum(o.series_order) ?? undefined,
+    ckbCoverUrl:
+      coerceStr(o.ckbCoverUrl) ?? coerceStr(o.ckb_cover_url) ?? undefined,
+    kmrCoverUrl:
+      coerceStr(o.kmrCoverUrl) ?? coerceStr(o.kmr_cover_url) ?? undefined,
+    hoverCoverUrl:
+      coerceStr(o.hoverCoverUrl) ?? coerceStr(o.hover_cover_url) ?? undefined,
+    isParent:
+      coerceBool(o.isParent) ||
+      coerceBool(o.is_parent) ||
+      coerceBool(o.parent) ||
+      undefined,
     createdAt: coerceStr(o.createdAt) ?? coerceStr(o.created_at) ?? undefined,
   }
 }
@@ -369,6 +391,8 @@ export function normalizeSeriesDetail(raw: unknown): SeriesDetailDto {
       coerceNum(o.totalBooks) ??
       coerceNum(o.total_books) ??
       books.length,
+    memberCount:
+      coerceNum(o.memberCount) ?? coerceNum(o.member_count) ?? books.length,
     books,
   }
 }

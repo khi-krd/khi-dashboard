@@ -30,6 +30,7 @@ import {
 } from "@/hooks/useWritings"
 import type { WritingDto } from "@/types/writings"
 import { toastApiError } from "@/lib/toast"
+import { isPartOfMultiBookSeries } from "@/types/writings-ui"
 
 export type SeriesLinkMode = "fromBook" | "fromSeries"
 
@@ -69,8 +70,12 @@ export function WritingSeriesLinkDialog({
     () => null,
   )
 
-  const parents = parentsQ.data ?? []
-  const books = (listQ.data?.content ?? []).filter((b) => b.id !== writing.id)
+  const parents = (parentsQ.data ?? []).filter((p) => p.id !== writing.id)
+  // Only standalone books can be linked in — a series member must be
+  // unlinked from its own chain first, on the book's edit page.
+  const books = (listQ.data?.content ?? []).filter(
+    (b) => b.id !== writing.id && !isPartOfMultiBookSeries(b),
+  )
 
   async function handleConfirm() {
     if (!writing.id) return
@@ -128,7 +133,9 @@ export function WritingSeriesLinkDialog({
                   {parents.map((p) => (
                     <SelectItem key={p.id} value={String(p.id)}>
                       {p.ckbContent?.title?.trim() || `#${p.id}`}
-                      {p.seriesName ? ` (${p.seriesName})` : ""}
+                      {p.seriesInfo?.isParent === true
+                        ? ` • ${NS.series.parent_badge}${p.seriesName ? ` — ${p.seriesName}` : ""}`
+                        : ` • ${NS.series.mode.standalone}`}
                     </SelectItem>
                   ))}
                 </SelectContent>

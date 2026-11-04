@@ -75,7 +75,7 @@ export const writingFormSchema = z
     seriesOrder: z.number().min(0).default(1),
     parentBookId: z.number().int().nullable().optional(),
     seriesTotalBooks: optionalPositiveInt,
-    seriesMode: z.enum(["standalone", "series"]).default("standalone"),
+    seriesMode: z.enum(["standalone", "primary", "child"]).default("standalone"),
     ckbCoverFile: z.instanceof(File).optional().nullable(),
     kmrCoverFile: z.instanceof(File).optional().nullable(),
     hoverCoverFile: z.instanceof(File).optional().nullable(),
@@ -146,9 +146,16 @@ export const defaultWritingFormValues: WritingFormValues = {
 }
 
 export function writingDtoToFormValues(dto: WritingDto): WritingFormValues {
-  const isSeries =
-    (dto.seriesInfo?.totalBooks ?? dto.seriesTotalBooks ?? 1) > 1 ||
-    !!dto.parentBookId
+  // Root model: a child points at the primary book; the primary is parentless
+  // with a real series behind it; everything else is standalone.
+  const parentBookId = dto.parentBookId ?? dto.seriesInfo?.parentBookId ?? null
+  const isChild = parentBookId != null
+  const isRoot =
+    !isChild &&
+    (dto.seriesInfo?.isParent === true ||
+      dto.seriesInfo?.isPartOfSeries === true ||
+      (dto.seriesInfo?.totalBooks ?? 0) > 1)
+  const seriesMode = isChild ? "child" : isRoot ? "primary" : "standalone"
   return {
     bookGenres: [...(dto.bookGenres ?? [])],
     topicIds:
@@ -199,12 +206,17 @@ export function writingDtoToFormValues(dto: WritingDto): WritingFormValues {
       nicknameKmr: p.nicknameKmr ?? "",
     })),
     seriesId: dto.seriesId ?? undefined,
-    seriesName: dto.seriesName ?? undefined,
+    seriesName: dto.seriesName ?? dto.seriesInfo?.seriesName ?? undefined,
     seriesOrder: dto.seriesOrder ?? dto.seriesInfo?.seriesOrder ?? 1,
-    parentBookId: dto.parentBookId ?? dto.seriesInfo?.parentBookId ?? null,
+    parentBookId,
+    // The planned-total input edits the root's declared total; fall back to
+    // the effective total only when no plan was ever declared.
     seriesTotalBooks:
-      dto.seriesTotalBooks ?? dto.seriesInfo?.seriesTotalBooks ?? undefined,
-    seriesMode: isSeries ? "series" : "standalone",
+      dto.seriesInfo?.plannedTotal ??
+      dto.seriesTotalBooks ??
+      dto.seriesInfo?.seriesTotalBooks ??
+      undefined,
+    seriesMode,
     ckbCoverFile: null,
     kmrCoverFile: null,
     hoverCoverFile: null,

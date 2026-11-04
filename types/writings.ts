@@ -84,6 +84,10 @@ export type SeriesInfoDto = {
   seriesName?: string | null
   seriesOrder?: number | null
   seriesTotalBooks?: number | null
+  /** Root-only: the editor's declared "N books" total for the chain. */
+  plannedTotal?: number | null
+  /** Actual member rows the series holds right now. */
+  memberCount?: number | null
   parentBookId?: number | null
   isPartOfSeries?: boolean
   isParent?: boolean
@@ -160,6 +164,10 @@ export type SeriesBookSummary = {
   titleCkb?: string | null
   titleKmr?: string | null
   seriesOrder?: number | null
+  ckbCoverUrl?: string | null
+  kmrCoverUrl?: string | null
+  hoverCoverUrl?: string | null
+  isParent?: boolean
   createdAt?: string
 }
 
@@ -168,7 +176,10 @@ export type SeriesParentDto = WritingDto
 export type SeriesDetailDto = {
   seriesId: string
   seriesName?: string | null
+  /** Effective total — max(root's planned total, memberCount). */
   totalBooks?: number
+  /** Actual member rows right now. */
+  memberCount?: number
   books: SeriesBookSummary[]
 }
 

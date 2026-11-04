@@ -55,6 +55,8 @@ export function writingFormValuesToMultipart(
   values: WritingFormValues,
   /** The genres currently known to the dashboard, for the slug → id mapping. */
   genres?: BookGenreDto[],
+  /** Edit-mode context: was the saved record a series child? */
+  context?: { wasChild?: boolean },
 ): FormData {
   const fd = new FormData()
 
@@ -97,20 +99,30 @@ export function writingFormValuesToMultipart(
     payload.genreIds = genreIds
   }
 
-  if (values.seriesMode === "series") {
-    // `seriesId` only exists on the create contract — `UpdateRequest` has no
-    // such field, and the strict `data` parser fails the whole update with
-    // `400 Unrecognized field "seriesId"` if it is sent. Reparenting on edit
-    // happens through `parentBookId`, which copies the parent's series key.
-    if (mode === "create" && values.seriesId?.trim()) {
-      payload.seriesId = values.seriesId.trim()
+  // Series — the backend owns the root model: it derives the name from the
+  // primary book's title, assigns the next volume number, and recomputes the
+  // totals. The form only declares INTENT:
+  //   standalone → detach (edit only; a create is standalone by default)
+  //   primary    → startSeries + the declared total for the whole chain
+  //   child      → parentBookId of the primary (always the chain's ROOT book)
+  if (values.seriesMode === "primary") {
+    if (mode === "edit" && context?.wasChild) {
+      payload.unlinkFromSeries = true
     }
-    payload.seriesName = trimOrUndef(values.seriesName)
-    payload.seriesOrder = values.seriesOrder ?? 1
-    payload.parentBookId = values.parentBookId ?? null
+    payload.startSeries = true
+    if (values.seriesTotalBooks != null) {
+      payload.seriesTotalBooks = values.seriesTotalBooks
+    }
+  } else if (values.seriesMode === "child") {
+    if (values.parentBookId != null) {
+      payload.parentBookId = values.parentBookId
+    }
+  } else if (mode === "edit") {
+    // Standalone on edit = explicit unlink (`parentBookId: null` cannot detach,
+    // so the dedicated flag does it — a series root hands the chain to its
+    // next book).
+    payload.unlinkFromSeries = true
   }
-  // On edit + standalone nothing is sent: update merges non-null fields, and
-  // `parentBookId: null` cannot unlink a book anyway, so the nulls were noise.
 
   // Topics are a replace-set — always sent, so an empty selection clears.
   payload.topicIds = values.topicIds
