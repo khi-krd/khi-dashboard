@@ -30,6 +30,7 @@ import { WritingLanguageToggleChip } from "@/components/writings/writing-languag
 import { WritingPersonsSection } from "@/components/writings/writing-persons-section"
 import { WritingSeriesSection } from "@/components/writings/writing-series-section"
 import { WritingTagInput } from "@/components/writings/writing-tag-input"
+import { LocationSelect } from "@/components/shared/location-picker"
 import { DRAFT_NS } from "@/components/shared/draft-strings"
 import { DraftStatus } from "@/components/shared/draft-status"
 import { TiptapEditor } from "@/components/shared/tiptap-editor-lazy"
@@ -565,9 +566,19 @@ export function WritingForm({
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs">{NS.field.location}</Label>
-                  <Input
-                    placeholder={NS.field.location_ckb}
-                    {...register("ckbContent.location")}
+<Controller
+                    name="ckbContent.location"
+                    control={control}
+                    render={({ field }) => (
+                      <LocationSelect
+                        placeholder={NS.field.location_ckb}
+                        lang="CKB"
+                        variant="field"
+                        className="flex-1"
+                        value={field.value}
+                        onChange={(v) => field.onChange(v)}
+                      />
+                    )}
                   />
                 </div>
                 <TiptapEditor entity="writings"
@@ -597,10 +608,19 @@ export function WritingForm({
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs">{NS.field.location}</Label>
-                  <Input
-                    dir="ltr"
-                    placeholder={NS.field.location_kmr}
-                    {...register("kmrContent.location")}
+<Controller
+                    name="kmrContent.location"
+                    control={control}
+                    render={({ field }) => (
+                      <LocationSelect
+                        placeholder={NS.field.location_kmr}
+                        lang="KMR"
+                        variant="field"
+                        className="flex-1"
+                        value={field.value}
+                        onChange={(v) => field.onChange(v)}
+                      />
+                    )}
                   />
                 </div>
                 <TiptapEditor entity="writings"

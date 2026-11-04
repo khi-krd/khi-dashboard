@@ -1,9 +1,10 @@
 "use client"
 
 import { CameraIcon, MapPinIcon } from "@heroicons/react/24/outline"
-import { useFormContext } from "react-hook-form"
+import { Controller, useFormContext } from "react-hook-form"
 
 import { NS } from "@/components/image-collections/collections-strings"
+import { LocationSelect } from "@/components/shared/location-picker"
 import type { CollectionFormValues } from "@/lib/validations/image-collections"
 import type { Language } from "@/types/image-collections"
 
@@ -11,7 +12,7 @@ const inlineFieldClass =
   "min-w-[8rem] flex-1 border-0 bg-transparent px-0 text-sm shadow-none placeholder:text-muted-foreground/50 focus:ring-0 focus-visible:ring-0"
 
 export function CollectionCreditsInlineRow({ activeLang }: { activeLang: Language }) {
-  const { register } = useFormContext<CollectionFormValues>()
+  const { register, control } = useFormContext<CollectionFormValues>()
 
   const collectedByField =
     activeLang === "CKB" ? "ckbContent.collectedBy" : "kmrContent.collectedBy"
@@ -36,16 +37,24 @@ export function CollectionCreditsInlineRow({ activeLang }: { activeLang: Languag
           {...register(collectedByField)}
         />
       </label>
-      <label className="text-muted-foreground flex min-w-0 flex-1 items-center gap-2">
+      <div className="text-muted-foreground flex min-w-0 flex-1 items-center gap-2">
         <MapPinIcon className="size-4 shrink-0" aria-hidden />
-        <input
+        <Controller
           key={locationField}
-          type="text"
-          className={inlineFieldClass}
-          placeholder={NS.credits.location_placeholder}
-          {...register(locationField)}
+          name={locationField}
+          control={control}
+          render={({ field }) => (
+            <LocationSelect
+              lang={activeLang}
+              variant="inline"
+              className="min-w-[8rem] flex-1 text-foreground"
+              placeholder={NS.credits.location_placeholder}
+              value={field.value}
+              onChange={(v) => field.onChange(v)}
+            />
+          )}
         />
-      </label>
+      </div>
     </div>
   )
 }

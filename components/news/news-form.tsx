@@ -25,6 +25,7 @@ import {
 import { NewsCategoryCombobox } from "@/components/news/news-category-combobox"
 import { NewsErrorState } from "@/components/news/news-error-state"
 import { NS } from "@/components/news/news-strings"
+import { LocationSelect } from "@/components/shared/location-picker"
 import { MediaGalleryEditor } from "@/components/shared/media-gallery-editor"
 import { MediaCoverUpload } from "@/components/shared/media-cover-upload"
 import { NewsTagInput } from "@/components/news/news-tag-input"
@@ -891,14 +892,21 @@ function CkbLangFields({
 
       <div className="space-y-1.5">
         <Label htmlFor="nf-ckb-location">{NS.field.location}</Label>
-        <Input
-          id="nf-ckb-location"
-          className="h-10"
-          dir="rtl"
-          autoComplete="off"
-          placeholder={NS.field.location_placeholder_ckb}
-          {...register("ckbContent.location")}
-        />
+<Controller
+                    name="ckbContent.location"
+                    control={control}
+                    render={({ field }) => (
+                      <LocationSelect
+                        id="nf-ckb-location"
+                        placeholder={NS.field.location_placeholder_ckb}
+                        lang="CKB"
+                        variant="field"
+                        className="flex-1"
+                        value={field.value}
+                        onChange={(v) => field.onChange(v)}
+                      />
+                    )}
+                  />
       </div>
 
       <TiptapEditor entity="news"
@@ -992,15 +1000,21 @@ function KmrLangFields({
 
       <div className="space-y-1.5">
         <Label htmlFor="nf-kmr-location">{NS.field.location}</Label>
-        <Input
-          id="nf-kmr-location"
-          className="h-10"
-          dir="ltr"
-          lang="ku"
-          autoComplete="off"
-          placeholder={NS.field.location_placeholder_kmr}
-          {...register("kmrContent.location")}
-        />
+<Controller
+                    name="kmrContent.location"
+                    control={control}
+                    render={({ field }) => (
+                      <LocationSelect
+                        id="nf-kmr-location"
+                        placeholder={NS.field.location_placeholder_kmr}
+                        lang="KMR"
+                        variant="field"
+                        className="flex-1"
+                        value={field.value}
+                        onChange={(v) => field.onChange(v)}
+                      />
+                    )}
+                  />
       </div>
 
       <TiptapEditor entity="news"

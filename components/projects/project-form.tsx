@@ -22,6 +22,7 @@ import {
   dashboardProjectsCrumbHref,
 } from "@/components/projects/project-breadcrumb"
 import { ProjectStatusPill } from "@/components/projects/project-status-pill"
+import { LocationSelect } from "@/components/shared/location-picker"
 import { MediaGalleryEditor } from "@/components/shared/media-gallery-editor"
 import { MediaCoverUpload } from "@/components/shared/media-cover-upload"
 import { ProjectTagInput } from "@/components/projects/project-tag-input"
@@ -641,10 +642,19 @@ export function ProjectForm({
                 ) : null}
                 <div className="flex items-center gap-2">
                   <MapPinIcon className="text-muted-foreground size-4 shrink-0" />
-                  <Input
-                    className={borderlessLocationClass}
-                    placeholder={NS.field.location_ckb}
-                    {...register("ckbContent.location")}
+<Controller
+                    name="ckbContent.location"
+                    control={control}
+                    render={({ field }) => (
+                      <LocationSelect
+                        placeholder={NS.field.location_ckb}
+                        lang="CKB"
+                        variant="inline"
+                        className="flex-1"
+                        value={field.value}
+                        onChange={(v) => field.onChange(v)}
+                      />
+                    )}
                   />
                 </div>
                 <TiptapEditor entity="projects"
@@ -668,11 +678,19 @@ export function ProjectForm({
                 />
                 <div className="flex items-center gap-2">
                   <MapPinIcon className="text-muted-foreground size-4 shrink-0" />
-                  <Input
-                    dir="ltr"
-                    className={borderlessLocationClass}
-                    placeholder={NS.field.location_kmr}
-                    {...register("kmrContent.location")}
+<Controller
+                    name="kmrContent.location"
+                    control={control}
+                    render={({ field }) => (
+                      <LocationSelect
+                        placeholder={NS.field.location_kmr}
+                        lang="KMR"
+                        variant="inline"
+                        className="flex-1"
+                        value={field.value}
+                        onChange={(v) => field.onChange(v)}
+                      />
+                    )}
                   />
                 </div>
                 <TiptapEditor entity="projects"

@@ -28,6 +28,7 @@ import { VideoLanguageToggleChip } from "@/components/videos/video-language-chip
 import { VideoMetadataGrid } from "@/components/videos/video-metadata-grid"
 import { VideoSourceList } from "@/components/videos/video-source-list"
 import { VideoTagInput } from "@/components/videos/video-tag-input"
+import { LocationSelect } from "@/components/shared/location-picker"
 import { DRAFT_NS } from "@/components/shared/draft-strings"
 import { DraftStatus } from "@/components/shared/draft-status"
 import { TiptapEditor } from "@/components/shared/tiptap-editor-lazy"
@@ -514,10 +515,19 @@ export function VideoForm({
                 </div>
                 <div className="flex items-center gap-2">
                   <MapPinIcon className="text-muted-foreground size-4 shrink-0" />
-                  <Input
-                    className={borderlessInlineClass}
-                    placeholder={NS.field.location}
-                    {...register("ckbContent.location")}
+<Controller
+                    name="ckbContent.location"
+                    control={control}
+                    render={({ field }) => (
+                      <LocationSelect
+                        placeholder={NS.field.location}
+                        lang="CKB"
+                        variant="inline"
+                        className="flex-1"
+                        value={field.value}
+                        onChange={(v) => field.onChange(v)}
+                      />
+                    )}
                   />
                 </div>
                 <TiptapEditor entity="videos"
@@ -564,11 +574,19 @@ export function VideoForm({
                 </div>
                 <div className="flex items-center gap-2">
                   <MapPinIcon className="text-muted-foreground size-4 shrink-0" />
-                  <Input
-                    dir="ltr"
-                    className={borderlessInlineClass}
-                    placeholder={NS.field.location}
-                    {...register("kmrContent.location")}
+<Controller
+                    name="kmrContent.location"
+                    control={control}
+                    render={({ field }) => (
+                      <LocationSelect
+                        placeholder={NS.field.location}
+                        lang="KMR"
+                        variant="inline"
+                        className="flex-1"
+                        value={field.value}
+                        onChange={(v) => field.onChange(v)}
+                      />
+                    )}
                   />
                 </div>
                 <TiptapEditor entity="videos"

@@ -11,6 +11,7 @@ import { toast } from "sonner"
 
 import { ServiceGalleryEditor } from "@/components/services/service-gallery-editor"
 import { NS } from "@/components/services/services-strings"
+import { LocationSelect } from "@/components/shared/location-picker"
 import { TiptapEditor } from "@/components/shared/tiptap-editor-lazy"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -310,12 +311,12 @@ export function ServiceSectionCard({
               name="location"
               control={control}
               render={({ field }) => (
-                <Input
-                  {...field}
+<LocationSelect
                   id={`service-location-${serviceId ?? "new"}-${index}`}
-                  value={field.value ?? ""}
+                  lang="CKB"
+                  value={field.value}
+                  onChange={(v) => field.onChange(v)}
                   placeholder={NS.field.location}
-                  className="h-10"
                 />
               )}
             />

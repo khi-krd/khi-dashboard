@@ -1,6 +1,7 @@
 import api from "@/lib/axios"
 import { unwrapApiData } from "@/lib/api-unwrap"
 import type {
+  LocationDto,
   NewsTaxonomyCategoryDto,
   NewsTaxonomySubCategoryDto,
   OfficeTypeDto,
@@ -14,6 +15,7 @@ const NEWS_BASE = "/api/v1/news"
 const PROJECT_TYPES = "/api/v1/projects/types"
 const SOUND_TYPES = "/api/v1/sound-tracks/types"
 const OFFICE_TYPES = "/api/v1/contact/office-types"
+const LOCATIONS = "/api/v1/locations"
 
 function str(v: unknown): string {
   return typeof v === "string" ? v : ""
@@ -213,4 +215,40 @@ export async function updateOfficeType(
 
 export async function deleteOfficeType(id: number): Promise<void> {
   await api.delete(`${OFFICE_TYPES}/${id}`)
+}
+
+// ── Locations ────────────────────────────────────────────────────────────
+
+function normalizeLocation(raw: unknown): LocationDto {
+  const r = (raw ?? {}) as Record<string, unknown>
+  return {
+    id: num(r.id),
+    nameCkb: str(r.nameCkb),
+    nameKmr: str(r.nameKmr),
+    displayOrder: num(r.displayOrder),
+  }
+}
+
+export async function getLocations(): Promise<LocationDto[]> {
+  const { data } = await api.get<unknown>(LOCATIONS)
+  return asList(unwrapApiData(data)).map(normalizeLocation)
+}
+
+export async function createLocation(
+  payload: TaxonomyWritePayload,
+): Promise<LocationDto> {
+  const { data } = await api.post<unknown>(LOCATIONS, payload)
+  return normalizeLocation(unwrapApiData(data))
+}
+
+export async function updateLocation(
+  id: number,
+  payload: TaxonomyWritePayload,
+): Promise<LocationDto> {
+  const { data } = await api.put<unknown>(`${LOCATIONS}/${id}`, payload)
+  return normalizeLocation(unwrapApiData(data))
+}
+
+export async function deleteLocation(id: number): Promise<void> {
+  await api.delete(`${LOCATIONS}/${id}`)
 }

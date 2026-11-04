@@ -37,6 +37,13 @@ export type OfficeTypeDto = {
   officeCount: number
 }
 
+export type LocationDto = {
+  id: number
+  nameCkb: string
+  nameKmr: string
+  displayOrder: number
+}
+
 export type TaxonomyWritePayload = {
   nameCkb?: string
   nameKmr?: string

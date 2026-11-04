@@ -8,20 +8,24 @@ import { projectKeys } from "@/lib/projects-query-keys"
 import { soundKeys } from "@/lib/sounds-query-keys"
 import { taxonomyKeys } from "@/lib/taxonomy-query-keys"
 import {
+  createLocation,
   createNewsCategory,
   createNewsSubCategory,
   createOfficeType,
   createProjectType,
   createSoundType,
+  deleteLocation,
   deleteNewsCategory,
   deleteNewsSubCategory,
   deleteOfficeType,
   deleteProjectType,
   deleteSoundType,
+  getLocations,
   getNewsTaxonomy,
   getOfficeTypes,
   getProjectTypes,
   getSoundTypes,
+  updateLocation,
   updateNewsCategory,
   updateNewsSubCategory,
   updateOfficeType,
@@ -237,6 +241,50 @@ export function useDeleteOfficeTypeMutation() {
   const invalidate = useInvalidateOfficeTypes()
   return useMutation({
     mutationFn: (id: number) => deleteOfficeType(id),
+    onSuccess: invalidate,
+  })
+}
+
+// ── Locations ────────────────────────────────────────────────────────────
+// Options only: records keep their location as text, so nothing else needs
+// refetching when the vocabulary changes.
+
+export function useLocationsQuery() {
+  return useQuery({
+    queryKey: taxonomyKeys.locations(),
+    queryFn: getLocations,
+    staleTime: 5 * 60_000,
+  })
+}
+
+function useInvalidateLocations() {
+  const queryClient = useQueryClient()
+  return () => {
+    void queryClient.invalidateQueries({ queryKey: taxonomyKeys.locations() })
+  }
+}
+
+export function useCreateLocationMutation() {
+  const invalidate = useInvalidateLocations()
+  return useMutation({
+    mutationFn: (payload: TaxonomyWritePayload) => createLocation(payload),
+    onSuccess: invalidate,
+  })
+}
+
+export function useUpdateLocationMutation() {
+  const invalidate = useInvalidateLocations()
+  return useMutation({
+    mutationFn: ({ id, payload }: { id: number; payload: TaxonomyWritePayload }) =>
+      updateLocation(id, payload),
+    onSuccess: invalidate,
+  })
+}
+
+export function useDeleteLocationMutation() {
+  const invalidate = useInvalidateLocations()
+  return useMutation({
+    mutationFn: (id: number) => deleteLocation(id),
     onSuccess: invalidate,
   })
 }

@@ -22,6 +22,7 @@ import {
   SoundBreadcrumbBar,
   dashboardSoundsCrumbHref,
 } from "@/components/sounds/sound-breadcrumb"
+import { LocationMultiSelect } from "@/components/shared/location-picker"
 import { SoundAlbumBrochuresList } from "@/components/sounds/sound-album-brochures"
 import { SoundAttachmentsList } from "@/components/sounds/sound-attachments-list"
 import { SoundCoverTrio } from "@/components/sounds/sound-cover-trio"
@@ -491,11 +492,10 @@ export function SoundForm({
                       name="locationsCkb"
                       control={control}
                       render={({ field }) => (
-                        <SoundTagInput
-                          value={field.value}
+                        <LocationMultiSelect
+                          lang="CKB"
+                          values={field.value ?? []}
                           onChange={field.onChange}
-                          placeholder={NS.field.locations_placeholder}
-                          variant="solid"
                         />
                       )}
                     />
@@ -535,11 +535,10 @@ export function SoundForm({
                       name="locationsKmr"
                       control={control}
                       render={({ field }) => (
-                        <SoundTagInput
-                          value={field.value}
+                        <LocationMultiSelect
+                          lang="KMR"
+                          values={field.value ?? []}
                           onChange={field.onChange}
-                          placeholder={NS.field.locations_placeholder}
-                          variant="solid"
                         />
                       )}
                     />

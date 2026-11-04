@@ -4,4 +4,5 @@ export const taxonomyKeys = {
   projectTypes: () => [...taxonomyKeys.all, "project-types"] as const,
   soundTypes: () => [...taxonomyKeys.all, "sound-types"] as const,
   officeTypes: () => [...taxonomyKeys.all, "office-types"] as const,
+  locations: () => [...taxonomyKeys.all, "locations"] as const,
 }
