@@ -1,12 +1,18 @@
 "use client"
 
-import { ArrowPathIcon, ChevronDownIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline"
+import { ChevronDownIcon } from "@heroicons/react/24/outline"
 import { useState } from "react"
 
 import { GENRE_LABEL_CKB, NS } from "@/components/writings/writings-strings"
+import {
+  FilterBar,
+  FilterReset,
+  FilterSearch,
+  FilterSegmented,
+  filterSelectTriggerClass,
+} from "@/components/shared/filter-bar"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Input } from "@/components/ui/input"
 import {
   Popover,
   PopoverContent,
@@ -29,13 +35,7 @@ import type {
   WritingsUiLanguageFilter,
 } from "@/types/writings-ui"
 
-const triggerClass =
-  "border-border bg-background h-9 w-full min-h-9 rounded-md shadow-sm transition-[box-shadow,border-color] hover:border-primary/30 hover:bg-muted/40 focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30"
-
-const searchInputClass =
-  "h-9 min-h-9 border-none bg-transparent px-2 text-sm shadow-none focus-visible:border-transparent focus-visible:ring-0"
-
-const SEARCH_MODES: WritingsSearchMode[] = ["writer", "tag", "keyword"]
+const SEARCH_MODES: WritingsSearchMode[] = ["title", "writer", "tag", "keyword"]
 
 function searchModeLabel(mode: WritingsSearchMode) {
   return NS.filter.search_mode[mode]
@@ -98,8 +98,8 @@ function GenresMultiSelect({
           <button
             type="button"
             className={cn(
-              triggerClass,
-              "inline-flex w-full items-center justify-between gap-2 px-3 text-sm md:w-40",
+              filterSelectTriggerClass(selected.length > 0),
+              "inline-flex w-full items-center justify-between gap-2 md:w-40",
             )}
           >
             <span className="truncate">{label}</span>
@@ -187,135 +187,118 @@ export function WritingsFiltersToolbar({
   onReset: () => void
 }) {
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex flex-col gap-2 md:flex-row md:flex-wrap md:items-center">
-        <div className="border-border bg-background flex min-h-9 min-w-0 flex-1 flex-col gap-2 rounded-md border shadow-sm md:min-w-[14rem]">
-          <div className="flex items-center gap-2 px-2">
-            <MagnifyingGlassIcon
-              className="text-muted-foreground size-4 shrink-0"
-              aria-hidden
-            />
-            <Input
-              value={search}
-              onChange={(e) => onSearchChange(e.target.value)}
-              placeholder={NS.filter.search_placeholder}
-              className={searchInputClass}
-            />
-          </div>
-          <div className="border-border/60 flex flex-wrap gap-1 border-t px-2 py-1.5">
-            {SEARCH_MODES.map((mode) => (
-              <button
-                key={mode}
-                type="button"
-                onClick={() => onSearchModeChange(mode)}
-                className={cn(
-                  "rounded-md px-2 py-0.5 text-xs font-medium transition-colors",
-                  searchMode === mode
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                )}
-              >
-                {searchModeLabel(mode)}
-              </button>
-            ))}
-          </div>
-        </div>
+    <FilterBar>
+      <FilterSearch
+        value={search}
+        onChange={onSearchChange}
+        placeholder={NS.filter.search_placeholder}
+      />
+      <FilterSegmented
+        value={searchMode}
+        onChange={onSearchModeChange}
+        options={SEARCH_MODES.map((mode) => ({
+          value: mode,
+          label: searchModeLabel(mode),
+        }))}
+      />
 
-        <Select
-          value={writer ?? "all"}
-          onValueChange={(v) => onWriterChange(v === "all" ? null : v)}
+      <Select
+        value={writer ?? "all"}
+        onValueChange={(v) => onWriterChange(v === "all" ? null : v)}
+      >
+        <SelectTrigger
+          dir="rtl"
+          className={cn(filterSelectTriggerClass(writer != null), "md:w-40")}
         >
-          <SelectTrigger dir="rtl" className={cn(triggerClass, "md:w-40")}>
-            <SelectValue>
-              {writer ?? NS.filter.all_writers}
-            </SelectValue>
-          </SelectTrigger>
-          <SelectContent dir="rtl">
-            <SelectItem value="all">{NS.filter.all_writers}</SelectItem>
-            {writers.map((w) => (
-              <SelectItem key={w} value={w}>
-                {w}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          <SelectValue>
+            {writer ?? NS.filter.all_writers}
+          </SelectValue>
+        </SelectTrigger>
+        <SelectContent dir="rtl">
+          <SelectItem value="all">{NS.filter.all_writers}</SelectItem>
+          {writers.map((w) => (
+            <SelectItem key={w} value={w}>
+              {w}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
 
-        <GenresMultiSelect selected={genres} onChange={onGenresChange} />
+      <GenresMultiSelect selected={genres} onChange={onGenresChange} />
 
-        <Select
-          value={topicId == null ? "all" : String(topicId)}
-          onValueChange={(v) => onTopicChange(v === "all" ? null : Number(v))}
+      <Select
+        value={topicId == null ? "all" : String(topicId)}
+        onValueChange={(v) => onTopicChange(v === "all" ? null : Number(v))}
+      >
+        <SelectTrigger
+          dir="rtl"
+          className={cn(filterSelectTriggerClass(topicId != null), "md:w-40")}
         >
-          <SelectTrigger dir="rtl" className={cn(triggerClass, "md:w-40")}>
-            <SelectValue>
-              {topicId == null
-                ? NS.filter.all_topics
-                : (topics.find((t) => t.id === topicId)?.nameCkb ??
-                  NS.filter.all_topics)}
-            </SelectValue>
-          </SelectTrigger>
-          <SelectContent dir="rtl">
-            <SelectItem value="all">{NS.filter.all_topics}</SelectItem>
-            {topics.map((t) => (
-              <SelectItem key={t.id} value={String(t.id)}>
-                <span className="block">{t.nameCkb ?? NS.dash}</span>
-                {t.nameKmr ? (
-                  <span className="text-muted-foreground block text-xs">
-                    {t.nameKmr}
-                  </span>
-                ) : null}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          <SelectValue>
+            {topicId == null
+              ? NS.filter.all_topics
+              : (topics.find((t) => t.id === topicId)?.nameCkb ??
+                NS.filter.all_topics)}
+          </SelectValue>
+        </SelectTrigger>
+        <SelectContent dir="rtl">
+          <SelectItem value="all">{NS.filter.all_topics}</SelectItem>
+          {topics.map((t) => (
+            <SelectItem key={t.id} value={String(t.id)}>
+              <span className="block">{t.nameCkb ?? NS.dash}</span>
+              {t.nameKmr ? (
+                <span className="text-muted-foreground block text-xs">
+                  {t.nameKmr}
+                </span>
+              ) : null}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
 
-        <Select
-          value={language}
-          onValueChange={(v) => onLanguageChange(v as WritingsUiLanguageFilter)}
+      <Select
+        value={language}
+        onValueChange={(v) => onLanguageChange(v as WritingsUiLanguageFilter)}
+      >
+        <SelectTrigger
+          dir="rtl"
+          className={cn(filterSelectTriggerClass(language !== "all"), "md:w-32")}
         >
-          <SelectTrigger dir="rtl" className={cn(triggerClass, "md:w-32")}>
-            <SelectValue>{langLabel(language)}</SelectValue>
-          </SelectTrigger>
-          <SelectContent dir="rtl">
-            {(["all", "ckb_only", "kmr_only", "both"] as const).map((l) => (
-              <SelectItem key={l} value={l}>
-                {langLabel(l)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          <SelectValue>{langLabel(language)}</SelectValue>
+        </SelectTrigger>
+        <SelectContent dir="rtl">
+          {(["all", "ckb_only", "kmr_only", "both"] as const).map((l) => (
+            <SelectItem key={l} value={l}>
+              {langLabel(l)}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
 
-        <Select
-          value={institute}
-          onValueChange={(v) =>
-            onInstituteChange(v as WritingsUiInstituteFilter)
-          }
+      <Select
+        value={institute}
+        onValueChange={(v) =>
+          onInstituteChange(v as WritingsUiInstituteFilter)
+        }
+      >
+        <SelectTrigger
+          dir="rtl"
+          className={cn(filterSelectTriggerClass(institute !== "all"), "md:w-40")}
         >
-          <SelectTrigger dir="rtl" className={cn(triggerClass, "md:w-40")}>
-            <SelectValue>{instituteLabel(institute)}</SelectValue>
-          </SelectTrigger>
-          <SelectContent dir="rtl">
-            {(["all", "institute_only", "external_only"] as const).map((i) => (
-              <SelectItem key={i} value={i}>
-                {instituteLabel(i)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          <SelectValue>{instituteLabel(institute)}</SelectValue>
+        </SelectTrigger>
+        <SelectContent dir="rtl">
+          {(["all", "institute_only", "external_only"] as const).map((i) => (
+            <SelectItem key={i} value={i}>
+              {instituteLabel(i)}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
 
-        {showReset ? (
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="text-muted-foreground h-9 shrink-0 gap-1.5"
-            onClick={onReset}
-          >
-            <ArrowPathIcon className="size-4" aria-hidden />
-            {NS.action.reset_filters}
-          </Button>
-        ) : null}
-      </div>
-    </div>
+      {showReset ? (
+        <FilterReset onClick={onReset} label={NS.action.reset_filters} />
+      ) : null}
+    </FilterBar>
   )
 }

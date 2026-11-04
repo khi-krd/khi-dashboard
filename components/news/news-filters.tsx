@@ -1,12 +1,12 @@
 "use client"
 
-import { ArrowPathIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline"
-
-import type { ChangeEvent } from "react"
-
 import { NS } from "@/components/news/news-strings"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import {
+  FilterBar,
+  FilterReset,
+  FilterSearch,
+  filterSelectTriggerClass,
+} from "@/components/shared/filter-bar"
 import {
   Select,
   SelectContent,
@@ -14,7 +14,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { cn } from "@/lib/utils"
 
 import type { NewsUiLanguageFilter, NewsUiStatusFilter } from "@/types/news-ui"
 
@@ -64,9 +63,6 @@ function languageTriggerLabel(v: NewsUiLanguageFilter): string {
   }
 }
 
-const triggerClass =
-  "border-border bg-background h-9 w-full min-h-9 rounded-md shadow-sm transition-[box-shadow,border-color] hover:border-primary/30 hover:bg-muted/40 focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30"
-
 export function NewsFiltersToolbar({
   search,
   onSearchChange,
@@ -107,30 +103,22 @@ export function NewsFiltersToolbar({
   }
 
   return (
-    <div dir="rtl" className="mb-4 flex flex-col gap-2 md:flex-row md:flex-wrap md:items-center md:gap-2">
-      <div className="border-input bg-background flex h-9 min-h-9 w-full items-center rounded-md border px-2.5 shadow-xs transition-colors focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/25 md:min-w-0 md:flex-1">
-        <MagnifyingGlassIcon
-          className="text-muted-foreground size-4 shrink-0 rtl:rotate-180"
-          aria-hidden
-        />
-        <Input
+    <div dir="rtl" className="mb-4">
+      <FilterBar>
+        <FilterSearch
           id="news-filter-search"
-          className="h-9 border-none bg-transparent px-2 text-sm shadow-none focus-visible:border-transparent focus-visible:ring-0 md:text-sm"
-          placeholder={NS.filter.search_placeholder}
           value={search}
-          onChange={(e: ChangeEvent<HTMLInputElement>) =>
-            onSearchChange(e.target.value)
-          }
+          onChange={onSearchChange}
+          placeholder={NS.filter.search_placeholder}
         />
-      </div>
 
-      <div className="grid grid-cols-2 gap-2 md:contents">
+        <div className="grid grid-cols-2 gap-1.5 md:contents">
         <div className="flex min-w-0 flex-col gap-1 md:w-40">
           <Select
             value={status}
             onValueChange={(v) => onStatusChange(v as NewsUiStatusFilter)}
           >
-            <SelectTrigger id="news-filter-status" className={triggerClass}>
+            <SelectTrigger id="news-filter-status" className={filterSelectTriggerClass(status !== "all")}>
               <SelectValue placeholder={NS.filter.all_statuses}>
                 {(v: NewsUiStatusFilter | null | undefined) =>
                   v != null ? statusTriggerLabel(v) : NS.filter.all_statuses
@@ -157,7 +145,7 @@ export function NewsFiltersToolbar({
             value={language}
             onValueChange={(v) => onLanguageChange(v as NewsUiLanguageFilter)}
           >
-            <SelectTrigger id="news-filter-language" className={triggerClass}>
+            <SelectTrigger id="news-filter-language" className={filterSelectTriggerClass(language !== "all")}>
               <SelectValue placeholder={NS.filter.all_languages}>
                 {(v: NewsUiLanguageFilter | null | undefined) =>
                   v != null
@@ -186,7 +174,7 @@ export function NewsFiltersToolbar({
               onCategoryChange(catDecode(v))
             }}
           >
-            <SelectTrigger id="news-filter-category" className={triggerClass}>
+            <SelectTrigger id="news-filter-category" className={filterSelectTriggerClass(category != null)}>
               <SelectValue placeholder={NS.filter.all_categories}>
                 {(v: string | null | undefined) =>
                   v != null
@@ -212,20 +200,10 @@ export function NewsFiltersToolbar({
         </div>
       </div>
 
-      {showReset ? (
-        <Button
-          type="button"
-          variant="ghost"
-          className={cn(
-            "text-muted-foreground hover:text-foreground inline-flex h-9 shrink-0 items-center gap-1.5 px-3",
-            "md:ms-auto",
-          )}
-          onClick={onReset}
-        >
-          <ArrowPathIcon className="size-4 rtl:rotate-180" />
-          {NS.filter.reset}
-        </Button>
-      ) : null}
+        {showReset ? (
+          <FilterReset onClick={onReset} label={NS.filter.reset} />
+        ) : null}
+      </FilterBar>
     </div>
   )
 }

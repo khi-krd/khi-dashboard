@@ -24,6 +24,7 @@ import {
   patchWritingFeatured,
   searchWritingsByKeyword,
   searchWritingsByTag,
+  searchWritingsByTitle,
   searchWritingsByWriter,
   updateTopic,
   updateWriting,
@@ -43,6 +44,9 @@ async function fetchWritingsPage(
   const kw = params.keyword.trim()
 
   if (kw.length >= 1) {
+    if (params.searchMode === "title") {
+      return searchWritingsByTitle(kw, params.page, params.size)
+    }
     if (params.searchMode === "tag") {
       return searchWritingsByTag(kw, params.page, params.size)
     }

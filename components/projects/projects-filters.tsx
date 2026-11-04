@@ -1,11 +1,12 @@
 "use client"
 
-import { ArrowPathIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline"
-import type { ChangeEvent } from "react"
-
 import { NS } from "@/components/projects/projects-strings"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import {
+  FilterBar,
+  FilterReset,
+  FilterSearch,
+  filterSelectTriggerClass,
+} from "@/components/shared/filter-bar"
 import {
   Select,
   SelectContent,
@@ -13,7 +14,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { cn } from "@/lib/utils"
 import type {
   ProjectsUiLanguageFilter,
   ProjectsUiStatusFilter,
@@ -62,12 +62,6 @@ function languageTriggerLabel(v: ProjectsUiLanguageFilter): string {
   }
 }
 
-const triggerClass =
-  "border-border bg-background h-9 w-full min-h-9 rounded-md shadow-sm transition-[box-shadow,border-color] hover:border-primary/30 hover:bg-muted/40 focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30"
-
-const searchInputClass =
-  "h-9 min-h-9 border-none bg-transparent px-2 text-sm shadow-none focus-visible:border-transparent focus-visible:ring-0"
-
 export function ProjectsFiltersToolbar({
   search,
   onSearchChange,
@@ -103,29 +97,21 @@ export function ProjectsFiltersToolbar({
   }
 
   return (
-    <div dir="rtl" className="mb-4 flex flex-col gap-2 md:flex-row md:flex-wrap md:items-center md:gap-2">
-      <div className="border-input bg-background flex h-9 min-h-9 w-full items-center rounded-md border px-2.5 shadow-xs transition-colors focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/25 md:min-w-0 md:flex-1">
-        <MagnifyingGlassIcon
-          className="text-muted-foreground size-4 shrink-0 rtl:rotate-180"
-          aria-hidden
-        />
-        <Input
-          className={searchInputClass}
-          placeholder={NS.filter.search_placeholder}
+    <div dir="rtl" className="mb-4">
+      <FilterBar>
+        <FilterSearch
           value={search}
-          onChange={(e: ChangeEvent<HTMLInputElement>) =>
-            onSearchChange(e.target.value)
-          }
+          onChange={onSearchChange}
+          placeholder={NS.filter.search_placeholder}
         />
-      </div>
 
-      <div className="grid grid-cols-2 gap-2 md:contents">
+        <div className="grid grid-cols-2 gap-1.5 md:contents">
         <div className="md:w-40">
           <Select
             value={status}
             onValueChange={(v) => onStatusChange(v as ProjectsUiStatusFilter)}
           >
-            <SelectTrigger className={triggerClass}>
+            <SelectTrigger className={filterSelectTriggerClass(status !== "all")}>
               <SelectValue placeholder={NS.filter.all_statuses}>
                 {(v: ProjectsUiStatusFilter | null | undefined) =>
                   v != null ? statusTriggerLabel(v) : NS.filter.all_statuses
@@ -145,7 +131,7 @@ export function ProjectsFiltersToolbar({
             value={language}
             onValueChange={(v) => onLanguageChange(v as ProjectsUiLanguageFilter)}
           >
-            <SelectTrigger className={triggerClass}>
+            <SelectTrigger className={filterSelectTriggerClass(language !== "all")}>
               <SelectValue placeholder={NS.filter.all_languages}>
                 {(v: ProjectsUiLanguageFilter | null | undefined) =>
                   v != null ? languageTriggerLabel(v) : NS.filter.all_languages
@@ -172,7 +158,7 @@ export function ProjectsFiltersToolbar({
               onTypeChange(typeDecode(v))
             }}
           >
-            <SelectTrigger className={triggerClass}>
+            <SelectTrigger className={filterSelectTriggerClass(typeFilter != null)}>
               <SelectValue placeholder={NS.filter.all_types}>
                 {(v: string | null | undefined) =>
                   v != null ? typeTriggerLabel(v) : NS.filter.all_types
@@ -191,20 +177,10 @@ export function ProjectsFiltersToolbar({
         </div>
       </div>
 
-      {showReset ? (
-        <Button
-          type="button"
-          variant="ghost"
-          className={cn(
-            "text-muted-foreground hover:text-foreground inline-flex h-9 shrink-0 items-center gap-1.5 px-3",
-            "md:ms-auto",
-          )}
-          onClick={onReset}
-        >
-          <ArrowPathIcon className="size-4 rtl:rotate-180" />
-          {NS.action.reset_filters}
-        </Button>
-      ) : null}
+        {showReset ? (
+          <FilterReset onClick={onReset} label={NS.action.reset_filters} />
+        ) : null}
+      </FilterBar>
     </div>
   )
 }

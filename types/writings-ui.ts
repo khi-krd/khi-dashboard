@@ -11,7 +11,7 @@ export type WritingsUiInstituteFilter =
   | "institute_only"
   | "external_only"
 
-export type WritingsSearchMode = "writer" | "tag" | "keyword"
+export type WritingsSearchMode = "title" | "writer" | "tag" | "keyword"
 
 export type WritingsListQueryKeyParts = {
   page: number

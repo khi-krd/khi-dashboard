@@ -1,10 +1,12 @@
 "use client"
 
-import { ArrowPathIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline"
-
 import { NS } from "@/components/videos/videos-strings"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import {
+  FilterBar,
+  FilterReset,
+  FilterSearch,
+  filterSelectTriggerClass,
+} from "@/components/shared/filter-bar"
 import {
   Select,
   SelectContent,
@@ -18,12 +20,6 @@ import type {
   VideosUiLanguageFilter,
   VideosUiTypeFilter,
 } from "@/types/videos-ui"
-
-const triggerClass =
-  "border-border bg-background h-9 w-full min-h-9 rounded-md shadow-sm transition-[box-shadow,border-color] hover:border-primary/30 hover:bg-muted/40 focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30"
-
-const searchInputClass =
-  "h-9 min-h-9 border-none bg-transparent px-2 text-sm shadow-none focus-visible:border-transparent focus-visible:ring-0"
 
 function typeLabel(v: VideosUiTypeFilter) {
   switch (v) {
@@ -81,28 +77,17 @@ export function VideosFiltersToolbar({
   onReset: () => void
 }) {
   return (
-    <div
-      className={cn(
-        "flex flex-col gap-2 md:flex-row md:flex-wrap md:items-center",
-      )}
-    >
-      <div className="border-border bg-background flex min-h-9 min-w-0 flex-1 items-center gap-2 rounded-md border px-2 shadow-sm md:min-w-[12rem]">
-        <MagnifyingGlassIcon
-          className="text-muted-foreground size-4 shrink-0"
-          aria-hidden
-        />
-        <Input
-          value={search}
-          onChange={(e) => onSearchChange(e.target.value)}
-          placeholder={NS.filter.search_placeholder}
-          className={searchInputClass}
-        />
-      </div>
+    <FilterBar>
+      <FilterSearch
+        value={search}
+        onChange={onSearchChange}
+        placeholder={NS.filter.search_placeholder}
+      />
       <Select
         value={typeFilter}
         onValueChange={(v) => onTypeChange(v as VideosUiTypeFilter)}
       >
-        <SelectTrigger dir="rtl" className={cn(triggerClass, "md:w-36")}>
+        <SelectTrigger dir="rtl" className={cn(filterSelectTriggerClass(typeFilter !== "all"), "md:w-36")}>
           <SelectValue>{typeLabel(typeFilter)}</SelectValue>
         </SelectTrigger>
         <SelectContent dir="rtl">
@@ -119,7 +104,7 @@ export function VideosFiltersToolbar({
           onTopicChange(v === "all" ? null : Number(v))
         }
       >
-        <SelectTrigger dir="rtl" className={cn(triggerClass, "md:w-44")}>
+        <SelectTrigger dir="rtl" className={cn(filterSelectTriggerClass(topicId != null), "md:w-44")}>
           <SelectValue>
             {topicId == null
               ? NS.filter.all_topics
@@ -144,7 +129,7 @@ export function VideosFiltersToolbar({
         value={language}
         onValueChange={(v) => onLanguageChange(v as VideosUiLanguageFilter)}
       >
-        <SelectTrigger dir="rtl" className={cn(triggerClass, "md:w-36")}>
+        <SelectTrigger dir="rtl" className={cn(filterSelectTriggerClass(language !== "all"), "md:w-36")}>
           <SelectValue>{langLabel(language)}</SelectValue>
         </SelectTrigger>
         <SelectContent dir="rtl">
@@ -156,17 +141,8 @@ export function VideosFiltersToolbar({
         </SelectContent>
       </Select>
       {showReset ? (
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          className="text-muted-foreground h-9 shrink-0 gap-1.5"
-          onClick={onReset}
-        >
-          <ArrowPathIcon className="size-4" aria-hidden />
-          {NS.action.reset_filters}
-        </Button>
+        <FilterReset onClick={onReset} label={NS.action.reset_filters} />
       ) : null}
-    </div>
+    </FilterBar>
   )
 }

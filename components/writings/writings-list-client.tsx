@@ -28,8 +28,13 @@ import { useStoredViewMode } from "@/hooks/use-stored-view-mode"
 import { BG } from "@/components/writings/genres/book-genres-strings"
 import { WritingDeleteDialog } from "@/components/writings/writing-delete-dialog"
 import { WritingErrorState } from "@/components/writings/writing-error-state"
+import { FilterSegmented } from "@/components/shared/filter-bar"
 import { WritingsDataGrid } from "@/components/writings/writings-data-grid"
 import { WritingsFiltersToolbar } from "@/components/writings/writings-filters"
+import {
+  WritingsSeriesChains,
+  type SeriesChain,
+} from "@/components/writings/writings-series-chains"
 import { WritingsShelfGrid } from "@/components/writings/writings-shelf-grid"
 import { NS } from "@/components/writings/writings-strings"
 import { NS as FEATURED_NS } from "@/components/featured/featured-strings"
@@ -62,6 +67,8 @@ import type {
 } from "@/types/writings-ui"
 import {
   deriveDistinctWriters,
+  isPartOfMultiBookSeries,
+  matchesWritingClientSearchFilter,
   matchesWritingGenresFilter,
   matchesWritingInstituteFilter,
   matchesWritingLanguageFilter,
@@ -124,7 +131,8 @@ function WritingsListClientInner() {
 
   const [searchRaw, setSearchRaw] = useState("")
   const debouncedKw = useDebouncedValue(searchRaw.trim(), 300)
-  const [searchMode, setSearchMode] = useState<WritingsSearchMode>("writer")
+  const [searchMode, setSearchMode] = useState<WritingsSearchMode>("title")
+  const [scope, setScope] = useState<"all" | "series">("all")
 
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
@@ -169,6 +177,15 @@ function WritingsListClientInner() {
     staleTime: 0,
   })
 
+  // Series scope needs complete chains — a member may live on a different page,
+  // so it fetches every record once and groups client-side.
+  const seriesAllQuery = useQuery({
+    queryKey: [...writingsKeys.lists(), "series-scope-all"],
+    queryFn: () => fetchAllPages((p, s) => getWritingsList(p, s)),
+    enabled: scope === "series",
+    staleTime: 1000 * 60 * 2,
+  })
+
   const reorderItems = useMemo(
     () =>
       (reorderQuery.data ?? [])
@@ -207,39 +224,88 @@ function WritingsListClientInner() {
     [listQuery.data],
   )
 
+  const seriesSourceRows = useMemo(
+    () => seriesAllQuery.data ?? [],
+    [seriesAllQuery.data],
+  )
+
   const recordCount = listQuery.data?.totalElements ?? 0
 
-  const writerOptions = useMemo(() => deriveDistinctWriters(rawRows), [rawRows])
+  const writerOptions = useMemo(
+    () => deriveDistinctWriters(scope === "series" ? seriesSourceRows : rawRows),
+    [rawRows, scope, seriesSourceRows],
+  )
 
-  const filtered = useMemo(() => {
-    return rawRows.filter((r) => {
-      if (!matchesWritingTopicFilter(r, topicId)) return false
-      if (!matchesWritingLanguageFilter(r, language)) return false
-      if (!matchesWritingInstituteFilter(r, institute)) return false
-      if (!matchesWritingGenresFilter(r, genresFilter)) return false
-      if (!matchesWritingWriterFilter(r, writerFilter)) return false
-      return true
-    })
-  }, [
-    debouncedKw,
-    genresFilter,
-    institute,
-    language,
-    rawRows,
-    topicId,
-    writerFilter,
-  ])
+  const applyClientFilters = useCallback(
+    (rows: WritingDto[]) =>
+      rows.filter((r) => {
+        if (!matchesWritingTopicFilter(r, topicId)) return false
+        if (!matchesWritingLanguageFilter(r, language)) return false
+        if (!matchesWritingInstituteFilter(r, institute)) return false
+        if (!matchesWritingGenresFilter(r, genresFilter)) return false
+        if (!matchesWritingWriterFilter(r, writerFilter)) return false
+        return true
+      }),
+    [genresFilter, institute, language, topicId, writerFilter],
+  )
+
+  const filtered = useMemo(
+    () => applyClientFilters(rawRows),
+    [applyClientFilters, rawRows],
+  )
 
   const gridRows = useMemo(
     () => filtered.map((r) => toWritingAdminRow(r)),
     [filtered],
   )
 
+  const seriesRows = useMemo(
+    () =>
+      applyClientFilters(seriesSourceRows)
+        .filter(
+          (r) =>
+            r.seriesId != null &&
+            isPartOfMultiBookSeries(r) &&
+            matchesWritingClientSearchFilter(r, debouncedKw),
+        )
+        .map((r) => toWritingAdminRow(r)),
+    [applyClientFilters, debouncedKw, seriesSourceRows],
+  )
+
+  const chains = useMemo<SeriesChain[]>(() => {
+    const groups = new Map<string, WritingAdminTableRow[]>()
+    for (const r of seriesRows) {
+      const key = r.seriesId!
+      const bucket = groups.get(key)
+      if (bucket) bucket.push(r)
+      else groups.set(key, [r])
+    }
+    const out: SeriesChain[] = []
+    for (const [key, members] of groups) {
+      const sorted = [...members].sort(
+        (a, b) =>
+          (a.seriesOrder ?? a.seriesInfo?.seriesOrder ?? 0) -
+          (b.seriesOrder ?? b.seriesInfo?.seriesOrder ?? 0),
+      )
+      const root =
+        sorted.find((m) => m.seriesInfo?.isParent || m.parentBookId == null) ??
+        sorted[0]
+      const children = sorted.filter((m) => m !== root)
+      const latest = sorted.reduce(
+        (acc, m) => Math.max(acc, m.sortCreated || 0),
+        0,
+      )
+      out.push({ key, seriesId: key, root, children, members: sorted, latest })
+    }
+    // newest-added chain first — same "last date added" ordering as the list
+    return out.sort((a, b) => b.latest - a.latest)
+  }, [seriesRows])
+
   const deleteMut = useDeleteWritingMutation()
 
   const showReset =
     searchRaw.trim().length > 0 ||
-    searchMode !== "writer" ||
+    searchMode !== "title" ||
     writerFilter != null ||
     genresFilter.length > 0 ||
     topicId != null ||
@@ -247,7 +313,7 @@ function WritingsListClientInner() {
     institute !== "all"
 
   const noExtraFilters =
-    searchMode === "writer" &&
+    searchMode === "title" &&
     writerFilter == null &&
     genresFilter.length === 0 &&
     topicId == null &&
@@ -306,7 +372,10 @@ function WritingsListClientInner() {
     [seedDetailCache, router],
   )
 
-  const isLoading = listQuery.isLoading || listQuery.isFetching
+  const isLoading =
+    scope === "series"
+      ? seriesAllQuery.isLoading || seriesAllQuery.isFetching
+      : listQuery.isLoading || listQuery.isFetching
 
   const showNoWritingsEmpty =
     !isLoading &&
@@ -402,34 +471,40 @@ function WritingsListClientInner() {
       ) : (
         <>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="bg-muted/50 inline-flex rounded-lg p-1">
-          <button
-            type="button"
-            title={NS.view_mode.shelf}
-            onClick={() => changeViewMode("shelf")}
-            className={cn(
-              "inline-flex size-9 items-center justify-center rounded-md transition-colors",
-              viewMode === "shelf"
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground",
-            )}
-          >
-            <Squares2X2Icon className="size-4" aria-hidden />
-          </button>
-          <button
-            type="button"
-            title={NS.view_mode.table}
-            onClick={() => changeViewMode("table")}
-            className={cn(
-              "inline-flex size-9 items-center justify-center rounded-md transition-colors",
-              viewMode === "table"
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground",
-            )}
-          >
-            <Bars3Icon className="size-4" aria-hidden />
-          </button>
-        </div>
+        <FilterSegmented
+          value={scope}
+          onChange={setScope}
+          options={[
+            {
+              value: "all" as const,
+              label: NS.scope.all,
+              icon: <BookOpenIcon className="size-4" aria-hidden />,
+            },
+            {
+              value: "series" as const,
+              label: NS.scope.series,
+              icon: <RectangleStackIcon className="size-4" aria-hidden />,
+            },
+          ]}
+        />
+        {scope === "all" ? (
+          <FilterSegmented
+            value={viewMode}
+            onChange={changeViewMode}
+            options={[
+              {
+                value: "shelf" as const,
+                label: NS.view_mode.shelf,
+                icon: <Squares2X2Icon className="size-4" aria-hidden />,
+              },
+              {
+                value: "table" as const,
+                label: NS.view_mode.table,
+                icon: <Bars3Icon className="size-4" aria-hidden />,
+              },
+            ]}
+          />
+        ) : null}
       </div>
 
       <WritingsFiltersToolbar
@@ -453,7 +528,20 @@ function WritingsListClientInner() {
         onReset={onResetFilters}
       />
 
-      {listQuery.isError ? (
+      {scope === "series" ? (
+        seriesAllQuery.isError ? (
+          <WritingErrorState onRetry={() => void seriesAllQuery.refetch()} />
+        ) : isLoading ? (
+          <ListSkeleton viewMode="table" />
+        ) : (
+          <WritingsSeriesChains
+            chains={chains}
+            onView={onView}
+            onEdit={onEdit}
+            onDelete={setDeleteTarget}
+          />
+        )
+      ) : listQuery.isError ? (
         <WritingErrorState onRetry={() => void listQuery.refetch()} />
       ) : isLoading ? (
         <ListSkeleton viewMode={viewMode} />

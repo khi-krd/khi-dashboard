@@ -39,6 +39,18 @@ export async function getWritingById(id: number): Promise<WritingDto | null> {
   }
 }
 
+export async function searchWritingsByTitle(
+  title: string,
+  page: number,
+  size: number,
+  language?: string,
+): Promise<WritingPage> {
+  const { data } = await api.get<unknown>(`${BASE}/search/title`, {
+    params: { title, page, size, ...(language ? { language } : {}) },
+  })
+  return normalizeWritingPage(data)
+}
+
 export async function searchWritingsByWriter(
   name: string,
   page: number,

@@ -130,6 +130,10 @@ export const NS = {
     shelf: "شێلف",
     table: "خشتە",
   },
+  scope: {
+    all: "هەموو کتێبەکان",
+    series: "زنجیرەکان",
+  },
   action: {
     new: "کتێبی نوێ",
     new_topic: "بابەتی نوێ",
@@ -183,6 +187,7 @@ export const NS = {
   filter: {
     search_placeholder: "گەڕان لە ناونیشان، نووسەر، تاگ، یان کلیلەوشە",
     search_mode: {
+      title: "ناونیشان",
       writer: "نووسەر",
       tag: "تاگ",
       keyword: "کلیلەوشە",
