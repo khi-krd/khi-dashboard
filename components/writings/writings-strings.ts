@@ -277,6 +277,10 @@ export const NS = {
     series_total_helper: "کۆی کتێبەکانی زنجیرە",
     topic_helper: "بابەتەکان بۆ پۆلبەندی نووسراوەکانن",
     topic_empty: "بێ بابەت",
+    topic_unselected: "هیچ بابەتێک هەڵنەبژێردراوە",
+    topic_clear_all: "لابردنی هەموو",
+    topic_pending_hint:
+      "بابەتە نوێکان لەگەڵ پاشەکەوتکردنی کتێب دروست دەکرێن.",
     person_name_ckb: "ناوی تەواو بە سۆرانی…",
     person_name_kmr: "Navê temam bi Kurmancî…",
     person_nickname_ckb: "نازناو بە سۆرانی…",

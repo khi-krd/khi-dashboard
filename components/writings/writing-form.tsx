@@ -35,7 +35,7 @@ import { DRAFT_NS } from "@/components/shared/draft-strings"
 import { DraftStatus } from "@/components/shared/draft-status"
 import { TiptapEditor } from "@/components/shared/tiptap-editor-lazy"
 import { UploadProgressLine } from "@/components/shared/upload-progress-line"
-import { WritingTopicCombobox } from "@/components/writings/writing-topic-combobox"
+import { WritingTopicMultiselect } from "@/components/writings/writing-topic-multiselect"
 import { NS } from "@/components/writings/writings-strings"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { FieldError } from "@/components/ui/field"
@@ -331,10 +331,7 @@ export function WritingForm({
             </section>
 
             <section className={sectionCard}>
-              <Label className="text-muted-foreground mb-2 block text-xs uppercase">
-                {NS.section.topic}
-              </Label>
-              <WritingTopicCombobox
+              <WritingTopicMultiselect
                 selectedIds={topicIds}
                 pending={newTopics}
                 onToggle={(t) => {
