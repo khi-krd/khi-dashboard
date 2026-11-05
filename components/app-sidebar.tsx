@@ -175,6 +175,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               title: "کارتەکانی بەخشین",
               url: "/dashboard/donations/type-cards",
             },
+            {
+              title: "ڤیدیۆکانی بەخشەران",
+              url: "/dashboard/donations/archive-videos",
+            },
           ],
         },
         {
