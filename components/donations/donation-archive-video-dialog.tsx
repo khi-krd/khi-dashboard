@@ -239,6 +239,7 @@ function DonationArchiveVideoDialogBody({
               <MediaCoverUpload
                 entity="donations"
                 variant="video"
+								accept="video/*,image/*"
                 previewUrl={field.value?.trim() || null}
                 urlValue={field.value ?? ""}
                 onUrlChange={field.onChange}
