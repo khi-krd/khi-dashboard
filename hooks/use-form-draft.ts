@@ -3,6 +3,14 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import type { FieldValues, UseFormReturn } from "react-hook-form"
 
+import {
+  collectDraftFiles,
+  deleteDraftFiles,
+  draftFilesFingerprint,
+  loadDraftFiles,
+  saveDraftFiles,
+} from "@/lib/form-draft-files"
+
 export type FormDraftStatus = "idle" | "saving" | "saved" | "error"
 
 export const FORM_DRAFT_PREFIX = "khi-draft:"
@@ -178,10 +186,12 @@ export function useFormDraft<TValues extends FieldValues>({
   // asynchronously after a refresh, so a later key change still gets its shot.
   const attemptedKeysRef = useRef(new Set<string>())
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const filesFingerprintRef = useRef<string | null>(null)
 
   const writeDraft = useCallback(() => {
     try {
-      const values = sanitizeDraftValues(form.getValues())
+      const rawValues = form.getValues()
+      const values = sanitizeDraftValues(rawValues)
       const defaults = sanitizeDraftValues(form.formState.defaultValues ?? {})
       if (stableSerialize(values) === stableSerialize(defaults)) {
         // Nothing worth keeping — and crucially, an all-empty form must never
@@ -195,6 +205,15 @@ export function useFormDraft<TValues extends FieldValues>({
         baseUpdatedAt: recordId != null ? (recordUpdatedAt ?? null) : null,
       }
       window.localStorage.setItem(storageKey, JSON.stringify(payload))
+      // File/Blob fields cannot live in JSON — they persist to IndexedDB so a
+      // restored draft keeps staged uploads. Rewriting a blob is expensive, so
+      // the IDB write only runs when the file set actually changed.
+      const files = collectDraftFiles(rawValues)
+      const fingerprint = draftFilesFingerprint(files)
+      if (fingerprint !== filesFingerprintRef.current) {
+        filesFingerprintRef.current = fingerprint
+        void saveDraftFiles(storageKey, files)
+      }
       setDraftSavedAt(payload.savedAt)
       setStatus("saved")
     } catch {
@@ -250,6 +269,25 @@ export function useFormDraft<TValues extends FieldValues>({
     // keepDefaultValues: the server snapshot stays the dirty baseline, so the
     // restored draft reads as unsaved work and the save button stays armed.
     form.reset(merged, { keepDefaultValues: true })
+    // Re-attach staged uploads from the IndexedDB sidecar — whichever key the
+    // JSON draft came from owns the file entries.
+    void loadDraftFiles(storageKey)
+      .then((files) => {
+        if (files.length) return files
+        const alt = formDraftKey(entity, recordId, null)
+        return alt === storageKey ? [] : loadDraftFiles(alt)
+      })
+      .then((files) => {
+        for (const entry of files) {
+          const setValue = form.setValue as unknown as (
+            path: string,
+            value: unknown,
+            options?: object,
+          ) => void
+          setValue(entry.path, entry.file, { shouldDirty: true })
+        }
+      })
+      .catch(() => {})
     // React state updates are queued off the effect body — the codebase's
     // eslint flat config errors on synchronous setState inside effects.
     queueMicrotask(() => {
@@ -285,6 +323,8 @@ export function useFormDraft<TValues extends FieldValues>({
       timerRef.current = null
     }
     removeStoredDraft(storageKey)
+    filesFingerprintRef.current = null
+    void deleteDraftFiles(storageKey)
     setStatus("idle")
     setRestored(false)
     setDraftSavedAt(null)
