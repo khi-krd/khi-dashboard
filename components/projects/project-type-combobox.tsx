@@ -1,47 +1,67 @@
 "use client"
 
-import { useState } from "react"
-import {
-  CheckIcon,
-  ChevronUpDownIcon,
-  PlusIcon,
-  XMarkIcon,
-} from "@heroicons/react/24/outline"
+import { PlusIcon, XMarkIcon } from "@heroicons/react/24/outline"
+import { useMemo, useState } from "react"
 
 import { NS } from "@/components/projects/projects-strings"
-import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
+import { Skeleton } from "@/components/ui/skeleton"
+import { formatCkbDigits } from "@/lib/intl-ckb"
 import { cn } from "@/lib/utils"
 import type { ProjectTypeOption } from "@/types/projects"
 
 export type ProjectTypeValue = { nameCkb: string; nameKmr: string }
 
+/** Project-type chips share the book picker's rhythm: tinted when offered,
+ *  solid when picked, dashed for the one staged inside the create card. The
+ *  hue stays on the primary token — the genre family gets colours, types
+ *  keep the brand accent. */
+const TYPE_CHIP = {
+  pill: "bg-primary/10 text-primary border-primary/20",
+  selected: "bg-primary text-primary-foreground border-primary",
+}
+
+const CHIP_BASE =
+  "inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[11px] font-medium transition-opacity hover:opacity-90"
+
 /**
- * Multi-select project-type picker backed by the managed project-type
- * vocabulary. Each selection is a bilingual {ckb, kmr} pair shown as a chip.
+ * Multi-select project-type picker styled like the genre and topic pickers:
+ * every managed type sits in the open as a toggle chip — no dropdown — with
+ * the bilingual quick-add card underneath. Values the vocabulary no longer
+ * offers stay selected and removable but cannot be re-added.
  */
 export function ProjectTypeCombobox({
   items,
   values,
   onChange,
   onCreateInline,
+  loading,
 }: {
   items: ProjectTypeOption[]
   values: ProjectTypeValue[]
   onChange: (v: ProjectTypeValue[]) => void
   /** Fired only from the "add type" panel — lets the caller persist the new name into the managed vocabulary. */
   onCreateInline?: (option: ProjectTypeOption) => void
+  loading?: boolean
 }) {
-  const [open, setOpen] = useState(false)
-  const [showCreate, setShowCreate] = useState(false)
   const [draftCkb, setDraftCkb] = useState("")
   const [draftKmr, setDraftKmr] = useState("")
-  const [typed, setTyped] = useState("")
+
+  const selected = useMemo(
+    () => new Set(values.map((v) => v.nameCkb)),
+    [values],
+  )
+  const attached = useMemo(
+    () =>
+      loading
+        ? []
+        : values.filter(
+            (v) => !items.some((t) => t.projectTypeCkb === v.nameCkb),
+          ),
+    [items, values, loading],
+  )
+  const hasAny = values.length > 0
+  const isEmpty = !loading && items.length === 0
 
   const addValue = (ckb: string, kmr: string) => {
     const c = ckb.trim()
@@ -52,168 +72,117 @@ export function ProjectTypeCombobox({
   const removeValue = (ckb: string) =>
     onChange(values.filter((v) => v.nameCkb !== ckb))
 
+  function addType() {
+    const ckb = draftCkb.trim()
+    const kmr = draftKmr.trim()
+    if (!ckb) return
+    onCreateInline?.({ projectTypeCkb: ckb, projectTypeKmr: kmr })
+    addValue(ckb, kmr)
+    setDraftCkb("")
+    setDraftKmr("")
+  }
+
   return (
-    <div className="space-y-2">
-      {values.length > 0 ? (
-        <div className="flex flex-wrap gap-1.5">
-          {values.map((v) => (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-muted-foreground text-xs">
+          {hasAny
+            ? NS.type.selected_count(formatCkbDigits(values.length))
+            : NS.type.empty_helper}
+        </span>
+        {hasAny ? (
+          <button
+            type="button"
+            onClick={() => onChange([])}
+            className="text-muted-foreground hover:text-foreground text-xs underline underline-offset-4 transition-colors"
+          >
+            {NS.type.clear_all}
+          </button>
+        ) : null}
+      </div>
+
+      {loading ? (
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-24" />
+          <Skeleton className="h-16 w-full rounded-md" />
+        </div>
+      ) : (
+        <div className="flex flex-wrap gap-2">
+          {items.map((t) => {
+            const isOn = selected.has(t.projectTypeCkb)
+            return (
+              <button
+                key={t.projectTypeCkb}
+                type="button"
+                onClick={() =>
+                  isOn
+                    ? removeValue(t.projectTypeCkb)
+                    : addValue(t.projectTypeCkb, t.projectTypeKmr)
+                }
+                aria-pressed={isOn}
+                title={t.projectTypeKmr || undefined}
+                className={cn(
+                  CHIP_BASE,
+                  isOn ? TYPE_CHIP.selected : cn(TYPE_CHIP.pill, "opacity-80"),
+                )}
+              >
+                {t.projectTypeCkb}
+              </button>
+            )
+          })}
+          {attached.map((v) => (
             <span
               key={v.nameCkb}
-              className="bg-primary/10 text-primary border-primary/20 inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs"
+              className={cn(CHIP_BASE, TYPE_CHIP.selected)}
             >
-              <span>
-                {v.nameCkb}
-                {v.nameKmr && v.nameKmr !== v.nameCkb ? (
-                  <span className="text-muted-foreground ms-1">
-                    ({v.nameKmr})
-                  </span>
-                ) : null}
-              </span>
+              {v.nameCkb}
               <button
                 type="button"
                 onClick={() => removeValue(v.nameCkb)}
                 aria-label="×"
               >
-                <XMarkIcon className="size-3.5" />
+                <XMarkIcon className="size-3.5" aria-hidden />
               </button>
             </span>
           ))}
         </div>
+      )}
+
+      {isEmpty ? (
+        <p className="text-muted-foreground text-xs">{NS.type.empty_list}</p>
       ) : null}
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger
-          render={
-            <Button
-              type="button"
-              variant="outline"
-              className="h-auto min-h-9 w-full justify-between rounded-md px-3 py-2 text-start font-normal"
-            >
-              {values.length > 0 ? (
-                <span className="truncate">{values.length}</span>
-              ) : (
-                <span className="text-muted-foreground">
-                  {NS.filter.all_types}
-                </span>
-              )}
-              <ChevronUpDownIcon className="size-4 shrink-0 opacity-50" />
-            </Button>
-          }
-        />
-        <PopoverContent dir="rtl" className="w-[var(--anchor-width)] p-2">
-          <div className="flex gap-1.5">
-            <Input
-              value={typed}
-              onChange={(e) => setTyped(e.target.value)}
-              placeholder={NS.field.type_helper}
-              className="h-9"
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault()
-                  addValue(typed, "")
-                  setTyped("")
-                }
-              }}
-            />
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              className="h-9 shrink-0"
-              onClick={() => {
-                addValue(typed, "")
-                setTyped("")
-              }}
-            >
-              {NS.action.add}
-            </Button>
-          </div>
-          <div className="mt-2 max-h-48 space-y-1 overflow-y-auto">
-            {items.map((t) => {
-              const checked = values.some(
-                (v) => v.nameCkb === t.projectTypeCkb,
-              )
-              return (
-                <button
-                  key={t.projectTypeCkb}
-                  type="button"
-                  className={cn(
-                    "hover:bg-muted flex w-full items-start gap-2 rounded-md px-2 py-1.5 text-start text-sm",
-                    checked && "bg-muted",
-                  )}
-                  onClick={() =>
-                    checked
-                      ? removeValue(t.projectTypeCkb)
-                      : addValue(t.projectTypeCkb, t.projectTypeKmr)
-                  }
-                >
-                  <CheckIcon
-                    className={cn(
-                      "mt-0.5 size-4 shrink-0",
-                      checked ? "text-primary opacity-100" : "opacity-0",
-                    )}
-                  />
-                  <span>
-                    <span className="block">{t.projectTypeCkb}</span>
-                    {t.projectTypeKmr ? (
-                      <span className="text-muted-foreground block text-xs">
-                        {t.projectTypeKmr}
-                      </span>
-                    ) : null}
-                  </span>
-                </button>
-              )
-            })}
-          </div>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="mt-2 w-full justify-start gap-1"
-            onClick={() => setShowCreate((v) => !v)}
-          >
-            <PlusIcon className="size-4" />
+
+      <section className="border-border/60 bg-card/50 space-y-3 rounded-xl border p-3">
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-muted-foreground text-xs font-medium">
             {NS.action.add_type}
-          </Button>
-          {showCreate ? (
-            <div className="border-border mt-2 space-y-2 border-t pt-2">
-              <Input
-                placeholder="سۆرانی"
-                value={draftCkb}
-                onChange={(e) => setDraftCkb(e.target.value)}
-              />
-              <Input
-                placeholder="Kurmancî"
-                dir="ltr"
-                value={draftKmr}
-                onChange={(e) => setDraftKmr(e.target.value)}
-              />
-              <Button
-                type="button"
-                size="sm"
-                className="w-full"
-                onClick={() => {
-                  if (!draftCkb.trim()) return
-                  const ckb = draftCkb.trim()
-                  const kmr = draftKmr.trim()
-                  onCreateInline?.({
-                    projectTypeCkb: ckb,
-                    projectTypeKmr: kmr,
-                  })
-                  addValue(ckb, kmr)
-                  setDraftCkb("")
-                  setDraftKmr("")
-                  setShowCreate(false)
-                }}
-              >
-                {NS.action.add}
-              </Button>
-            </div>
-          ) : null}
-          <p className="text-muted-foreground mt-2 text-xs">
-            {NS.field.type_helper}
-          </p>
-        </PopoverContent>
-      </Popover>
+          </span>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Input
+            className="h-8 w-40"
+            placeholder={NS.lang.ckb}
+            value={draftCkb}
+            onChange={(e) => setDraftCkb(e.target.value)}
+          />
+          <Input
+            dir="ltr"
+            className="h-8 w-40"
+            placeholder="Kurmancî"
+            value={draftKmr}
+            onChange={(e) => setDraftKmr(e.target.value)}
+          />
+          <button
+            type="button"
+            onClick={addType}
+            className="border-input bg-background hover:bg-accent hover:text-accent-foreground inline-flex h-8 items-center gap-1 rounded-md border px-3 text-xs font-medium transition-colors"
+          >
+            <PlusIcon className="size-3.5" aria-hidden />
+            {NS.action.add}
+          </button>
+        </div>
+        <p className="text-muted-foreground text-xs">{NS.field.type_helper}</p>
+      </section>
     </div>
   )
 }

@@ -51,6 +51,12 @@ export const NS = {
     lang_kmr_only: "تەنیا کورمانجی",
     lang_both: "هەردووکیان",
   },
+  type: {
+    selected_count: (count: string) => `${count} هەڵبژێردراوە`,
+    empty_helper: "هیچ جۆرێک هەڵنەبژێردراوە",
+    empty_list: "هێشتا هیچ جۆرێک بەڕێوە نەبراوە — لە خوارەوە یەکەم جۆر دامەزرێنە",
+    clear_all: "لابردنی هەموو",
+  },
   status: {
     active: "تەواونەکراو",
     ongoing: "تەواونەکراو",

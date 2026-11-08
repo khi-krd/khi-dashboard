@@ -435,6 +435,7 @@ export function ProjectForm({
               </Label>
               <ProjectTypeCombobox
                 items={derivedTypes.data ?? []}
+                loading={derivedTypes.isLoading}
                 values={watch("projectTypes") ?? []}
                 onChange={(v) => {
                   setValue("projectTypes", v, { shouldDirty: true })
