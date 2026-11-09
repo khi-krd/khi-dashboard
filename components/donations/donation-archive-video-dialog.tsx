@@ -117,7 +117,7 @@ function DonationArchiveVideoDialogBody({
     formState: { errors },
   } = useForm<DonationArchiveVideoFormValues>({
     resolver: permissiveResolver(
-      donationArchiveVideoSchema,
+      donationArchiveVideoSchema
     ) as Resolver<DonationArchiveVideoFormValues>,
     defaultValues: video
       ? donationArchiveVideoDtoToFormValues(video)
@@ -152,11 +152,11 @@ function DonationArchiveVideoDialogBody({
       } else if (rowId) {
         updateMut.mutate(
           { id: rowId, payload },
-          { onSuccess: () => handleSuccess(false), onError: handleError },
+          { onSuccess: () => handleSuccess(false), onError: handleError }
         )
       }
     },
-    () => toastError(DAV.error.validation),
+    () => toastError(DAV.error.validation)
   )
 
   const switchId = `donation-archive-video-active-${rowId ?? "new"}`
@@ -182,50 +182,50 @@ function DonationArchiveVideoDialogBody({
           <h3 className={sectionHeading}>{DAV.section.titles}</h3>
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <Label className="text-muted-foreground text-xs">
+              <Label className="text-xs text-muted-foreground">
                 {DAV.field.titleCkb}
               </Label>
               <Input className="h-9" {...register("titleCkb")} />
               {errors.titleCkb ? (
-                <p className="text-destructive text-xs">{DAV.error.tooLong}</p>
+                <p className="text-xs text-destructive">{DAV.error.tooLong}</p>
               ) : null}
             </div>
             <div className="space-y-1.5">
-              <Label className="text-muted-foreground text-xs">
+              <Label className="text-xs text-muted-foreground">
                 {DAV.field.titleKmr}
               </Label>
               <Input className="h-9" {...register("titleKmr")} />
               {errors.titleKmr ? (
-                <p className="text-destructive text-xs">{DAV.error.tooLong}</p>
+                <p className="text-xs text-destructive">{DAV.error.tooLong}</p>
               ) : null}
             </div>
           </div>
-          <p className="text-muted-foreground text-xs">{DAV.field.titleHint}</p>
+          <p className="text-xs text-muted-foreground">{DAV.field.titleHint}</p>
         </section>
 
         <section className={cn("space-y-3", sectionCard)}>
           <h3 className={sectionHeading}>{DAV.section.descriptions}</h3>
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <Label className="text-muted-foreground text-xs">
+              <Label className="text-xs text-muted-foreground">
                 {DAV.field.descriptionCkb}
               </Label>
               <Textarea rows={3} {...register("descriptionCkb")} />
               {errors.descriptionCkb ? (
-                <p className="text-destructive text-xs">{DAV.error.tooLong}</p>
+                <p className="text-xs text-destructive">{DAV.error.tooLong}</p>
               ) : null}
             </div>
             <div className="space-y-1.5">
-              <Label className="text-muted-foreground text-xs">
+              <Label className="text-xs text-muted-foreground">
                 {DAV.field.descriptionKmr}
               </Label>
               <Textarea rows={3} {...register("descriptionKmr")} />
               {errors.descriptionKmr ? (
-                <p className="text-destructive text-xs">{DAV.error.tooLong}</p>
+                <p className="text-xs text-destructive">{DAV.error.tooLong}</p>
               ) : null}
             </div>
           </div>
-          <p className="text-muted-foreground text-xs">
+          <p className="text-xs text-muted-foreground">
             {DAV.field.descriptionHint}
           </p>
         </section>
@@ -239,7 +239,6 @@ function DonationArchiveVideoDialogBody({
               <MediaCoverUpload
                 entity="donations"
                 variant="video"
-								accept="video/*,image/*"
                 previewUrl={field.value?.trim() || null}
                 urlValue={field.value ?? ""}
                 onUrlChange={field.onChange}
@@ -255,7 +254,7 @@ function DonationArchiveVideoDialogBody({
               />
             )}
           />
-          <p className="text-muted-foreground text-xs leading-relaxed">
+          <p className="text-xs leading-relaxed text-muted-foreground">
             {DAV.field.videoHint}
           </p>
         </section>
@@ -284,7 +283,7 @@ function DonationArchiveVideoDialogBody({
               />
             )}
           />
-          <p className="text-muted-foreground text-xs leading-relaxed">
+          <p className="text-xs leading-relaxed text-muted-foreground">
             {DAV.field.posterHint}
           </p>
         </section>
@@ -308,14 +307,14 @@ function DonationArchiveVideoDialogBody({
             >
               {DAV.field.active}
             </Label>
-            <p className="text-muted-foreground text-xs">
+            <p className="text-xs text-muted-foreground">
               {DAV.field.activeHint}
             </p>
           </div>
         </div>
 
         {blockers.length > 0 ? (
-          <ul className="border-destructive/40 bg-destructive/5 text-destructive space-y-1 rounded-lg border p-3 text-xs leading-relaxed">
+          <ul className="space-y-1 rounded-lg border border-destructive/40 bg-destructive/5 p-3 text-xs leading-relaxed text-destructive">
             {blockers.map((b) => (
               <li key={b}>{b}</li>
             ))}

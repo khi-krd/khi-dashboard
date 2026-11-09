@@ -33,10 +33,11 @@ import {
   useUpdateDonationArchiveVideo,
 } from "@/hooks/useDonationArchiveVideos"
 import { extractApiErrorMessage } from "@/lib/api-error"
+import { donationArchiveVideoDtoToPayload } from "@/lib/donation-archive-video-form-data"
 import {
-  donationArchiveVideoDtoToPayload,
-  moveDonationArchiveVideo,
-} from "@/lib/donation-archive-video-form-data"
+  isDonationArchiveVideoRow,
+  moveDonationArchiveRowWithinKind,
+} from "@/lib/donation-archive-media-kind"
 import { formatCkbDigits } from "@/lib/intl-ckb"
 import { classifyVideoUrl } from "@/lib/video-embed"
 import { toastApiError, toastError, toastSuccess } from "@/lib/toast"
@@ -74,20 +75,29 @@ export function DonationArchiveVideosListClient() {
   // switch on the page would show a pending state while one of them saves.
   const [togglingId, setTogglingId] = useState<number | null>(null)
 
-  const items = useMemo(() => listQuery.data ?? [], [listQuery.data])
+  const allRows = useMemo(() => listQuery.data ?? [], [listQuery.data])
+  const items = useMemo(
+    () => allRows.filter(isDonationArchiveVideoRow),
+    [allRows]
+  )
 
   const nextDisplayOrder = useMemo(() => {
-    if (items.length === 0) return 0
-    return Math.max(...items.map((i) => i.displayOrder ?? 0)) + 1
-  }, [items])
+    if (allRows.length === 0) return 0
+    return Math.max(...allRows.map((i) => i.displayOrder ?? 0)) + 1
+  }, [allRows])
 
   function closeFormDialog() {
     setFormDialog((s) => ({ ...s, open: false }))
   }
 
   function handleMove(from: number, to: number) {
-    const next = moveDonationArchiveVideo(items, from, to)
-    if (next === items) return
+    const next = moveDonationArchiveRowWithinKind(
+      allRows,
+      isDonationArchiveVideoRow,
+      from,
+      to
+    )
+    if (next === allRows) return
     reorderMut.mutate(next, {
       onSuccess: () => toastSuccess(DAV.toast.reordered),
       // A run that failed halfway has written some of its rows, so what the
@@ -113,7 +123,7 @@ export function DonationArchiveVideosListClient() {
           toastSuccess(next ? DAV.toast.activated : DAV.toast.deactivated),
         onError: (err) => toastApiError(err, DAV.error.generic),
         onSettled: () => setTogglingId(null),
-      },
+      }
     )
   }
 
@@ -153,7 +163,7 @@ export function DonationArchiveVideosListClient() {
           <h1 className="text-2xl font-semibold tracking-tight">
             {DAV.page.title}
           </h1>
-          <p className="text-muted-foreground text-sm">{DAV.page.subtitle}</p>
+          <p className="text-sm text-muted-foreground">{DAV.page.subtitle}</p>
         </div>
         <Button
           type="button"
@@ -165,9 +175,9 @@ export function DonationArchiveVideosListClient() {
         </Button>
       </header>
 
-      <p className="border-border/60 bg-muted/40 text-muted-foreground flex items-start gap-2 rounded-lg border p-3 text-xs leading-relaxed">
+      <p className="flex items-start gap-2 rounded-lg border border-border/60 bg-muted/40 p-3 text-xs leading-relaxed text-muted-foreground">
         <PlayCircleIcon
-          className="text-primary mt-0.5 size-4 shrink-0"
+          className="mt-0.5 size-4 shrink-0 text-primary"
           aria-hidden
         />
         <span>{DAV.order.explainer}</span>
@@ -182,7 +192,7 @@ export function DonationArchiveVideosListClient() {
         <div className="space-y-4">
           <div>
             <h2 className="text-base font-semibold">{DAV.page.itemsTitle}</h2>
-            <p className="text-muted-foreground text-xs">
+            <p className="text-xs text-muted-foreground">
               {DAV.page.totalCount(formatCkbDigits(items.length))}
             </p>
           </div>
@@ -190,7 +200,7 @@ export function DonationArchiveVideosListClient() {
           {listQuery.isLoading ? (
             <ListSkeleton />
           ) : items.length === 0 ? (
-            <p className="text-muted-foreground/70 py-8 text-center text-sm">
+            <p className="py-8 text-center text-sm text-muted-foreground/70">
               {DAV.page.empty}
             </p>
           ) : (
@@ -274,8 +284,8 @@ function DonationArchiveVideoRow({
   return (
     <li
       className={cn(
-        "bg-card/50 border-border/60 flex flex-wrap items-center gap-3 rounded-lg border p-3 shadow-xs transition-opacity",
-        !video.active && "opacity-60",
+        "flex flex-wrap items-center gap-3 rounded-lg border border-border/60 bg-card/50 p-3 shadow-xs transition-opacity",
+        !video.active && "opacity-60"
       )}
     >
       <div className="flex shrink-0 flex-col gap-1">
@@ -301,7 +311,7 @@ function DonationArchiveVideoRow({
         </Button>
       </div>
 
-      <div className="bg-muted relative aspect-video w-28 shrink-0 overflow-hidden rounded-md">
+      <div className="relative aspect-video w-28 shrink-0 overflow-hidden rounded-md bg-muted">
         {video.posterUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -311,7 +321,7 @@ function DonationArchiveVideoRow({
             loading="lazy"
           />
         ) : (
-          <div className="text-muted-foreground/50 flex size-full items-center justify-center">
+          <div className="flex size-full items-center justify-center text-muted-foreground/50">
             <PlayCircleIcon className="size-6" />
           </div>
         )}
@@ -319,7 +329,7 @@ function DonationArchiveVideoRow({
 
       <div className="min-w-0 flex-1 space-y-1">
         <div className="flex flex-wrap items-center gap-1.5">
-          <span className="text-muted-foreground text-xs">
+          <span className="text-xs text-muted-foreground">
             {DAV.page.rowLabel(formatCkbDigits(index + 1))}
           </span>
           {videoKind === "embed" ? (
@@ -335,12 +345,12 @@ function DonationArchiveVideoRow({
         <p className="truncate text-sm font-medium">
           {donationArchiveVideoTitle(video)}
         </p>
-        <p className="text-muted-foreground truncate text-xs">
+        <p className="truncate text-xs text-muted-foreground">
           {description.trim() || DAV.dash}
         </p>
         <p
           dir="ltr"
-          className="text-muted-foreground/70 truncate text-left font-mono text-[11px]"
+          className="truncate text-left font-mono text-[11px] text-muted-foreground/70"
         >
           {truncateLabel(video.videoUrl, 70)}
         </p>

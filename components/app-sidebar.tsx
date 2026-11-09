@@ -46,10 +46,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const avatarSrc = resolveAvatarSrc(authUser)
 
   const sidebarUser = {
-    name:
-      authUser?.name?.trim() ||
-      authUser?.username?.trim() ||
-      "بەکارهێنەر",
+    name: authUser?.name?.trim() || authUser?.username?.trim() || "بەکارهێنەر",
     email: authUser?.email?.trim() || "",
     avatar: avatarSrc,
   }
@@ -153,9 +150,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         {
           title: "دەربارە",
           url: "/dashboard/about",
-          icon: (
-            <HugeiconsIcon icon={InformationCircleIcon} strokeWidth={2} />
-          ),
+          icon: <HugeiconsIcon icon={InformationCircleIcon} strokeWidth={2} />,
         },
         {
           title: "پەیوەندی",
@@ -178,6 +173,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             {
               title: "ڤیدیۆکانی بەخشەران",
               url: "/dashboard/donations/archive-videos",
+            },
+            {
+              title: "وێنەکانی بەخشەران",
+              url: "/dashboard/donations/archive-images",
             },
           ],
         },
@@ -210,7 +209,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <BrandMark size={32} priority />
               </div>
               <div className="grid flex-1 text-start text-sm leading-tight">
-                <span className="truncate font-medium">{t("header.title")}</span>
+                <span className="truncate font-medium">
+                  {t("header.title")}
+                </span>
                 <span className="truncate text-xs">{t("header.subtitle")}</span>
               </div>
             </SidebarMenuButton>
