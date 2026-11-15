@@ -40,6 +40,10 @@ export function CollectionTopicCombobox({
       ckbPlaceholder={NS.topic.name_ckb}
       kmrPlaceholder={NS.topic.name_kmr}
       helperText={NS.topic.helper}
+      selectedCountText={NS.topic.selected_count}
+      clearAllLabel={NS.topic.clear_all}
+      manageHref="/dashboard/image-collections/topics"
+      manageLabel={NS.topics.link}
     />
   )
 }

@@ -1,15 +1,12 @@
 "use client"
 
-import { CheckIcon, ChevronUpDownIcon, PlusIcon, XMarkIcon } from "@heroicons/react/24/outline"
-import { useState } from "react"
+import { PlusIcon, XMarkIcon } from "@heroicons/react/24/outline"
+import Link from "next/link"
+import { useMemo, useState } from "react"
 
-import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
+import { Skeleton } from "@/components/ui/skeleton"
+import { formatCkbDigits } from "@/lib/intl-ckb"
 import { cn } from "@/lib/utils"
 
 export type TopicOption = {
@@ -23,15 +20,32 @@ export type PendingTopic = {
   nameKmr?: string
 }
 
+/**
+ * Topic chips are green everywhere — tinted when offered, solid when picked,
+ * dashed for the ones staged for creation on the next save. Same treatment as
+ * the writings topic picker and the project-type chips.
+ */
+const TOPIC_CHIP = {
+  pill: "bg-emerald-500/10 text-emerald-700 border-emerald-500/20 dark:text-emerald-400",
+  selected:
+    "bg-emerald-600 text-white border-emerald-600 dark:bg-emerald-500 dark:border-emerald-500",
+  pending:
+    "border-dashed bg-emerald-500/5 text-emerald-700 border-emerald-500/40 dark:text-emerald-400",
+}
+
+const CHIP_BASE =
+  "inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[11px] font-medium transition-opacity hover:opacity-90"
+
 function topicLabel(t: TopicOption | undefined, fallback: string) {
   if (!t) return fallback
   return t.nameCkb || t.nameKmr || fallback
 }
 
 /**
- * Shared multi-select topic picker: chips for every selected (or
- * pending-new) topic, a popover checklist of the managed vocabulary, and an
- * inline create panel for a brand-new bilingual topic.
+ * Shared multi-select topic picker, styled like the writings topic picker and
+ * the project-type chips: every managed topic sits in the open as a toggle
+ * chip — no dropdown — with the bilingual quick-add card underneath.
+ * Selected ids the vocabulary no longer offers stay selected and removable.
  */
 export function MultiTopicCombobox({
   topics,
@@ -48,6 +62,10 @@ export function MultiTopicCombobox({
   kmrPlaceholder,
   helperText,
   loading,
+  selectedCountText,
+  clearAllLabel,
+  manageHref,
+  manageLabel,
 }: {
   topics: TopicOption[]
   selectedIds: number[]
@@ -63,51 +81,79 @@ export function MultiTopicCombobox({
   kmrPlaceholder: string
   helperText?: string
   loading?: boolean
+  selectedCountText?: (count: string) => string
+  clearAllLabel?: string
+  manageHref?: string
+  manageLabel?: string
 }) {
-  const [open, setOpen] = useState(false)
-  const [showCreate, setShowCreate] = useState(false)
   const [nameCkb, setNameCkb] = useState("")
   const [nameKmr, setNameKmr] = useState("")
 
-  const selected = selectedIds
-    .map((id) => topics.find((t) => t.id === id))
-    .filter((t): t is TopicOption => t != null)
-  const unknownIds = selectedIds.filter(
-    (id) => !topics.some((t) => t.id === id),
+  const unknownIds = useMemo(
+    () => selectedIds.filter((id) => !topics.some((t) => t.id === id)),
+    [selectedIds, topics],
   )
   const hasAny = selectedIds.length > 0 || pending.length > 0
+  const totalSelected = selectedIds.length + pending.length
+
+  function addTopic() {
+    const ckb = nameCkb.trim()
+    const kmr = nameKmr.trim()
+    if (!ckb && !kmr) return
+    onCreateInline({ nameCkb: ckb, nameKmr: kmr })
+    setNameCkb("")
+    setNameKmr("")
+  }
 
   return (
-    <div className="space-y-2">
-      {hasAny ? (
-        <div className="flex flex-wrap gap-1.5">
-          {selected.map((t) => (
-            <span
-              key={t.id}
-              className="bg-primary/10 text-primary border-primary/20 inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs"
-            >
-              {topicLabel(t, `#${t.id}`)}
+    <div className="space-y-4">
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-muted-foreground text-xs">
+          {hasAny
+            ? (selectedCountText?.(formatCkbDigits(totalSelected)) ??
+              formatCkbDigits(totalSelected))
+            : triggerPlaceholder}
+        </span>
+        {hasAny ? (
+          <button
+            type="button"
+            onClick={onClearAll}
+            className="text-muted-foreground hover:text-foreground text-xs underline underline-offset-4 transition-colors"
+          >
+            {clearAllLabel ?? "×"}
+          </button>
+        ) : null}
+      </div>
+
+      {loading ? (
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-24" />
+          <Skeleton className="h-16 w-full rounded-md" />
+        </div>
+      ) : (
+        <div className="flex flex-wrap gap-2">
+          {topics.map((t) => {
+            const isOn = selectedIds.includes(t.id)
+            return (
               <button
+                key={t.id}
                 type="button"
                 onClick={() => onToggle(t)}
-                aria-label="×"
+                aria-pressed={isOn}
+                title={t.nameKmr || undefined}
+                className={cn(
+                  CHIP_BASE,
+                  isOn ? TOPIC_CHIP.selected : cn(TOPIC_CHIP.pill, "opacity-80"),
+                )}
               >
-                <XMarkIcon className="size-3.5" />
+                {topicLabel(t, `#${t.id}`)}
               </button>
-            </span>
-          ))}
-          {unknownIds.map((id) => (
-            <span
-              key={id}
-              className="bg-muted text-muted-foreground border-border inline-flex items-center rounded-md border px-2 py-1 text-xs"
-            >
-              #{id}
-            </span>
-          ))}
+            )
+          })}
           {pending.map((p, i) => (
             <span
-              key={`new-${i}`}
-              className="bg-emerald-500/10 text-emerald-700 border-emerald-500/20 inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs dark:text-emerald-400"
+              key={`pending-${p.nameCkb ?? p.nameKmr ?? i}`}
+              className={cn(CHIP_BASE, TOPIC_CHIP.pending)}
             >
               + {p.nameCkb || p.nameKmr}
               <button
@@ -115,113 +161,66 @@ export function MultiTopicCombobox({
                 onClick={() => onRemovePending(i)}
                 aria-label="×"
               >
-                <XMarkIcon className="size-3.5" />
+                <XMarkIcon className="size-3.5" aria-hidden />
               </button>
             </span>
           ))}
+          {unknownIds.map((id) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() =>
+                onToggle({ id, nameCkb: `#${id}`, nameKmr: null })
+              }
+              className="bg-muted text-muted-foreground border-border inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[11px] font-medium"
+            >
+              #{id}
+            </button>
+          ))}
+        </div>
+      )}
+
+      <section className="border-border/60 bg-card/50 space-y-3 rounded-xl border p-3">
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-muted-foreground text-xs font-medium">
+            {addLabel}
+          </span>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Input
+            className="h-8 w-40"
+            placeholder={ckbPlaceholder}
+            value={nameCkb}
+            onChange={(e) => setNameCkb(e.target.value)}
+          />
+          <Input
+            dir="ltr"
+            className="h-8 w-40"
+            placeholder={kmrPlaceholder}
+            value={nameKmr}
+            onChange={(e) => setNameKmr(e.target.value)}
+          />
           <button
             type="button"
-            className="text-muted-foreground hover:text-foreground px-1 text-xs underline"
-            onClick={onClearAll}
+            onClick={addTopic}
+            className="border-input bg-background hover:bg-accent hover:text-accent-foreground inline-flex h-8 items-center gap-1 rounded-md border px-3 text-xs font-medium transition-colors"
           >
-            ×
+            <PlusIcon className="size-3.5" aria-hidden />
+            {applyLabel}
           </button>
         </div>
-      ) : null}
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger
-          render={
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="w-full justify-between"
-            >
-              {hasAny
-                ? `${selectedIds.length + pending.length}`
-                : triggerPlaceholder}
-              <ChevronUpDownIcon className="size-4 shrink-0 opacity-50" />
-            </Button>
-          }
-        />
-        <PopoverContent className="w-72 p-2" align="start">
-          <ul className="max-h-48 space-y-1 overflow-y-auto">
-            {loading ? (
-              <li className="text-muted-foreground px-2 py-1.5 text-xs">…</li>
-            ) : null}
-            {topics.map((t) => {
-              const checked = selectedIds.includes(t.id)
-              return (
-                <li key={t.id}>
-                  <button
-                    type="button"
-                    className={cn(
-                      "hover:bg-muted flex w-full items-start gap-2 rounded-md px-2 py-1.5 text-start text-sm",
-                      checked && "bg-muted",
-                    )}
-                    onClick={() => onToggle(t)}
-                  >
-                    <CheckIcon
-                      className={cn(
-                        "mt-0.5 size-4 shrink-0",
-                        checked ? "text-primary opacity-100" : "opacity-0",
-                      )}
-                    />
-                    <span>
-                      <span className="block font-medium">{t.nameCkb}</span>
-                      {t.nameKmr ? (
-                        <span className="text-muted-foreground block text-xs">
-                          {t.nameKmr}
-                        </span>
-                      ) : null}
-                    </span>
-                  </button>
-                </li>
-              )
-            })}
-          </ul>
-          {showCreate ? (
-            <div className="border-border mt-2 space-y-2 border-t pt-2">
-              <Input
-                placeholder={ckbPlaceholder}
-                value={nameCkb}
-                onChange={(e) => setNameCkb(e.target.value)}
-              />
-              <Input
-                placeholder={kmrPlaceholder}
-                dir="ltr"
-                value={nameKmr}
-                onChange={(e) => setNameKmr(e.target.value)}
-              />
-              <Button
-                type="button"
-                size="sm"
-                className="w-full"
-                onClick={() => {
-                  if (!nameCkb.trim() && !nameKmr.trim()) return
-                  onCreateInline({ nameCkb: nameCkb.trim(), nameKmr: nameKmr.trim() })
-                  setShowCreate(false)
-                  setNameCkb("")
-                  setNameKmr("")
-                }}
-              >
-                {applyLabel}
-              </Button>
-            </div>
-          ) : (
-            <button
-              type="button"
-              className="text-primary mt-2 flex w-full items-center gap-1 px-2 py-1.5 text-xs"
-              onClick={() => setShowCreate(true)}
-            >
-              <PlusIcon className="size-4" />
-              {addLabel}
-            </button>
-          )}
-        </PopoverContent>
-      </Popover>
-      {helperText ? (
-        <p className="text-muted-foreground text-xs">{helperText}</p>
+        {helperText ? (
+          <p className="text-muted-foreground text-xs">{helperText}</p>
+        ) : null}
+      </section>
+
+      {manageHref && manageLabel ? (
+        <Link
+          href={manageHref}
+          className="text-muted-foreground hover:text-foreground inline-block text-xs underline-offset-4 transition-colors hover:underline"
+        >
+          {manageLabel}
+        </Link>
       ) : null}
     </div>
   )

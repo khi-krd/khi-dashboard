@@ -269,6 +269,8 @@ export const NS = {
   topic: {
     empty: "بێ بابەت",
     helper: "بابەتەکان بۆ پۆلێنکردنی ڤیدیۆکان",
+    selected_count: (count: string) => `${count} دیاریکراوە`,
+    clear_all: "لابردنی هەموو",
     add: "بابەتی نوێ",
     usage: (count: string) => `${count} ڤیدیۆ`,
     create_title: "بابەتی نوێ",

@@ -261,6 +261,8 @@ export const NS = {
   topic: {
     empty: "بێ بابەت",
     helper: "بابەتەکان بۆ پۆلێنکردنی دەنگەکان — هەڵبژاردن یان دروستکردنی نوێ",
+    selected_count: (count: string) => `${count} دیاریکراوە`,
+    clear_all: "لابردنی هەموو",
     usage: (count: string) => `${count} دەنگ`,
     edit_title: "دەستکاری بابەت",
     name_ckb: "ناوی سۆرانی",

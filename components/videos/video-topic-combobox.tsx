@@ -40,6 +40,10 @@ export function VideoTopicCombobox({
       ckbPlaceholder={NS.topic.name_ckb}
       kmrPlaceholder={NS.topic.name_kmr}
       helperText={NS.field.topic_helper}
+      selectedCountText={NS.topic.selected_count}
+      clearAllLabel={NS.topic.clear_all}
+      manageHref="/dashboard/videos/topics"
+      manageLabel={NS.topics.link}
     />
   )
 }

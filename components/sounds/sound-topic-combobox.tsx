@@ -40,6 +40,10 @@ export function SoundTopicCombobox({
       ckbPlaceholder={NS.lang.ckb}
       kmrPlaceholder={NS.lang.kmr}
       helperText={NS.topic.helper}
+      selectedCountText={NS.topic.selected_count}
+      clearAllLabel={NS.topic.clear_all}
+      manageHref="/dashboard/sounds/topics"
+      manageLabel={NS.topics.link}
     />
   )
 }
