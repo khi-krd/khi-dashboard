@@ -21,12 +21,31 @@ import {
 import { MediaCoverUpload } from "@/components/shared/media-cover-upload"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Switch } from "@/components/ui/switch"
+import {
+  isPopularId,
+  usePopularIds,
+  usePopularToggle,
+} from "@/hooks/usePopularToggle"
+import type { PopularEntity } from "@/services/popularService"
 import { cn } from "@/lib/utils"
 import {
   countsTowardSlideCap,
   resolvedSlideImage,
   type FeaturedCatalogItem,
 } from "@/lib/featured-catalog"
+
+/** Catalog categories that map onto a homepage `isPopular` entity. */
+const POPULAR_ENTITY_BY_CATEGORY: Partial<
+  Record<FeaturedCatalogItem["category"], PopularEntity>
+> = {
+  news: "news",
+  projects: "projects",
+  videos: "videos",
+  sounds: "sounds",
+  writings: "writings",
+  collections: "collections",
+}
 
 export function FeaturedCatalogRow({
   item,
@@ -58,6 +77,12 @@ export function FeaturedCatalogRow({
   // validates the image on the same request that turns `featured` on.
   const [draftImage, setDraftImage] = useState("")
   const [pickerOpen, setPickerOpen] = useState(false)
+
+  const popularEntity = POPULAR_ENTITY_BY_CATEGORY[item.category] ?? null
+  const { data: popularIds } = usePopularIds()
+  const popularToggle = usePopularToggle()
+  const isPopular =
+    popularEntity != null && isPopularId(popularIds, popularEntity, item.id)
 
   const draft = draftImage.trim()
   // A half-typed URL is worse than none: it passes the backend's blank check
@@ -196,6 +221,29 @@ export function FeaturedCatalogRow({
         </div>
 
         <div className="flex shrink-0 items-center gap-1">
+          {popularEntity ? (
+            <span
+              className="me-1 flex items-center gap-1.5"
+              title={NS.popular.hint}
+            >
+              <Switch
+                size="sm"
+                checked={isPopular}
+                disabled={popularToggle.isPending}
+                onCheckedChange={(checked) =>
+                  popularToggle.mutate({
+                    entity: popularEntity,
+                    id: item.id,
+                    isPopular: checked,
+                  })
+                }
+                aria-label={NS.popular.label}
+              />
+              <span className="text-muted-foreground hidden text-xs xl:inline">
+                {NS.popular.label}
+              </span>
+            </span>
+          ) : null}
           {canPickImage ? (
             <Button
               type="button"
