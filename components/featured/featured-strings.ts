@@ -81,10 +81,6 @@ export const NS = {
     saveImage: "پاشەکەوتکردنی وێنە",
     revertImage: "گەڕاندنەوە",
   },
-  popular: {
-    label: "ناوەڕۆکی باو",
-    hint: "لە بەشی باوترینەکانی سەرەتاێکدا پێشینەی هەیە",
-  },
   field: {
     featureImage: "وێنەی هێرۆ",
     featureImageHint:

@@ -1,5 +1,7 @@
 "use client"
 
+import { PopularCell, POPULAR_COL_LABEL } from "@/components/shared/popular-cell"
+
 import {
   ChevronDownIcon,
   ChevronLeftIcon,
@@ -353,7 +355,21 @@ export function ProjectsDataGrid({
           </span>
         ),
       },
-      {
+            {
+        id: "popular",
+        enableSorting: false,
+        size: 96,
+        meta: {
+          headerTitle: POPULAR_COL_LABEL,
+          cellClassName: "w-24",
+          skeleton: <Skeleton className="mx-auto h-5 w-9" />,
+        },
+        header: POPULAR_COL_LABEL,
+        cell: ({ row }) => (
+          <PopularCell entity="projects" id={row.original.id} />
+        ),
+      },
+{
         id: "actions",
         enableSorting: false,
         size: 112,
