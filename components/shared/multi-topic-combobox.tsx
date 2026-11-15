@@ -28,7 +28,7 @@ export type PendingTopic = {
 const TOPIC_CHIP = {
   pill: "bg-emerald-500/10 text-emerald-700 border-emerald-500/20 dark:text-emerald-400",
   selected:
-    "bg-emerald-600 text-white border-emerald-600 dark:bg-emerald-500 dark:border-emerald-500",
+    "bg-emerald-600 text-white border-emerald-600 dark:bg-emerald-700 dark:border-emerald-700",
   pending:
     "border-dashed bg-emerald-500/5 text-emerald-700 border-emerald-500/40 dark:text-emerald-400",
 }

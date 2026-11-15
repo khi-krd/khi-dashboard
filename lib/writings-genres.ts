@@ -17,17 +17,17 @@ export const GENRE_FAMILY_CLASSES: Record<
   history_society: {
     pill: "bg-blue-500/10 text-blue-700 border-blue-500/20 dark:text-blue-400",
     selected:
-      "bg-blue-600 text-white border-blue-600 dark:bg-blue-500 dark:border-blue-500",
+      "bg-blue-600 text-white border-blue-600 dark:bg-blue-700 dark:border-blue-700",
   },
   knowledge: {
     pill: "bg-purple-500/10 text-purple-700 border-purple-500/20 dark:text-purple-400",
     selected:
-      "bg-purple-600 text-white border-purple-600 dark:bg-purple-500 dark:border-purple-500",
+      "bg-purple-600 text-white border-purple-600 dark:bg-purple-700 dark:border-purple-700",
   },
   culture_life: {
     pill: "bg-amber-500/10 text-amber-700 border-amber-500/20 dark:text-amber-400",
     selected:
-      "bg-amber-600 text-white border-amber-600 dark:bg-amber-500 dark:border-amber-500",
+      "bg-amber-600 text-white border-amber-600 dark:bg-amber-700 dark:border-amber-700",
   },
 }
 
