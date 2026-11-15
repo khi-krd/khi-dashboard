@@ -12,10 +12,13 @@ import { DashboardDistributionChart } from "@/components/dashboard/dashboard-dis
 import { DashboardKpiCards } from "@/components/dashboard/dashboard-kpi-cards"
 import { DashboardQuickActions } from "@/components/dashboard/dashboard-quick-actions"
 import { DashboardRecentActivity } from "@/components/dashboard/dashboard-recent-activity"
+import { DashboardStatsSection } from "@/components/dashboard/dashboard-stats-section"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Spinner } from "@/components/ui/spinner"
+import { useQueryClient } from "@tanstack/react-query"
+import { dashboardStatsKeys } from "@/hooks/useDashboardStats"
 import { useDashboardOverview } from "@/hooks/useDashboardOverview"
 import { formatCkbDigits, formatNewsDateLong } from "@/lib/intl-ckb"
 import { cn } from "@/lib/utils"
@@ -63,7 +66,13 @@ function HeroStat({ label, value, Icon, accent, isLoading }: HeroStatProps) {
 
 export function DashboardHomeClient() {
   const overview = useDashboardOverview()
+  const queryClient = useQueryClient()
   const userName = useAuthStore((s) => s.user?.name)
+
+  function refreshAll() {
+    overview.refetch()
+    void queryClient.invalidateQueries({ queryKey: dashboardStatsKeys.all })
+  }
 
   if (overview.isAllError) {
     return (
@@ -117,7 +126,7 @@ export function DashboardHomeClient() {
             <Button
               variant="outline"
               size="sm"
-              onClick={overview.refetch}
+              onClick={refreshAll}
               disabled={overview.isFetching}
               className="bg-background/60 shrink-0 backdrop-blur-sm"
             >
@@ -193,6 +202,9 @@ export function DashboardHomeClient() {
         </div>
         <DashboardKpiCards modules={overview.modules} />
       </section>
+
+      {/* Full content statistics */}
+      <DashboardStatsSection />
 
       {/* Activity + sidebar */}
       <section className="grid gap-6 xl:grid-cols-[1fr_340px]">
