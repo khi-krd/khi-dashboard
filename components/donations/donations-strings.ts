@@ -62,6 +62,7 @@ export const NS = {
     registerName: "ناوی تۆمار",
     description: "تێبینی",
     attachment: "هاوپێچ",
+    downloadAttachment: "داگرتنی هاوپێچ",
     estimatedDate: "بەرواری مەزەندە",
     status: "دۆخ",
     createdAt: "بەرواری ناردن",

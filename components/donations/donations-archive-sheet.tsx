@@ -1,11 +1,10 @@
 "use client"
 
-import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/outline"
-import Link from "next/link"
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
 
 import { useSyncedState } from "@/hooks/use-synced-state"
+import { DonationAttachment } from "@/components/donations/donation-attachment"
 import { DonationStatusPill } from "@/components/donations/donation-status-pill"
 import { DonationStatusSelect } from "@/components/donations/donation-status-select"
 import { NS } from "@/components/donations/donations-strings"
@@ -114,17 +113,7 @@ export function DonationsArchiveSheet({
           {row.attachmentUrl?.trim() ? (
             <DetailRow
               label={NS.archive.attachment}
-              value={
-                <Link
-                  href={row.attachmentUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary inline-flex items-center gap-1 text-sm hover:underline"
-                >
-                  {NS.action.openAttachment}
-                  <ArrowTopRightOnSquareIcon className="size-3.5" />
-                </Link>
-              }
+              value={<DonationAttachment url={row.attachmentUrl} />}
             />
           ) : null}
           {row.createdAt ? (
