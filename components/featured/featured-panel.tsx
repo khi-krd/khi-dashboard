@@ -191,6 +191,15 @@ export function FeaturedPanel({
     if (nextKeys === previousKeys) return
 
     setOrderedKeys(nextKeys)
+    await applyReorderedKeys(nextKeys, previousKeys)
+  }
+
+  /**
+   * Shared writer for both reorder gestures — a drag drop and a typed
+   * position produce the same `nextKeys`, which the patcher turns into
+   * per-scope `featuredOrder` writes. Rollback on failure is identical too.
+   */
+  async function applyReorderedKeys(nextKeys: string[], previousKeys: string[]) {
     const patches = featuredOrderPatches(featuredByKey, nextKeys, orderScope)
     if (patches.length === 0) return
 
@@ -212,6 +221,52 @@ export function FeaturedPanel({
     } finally {
       setIsReordering(false)
     }
+  }
+
+  /**
+   * Typed-position reorder — the number input's gesture. `displayIndex` lives
+   * in the badge's numbering space: the whole list under global scope, the
+   * row's own category under category scope.
+   */
+  function moveToIndex(key: string, displayIndex: number) {
+    const item = featuredByKey.get(key)
+    if (!item) return
+
+    let nextKeys: string[]
+    if (orderScope === "global") {
+      const oldIndex = orderedKeys.indexOf(key)
+      const target = Math.min(
+        Math.max(displayIndex, 0),
+        orderedKeys.length - 1,
+      )
+      if (oldIndex < 0 || oldIndex === target) return
+      nextKeys = [...orderedKeys]
+      nextKeys.splice(oldIndex, 1)
+      nextKeys.splice(target, 0, key)
+    } else {
+      const categoryKeys = orderedKeys.filter(
+        (k) => featuredByKey.get(k)?.category === item.category,
+      )
+      const target = Math.min(
+        Math.max(displayIndex, 0),
+        categoryKeys.length - 1,
+      )
+      if (categoryKeys[target] === key) return
+      const reordered = categoryKeys.filter((k) => k !== key)
+      reordered.splice(target, 0, key)
+      // Every other category keeps its slots; only the dragged row's own
+      // source is re-laid-out into its new order.
+      const queue = [...reordered]
+      nextKeys = orderedKeys.map((k) =>
+        featuredByKey.get(k)?.category === item.category
+          ? (queue.shift() ?? k)
+          : k,
+      )
+    }
+
+    const previousKeys = orderedKeys
+    setOrderedKeys(nextKeys)
+    void applyReorderedKeys(nextKeys, previousKeys)
   }
 
   // Terminal handlers: `runPatch` rejects on failure with the reason already
@@ -292,11 +347,21 @@ export function FeaturedPanel({
                       const item = featuredByKey.get(key)
                       if (!item) return null
                       const rowOrder = displayOrderByKey.get(key) ?? 0
+                      const rowTotal =
+                        orderScope === "global"
+                          ? orderedKeys.length
+                          : orderedKeys.filter(
+                                (k) =>
+                                  featuredByKey.get(k)?.category ===
+                                  item.category,
+                              ).length
                       return (
                         <FeaturedSortableRow
                           key={key}
                           id={key}
                           order={rowOrder}
+                          total={rowTotal}
+                          onMove={(target) => moveToIndex(key, target)}
                           title={item.title}
                           subtitle={item.subtitle}
                           categoryLabel={item.categoryLabel}

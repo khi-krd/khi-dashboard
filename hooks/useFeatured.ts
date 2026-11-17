@@ -6,7 +6,12 @@ import { useQuery } from "@tanstack/react-query"
 import { aboutKeys } from "@/lib/about-query-keys"
 import { donationKeys } from "@/lib/donations-query-keys"
 import { servicesKeys } from "@/lib/services-query-keys"
-import { fetchFeaturedCatalogItems, patchFeaturedItem } from "@/lib/featured-api"
+import {
+  AGGREGATE_SOURCE,
+  fetchFeaturedAggregateOrders,
+  fetchFeaturedCatalogItems,
+  patchFeaturedItem,
+} from "@/lib/featured-api"
 import { syncFeaturedSoundsCache, syncFeaturedWritingsCache } from "@/lib/featured-cache-sync"
 import {
   FEATURED_CATALOG_CATEGORIES,
@@ -77,6 +82,28 @@ export function useFeaturedAllQuery(page: number, size: number) {
       }
 
       const items = fulfilled.flat()
+
+      // The per-source featured lists return plain entity DTOs where only
+      // services and About serialise `featuredOrder` — everything else maps
+      // to null and sinks to the bottom of the hero pool. The public
+      // aggregate `/featured` read is the one place every slide carries its
+      // real global order, so overlay it here before sorting. A failure is
+      // non-fatal: rows just keep their null order.
+      try {
+        const aggregate = await fetchFeaturedAggregateOrders()
+        if (aggregate.size > 0) {
+          for (const item of items) {
+            if (item.featuredOrder == null) {
+              const key = `${AGGREGATE_SOURCE[item.category]}-${item.id}`
+              const order = aggregate.get(key)
+              if (order != null) item.featuredOrder = order
+            }
+          }
+        }
+      } catch {
+        // The ordering overlay is best-effort; a broken aggregate read
+        // should never blank the whole featured page.
+      }
 
       return {
         items: sortFeaturedItems(items),

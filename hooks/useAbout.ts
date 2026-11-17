@@ -20,6 +20,8 @@ import {
   getAboutTeamMembers,
   getAboutById,
   getAboutList,
+  reorderAboutPartners,
+  reorderAboutTeamMembers,
   updateAboutPartner,
   updateAboutTeamMember,
   updateAbout,
@@ -168,6 +170,21 @@ export function useDeleteAboutTeamMember() {
   })
 }
 
+/**
+ * Drag/number reorder for the team list. Takes the reordered DTOs — the
+ * service replays each changed row as a full-payload PUT (the update route
+ * is a full replace, so omitting fields would blank them).
+ */
+export function useReorderAboutTeamMembers() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: reorderAboutTeamMembers,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: aboutKeys.team() })
+    },
+  })
+}
+
 export function useAboutPartnersQuery() {
   return useQuery({
     queryKey: aboutKeys.partners(),
@@ -201,6 +218,16 @@ export function useDeleteAboutPartner() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: deleteAboutPartner,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: aboutKeys.partners() })
+    },
+  })
+}
+
+export function useReorderAboutPartners() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: reorderAboutPartners,
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: aboutKeys.partners() })
     },

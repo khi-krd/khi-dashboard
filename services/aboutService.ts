@@ -93,6 +93,7 @@ type AboutTeamPayload = {
   bioCkb?: string | null
   bioKmr?: string | null
   office?: string | null
+  memberType?: string | null
   imageUrl?: string | null
   displayOrder?: number
   active?: boolean
@@ -139,6 +140,37 @@ export async function deleteAboutTeamMember(id: number): Promise<void> {
   await api.delete(`${BASE}/team/${id}`)
 }
 
+/**
+ * Persists a drag/number reorder. There is no batch `/order` route for team
+ * members, and `PUT /team/{id}` is a full replace — so every record rides
+ * along whole with only `displayOrder` changed to its new index, or omitted
+ * fields would blank. Only rows whose order actually moved are written.
+ */
+export async function reorderAboutTeamMembers(
+  orderedMembers: AboutTeamMemberDto[],
+): Promise<void> {
+  await Promise.all(
+    orderedMembers.map((member, index) => {
+      if (member.id == null || (member.displayOrder ?? 0) === index) {
+        return Promise.resolve()
+      }
+      return updateAboutTeamMember(member.id, {
+        nameCkb: member.nameCkb,
+        nameKmr: member.nameKmr,
+        roleCkb: member.roleCkb,
+        roleKmr: member.roleKmr,
+        bioCkb: member.bioCkb,
+        bioKmr: member.bioKmr,
+        office: member.office,
+        memberType: member.memberType,
+        imageUrl: member.imageUrl,
+        displayOrder: index,
+        active: member.active ?? true,
+      })
+    }),
+  )
+}
+
 export async function getAboutPartners(): Promise<AboutPartnerDto[]> {
   const { data } = await api.get<unknown>(`${BASE}/partners`)
   const unwrapped = unwrapApiData<unknown>(data)
@@ -167,4 +199,30 @@ export async function updateAboutPartner(
 
 export async function deleteAboutPartner(id: number): Promise<void> {
   await api.delete(`${BASE}/partners/${id}`)
+}
+
+/**
+ * Same contract as {@link reorderAboutTeamMembers} — the partner update is a
+ * full replace too, so each row is resent whole with its new `displayOrder`.
+ */
+export async function reorderAboutPartners(
+  orderedPartners: AboutPartnerDto[],
+): Promise<void> {
+  await Promise.all(
+    orderedPartners.map((partner, index) => {
+      if (partner.id == null || (partner.displayOrder ?? 0) === index) {
+        return Promise.resolve()
+      }
+      return updateAboutPartner(partner.id, {
+        nameCkb: partner.nameCkb,
+        nameKmr: partner.nameKmr,
+        descriptionCkb: partner.descriptionCkb,
+        descriptionKmr: partner.descriptionKmr,
+        logoUrl: partner.logoUrl,
+        websiteUrl: partner.websiteUrl,
+        displayOrder: index,
+        active: partner.active ?? true,
+      })
+    }),
+  )
 }

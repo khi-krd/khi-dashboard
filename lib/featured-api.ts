@@ -1,3 +1,5 @@
+import { unwrapApiData } from "@/lib/api-unwrap"
+import api from "@/lib/axios"
 import { getFeaturedAboutPages, patchAboutFeatured } from "@/services/aboutService"
 import {
   getDonationSettings,
@@ -31,6 +33,44 @@ import {
 import type { FeaturedPayload } from "@/types/featured"
 
 export type FeatureableCategory = FeaturedCatalogItem["category"]
+
+/**
+ * The public carousel pool — `GET /api/v1/featured` is the one read that
+ * serialises `featuredOrder` for every source (the per-source `/featured`
+ * lists return each entity's plain list DTO, where only services and About
+ * carry it). Its slide ids are `{source}-{entityId}` composites, so a
+ * dashboard row maps in through {@link AGGREGATE_SOURCE}.
+ */
+export const AGGREGATE_SOURCE: Record<FeatureableCategory, string> = {
+  news: "news",
+  projects: "project",
+  services: "service",
+  servicesHome: "service",
+  videos: "video",
+  sounds: "sound-track",
+  collections: "image-collection",
+  writings: "writing",
+  about: "about",
+  donation: "donation",
+}
+
+export async function fetchFeaturedAggregateOrders(): Promise<
+  Map<string, number>
+> {
+  const { data } = await api.get<unknown>("/api/v1/featured")
+  const unwrapped = unwrapApiData<unknown>(data)
+  const list = Array.isArray(unwrapped)
+    ? unwrapped
+    : ((unwrapped as { content?: unknown[] })?.content ?? [])
+  const orders = new Map<string, number>()
+  for (const raw of list) {
+    const item = raw as { id?: unknown; featuredOrder?: unknown }
+    if (typeof item.id === "string" && typeof item.featuredOrder === "number") {
+      orders.set(item.id, item.featuredOrder)
+    }
+  }
+  return orders
+}
 
 export async function patchFeaturedItem(
   category: FeatureableCategory,

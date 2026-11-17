@@ -76,6 +76,8 @@ export const NS = {
     backToPreview: "گەڕانەوە بۆ پیشاندان",
     createPage: "دروستکردنی پەڕە",
     saveHero: "پاشەکەوتکردنی هێرۆ",
+    reorder: "ڕیزکردن",
+    done: "تەواو",
   },
   empty: {
     no_body: "ناوەڕۆک بۆ ئەم زمانە بەردەست نییە.",

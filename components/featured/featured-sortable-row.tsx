@@ -15,15 +15,17 @@ import { useState } from "react"
 
 import { isOptimizableImageSrc, isUsableImageUrl } from "@/lib/image-src"
 import { MediaCoverUpload } from "@/components/shared/media-cover-upload"
+import { PositionInput } from "@/components/shared/record-reorder-panel"
 import { NS } from "@/components/featured/featured-strings"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { formatCkbDigits } from "@/lib/intl-ckb"
 import { cn } from "@/lib/utils"
 
 export function FeaturedSortableRow({
   id,
   order,
+  total,
+  onMove,
   title,
   subtitle,
   categoryLabel,
@@ -42,7 +44,12 @@ export function FeaturedSortableRow({
   onFeatureImageChange,
 }: {
   id: string
+  /** Zero-based rank shown in the row badge — also the input's initial value. */
   order: number
+  /** List size the numeric input clamps to (its scope's own count). */
+  total: number
+  /** Commits a typed position — `targetIndex` is zero-based, same space as `order`. */
+  onMove: (targetIndex: number) => void
   title: string
   subtitle?: string | null
   categoryLabel?: string
@@ -143,9 +150,12 @@ export function FeaturedSortableRow({
 
         <div className="min-w-0 flex-1">
           <div className="mb-1 flex flex-wrap items-center gap-2">
-            <span className="bg-primary/10 text-primary inline-flex size-7 shrink-0 items-center justify-center rounded-full font-mono text-xs font-semibold tabular-nums">
-              {formatCkbDigits(order + 1)}
-            </span>
+            <PositionInput
+              order={order}
+              total={total}
+              label={NS.actions.position}
+              onCommit={onMove}
+            />
             {categoryLabel ? (
               <Badge variant="secondary" className="font-normal">
                 {categoryLabel}

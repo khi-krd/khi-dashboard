@@ -1,11 +1,12 @@
 "use client"
 
 import {
+  Bars2Icon,
   PencilIcon,
   PlusIcon,
   TrashIcon,
 } from "@heroicons/react/24/outline"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { toast } from "sonner"
 
 import Image from "next/image"
@@ -13,6 +14,7 @@ import { isOptimizableImageSrc } from "@/lib/image-src"
 import { AboutSectionCardShell } from "@/components/about/about-section-card-shell"
 import { NS } from "@/components/about/about-strings"
 import { MediaCoverUpload } from "@/components/shared/media-cover-upload"
+import { RecordReorderPanel } from "@/components/shared/record-reorder-panel"
 import {
   MediaLightbox,
   useLightbox,
@@ -41,6 +43,7 @@ import {
   useAboutTeamMembersQuery,
   useCreateAboutTeamMember,
   useDeleteAboutTeamMember,
+  useReorderAboutTeamMembers,
   useUpdateAboutTeamMember,
 } from "@/hooks/useAbout"
 import { cn } from "@/lib/utils"
@@ -171,10 +174,12 @@ export function AboutTeamSectionCard({ index }: { index: number }) {
   const createMut = useCreateAboutTeamMember()
   const updateMut = useUpdateAboutTeamMember()
   const deleteMut = useDeleteAboutTeamMember()
+  const reorderMut = useReorderAboutTeamMembers()
 
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState<AboutTeamMemberDto | null>(null)
   const [form, setForm] = useState(emptyForm)
+  const [reordering, setReordering] = useState(false)
 
   function openCreate() {
     setEditing(null)
@@ -229,7 +234,34 @@ export function AboutTeamSectionCard({ index }: { index: number }) {
     }
   }
 
-  const items = teamQ.data ?? []
+  const items = useMemo(() => teamQ.data ?? [], [teamQ.data])
+  const reorderItems = useMemo(
+    () =>
+      items
+        .filter((item) => item.id != null)
+        .map((item) => ({
+          id: item.id as number,
+          title: item.nameCkb || item.nameKmr || "—",
+          subtitle: item.roleCkb || item.roleKmr,
+          coverUrl: item.imageUrl,
+        })),
+    [items],
+  )
+
+  async function onSaveOrder(orderedIds: number[]) {
+    const byId = new Map(items.map((item) => [item.id, item]))
+    const ordered = orderedIds
+      .map((id) => byId.get(id))
+      .filter((item): item is AboutTeamMemberDto => item != null)
+    try {
+      await reorderMut.mutateAsync(ordered)
+      toast.success(NS.toast.saved)
+    } catch (err) {
+      toastApiError(err, NS.error.validation)
+      throw new Error("reorder failed")
+    }
+  }
+
   const managers = items.filter((i) => i.memberType === "MANAGER")
   const officeGroups = (["sulaymaniyah", "duhok"] as const).map((id) => ({
     id,
@@ -302,7 +334,18 @@ export function AboutTeamSectionCard({ index }: { index: number }) {
         titlePreview={NS.section.team}
         hideSave
       >
-        <div className="flex justify-end">
+        <div className="flex justify-end gap-2">
+          {items.length > 1 ? (
+            <Button
+              type="button"
+              size="sm"
+              variant={reordering ? "default" : "outline"}
+              onClick={() => setReordering((v) => !v)}
+            >
+              <Bars2Icon className="me-1 size-4" />
+              {reordering ? NS.action.done : NS.action.reorder}
+            </Button>
+          ) : null}
           <Button type="button" size="sm" variant="outline" onClick={openCreate}>
             <PlusIcon className="me-1 size-4" />
             {NS.form.team_add}
@@ -310,6 +353,14 @@ export function AboutTeamSectionCard({ index }: { index: number }) {
         </div>
         {items.length === 0 ? (
           <p className="text-muted-foreground text-sm">{NS.form.team_empty}</p>
+        ) : reordering ? (
+          <RecordReorderPanel
+            items={reorderItems}
+            isLoading={teamQ.isLoading}
+            isSaving={reorderMut.isPending}
+            onReorder={onSaveOrder}
+            dragLabel={NS.action.reorder}
+          />
         ) : (
           <div className="space-y-6">
             {renderGroup(NS.form.team_managers_group, managers)}

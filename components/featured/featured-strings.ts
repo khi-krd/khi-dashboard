@@ -74,6 +74,7 @@ export const NS = {
     view: "بینین",
     edit: "دەستکاری",
     drag: "ڕاکێشان بۆ ڕیزکردن",
+    position: "ژمارەی ڕیز",
     manage_link: "بەڕێوەبردنی تایبەتەکان",
     editImage: "دەستکاری وێنە",
     setImage: "دانانی وێنە",

@@ -226,9 +226,10 @@ function SortableRow({
  * Editable 1-based rank. Free typing is kept locally; Enter or blur commits:
  * the value is clamped into [1, total] and the row moves to that index.
  * Re-syncs to the live position whenever `order` changes (e.g. after a drag
- * or another row's move saved).
+ * or another row's move saved). Exported for reorder lists that don't use
+ * this panel's row layout (e.g. the featured manager).
  */
-function PositionInput({
+export function PositionInput({
   order,
   total,
   label,
@@ -269,7 +270,8 @@ function PositionInput({
       onKeyDown={(e) => {
         if (e.key === "Enter") {
           e.preventDefault()
-          commit((e.target as HTMLInputElement).value)
+          // Blur lets onBlur run the single commit — committing here too would
+          // fire the save twice, since `order` has not re-synced yet.
           ;(e.target as HTMLInputElement).blur()
         }
       }}

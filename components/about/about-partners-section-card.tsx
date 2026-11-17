@@ -1,11 +1,12 @@
 "use client"
 
 import {
+  Bars2Icon,
   PencilIcon,
   PlusIcon,
   TrashIcon,
 } from "@heroicons/react/24/outline"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { toast } from "sonner"
 
 import Image from "next/image"
@@ -14,6 +15,7 @@ import { AboutSectionCardShell } from "@/components/about/about-section-card-she
 import { NS } from "@/components/about/about-strings"
 import { PartnerLinkPicker } from "@/components/about/partner-link-picker"
 import { MediaCoverUpload } from "@/components/shared/media-cover-upload"
+import { RecordReorderPanel } from "@/components/shared/record-reorder-panel"
 import {
   MediaLightbox,
   useLightbox,
@@ -35,6 +37,7 @@ import {
   useAboutPartnersQuery,
   useCreateAboutPartner,
   useDeleteAboutPartner,
+  useReorderAboutPartners,
   useUpdateAboutPartner,
 } from "@/hooks/useAbout"
 import { cn } from "@/lib/utils"
@@ -51,9 +54,11 @@ export function AboutPartnersSectionCard({ index }: { index: number }) {
   const createMut = useCreateAboutPartner()
   const updateMut = useUpdateAboutPartner()
   const deleteMut = useDeleteAboutPartner()
+  const reorderMut = useReorderAboutPartners()
 
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState<AboutPartnerDto | null>(null)
+  const [reordering, setReordering] = useState(false)
   const [form, setForm] = useState({
     nameCkb: "",
     nameKmr: "",
@@ -116,7 +121,34 @@ export function AboutPartnersSectionCard({ index }: { index: number }) {
     }
   }
 
-  const items = partnersQ.data ?? []
+  const items = useMemo(() => partnersQ.data ?? [], [partnersQ.data])
+  const reorderItems = useMemo(
+    () =>
+      items
+        .filter((item) => item.id != null)
+        .map((item) => ({
+          id: item.id as number,
+          title: item.nameCkb || item.nameKmr || "—",
+          subtitle:
+            item.descriptionCkb || item.descriptionKmr || item.websiteUrl,
+          coverUrl: item.logoUrl,
+        })),
+    [items],
+  )
+
+  async function onSaveOrder(orderedIds: number[]) {
+    const byId = new Map(items.map((item) => [item.id, item]))
+    const ordered = orderedIds
+      .map((id) => byId.get(id))
+      .filter((item): item is AboutPartnerDto => item != null)
+    try {
+      await reorderMut.mutateAsync(ordered)
+      toast.success(NS.toast.saved)
+    } catch (err) {
+      toastApiError(err, NS.error.validation)
+      throw new Error("reorder failed")
+    }
+  }
 
   const lb = useLightbox()
   const imageItems = items
@@ -134,7 +166,18 @@ export function AboutPartnersSectionCard({ index }: { index: number }) {
         titlePreview={NS.section.partners}
         hideSave
       >
-        <div className="flex justify-end">
+        <div className="flex justify-end gap-2">
+          {items.length > 1 ? (
+            <Button
+              type="button"
+              size="sm"
+              variant={reordering ? "default" : "outline"}
+              onClick={() => setReordering((v) => !v)}
+            >
+              <Bars2Icon className="me-1 size-4" />
+              {reordering ? NS.action.done : NS.action.reorder}
+            </Button>
+          ) : null}
           <Button type="button" size="sm" variant="outline" onClick={openCreate}>
             <PlusIcon className="me-1 size-4" />
             {NS.form.partner_add}
@@ -142,6 +185,14 @@ export function AboutPartnersSectionCard({ index }: { index: number }) {
         </div>
         {items.length === 0 ? (
           <p className="text-muted-foreground text-sm">{NS.form.partner_empty}</p>
+        ) : reordering ? (
+          <RecordReorderPanel
+            items={reorderItems}
+            isLoading={partnersQ.isLoading}
+            isSaving={reorderMut.isPending}
+            onReorder={onSaveOrder}
+            dragLabel={NS.action.reorder}
+          />
         ) : (
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             {items.map((item) => (
