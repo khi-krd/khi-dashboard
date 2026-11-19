@@ -21,12 +21,16 @@ import {
   WritingBreadcrumbBar,
   dashboardWritingsCrumbHref,
 } from "@/components/writings/writing-breadcrumb"
+import { WritingAudioCdSection } from "@/components/writings/writing-audio-cd-section"
 import { WritingBookFileUploader } from "@/components/writings/writing-book-file-uploader"
+import { WritingBookLanguageSelect } from "@/components/writings/writing-book-language-select"
+import { WritingBookSearchSelect } from "@/components/writings/writing-book-search-select"
 import { WritingCoverTrio } from "@/components/writings/writing-cover-trio"
 import { WritingErrorState } from "@/components/writings/writing-error-state"
 import { WritingGenreMultiselect } from "@/components/writings/writing-genre-multiselect"
 import { WritingInstituteSwitch } from "@/components/writings/writing-institute-switch"
 import { WritingLanguageToggleChip } from "@/components/writings/writing-language-chip"
+import { WritingManagedOptionSelect } from "@/components/writings/writing-managed-option-select"
 import { WritingPersonsSection } from "@/components/writings/writing-persons-section"
 import { WritingSeriesSection } from "@/components/writings/writing-series-section"
 import { WritingTagInput } from "@/components/writings/writing-tag-input"
@@ -43,6 +47,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Spinner } from "@/components/ui/spinner"
 import { useBookGenresQuery } from "@/hooks/useBookGenres"
+import { useManagedOptionsQuery } from "@/hooks/useWritingOptions"
 import { useFormDraft } from "@/hooks/use-form-draft"
 import { useServerFormSync } from "@/hooks/use-server-form-sync"
 import {
@@ -68,6 +73,10 @@ import {
 import { formatCkbDigits } from "@/lib/intl-ckb"
 import { cn } from "@/lib/utils"
 import { useAuthStore } from "@/store/auth.store"
+import {
+  DEFAULT_EDITION_SLUG,
+  DEFAULT_WRITING_TYPE_SLUG,
+} from "@/types/managed-option"
 import type { Language, WritingDto } from "@/types/writings"
 
 const sectionCard =
@@ -181,6 +190,23 @@ export function WritingForm({
   // Same query key the genre picker uses, so this shares its cache rather than
   // issuing a second request; it is read only to turn the picked slugs into ids.
   const genresQ = useBookGenresQuery(false)
+  const typesQ = useManagedOptionsQuery("writing-types", false)
+  const editionsQ = useManagedOptionsQuery("editions", false)
+
+  // New books get کتێب + چاپی یەکەم pre-selected once the vocabularies load —
+  // the spec's defaults, chosen without the editor lifting a finger. A value
+  // that is already set (edit mode, or an editor's own pick) is never touched.
+  useEffect(() => {
+    if (mode !== "create") return
+    if (!form.getValues("writingTypeId") && typesQ.data) {
+      const book = typesQ.data.find((o) => o.slug === DEFAULT_WRITING_TYPE_SLUG)
+      if (book?.id != null) form.setValue("writingTypeId", book.id)
+    }
+    if (!form.getValues("editionId") && editionsQ.data) {
+      const first = editionsQ.data.find((o) => o.slug === DEFAULT_EDITION_SLUG)
+      if (first?.id != null) form.setValue("editionId", first.id)
+    }
+  }, [mode, typesQ.data, editionsQ.data, form])
 
   const tabMarkers = useMemo(() => {
     const m = { CKB: false, KMR: false }
@@ -198,6 +224,10 @@ export function WritingForm({
       {
         wasChild:
           (editDto?.parentBookId ?? editDto?.seriesInfo?.parentBookId) != null,
+        hadBookLanguage: editDto?.bookLanguage?.id != null,
+        hadWritingType: editDto?.writingType?.id != null,
+        hadEdition: editDto?.edition?.id != null,
+        hadOriginalBook: editDto?.originalBook?.id != null,
       },
     )
     setUploadPct(0)
@@ -409,32 +439,72 @@ export function WritingForm({
               ) : null}
             </section>
 
+            <section className={cn(sectionCard, "space-y-4")}>
+              <div>
+                <Label className="text-muted-foreground mb-2 block text-xs uppercase">
+                  {NS.section.writing_type}
+                </Label>
+                <WritingManagedOptionSelect
+                  kind="writing-types"
+                  value={watch("writingTypeId") ?? null}
+                  onChange={(id) =>
+                    setValue("writingTypeId", id, { shouldDirty: true })
+                  }
+                  label={NS.field.writing_type_helper}
+                  manageHref="/dashboard/writings/options?tab=writing-types"
+                />
+              </div>
+              <div>
+                <Label className="text-muted-foreground mb-2 block text-xs uppercase">
+                  {NS.section.edition}
+                </Label>
+                <WritingManagedOptionSelect
+                  kind="editions"
+                  value={watch("editionId") ?? null}
+                  onChange={(id) =>
+                    setValue("editionId", id, { shouldDirty: true })
+                  }
+                  label={NS.field.edition_helper}
+                  manageHref="/dashboard/writings/options?tab=editions"
+                />
+              </div>
+              <div>
+                <Label className="text-muted-foreground mb-2 block text-xs uppercase">
+                  {NS.section.original_book}
+                </Label>
+                <WritingBookSearchSelect
+                  value={watch("originalBookId") ?? null}
+                  selectedTitle={
+                    editDto?.originalBook?.titleCkb ??
+                    editDto?.originalBook?.titleKmr
+                  }
+                  excludeId={editDto?.id}
+                  onChange={(id) =>
+                    setValue("originalBookId", id, { shouldDirty: true })
+                  }
+                  placeholder={NS.field.original_book_ph}
+                  clearLabel={NS.field.original_book_clear}
+                  emptyLabel={NS.field.original_book_empty}
+                />
+                <p className="text-muted-foreground mt-1.5 text-xs">
+                  {NS.field.original_book_helper}
+                </p>
+              </div>
+            </section>
+
             <section className={cn(sectionCard, "space-y-3")}>
               <Label className="text-muted-foreground block text-xs uppercase">
                 {NS.section.book_language}
               </Label>
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <span className="border-border text-muted-foreground w-11 shrink-0 rounded-md border py-1.5 text-center text-[10px] font-medium">
-                    CKB
-                  </span>
-                  <Input
-                    {...register("bookLanguageCkb")}
-                    placeholder={NS.field.book_language_ckb_ph}
-                    className="h-8 text-sm"
-                  />
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="border-border text-muted-foreground w-11 shrink-0 rounded-md border py-1.5 text-center text-[10px] font-medium">
-                    KMR
-                  </span>
-                  <Input
-                    {...register("bookLanguageKmr")}
-                    placeholder={NS.field.book_language_kmr_ph}
-                    className="h-8 text-sm"
-                  />
-                </div>
-              </div>
+              <WritingBookLanguageSelect
+                value={watch("bookLanguageId") ?? null}
+                onChange={(id) =>
+                  setValue("bookLanguageId", id, { shouldDirty: true })
+                }
+                label={NS.section.book_language}
+                placeholder={NS.field.book_language_ph}
+                manageHref="/dashboard/writings/options?tab=book-languages"
+              />
             </section>
 
             <section className={sectionCard}>
@@ -697,6 +767,28 @@ export function WritingForm({
                   }}
                 />
               </div>
+            </section>
+
+            <section className={cn("mt-6", sectionCard)}>
+              <h2 className={cn("mb-3", sectionHeading)}>{NS.section.audio_cd}</h2>
+              <WritingAudioCdSection
+                audioFile={watch("audioFile") ?? null}
+                audioUrl={watch("audioUrl") ?? ""}
+                cdCoverFile={watch("cdCoverFile") ?? null}
+                cdCoverUrl={watch("cdCoverUrl") ?? ""}
+                onAudioFileChange={(f) =>
+                  setValue("audioFile", f, { shouldDirty: true })
+                }
+                onAudioUrlChange={(s) =>
+                  setValue("audioUrl", s, { shouldDirty: true })
+                }
+                onCdCoverFileChange={(f) =>
+                  setValue("cdCoverFile", f, { shouldDirty: true })
+                }
+                onCdCoverUrlChange={(s) =>
+                  setValue("cdCoverUrl", s, { shouldDirty: true })
+                }
+              />
             </section>
 
             <section className={cn("mt-6", sectionCard)}>

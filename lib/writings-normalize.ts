@@ -1,9 +1,11 @@
 import { unwrapApiData } from "@/lib/api-unwrap"
 import { normalizeBookGenreRef } from "@/lib/book-genre-normalize"
 import type { BookGenreRefDto } from "@/types/book-genre"
+import type { ManagedOptionRefDto } from "@/types/managed-option"
 import type {
   BookFileFormat,
   BookGenre,
+  BookLinkDto,
   Language,
   LinkSeriesPayload,
   SeriesBookSummary,
@@ -66,6 +68,38 @@ function normalizeGenreRefs(raw: unknown): BookGenreRefDto[] {
   return raw
     .map(normalizeBookGenreRef)
     .filter((g): g is BookGenreRefDto => g != null)
+}
+
+/** An embedded managed option (writing type / edition / book language). */
+function normalizeOptionRef(raw: unknown): ManagedOptionRefDto | null {
+  if (!raw || typeof raw !== "object") return null
+  const o = raw as Record<string, unknown>
+  const id = coerceNum(o.id)
+  if (id == null) return null
+  return {
+    id,
+    slug: coerceStr(o.slug) ?? "",
+    nameCkb: coerceStr(o.nameCkb) ?? coerceStr(o.name_ckb),
+    nameKmr: coerceStr(o.nameKmr) ?? coerceStr(o.name_kmr),
+  }
+}
+
+/** An original-book / later-edition link (id + bilingual title). */
+function normalizeBookLink(raw: unknown): BookLinkDto | null {
+  if (!raw || typeof raw !== "object") return null
+  const o = raw as Record<string, unknown>
+  const id = coerceNum(o.id)
+  if (id == null) return null
+  return {
+    id,
+    titleCkb: coerceStr(o.titleCkb) ?? coerceStr(o.title_ckb),
+    titleKmr: coerceStr(o.titleKmr) ?? coerceStr(o.title_kmr),
+  }
+}
+
+function normalizeBookLinkList(raw: unknown): BookLinkDto[] {
+  if (!Array.isArray(raw)) return []
+  return raw.map(normalizeBookLink).filter((b): b is BookLinkDto => b != null)
 }
 
 function normalizeFileFormat(raw: unknown): BookFileFormat | null {
@@ -275,6 +309,17 @@ export function normalizeWritingDto(raw: unknown): WritingDto {
       coerceStr(o.bookLanguageCkb) ?? coerceStr(o.book_language_ckb),
     bookLanguageKmr:
       coerceStr(o.bookLanguageKmr) ?? coerceStr(o.book_language_kmr),
+    bookLanguage:
+      normalizeOptionRef(o.bookLanguage) ??
+      normalizeOptionRef(o.book_language),
+    writingType:
+      normalizeOptionRef(o.writingType) ?? normalizeOptionRef(o.writing_type),
+    edition: normalizeOptionRef(o.edition),
+    originalBook:
+      normalizeBookLink(o.originalBook) ?? normalizeBookLink(o.original_book),
+    editionBooks: normalizeBookLinkList(o.editionBooks ?? o.edition_books),
+    audioUrl: coerceStr(o.audioUrl) ?? coerceStr(o.audio_url),
+    cdCoverUrl: coerceStr(o.cdCoverUrl) ?? coerceStr(o.cd_cover_url),
     publishedByInstitute:
       coerceBool(o.publishedByInstitute) ||
       coerceBool(o.published_by_institute),

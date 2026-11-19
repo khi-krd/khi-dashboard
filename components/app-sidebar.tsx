@@ -126,6 +126,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               title: "ژانرەکانی کتێب",
               url: "/dashboard/writings/genres",
             },
+            {
+              title: "جۆر و چاپ و زمان",
+              url: "/dashboard/writings/options",
+            },
           ],
         },
         {

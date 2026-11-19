@@ -1,19 +1,24 @@
 "use client"
 
-import { RectangleStackIcon } from "@heroicons/react/24/outline"
+import {
+  ChevronUpDownIcon,
+  MagnifyingGlassIcon,
+  RectangleStackIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/outline"
+import { useMemo, useState } from "react"
 
 import { NS } from "@/components/writings/writings-strings"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { FieldError } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 import { useSeriesParentsQuery } from "@/hooks/useWritings"
 import { formatCkbDigits } from "@/lib/intl-ckb"
 import { cn } from "@/lib/utils"
@@ -190,21 +195,12 @@ export function WritingSeriesSection({
         <div className="space-y-3">
           <div className="space-y-1">
             <Label className="text-xs">{NS.series.pick_parent}</Label>
-            <Select
-              value={parentBookId != null ? String(parentBookId) : ""}
-              onValueChange={(v) => onParentBookIdChange(v ? Number(v) : null)}
-            >
-              <SelectTrigger className="h-9 w-full">
-                <SelectValue placeholder={NS.series.pick_parent} />
-              </SelectTrigger>
-              <SelectContent dir="rtl" className="max-h-64">
-                {parents.map((p) => (
-                  <SelectItem key={p.id} value={String(p.id)}>
-                    <ParentOptionLabel parent={p} />
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <SeriesParentCombobox
+              parents={parents}
+              value={parentBookId ?? null}
+              onChange={onParentBookIdChange}
+              loading={parentsQ.isLoading}
+            />
             {parentError ? <FieldError>{parentError}</FieldError> : null}
           </div>
 
@@ -265,6 +261,121 @@ export function WritingSeriesSection({
         </div>
       ) : null}
     </section>
+  )
+}
+
+/**
+ * Searchable series picker — filters the already-loaded parents by title and
+ * series name as the editor types, matching series by name rather than only
+ * by scrolling a dropdown.
+ */
+function SeriesParentCombobox({
+  parents,
+  value,
+  onChange,
+  loading,
+}: {
+  parents: WritingDto[]
+  value: number | null
+  onChange: (id: number | null) => void
+  loading?: boolean
+}) {
+  const [open, setOpen] = useState(false)
+  const [typed, setTyped] = useState("")
+  const q = typed.trim().toLowerCase()
+
+  const filtered = useMemo(() => {
+    if (!q) return parents
+    return parents.filter((p) => {
+      const hay = [
+        p.ckbContent?.title,
+        p.kmrContent?.title,
+        p.seriesInfo?.seriesName,
+        p.seriesName,
+      ]
+        .filter(Boolean)
+        .join("\n")
+        .toLowerCase()
+      return hay.includes(q)
+    })
+  }, [parents, q])
+
+  const selected = parents.find((p) => p.id === value)
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <div className="flex gap-1.5">
+        <PopoverTrigger
+          render={
+            <Button
+              type="button"
+              variant="outline"
+              className="h-auto min-h-9 w-full justify-between rounded-md px-3 py-2 text-start font-normal"
+            >
+              {selected ? (
+                <span className="truncate">{bookTitleOf(selected)}</span>
+              ) : (
+                <span className="text-muted-foreground">
+                  {NS.series.pick_parent}
+                </span>
+              )}
+              <ChevronUpDownIcon className="size-4 shrink-0 opacity-50" />
+            </Button>
+          }
+        />
+        {value != null ? (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-auto min-h-9 shrink-0"
+            onClick={() => onChange(null)}
+            aria-label={NS.action.cancel}
+          >
+            <XMarkIcon className="size-4" />
+          </Button>
+        ) : null}
+      </div>
+      <PopoverContent dir="rtl" className="w-[var(--anchor-width)] p-2">
+        <div className="relative">
+          <MagnifyingGlassIcon className="text-muted-foreground pointer-events-none absolute end-2.5 top-2.5 size-4" />
+          <Input
+            value={typed}
+            onChange={(e) => setTyped(e.target.value)}
+            placeholder={NS.series.pick_parent}
+            className="h-9 pe-8"
+            autoFocus
+          />
+        </div>
+        <div className="mt-2 max-h-56 space-y-0.5 overflow-y-auto">
+          {loading ? (
+            <p className="text-muted-foreground px-2 py-1.5 text-xs">…</p>
+          ) : null}
+          {!loading && filtered.length === 0 ? (
+            <p className="text-muted-foreground px-2 py-1.5 text-xs">
+              {NS.series.no_match}
+            </p>
+          ) : null}
+          {filtered.map((p) => (
+            <button
+              key={p.id}
+              type="button"
+              className={cn(
+                "hover:bg-muted flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-start text-sm",
+                value === p.id && "bg-muted",
+              )}
+              onClick={() => {
+                onChange(p.id ?? null)
+                setOpen(false)
+                setTyped("")
+              }}
+            >
+              <ParentOptionLabel parent={p} />
+            </button>
+          ))}
+        </div>
+      </PopoverContent>
+    </Popover>
   )
 }
 

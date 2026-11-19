@@ -1,4 +1,5 @@
 import type { BookGenreRefDto } from "@/types/book-genre"
+import type { ManagedOptionRefDto } from "@/types/managed-option"
 
 export type Language = "CKB" | "KMR"
 
@@ -123,6 +124,20 @@ export type WritingDto = {
   /** زمانی کتێب — the book's own language, named per dialect. */
   bookLanguageCkb?: string | null
   bookLanguageKmr?: string | null
+  /** زمانی کتێب — the managed row once the backend links one. */
+  bookLanguage?: ManagedOptionRefDto | null
+  /** جۆری نووسین — کتێب / بەڵگەنامە / …, from the writing-types vocabulary. */
+  writingType?: ManagedOptionRefDto | null
+  /** چاپ — First/Second/…, from the editions vocabulary. */
+  edition?: ManagedOptionRefDto | null
+  /** The first-edition book this record is a later چاپ of. */
+  originalBook?: BookLinkDto | null
+  /** Later چاپەکان pointing back at this record as their original. */
+  editionBooks?: BookLinkDto[]
+  /** دەنگی کتێب — optional audio recording attached to the book. */
+  audioUrl?: string | null
+  /** وێنەی سی دی — optional CD cover image for the audio. */
+  cdCoverUrl?: string | null
   publishedByInstitute?: boolean
   contentLanguages: Language[]
   tagsCkb?: string[]
@@ -141,6 +156,13 @@ export type WritingDto = {
   updatedAt?: string
   createdBy?: string | null
   updatedBy?: string | null
+}
+
+/** Compact book reference — original-book / later-edition links. */
+export type BookLinkDto = {
+  id?: number | null
+  titleCkb?: string | null
+  titleKmr?: string | null
 }
 
 export type WritingPage = {

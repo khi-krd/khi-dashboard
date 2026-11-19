@@ -7,6 +7,7 @@ import {
   BuildingOffice2Icon,
   HashtagIcon,
   LinkIcon,
+  MusicalNoteIcon,
   PencilSquareIcon,
   ShareIcon,
   TagIcon,
@@ -210,6 +211,7 @@ function WritingDetailLoaded({
     writing.hoverCoverUrl?.trim() ||
     null
   const lightbox = useLightbox()
+  const cdLightbox = useLightbox()
 
   const activeContent = tab === "CKB" ? writing.ckbContent : writing.kmrContent
   const activeDesc = activeContent?.description ?? ""
@@ -709,11 +711,89 @@ function WritingDetailLoaded({
                   </dt>
                   <dd className="text-foreground font-medium">
                     {(tab === "KMR"
-                      ? writing.bookLanguageKmr || writing.bookLanguageCkb
-                      : writing.bookLanguageCkb || writing.bookLanguageKmr) ||
-                      NS.dash}
+                      ? writing.bookLanguage?.nameKmr ||
+                        writing.bookLanguageKmr ||
+                        writing.bookLanguage?.nameCkb ||
+                        writing.bookLanguageCkb
+                      : writing.bookLanguage?.nameCkb ||
+                        writing.bookLanguageCkb ||
+                        writing.bookLanguage?.nameKmr ||
+                        writing.bookLanguageKmr) || NS.dash}
                   </dd>
                 </div>
+                {writing.writingType ? (
+                  <div className="min-w-0">
+                    <dt className="text-muted-foreground/80 text-xs">
+                      {NS.section.writing_type}
+                    </dt>
+                    <dd className="text-foreground font-medium">
+                      {(tab === "KMR"
+                        ? writing.writingType.nameKmr ||
+                          writing.writingType.nameCkb
+                        : writing.writingType.nameCkb ||
+                          writing.writingType.nameKmr) || NS.dash}
+                    </dd>
+                  </div>
+                ) : null}
+                {writing.edition ? (
+                  <div className="min-w-0">
+                    <dt className="text-muted-foreground/80 text-xs">
+                      {NS.section.edition}
+                    </dt>
+                    <dd className="text-foreground font-medium">
+                      {(tab === "KMR"
+                        ? writing.edition.nameKmr || writing.edition.nameCkb
+                        : writing.edition.nameCkb ||
+                          writing.edition.nameKmr) || NS.dash}
+                    </dd>
+                  </div>
+                ) : null}
+                {writing.originalBook ? (
+                  <div className="min-w-0">
+                    <dt className="text-muted-foreground/80 text-xs">
+                      {NS.section.original_book}
+                    </dt>
+                    <dd className="font-medium">
+                      {writing.originalBook.id != null ? (
+                        <Link
+                          href={`/dashboard/writings/${writing.originalBook.id}`}
+                          className="text-primary hover:underline"
+                        >
+                          {(tab === "KMR"
+                            ? writing.originalBook.titleKmr ||
+                              writing.originalBook.titleCkb
+                            : writing.originalBook.titleCkb ||
+                              writing.originalBook.titleKmr) ||
+                            `#${writing.originalBook.id}`}
+                        </Link>
+                      ) : (
+                        NS.dash
+                      )}
+                    </dd>
+                  </div>
+                ) : null}
+                {(writing.editionBooks?.length ?? 0) > 0 ? (
+                  <div className="min-w-0">
+                    <dt className="text-muted-foreground/80 text-xs">
+                      {NS.section.later_editions}
+                    </dt>
+                    <dd className="flex flex-wrap gap-x-3 gap-y-1 font-medium">
+                      {writing.editionBooks!.map((b) =>
+                        b.id != null ? (
+                          <Link
+                            key={b.id}
+                            href={`/dashboard/writings/${b.id}`}
+                            className="text-primary hover:underline"
+                          >
+                            {(tab === "KMR"
+                              ? b.titleKmr || b.titleCkb
+                              : b.titleCkb || b.titleKmr) || `#${b.id}`}
+                          </Link>
+                        ) : null,
+                      )}
+                    </dd>
+                  </div>
+                ) : null}
               </dl>
 
               {(writing.persons ?? []).length > 0 ? (
@@ -769,6 +849,55 @@ function WritingDetailLoaded({
               ) : null}
             </div>
           </div>
+
+          {writing.audioUrl || writing.cdCoverUrl ? (
+            <section className={cn(sectionDivider, "mt-12")}>
+              <h3 className="mb-4 text-sm font-semibold">
+                {NS.section.audio_cd}
+              </h3>
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+                {writing.cdCoverUrl ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => cdLightbox.openAt(0)}
+                      className="bg-muted ring-border/60 relative aspect-square w-36 shrink-0 cursor-zoom-in overflow-hidden rounded-xl shadow-sm ring-1"
+                    >
+                      <Image
+                        src={writing.cdCoverUrl}
+                        alt={NS.field.cd_cover_label}
+                        fill
+                        className="object-cover"
+                        unoptimized={
+                          !isOptimizableImageSrc(writing.cdCoverUrl)
+                        }
+                      />
+                    </button>
+                    <MediaLightbox
+                      open={cdLightbox.open}
+                      onOpenChange={cdLightbox.onOpenChange}
+                      items={[{ src: writing.cdCoverUrl }]}
+                      initialIndex={cdLightbox.index}
+                    />
+                  </>
+                ) : null}
+                {writing.audioUrl ? (
+                  <div className="border-border/60 bg-card/50 min-w-0 flex-1 space-y-2 rounded-xl border p-4">
+                    <p className="text-muted-foreground flex items-center gap-2 text-xs">
+                      <MusicalNoteIcon className="size-4" />
+                      {NS.field.audio_label}
+                    </p>
+                    <audio
+                      controls
+                      preload="metadata"
+                      src={writing.audioUrl}
+                      className="w-full"
+                    />
+                  </div>
+                ) : null}
+              </div>
+            </section>
+          ) : null}
 
           <section className={cn(sectionDivider, "mt-12")}>
             <h3 className="mb-4 text-sm font-semibold">{NS.section.reader}</h3>

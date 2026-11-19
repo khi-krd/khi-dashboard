@@ -55,8 +55,14 @@ export function writingFormValuesToMultipart(
   values: WritingFormValues,
   /** The genres currently known to the dashboard, for the slug → id mapping. */
   genres?: BookGenreDto[],
-  /** Edit-mode context: was the saved record a series child? */
-  context?: { wasChild?: boolean },
+  /** Edit-mode context: what the saved record carried before this edit. */
+  context?: {
+    wasChild?: boolean
+    hadBookLanguage?: boolean
+    hadWritingType?: boolean
+    hadEdition?: boolean
+    hadOriginalBook?: boolean
+  },
 ): FormData {
   const fd = new FormData()
 
@@ -67,8 +73,11 @@ export function writingFormValuesToMultipart(
     // the two coexist, so a save works against either build of the API.
     bookGenres: values.bookGenres,
     publishedByInstitute: values.publishedByInstitute,
-    bookLanguageCkb: values.bookLanguageCkb?.trim() ?? "",
-    bookLanguageKmr: values.bookLanguageKmr?.trim() ?? "",
+    // When a managed language is picked the server derives the names from the
+    // row — sending the free-text fields only when they hold text keeps an
+    // empty pick from blanking them.
+    bookLanguageCkb: trimOrUndef(values.bookLanguageCkb),
+    bookLanguageKmr: trimOrUndef(values.bookLanguageKmr),
     contentLanguages: values.contentLanguages,
     tags: { ckb: values.tags.ckb, kmr: values.tags.kmr },
     keywords: { ckb: values.keywords.ckb, kmr: values.keywords.kmr },
@@ -98,6 +107,35 @@ export function writingFormValuesToMultipart(
   if (genreIds) {
     payload.genreIds = genreIds
   }
+
+  // Managed vocabularies — single-select rows. On update, `clearX: true` is
+  // what detaches a value the form no longer carries; a plain absent key would
+  // leave the old one in place (the PUT is a partial merge).
+  if (values.bookLanguageId != null) {
+    payload.bookLanguageId = values.bookLanguageId
+  } else if (mode === "edit" && context?.hadBookLanguage) {
+    payload.clearBookLanguage = true
+  }
+  if (values.writingTypeId != null) {
+    payload.writingTypeId = values.writingTypeId
+  } else if (mode === "edit" && context?.hadWritingType) {
+    payload.clearWritingType = true
+  }
+  if (values.editionId != null) {
+    payload.editionId = values.editionId
+  } else if (mode === "edit" && context?.hadEdition) {
+    payload.clearEdition = true
+  }
+  if (values.originalBookId != null) {
+    payload.originalBookId = values.originalBookId
+  } else if (mode === "edit" && context?.hadOriginalBook) {
+    payload.clearOriginalBook = true
+  }
+
+  // دەنگی کتێب + وێنەی سی دی — same ""-clears merge as the cover urls, so a
+  // blanked input detaches while an untouched one re-sends itself.
+  payload.audioUrl = trimOrUndef(values.audioUrl) ?? ""
+  payload.cdCoverUrl = trimOrUndef(values.cdCoverUrl) ?? ""
 
   // Series — the backend owns the root model: it derives the name from the
   // primary book's title, assigns the next volume number, and recomputes the
@@ -146,6 +184,8 @@ export function writingFormValuesToMultipart(
   if (values.hoverCoverFile) fd.append("hoverCoverImage", values.hoverCoverFile)
   if (values.ckbBookFile) fd.append("ckbBookFile", values.ckbBookFile)
   if (values.kmrBookFile) fd.append("kmrBookFile", values.kmrBookFile)
+  if (values.audioFile) fd.append("audioFile", values.audioFile)
+  if (values.cdCoverFile) fd.append("cdCoverImage", values.cdCoverFile)
 
   return fd
 }

@@ -41,6 +41,13 @@ export const writingFormSchema = z
     publishedByInstitute: z.boolean().default(true),
     bookLanguageCkb: z.string().max(120).default(""),
     bookLanguageKmr: z.string().max(120).default(""),
+    // زمانی کتێب as a managed row — the dropdown's single source.
+    bookLanguageId: z.number().int().nullable().optional(),
+    // جۆری نووسین + چاپ — managed vocabularies, single-select.
+    writingTypeId: z.number().int().nullable().optional(),
+    editionId: z.number().int().nullable().optional(),
+    // The first-edition book a later چاپ points back at.
+    originalBookId: z.number().int().nullable().optional(),
     contentLanguages: z
       .array(z.enum(["CKB", "KMR"]))
       .min(1, NS.validation.languageRequired),
@@ -87,6 +94,14 @@ export const writingFormSchema = z
     existingHoverCoverUrl: z.string().optional().nullable(),
     ckbBookFile: z.instanceof(File).optional().nullable(),
     kmrBookFile: z.instanceof(File).optional().nullable(),
+    // دەنگی کتێب + وێنەی سی دی — same trio as the covers: staged file wins,
+    // a re-sent identical URL is a no-op, "" clears.
+    audioFile: z.instanceof(File).optional().nullable(),
+    cdCoverFile: z.instanceof(File).optional().nullable(),
+    audioUrl: z.string().optional().nullable(),
+    cdCoverUrl: z.string().optional().nullable(),
+    existingAudioUrl: z.string().optional().nullable(),
+    existingCdCoverUrl: z.string().optional().nullable(),
   })
   .superRefine((values, ctx) => {
     // The server rejects a declared language whose title is blank — and on the
@@ -123,6 +138,10 @@ export const defaultWritingFormValues: WritingFormValues = {
   publishedByInstitute: true,
   bookLanguageCkb: "",
   bookLanguageKmr: "",
+  bookLanguageId: null,
+  writingTypeId: null,
+  editionId: null,
+  originalBookId: null,
   contentLanguages: ["CKB"],
   ckbContent: { title: "", description: "", fileUrl: "", fileSizeBytes: 0, location: "" },
   kmrContent: { title: "", description: "", fileUrl: "", fileSizeBytes: 0, location: "" },
@@ -143,6 +162,12 @@ export const defaultWritingFormValues: WritingFormValues = {
   existingHoverCoverUrl: null,
   ckbBookFile: null,
   kmrBookFile: null,
+  audioFile: null,
+  cdCoverFile: null,
+  audioUrl: "",
+  cdCoverUrl: "",
+  existingAudioUrl: null,
+  existingCdCoverUrl: null,
 }
 
 export function writingDtoToFormValues(dto: WritingDto): WritingFormValues {
@@ -168,6 +193,10 @@ export function writingDtoToFormValues(dto: WritingDto): WritingFormValues {
     publishedByInstitute: !!dto.publishedByInstitute,
     bookLanguageCkb: dto.bookLanguageCkb ?? "",
     bookLanguageKmr: dto.bookLanguageKmr ?? "",
+    bookLanguageId: dto.bookLanguage?.id ?? null,
+    writingTypeId: dto.writingType?.id ?? null,
+    editionId: dto.edition?.id ?? null,
+    originalBookId: dto.originalBook?.id ?? null,
     contentLanguages: dto.contentLanguages?.length
       ? [...dto.contentLanguages]
       : ["CKB"],
@@ -230,5 +259,11 @@ export function writingDtoToFormValues(dto: WritingDto): WritingFormValues {
     existingHoverCoverUrl: dto.hoverCoverUrl ?? null,
     ckbBookFile: null,
     kmrBookFile: null,
+    audioFile: null,
+    cdCoverFile: null,
+    audioUrl: dto.audioUrl ?? "",
+    cdCoverUrl: dto.cdCoverUrl ?? "",
+    existingAudioUrl: dto.audioUrl ?? null,
+    existingCdCoverUrl: dto.cdCoverUrl ?? null,
   }
 }
