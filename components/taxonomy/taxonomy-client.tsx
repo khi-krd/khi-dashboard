@@ -35,6 +35,13 @@ import {
   useUpdateProjectTypeMutation,
   useUpdateSoundTypeMutation,
 } from "@/hooks/useTaxonomy"
+import { bookGenreDtoToPayload } from "@/lib/book-genre-form-data"
+import {
+  useCreateManagedOption,
+  useDeleteManagedOption,
+  useManagedOptionsQuery,
+  useUpdateManagedOption,
+} from "@/hooks/useWritingOptions"
 import { formatCkbDigits } from "@/lib/intl-ckb"
 import { toastApiError } from "@/lib/toast"
 import type {
@@ -45,8 +52,9 @@ import type {
 type NamedTarget = { id: number; nameCkb: string; nameKmr: string }
 type TypeRow = NamedTarget & { count: number }
 
-/** The free-text "type" vocabularies — projects, sound tracks, contact offices. */
-type VocabKind = "project" | "sound" | "office"
+/** The free-text "type" vocabularies — projects, sound tracks, contact offices,
+ * plus the managed video_categories vocabulary. */
+type VocabKind = "project" | "sound" | "office" | "video"
 
 type NameDialogState =
   | { kind: "category"; mode: "create" }
@@ -207,6 +215,11 @@ export function TaxonomyClient() {
   const updateOfficeTypeMut = useUpdateOfficeTypeMutation()
   const deleteOfficeTypeMut = useDeleteOfficeTypeMutation()
 
+  const videoCatsQ = useManagedOptionsQuery("video-categories")
+  const createVideoCatMut = useCreateManagedOption("video-categories")
+  const updateVideoCatMut = useUpdateManagedOption("video-categories")
+  const deleteVideoCatMut = useDeleteManagedOption("video-categories")
+
   const [nameDialog, setNameDialog] = useState<NameDialogState>(null)
   const [deleteState, setDeleteState] = useState<DeleteState>(null)
 
@@ -214,6 +227,7 @@ export function TaxonomyClient() {
   const types = typesQ.data ?? []
   const soundTypes = soundTypesQ.data ?? []
   const officeTypes = officeTypesQ.data ?? []
+  const videoCats = videoCatsQ.data ?? []
 
   const typeMuts = {
     project: {
@@ -243,14 +257,17 @@ export function TaxonomyClient() {
     createSoundTypeMut.isPending ||
     updateSoundTypeMut.isPending ||
     createOfficeTypeMut.isPending ||
-    updateOfficeTypeMut.isPending
+    updateOfficeTypeMut.isPending ||
+    createVideoCatMut.isPending ||
+    updateVideoCatMut.isPending
 
   const deletePending =
     deleteCatMut.isPending ||
     deleteSubMut.isPending ||
     deleteTypeMut.isPending ||
     deleteSoundTypeMut.isPending ||
-    deleteOfficeTypeMut.isPending
+    deleteOfficeTypeMut.isPending ||
+    deleteVideoCatMut.isPending
 
   function nameDialogTitle(d: NonNullable<NameDialogState>): string {
     if (d.kind === "category")
@@ -270,6 +287,10 @@ export function TaxonomyClient() {
       office: {
         create: TX.dialog.create_office_type,
         edit: TX.dialog.edit_office_type,
+      },
+      video: {
+        create: TX.dialog.create_video_category,
+        edit: TX.dialog.edit_video_category,
       },
     }
     return titles[d.vocab][d.mode]
@@ -324,7 +345,50 @@ export function TaxonomyClient() {
           onError,
         },
       )
-    } else if (d.mode === "create") {
+    } else if (d.vocab === "video" && d.mode === "create") {
+      createVideoCatMut.mutate(
+        {
+          slug: "",
+          nameCkb: payload.nameCkb?.trim() || null,
+          nameKmr: payload.nameKmr?.trim() || null,
+          displayOrder: 0,
+          active: true,
+        },
+        {
+          onSuccess: () => {
+            toast.success(TX.toast.created)
+            close()
+          },
+          onError,
+        },
+      )
+    } else if (d.vocab === "video" && d.mode === "edit") {
+      const row = videoCats.find((r) => r.id === d.target.id)
+      updateVideoCatMut.mutate(
+        {
+          id: d.target.id,
+          payload: row
+            ? bookGenreDtoToPayload(row, {
+                nameCkb: payload.nameCkb?.trim() || null,
+                nameKmr: payload.nameKmr?.trim() || null,
+              })
+            : {
+                slug: "",
+                nameCkb: payload.nameCkb?.trim() || null,
+                nameKmr: payload.nameKmr?.trim() || null,
+                displayOrder: 0,
+                active: true,
+              },
+        },
+        {
+          onSuccess: () => {
+            toast.success(TX.toast.updated)
+            close()
+          },
+          onError,
+        },
+      )
+    } else if (d.vocab !== "video" && d.mode === "create") {
       typeMuts[d.vocab].create.mutate(payload, {
         onSuccess: () => {
           toast.success(TX.toast.created)
@@ -332,7 +396,7 @@ export function TaxonomyClient() {
         },
         onError,
       })
-    } else {
+    } else if (d.vocab !== "video" && d.mode === "edit") {
       typeMuts[d.vocab].update.mutate(
         { id: d.target.id, payload },
         {
@@ -365,6 +429,7 @@ export function TaxonomyClient() {
   function vocabUnit(vocab: VocabKind): string {
     if (vocab === "project") return TX.unit.project
     if (vocab === "sound") return TX.unit.sound
+    if (vocab === "video") return TX.unit.video
     return TX.unit.office
   }
 
@@ -381,6 +446,8 @@ export function TaxonomyClient() {
       deleteCatMut.mutate(d.target.id, { onSuccess, onError })
     } else if (d.kind === "subcategory") {
       deleteSubMut.mutate(d.target.id, { onSuccess, onError })
+    } else if (d.vocab === "video") {
+      deleteVideoCatMut.mutate(d.target.id, { onSuccess, onError })
     } else {
       typeMuts[d.vocab].remove.mutate(d.target.id, { onSuccess, onError })
     }
@@ -402,6 +469,7 @@ export function TaxonomyClient() {
           <TabsTrigger value="news">{TX.tabs.news}</TabsTrigger>
           <TabsTrigger value="projects">{TX.tabs.projects}</TabsTrigger>
           <TabsTrigger value="sounds">{TX.tabs.sounds}</TabsTrigger>
+          <TabsTrigger value="videos">{TX.tabs.videos}</TabsTrigger>
           <TabsTrigger value="offices">{TX.tabs.offices}</TabsTrigger>
         </TabsList>
 
@@ -591,6 +659,34 @@ export function TaxonomyClient() {
             }
             onDelete={(target) =>
               setDeleteState({ kind: "type", vocab: "sound", target })
+            }
+          />
+        </TabsContent>
+
+        <TabsContent value="videos" className="space-y-4 pt-6">
+          <TypePanel
+            unit={TX.unit.video}
+            isLoading={videoCatsQ.isLoading}
+            items={videoCats.flatMap((t) =>
+              t.id == null
+                ? []
+                : [
+                    {
+                      id: t.id,
+                      nameCkb: t.nameCkb ?? "",
+                      nameKmr: t.nameKmr ?? "",
+                      count: t.bookCount ?? 0,
+                    },
+                  ],
+            )}
+            onCreate={() =>
+              setNameDialog({ kind: "type", vocab: "video", mode: "create" })
+            }
+            onEdit={(target) =>
+              setNameDialog({ kind: "type", vocab: "video", mode: "edit", target })
+            }
+            onDelete={(target) =>
+              setDeleteState({ kind: "type", vocab: "video", target })
             }
           />
         </TabsContent>

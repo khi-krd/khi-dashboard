@@ -69,6 +69,7 @@ export const VideoClipItemFormSchema = z.object({
 export const videoFormSchema = z.object({
   videoType: z.enum(["FILM", "VIDEO_CLIP"]),
   albumOfMemories: z.boolean().default(false),
+  categoryId: z.number().int().optional().nullable(),
   topicIds: z.array(z.number().int()).default([]),
   newTopics: z
     .array(
@@ -125,6 +126,7 @@ export type VideoFormValues = z.infer<typeof videoFormSchema>
 export const defaultVideoFormValues: VideoFormValues = {
   videoType: "FILM",
   albumOfMemories: false,
+  categoryId: null,
   topicIds: [],
   newTopics: [],
   contentLanguages: ["CKB"],
@@ -200,6 +202,7 @@ export function videoDtoToFormValues(d: import("@/types/videos").VideoDto): Vide
   return {
     videoType: d.videoType ?? "FILM",
     albumOfMemories: d.albumOfMemories ?? false,
+    categoryId: d.category?.id ?? d.categoryId ?? null,
     topicIds:
       d.topics?.length
         ? d.topics.map((t) => t.id)

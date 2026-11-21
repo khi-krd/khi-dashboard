@@ -138,6 +138,11 @@ export function normalizeVideoDto(raw: unknown): VideoDto {
     topics: Array.isArray(o.topics)
       ? o.topics.map(normalizeTopicDto)
       : [],
+    categoryId: coerceNum(o.categoryId),
+    category:
+      o.category && typeof o.category === "object"
+        ? normalizeVideoCategoryRef(o.category)
+        : null,
     ckbCoverUrl: coerceStr(o.ckbCoverUrl) ?? coerceStr(o.ckb_cover_url),
     kmrCoverUrl: coerceStr(o.kmrCoverUrl) ?? coerceStr(o.kmr_cover_url),
     hoverCoverUrl: coerceStr(o.hoverCoverUrl) ?? coerceStr(o.hover_cover_url),
@@ -209,6 +214,16 @@ export function normalizeVideoPage(raw: unknown): VideoPage {
     first: coerceBool(o.first),
     last: coerceBool(o.last),
     empty: coerceBool(o.empty) || content.length === 0,
+  }
+}
+
+export function normalizeVideoCategoryRef(raw: unknown): NonNullable<VideoDto["category"]> {
+  const o = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>
+  return {
+    id: coerceNum(o.id),
+    slug: coerceStr(o.slug),
+    nameCkb: coerceStr(o.nameCkb) ?? coerceStr(o.name_ckb),
+    nameKmr: coerceStr(o.nameKmr) ?? coerceStr(o.name_kmr),
   }
 }
 

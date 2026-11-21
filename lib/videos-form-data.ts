@@ -88,6 +88,13 @@ export function videoFormValuesToMultipart(
     videoType: values.videoType,
     albumOfMemories:
       values.videoType === "VIDEO_CLIP" ? values.albumOfMemories : false,
+    // Category is a replace-set like topics: send the id when picked, and on
+    // edit send clearCategory when nothing is picked (null alone is a no-op).
+    ...(values.categoryId != null
+      ? { categoryId: values.categoryId }
+      : mode === "edit"
+        ? { clearCategory: true }
+        : {}),
     contentLanguages: values.contentLanguages,
     ckbCoverUrl: trimOrUndef(values.ckbCoverUrl),
     kmrCoverUrl: trimOrUndef(values.kmrCoverUrl),

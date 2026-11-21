@@ -23,8 +23,9 @@ const TOPICS_BASE = "/api/v1/topics"
 export async function getWritingsList(
   page: number,
   size: number,
+  sort = "createdAt,desc",
 ): Promise<WritingPage> {
-  const { data } = await api.get<unknown>(BASE, { params: { page, size } })
+  const { data } = await api.get<unknown>(BASE, { params: { page, size, sort } })
   return normalizeWritingPage(data)
 }
 

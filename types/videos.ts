@@ -51,6 +51,16 @@ export type VideoDto = {
   id?: number
   videoType: VideoType
   albumOfMemories?: boolean
+  /** Managed video_categories row — the public پۆلی ڤیدیۆ axis. */
+  categoryId?: number | null
+  category?: {
+    id?: number | null
+    slug?: string | null
+    nameCkb?: string | null
+    nameKmr?: string | null
+  } | null
+  /** Update-only flag: detach the category (null alone means "unchanged"). */
+  clearCategory?: boolean
   topicId?: number | null
   topicNameCkb?: string | null
   topicNameKmr?: string | null

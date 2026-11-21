@@ -8,6 +8,7 @@ export const TX = {
     projects: "جۆرەکانی پرۆژە",
     sounds: "جۆرەکانی دەنگ",
     offices: "جۆرەکانی نووسینگە",
+    videos: "پۆلەکانی ڤیدیۆ",
   },
   col: {
     nameCkb: "ناو (کوردی)",
@@ -38,6 +39,8 @@ export const TX = {
     edit_sound_type: "دەستکاری جۆری دەنگ",
     create_office_type: "جۆری نووسینگەی نوێ",
     edit_office_type: "دەستکاری جۆری نووسینگە",
+    create_video_category: "پۆلی ڤیدیۆی نوێ",
+    edit_video_category: "دەستکاری پۆلی ڤیدیۆ",
   },
   delete: {
     title: "سڕینەوە",
@@ -53,6 +56,7 @@ export const TX = {
     project: "پرۆژە",
     sound: "دەنگ",
     office: "نووسینگە",
+    video: "ڤیدیۆ",
   },
   empty: {
     title: "هیچ تۆمارێک نییە",

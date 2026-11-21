@@ -194,6 +194,7 @@ export const NS = {
     languages: "زمانەکان",
     publish: "بەرواری بڵاوکردنەوە",
     topic: "بابەت",
+    category: "پۆلی ڤیدیۆ",
     credits: "ستاف",
     technical: "زانیاری تەکنیکی",
     dates: "بەروارەکان",

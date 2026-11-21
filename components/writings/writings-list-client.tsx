@@ -172,7 +172,7 @@ function WritingsListClientInner() {
 
   const reorderQuery = useQuery({
     queryKey: [...writingsKeys.lists(), "reorder-all"],
-    queryFn: () => fetchAllPages((p, s) => getWritingsList(p, s)),
+    queryFn: () => fetchAllPages((p, s) => getWritingsList(p, s, "sortOrder,asc")),
     enabled: reordering,
     staleTime: 0,
   })

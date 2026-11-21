@@ -76,4 +76,10 @@ export const OPTION_PAGE: Record<
     tab: "زمانی کتێب",
     item: "زمان",
   },
+  "video-categories": {
+    title: "پۆلەکانی ڤیدیۆ",
+    subtitle: "فلیم، کلیپ، بەرنامەی کولتووری، بەڵگەیی — زیادکردن، دەستکاری و ڕیزکردن.",
+    tab: "پۆلی ڤیدیۆ",
+    item: "پۆل",
+  },
 }

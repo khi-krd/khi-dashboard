@@ -727,6 +727,12 @@ function VideoDetailLoaded({
                     </Link>
                   </>
                 ) : null}
+                {dto.category?.nameCkb ? (
+                  <>
+                    <MetaDot />
+                    <span>{dto.category.nameCkb}</span>
+                  </>
+                ) : null}
                 {isFilm && dto.durationSeconds != null ? (
                   <>
                     <MetaDot />

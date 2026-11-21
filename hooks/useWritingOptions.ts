@@ -8,6 +8,7 @@ import {
 } from "@/lib/book-genre-form-data"
 import { compareBookGenres } from "@/lib/book-genre-normalize"
 import { writingsKeys } from "@/lib/writings-query-keys"
+import { videoKeys } from "@/lib/videos-query-keys"
 import {
   createManagedOption,
   deleteManagedOption,
@@ -53,7 +54,13 @@ function useOptionInvalidator(kind: ManagedOptionKind) {
     void queryClient.invalidateQueries({
       queryKey: managedOptionKeys.lists(kind),
     })
-    void queryClient.invalidateQueries({ queryKey: writingsKeys.all })
+    // Options are embedded in the records that reference them, so a rename
+    // or delete makes those cached lists stale too.
+    if (kind === "video-categories") {
+      void queryClient.invalidateQueries({ queryKey: videoKeys.all })
+    } else {
+      void queryClient.invalidateQueries({ queryKey: writingsKeys.all })
+    }
   }
 }
 
