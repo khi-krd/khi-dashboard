@@ -63,7 +63,7 @@ export const NS = {
     status_all: "هەموو دۆخەکان",
     status_featured: "تایبەت",
     status_not_featured: "ناتایبەت",
-    reset: "سڕینەوەی فلتەر",
+    reset: "لادانی فلتەر",
     no_results: "هیچ ناوەڕۆکێک نەدۆزرایەوە",
     results: (count: string) => `${count} ئەنجام`,
   },

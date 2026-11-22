@@ -59,7 +59,7 @@ export const NS = {
     reorder: "ڕیزکردن",
     done: "تەواو",
     change: "گۆڕین",
-    reset_filters: "پاککردنەوەی فلتەرەکان",
+    reset_filters: "لادانی فلتەر",
     add_collection: "کۆکراوەی نوێ",
     add_first_collection: "یەکەم کۆکراوە",
     add_file: "زیادکردنی فایل",
@@ -304,7 +304,7 @@ export const NS = {
     no_results: {
       title: "هیچ ئەنجامێک نەدۆزرایەوە",
       subtitle: "هەوڵبدە کلیلەوشە یان فلتەرەکانت بگۆڕیت",
-      cta: "پاککردنەوەی فلتەرەکان",
+      cta: "لادانی فلتەر",
     },
     no_cover: "بێ وێنەی ڕووکار",
     no_body: "وەسف بۆ ئەم زمانە بەردەست نییە.",

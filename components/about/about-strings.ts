@@ -33,7 +33,7 @@ export const NS = {
     active: "چالاک",
     inactive: "ناچالاک",
     lang_all: "هەموو زمانەکان",
-    reset: "پاککردنەوە",
+    reset: "لادانی فلتەر",
   },
   status: {
     active: "چالاک",

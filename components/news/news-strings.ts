@@ -15,7 +15,7 @@ export const NS = {
     save_new: "پاشەکەوت و تۆماری تر",
     cancel: "هەڵوەشاندنەوە",
     back: "گەڕانەوە",
-    reset_filters: "پاککردنەوەی فلتەرەکان",
+    reset_filters: "لادانی فلتەر",
     add_link: "زیادکردنی لینکی دەرەکی",
     change: "گۆڕین",
     reorder: "ڕیزکردن",
@@ -62,7 +62,7 @@ export const NS = {
     lang_ckb_only: "تەنیا سۆرانی",
     lang_kmr_only: "تەنیا کورمانجی",
     lang_both: "هەردووکیان",
-    reset: "ڕێکخستنەوە",
+    reset: "لادانی فلتەر",
   },
   list: {
     /** {count} formatted CKB digits */
@@ -151,7 +151,7 @@ export const NS = {
     no_results: {
       title: "هیچ ئەنجامێک نەدۆزرایەوە",
       subtitle: "هەوڵبدە کلیلەوشە یان فلتەرەکانت بگۆڕیت",
-      cta: "پاککردنەوەی فلتەرەکان",
+      cta: "لادانی فلتەر",
     },
     no_media: "هیچ میدیایەک نییە",
     no_body: "وەسف بۆ ئەم زمانە بەردەست نییە.",
