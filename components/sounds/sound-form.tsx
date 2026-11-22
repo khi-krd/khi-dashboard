@@ -303,6 +303,7 @@ export function SoundForm({
                 values={soundTypes}
                 onChange={(v) => setValue("soundTypes", v, { shouldDirty: true })}
                 error={errors.soundTypes?.message}
+                manageHref="/dashboard/taxonomy"
               />
             </section>
 

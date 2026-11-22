@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import { useMemo, useState } from "react"
 import {
   CheckIcon,
@@ -32,9 +33,11 @@ import { cn } from "@/lib/utils"
 export function OfficeTypeCombobox({
   values,
   onChange,
+  manageHref,
 }: {
   values: string[]
   onChange: (v: string[]) => void
+  manageHref?: string
 }) {
   const typesQ = useOfficeTypesQuery()
   const createMut = useCreateOfficeTypeMutation()
@@ -62,6 +65,16 @@ export function OfficeTypeCombobox({
 
   return (
     <div className="space-y-2">
+      {manageHref ? (
+        <div className="flex justify-end">
+          <Link
+            href={manageHref}
+            className="text-muted-foreground hover:text-foreground text-xs underline-offset-4 transition-colors hover:underline"
+          >
+            {NS.action.manage}
+          </Link>
+        </div>
+      ) : null}
       {values.length > 0 ? (
         <div className="flex flex-wrap gap-1.5">
           {values.map((v) => (

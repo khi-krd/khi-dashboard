@@ -77,6 +77,7 @@ export const NS = {
     editPage: "دەستکاری پەڕە",
     backToPreview: "گەڕانەوە بۆ پیشاندان",
     addOffice: "زیادکردنی نووسینگە",
+    manage: "بەڕێوەبردن",
   },
   empty: {
     list: "هیچ نووسینگەیەک نەدۆزرایەوە",

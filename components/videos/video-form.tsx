@@ -329,18 +329,6 @@ export function VideoForm({
             </section>
 
             <section className={sectionCard}>
-              <WritingManagedOptionSelect
-                kind="video-categories"
-                value={watch("categoryId") ?? null}
-                onChange={(id) =>
-                  setValue("categoryId", id, { shouldDirty: true })
-                }
-                label={NS.section.category}
-                manageHref="/dashboard/taxonomy"
-              />
-            </section>
-
-            <section className={sectionCard}>
               <Label className={cn(sectionHeading, "mb-2")}>
                 {NS.section.languages}
               </Label>
@@ -441,6 +429,18 @@ export function VideoForm({
                 onChange={(v) => setValue("videoType", v, { shouldDirty: true })}
               />
             </div>
+
+            <section className={cn(sectionCard, "mb-6")}>
+              <WritingManagedOptionSelect
+                kind="video-categories"
+                value={watch("categoryId") ?? null}
+                onChange={(id) =>
+                  setValue("categoryId", id, { shouldDirty: true })
+                }
+                label={NS.section.category}
+                manageHref="/dashboard/taxonomy"
+              />
+            </section>
 
             <div className="mb-6 flex flex-wrap gap-2">
               {(["CKB", "KMR"] as const).map((code) => (

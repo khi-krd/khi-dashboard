@@ -90,6 +90,7 @@ export const NS = {
     change: "گۆڕین",
     add: "زیادکردن",
     add_type: "جۆرێکی نوێ",
+    manage: "بەڕێوەبردن",
     reset_filters: "پاککردنەوەی فلتەرەکان",
     copy_url: "لەبەرگرتنەوەی ناونیشانی URL",
     share: "هاوبەشکردن",

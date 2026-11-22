@@ -345,6 +345,7 @@ export function ContactOfficeSectionCard({
             <OfficeTypeCombobox
               values={watch("officeTypes") ?? []}
               onChange={(v) => setValue("officeTypes", v, { shouldDirty: true })}
+              manageHref="/dashboard/taxonomy"
             />
             <Input {...register("badgeCkb")} placeholder={NS.form.badge_ckb} />
             <Input {...register("badgeKmr")} placeholder={NS.form.badge_kmr} />

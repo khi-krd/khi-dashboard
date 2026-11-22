@@ -27,6 +27,7 @@ export const NS = {
     bulk_delete: "سڕینەوەی دیاریکراوەکان",
     add_category: "+ زیادکردنی پۆلێکی نوێ",
     add_subcategory: "+ زیادکردنی ژێرپۆلێکی نوێ",
+    manage: "بەڕێوەبردن",
     add_inline: "زیادکردن",
     reorder_media: "جوڵاندن بۆ ڕیزکردنی میدیا",
     add_media_row: "زیادکردنی میدیا",

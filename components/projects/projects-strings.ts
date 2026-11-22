@@ -30,6 +30,7 @@ export const NS = {
     reset_filters: "پاککردنەوەی فلتەرەکان",
     add_link: "زیادکردنی لینکی دەرەکی",
     add_file: "بارکردنی فایل",
+    manage: "بەڕێوەبردن",
     reorder: "ڕیزکردن",
     done: "تەواو",
     add_media: "زیادکردنی میدیا",

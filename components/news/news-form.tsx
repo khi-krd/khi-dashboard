@@ -450,9 +450,17 @@ export function NewsForm({
               </section>
 
               <section className={cn("space-y-4", sectionCard)}>
-                <h2 className={sectionHeading}>
-                  {NS.section.classification}
-                </h2>
+                <div className="flex items-center justify-between gap-2">
+                  <h2 className={sectionHeading}>
+                    {NS.section.classification}
+                  </h2>
+                  <Link
+                    href="/dashboard/taxonomy"
+                    className="text-muted-foreground hover:text-foreground text-xs underline-offset-4 transition-colors hover:underline"
+                  >
+                    {NS.action.manage}
+                  </Link>
+                </div>
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="space-y-3">
                     <Label htmlFor="nf-category">{NS.field.category}</Label>

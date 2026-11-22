@@ -430,9 +430,17 @@ export function ProjectForm({
             </section>
 
             <section className={sectionCard}>
-              <Label className={cn(sectionHeading, "mb-2")}>
-                {NS.section.type}
-              </Label>
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <Label className={sectionHeading}>
+                  {NS.section.type}
+                </Label>
+                <Link
+                  href="/dashboard/taxonomy"
+                  className="text-muted-foreground hover:text-foreground text-xs underline-offset-4 transition-colors hover:underline"
+                >
+                  {NS.action.manage}
+                </Link>
+              </div>
               <ProjectTypeCombobox
                 items={derivedTypes.data ?? []}
                 loading={derivedTypes.isLoading}

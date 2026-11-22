@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import { useMemo, useState } from "react"
 import {
   CheckIcon,
@@ -35,10 +36,12 @@ export function SoundTypeCombobox({
   values,
   onChange,
   error,
+  manageHref,
 }: {
   values: string[]
   onChange: (v: string[]) => void
   error?: string
+  manageHref?: string
 }) {
   const typesQ = useSoundTypesQuery()
   const createMut = useCreateSoundTypeMutation()
@@ -68,9 +71,19 @@ export function SoundTypeCombobox({
 
   return (
     <div className="space-y-2">
-      <Label className="text-muted-foreground text-xs uppercase">
-        {NS.section.type}
-      </Label>
+      <div className="flex items-center justify-between gap-2">
+        <Label className="text-muted-foreground text-xs uppercase">
+          {NS.section.type}
+        </Label>
+        {manageHref ? (
+          <Link
+            href={manageHref}
+            className="text-muted-foreground hover:text-foreground text-xs underline-offset-4 transition-colors hover:underline"
+          >
+            {NS.action.manage}
+          </Link>
+        ) : null}
+      </div>
       {values.length > 0 ? (
         <div className="flex flex-wrap gap-1.5">
           {values.map((v) => (
