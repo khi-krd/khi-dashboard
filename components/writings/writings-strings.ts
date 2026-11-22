@@ -194,6 +194,8 @@ export const NS = {
       keyword: "کلیلەوشە",
     },
     all_writers: "هەموو نووسەران",
+    search_writers: "گەڕان لە نووسەران",
+    no_writers_found: "هیچ نووسەرێک نەدۆزرایەوە",
     all_genres: "هەموو جۆرەکان",
     all_topics: "هەموو بابەتەکان",
     all_languages: "هەموو زمانەکان",
@@ -204,6 +206,7 @@ export const NS = {
     lang_kmr_only: "تەنیا کورمانجی",
     lang_both: "هەردووکیان",
     genre_count: (count: string) => `${count} جۆر`,
+    writer_count: (count: string) => `${count} نووسەر`,
   },
   col: {
     cover: "ڕووکار",

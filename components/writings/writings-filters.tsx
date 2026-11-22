@@ -1,7 +1,7 @@
 "use client"
 
-import { ChevronDownIcon } from "@heroicons/react/24/outline"
-import { useState } from "react"
+import { ChevronDownIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline"
+import { useMemo, useState } from "react"
 
 import { GENRE_LABEL_CKB, NS } from "@/components/writings/writings-strings"
 import {
@@ -147,6 +147,107 @@ function GenresMultiSelect({
   )
 }
 
+function WritersMultiSelect({
+  selected,
+  writers,
+  onChange,
+}: {
+  selected: string[]
+  writers: string[]
+  onChange: (writers: string[]) => void
+}) {
+  const [open, setOpen] = useState(false)
+  const [query, setQuery] = useState("")
+
+  const visible = useMemo(() => {
+    const q = query.trim().toLowerCase()
+    if (!q) return writers
+    return writers.filter((w) => w.toLowerCase().includes(q))
+  }, [query, writers])
+
+  const toggle = (w: string) => {
+    if (selected.includes(w)) {
+      onChange(selected.filter((x) => x !== w))
+    } else {
+      onChange([...selected, w])
+    }
+  }
+
+  const label =
+    selected.length === 0
+      ? NS.filter.all_writers
+      : NS.filter.writer_count(formatCkbDigits(selected.length))
+
+  return (
+    <Popover
+      open={open}
+      onOpenChange={(v) => {
+        setOpen(v)
+        if (!v) setQuery("")
+      }}
+    >
+      <PopoverTrigger
+        render={
+          <button
+            type="button"
+            className={cn(
+              filterSelectTriggerClass(selected.length > 0),
+              "inline-flex w-full items-center justify-between gap-2 md:w-40",
+            )}
+          >
+            <span className="truncate">{label}</span>
+            <ChevronDownIcon className="text-muted-foreground size-4 shrink-0" />
+          </button>
+        }
+      />
+      <PopoverContent dir="rtl" className="w-64 p-2" align="start">
+        <div className="border-border/70 bg-background mb-2 flex h-8 items-center gap-2 rounded-md border px-2">
+          <MagnifyingGlassIcon
+            className="text-muted-foreground size-4 shrink-0"
+            aria-hidden
+          />
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={NS.filter.search_writers}
+            className="h-full min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+          />
+        </div>
+        <div className="max-h-60 space-y-0.5 overflow-y-auto">
+          {visible.map((w) => (
+            <label
+              key={w}
+              className="hover:bg-muted/60 flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm"
+            >
+              <Checkbox
+                checked={selected.includes(w)}
+                onCheckedChange={() => toggle(w)}
+              />
+              <span className="line-clamp-1">{w}</span>
+            </label>
+          ))}
+          {visible.length === 0 ? (
+            <p className="text-muted-foreground px-2 py-3 text-center text-xs">
+              {NS.filter.no_writers_found}
+            </p>
+          ) : null}
+        </div>
+        {selected.length > 0 ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="text-muted-foreground mt-2 h-8 w-full text-xs"
+            onClick={() => onChange([])}
+          >
+            {NS.filter.all_writers}
+          </Button>
+        ) : null}
+      </PopoverContent>
+    </Popover>
+  )
+}
+
 export function WritingsFiltersToolbar({
   search,
   onSearchChange,
@@ -171,9 +272,9 @@ export function WritingsFiltersToolbar({
   onSearchChange: (v: string) => void
   searchMode: WritingsSearchMode
   onSearchModeChange: (mode: WritingsSearchMode) => void
-  writer: string | null
+  writer: string[]
   writers: string[]
-  onWriterChange: (writer: string | null) => void
+  onWriterChange: (writers: string[]) => void
   genres: BookGenre[]
   onGenresChange: (genres: BookGenre[]) => void
   topicId: number | null
@@ -202,27 +303,11 @@ export function WritingsFiltersToolbar({
         }))}
       />
 
-      <Select
-        value={writer ?? "all"}
-        onValueChange={(v) => onWriterChange(v === "all" ? null : v)}
-      >
-        <SelectTrigger
-          dir="rtl"
-          className={cn(filterSelectTriggerClass(writer != null), "md:w-40")}
-        >
-          <SelectValue>
-            {writer ?? NS.filter.all_writers}
-          </SelectValue>
-        </SelectTrigger>
-        <SelectContent dir="rtl">
-          <SelectItem value="all">{NS.filter.all_writers}</SelectItem>
-          {writers.map((w) => (
-            <SelectItem key={w} value={w}>
-              {w}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      <WritersMultiSelect
+        selected={writer}
+        writers={writers}
+        onChange={onWriterChange}
+      />
 
       <GenresMultiSelect selected={genres} onChange={onGenresChange} />
 

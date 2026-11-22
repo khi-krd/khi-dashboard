@@ -142,7 +142,7 @@ function WritingsListClientInner() {
     { id: "date", desc: true },
   ])
 
-  const [writerFilter, setWriterFilter] = useState<string | null>(null)
+  const [writerFilter, setWriterFilter] = useState<string[]>([])
   const [genresFilter, setGenresFilter] = useState<BookGenre[]>([])
   // Re-seeds when ?topic= changes; a manual pick survives an unrelated
   // search-param change because `derive` returns undefined for a blank param.
@@ -306,7 +306,7 @@ function WritingsListClientInner() {
   const showReset =
     searchRaw.trim().length > 0 ||
     searchMode !== "title" ||
-    writerFilter != null ||
+    writerFilter.length > 0 ||
     genresFilter.length > 0 ||
     topicId != null ||
     language !== "all" ||
@@ -314,7 +314,7 @@ function WritingsListClientInner() {
 
   const noExtraFilters =
     searchMode === "title" &&
-    writerFilter == null &&
+    writerFilter.length === 0 &&
     genresFilter.length === 0 &&
     topicId == null &&
     language === "all" &&
@@ -338,7 +338,7 @@ function WritingsListClientInner() {
   const onResetFilters = () => {
     setSearchRaw("")
     setSearchMode("writer")
-    setWriterFilter(null)
+    setWriterFilter([])
     setGenresFilter([])
     setTopicId(null)
     setLanguage("all")

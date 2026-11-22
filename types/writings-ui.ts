@@ -132,11 +132,14 @@ export function matchesWritingGenresFilter(
 
 export function matchesWritingWriterFilter(
   w: WritingDto,
-  writer: string | null,
+  writers: string[],
 ): boolean {
-  if (!writer?.trim()) return true
+  const selected = new Set(writers.map((name) => name.trim()).filter(Boolean))
+  if (selected.size === 0) return true
   return (w.persons ?? []).some(
-    (p) => p.nameCkb?.trim() === writer || p.nameKmr?.trim() === writer,
+    (p) =>
+      selected.has(p.nameCkb?.trim() ?? "") ||
+      selected.has(p.nameKmr?.trim() ?? ""),
   )
 }
 
