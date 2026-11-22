@@ -1,6 +1,10 @@
 "use client"
 
-import { PlusIcon, XMarkIcon } from "@heroicons/react/24/outline"
+import {
+  CheckIcon,
+  PlusIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/outline"
 import Link from "next/link"
 import { useMemo, useState } from "react"
 
@@ -21,12 +25,12 @@ export type PendingTopic = {
 }
 
 /**
- * Topic chips are green everywhere — tinted when offered, solid when picked,
- * dashed for the ones staged for creation on the next save. Same treatment as
- * the writings topic picker and the project-type chips.
+ * Offered chips stay neutral — the only green a chip ever shows is the solid
+ * selected state (with a check), so "available" can never be mistaken for
+ * "chosen". Staged-for-creation chips stay dashed green.
  */
 const TOPIC_CHIP = {
-  pill: "bg-emerald-500/10 text-emerald-700 border-emerald-500/20 dark:text-emerald-400",
+  pill: "bg-muted/50 text-muted-foreground border-border hover:bg-muted hover:text-foreground",
   selected:
     "bg-emerald-600 text-white border-emerald-600 dark:bg-emerald-700 dark:border-emerald-700",
   pending:
@@ -143,9 +147,12 @@ export function MultiTopicCombobox({
                 title={t.nameKmr || undefined}
                 className={cn(
                   CHIP_BASE,
-                  isOn ? TOPIC_CHIP.selected : cn(TOPIC_CHIP.pill, "opacity-80"),
+                  isOn ? TOPIC_CHIP.selected : TOPIC_CHIP.pill,
                 )}
               >
+                {isOn ? (
+                  <CheckIcon className="size-3" aria-hidden />
+                ) : null}
                 {topicLabel(t, `#${t.id}`)}
               </button>
             )
