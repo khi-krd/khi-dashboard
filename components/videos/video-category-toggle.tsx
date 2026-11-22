@@ -15,6 +15,7 @@ export function VideoCategoryToggle({
       kind="video-categories"
       value={value}
       onChange={onChange}
+      manageHref="/dashboard/taxonomy?tab=videos"
     />
   )
 }

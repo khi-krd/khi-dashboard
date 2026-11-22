@@ -1,5 +1,11 @@
+import { Suspense } from "react"
+
 import { TaxonomyClient } from "@/components/taxonomy/taxonomy-client"
 
 export default function TaxonomyPage() {
-  return <TaxonomyClient />
+  return (
+    <Suspense>
+      <TaxonomyClient />
+    </Suspense>
+  )
 }

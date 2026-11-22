@@ -24,6 +24,7 @@ export const MO = {
     moveUp: "بۆ سەرەوە",
     moveDown: "بۆ خوارەوە",
     manage: "بەڕێوەبردن",
+    clear: "لابردن",
   },
   field: {
     nameCkb: "ناو (سۆرانی)",

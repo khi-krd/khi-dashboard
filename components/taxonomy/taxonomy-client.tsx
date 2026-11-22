@@ -5,6 +5,7 @@ import {
   PlusIcon,
   TrashIcon,
 } from "@heroicons/react/24/outline"
+import { useSearchParams } from "next/navigation"
 import { useState } from "react"
 import { toast } from "sonner"
 
@@ -193,7 +194,14 @@ function TypePanel({
   )
 }
 
+const TAXONOMY_TABS = ["news", "projects", "sounds", "videos", "offices"]
+
 export function TaxonomyClient() {
+  const tabParam = useSearchParams().get("tab")
+  const [tab, setTab] = useState(
+    tabParam && TAXONOMY_TABS.includes(tabParam) ? tabParam : "news",
+  )
+
   const newsQ = useNewsTaxonomyQuery()
   const typesQ = useProjectTypesQuery()
   const soundTypesQ = useSoundTypesQuery()
@@ -464,7 +472,7 @@ export function TaxonomyClient() {
         </p>
       </header>
 
-      <Tabs defaultValue="news" className="w-full">
+      <Tabs value={tab} onValueChange={setTab} className="w-full">
         <TabsList>
           <TabsTrigger value="news">{TX.tabs.news}</TabsTrigger>
           <TabsTrigger value="projects">{TX.tabs.projects}</TabsTrigger>

@@ -1,6 +1,12 @@
 "use client"
 
-import { CheckIcon, PlusIcon, XMarkIcon } from "@heroicons/react/24/outline"
+import {
+  CheckIcon,
+  Cog6ToothIcon,
+  PlusIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/outline"
+import Link from "next/link"
 import { useState } from "react"
 import { toast } from "sonner"
 
@@ -35,11 +41,13 @@ export function ManagedOptionSegments({
   value,
   onChange,
   showKmr,
+  manageHref,
 }: {
   kind: ManagedOptionKind
   value: number | null
   onChange: (id: number | null) => void
   showKmr?: boolean
+  manageHref?: string
 }) {
   const listQ = useManagedOptionsQuery(kind, false)
   const createMut = useCreateManagedOption(kind)
@@ -90,7 +98,9 @@ export function ManagedOptionSegments({
               key={o.id}
               type="button"
               aria-pressed={on}
-              onClick={() => onChange(on ? null : (o.id ?? null))}
+              onClick={() => {
+                if (!on) onChange(o.id ?? null)
+              }}
               className={cn(SEGMENT, on ? SEGMENT_ON : SEGMENT_OFF)}
             >
               {showKmr && o.nameKmr && o.nameKmr !== o.nameCkb ? (
@@ -106,6 +116,17 @@ export function ManagedOptionSegments({
             </button>
           )
         })}
+        {value != null ? (
+          <button
+            type="button"
+            aria-label={MO.action.clear}
+            title={MO.action.clear}
+            onClick={() => onChange(null)}
+            className={cn(SEGMENT, "px-3", SEGMENT_OFF)}
+          >
+            <XMarkIcon className="size-4" aria-hidden />
+          </button>
+        ) : null}
         <button
           type="button"
           aria-label={MO.action.new}
@@ -163,6 +184,16 @@ export function ManagedOptionSegments({
             <XMarkIcon className="size-4" aria-hidden />
           </button>
         </div>
+      ) : null}
+
+      {manageHref ? (
+        <Link
+          href={manageHref}
+          className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 text-xs underline-offset-4 transition-colors hover:underline"
+        >
+          <Cog6ToothIcon className="size-3.5" aria-hidden />
+          {MO.action.manage}
+        </Link>
       ) : null}
     </div>
   )
