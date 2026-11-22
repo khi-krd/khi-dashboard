@@ -28,6 +28,7 @@ export function normalizeSiteSettingsDto(raw: unknown): SiteSettingsDto {
   return {
     id: coerceNum(o.id),
     logoUrl: coerceStr(o.logoUrl) ?? coerceStr(o.logo_url),
+    aboutLogoUrl: coerceStr(o.aboutLogoUrl) ?? coerceStr(o.about_logo_url),
     donateImageUrl:
       coerceStr(o.donateImageUrl) ?? coerceStr(o.donate_image_url),
     ckbFontUrl: coerceStr(o.ckbFontUrl) ?? coerceStr(o.ckb_font_url),

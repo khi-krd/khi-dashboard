@@ -10,6 +10,8 @@ export type SiteSettingsDto = {
   id: number | null
   /** Header and footer logo. `null` → the website uses its bundled logo. */
   logoUrl: string | null
+  /** Logo beside the about-page text. `null` → the website shows `logoUrl`. */
+  aboutLogoUrl: string | null
   /** Donate band photograph. `null` → the band renders on plain dark ground. */
   donateImageUrl: string | null
   /**
@@ -54,6 +56,7 @@ export type SiteSettingsDto = {
  */
 export type SiteSettingsPayload = {
   logoUrl?: string
+  aboutLogoUrl?: string
   donateImageUrl?: string
   ckbFontUrl?: string
   ckbFontName?: string

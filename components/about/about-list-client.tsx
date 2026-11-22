@@ -7,6 +7,7 @@ import {
   AboutBreadcrumbBar,
   dashboardAboutCrumbHref,
 } from "@/components/about/about-breadcrumb"
+import { AboutLogoSectionCard } from "@/components/about/about-logo-section-card"
 import { AboutContentSectionCard } from "@/components/about/about-content-section-card"
 import { AboutFounderSectionCard } from "@/components/about/about-founder-section-card"
 import { AboutPageHeroEditor } from "@/components/about/about-page-hero-editor"
@@ -165,18 +166,19 @@ function AboutListClientInner() {
                 <h2 className="text-base font-semibold">{NS.page.sectionsTitle}</h2>
               </div>
               <div className="space-y-3">
+                <AboutLogoSectionCard index={0} />
                 <AboutContentSectionCard
-                  index={0}
-                  aboutDto={aboutRecord}
-                  onSaved={handleSaved}
-                />
-                <AboutFounderSectionCard
                   index={1}
                   aboutDto={aboutRecord}
                   onSaved={handleSaved}
                 />
-                <AboutTeamSectionCard index={2} />
-                <AboutPartnersSectionCard index={3} />
+                <AboutFounderSectionCard
+                  index={2}
+                  aboutDto={aboutRecord}
+                  onSaved={handleSaved}
+                />
+                <AboutTeamSectionCard index={3} />
+                <AboutPartnersSectionCard index={4} />
               </div>
             </div>
           ) : !listQuery.isLoading ? (
