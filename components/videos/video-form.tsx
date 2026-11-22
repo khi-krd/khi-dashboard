@@ -34,7 +34,7 @@ import { DraftStatus } from "@/components/shared/draft-status"
 import { TiptapEditor } from "@/components/shared/tiptap-editor-lazy"
 import { UploadProgressLine } from "@/components/shared/upload-progress-line"
 import { VideoTopicCombobox } from "@/components/videos/video-topic-combobox"
-import { WritingManagedOptionSelect } from "@/components/writings/writing-managed-option-select"
+import { VideoCategoryToggle } from "@/components/videos/video-category-toggle"
 import { VideoTypeToggle } from "@/components/videos/video-type-toggle"
 import { VideosErrorState } from "@/components/videos/video-error-state"
 import { NS } from "@/components/videos/videos-strings"
@@ -430,17 +430,14 @@ export function VideoForm({
               />
             </div>
 
-            <section className={cn(sectionCard, "mb-6")}>
-              <WritingManagedOptionSelect
-                kind="video-categories"
+            <div className="mb-6">
+              <VideoCategoryToggle
                 value={watch("categoryId") ?? null}
                 onChange={(id) =>
                   setValue("categoryId", id, { shouldDirty: true })
                 }
-                label={NS.section.category}
-                manageHref="/dashboard/taxonomy"
               />
-            </section>
+            </div>
 
             <div className="mb-6 flex flex-wrap gap-2">
               {(["CKB", "KMR"] as const).map((code) => (
