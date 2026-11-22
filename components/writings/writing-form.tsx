@@ -23,7 +23,8 @@ import {
 } from "@/components/writings/writing-breadcrumb"
 import { WritingAudioCdSection } from "@/components/writings/writing-audio-cd-section"
 import { WritingBookFileUploader } from "@/components/writings/writing-book-file-uploader"
-import { WritingBookLanguageSelect } from "@/components/writings/writing-book-language-select"
+import { ManagedOptionSegments } from "@/components/shared/managed-option-segments"
+import { MO } from "@/components/writings/options/managed-options-strings"
 import { WritingBookSearchSelect } from "@/components/writings/writing-book-search-select"
 import { WritingCoverTrio } from "@/components/writings/writing-cover-trio"
 import { WritingErrorState } from "@/components/writings/writing-error-state"
@@ -493,17 +494,24 @@ export function WritingForm({
             </section>
 
             <section className={cn(sectionCard, "space-y-3")}>
-              <Label className="text-muted-foreground block text-xs uppercase">
-                {NS.section.book_language}
-              </Label>
-              <WritingBookLanguageSelect
+              <div className="flex items-center justify-between gap-2">
+                <Label className="text-muted-foreground text-xs uppercase">
+                  {NS.section.book_language}
+                </Label>
+                <Link
+                  href="/dashboard/writings/options?tab=book-languages"
+                  className="text-muted-foreground hover:text-foreground text-xs underline-offset-4 transition-colors hover:underline"
+                >
+                  {MO.action.manage}
+                </Link>
+              </div>
+              <ManagedOptionSegments
+                kind="book-languages"
                 value={watch("bookLanguageId") ?? null}
                 onChange={(id) =>
                   setValue("bookLanguageId", id, { shouldDirty: true })
                 }
-                label={NS.section.book_language}
-                placeholder={NS.field.book_language_ph}
-                manageHref="/dashboard/writings/options?tab=book-languages"
+                showKmr
               />
             </section>
 
