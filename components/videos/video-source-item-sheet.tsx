@@ -11,10 +11,12 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@/components/reui/alert"
+import { useState } from "react"
 import { useSyncedState } from "@/hooks/use-synced-state"
 import { useObjectUrl } from "@/hooks/use-object-url"
 import { VideoMetadataGrid } from "@/components/videos/video-metadata-grid"
 import { VideoPlayerBlock } from "@/components/videos/video-player-block"
+import { TiptapEditor } from "@/components/shared/tiptap-editor-lazy"
 import { NS } from "@/components/videos/videos-strings"
 import { Button } from "@/components/ui/button"
 import {
@@ -75,6 +77,7 @@ export function VideoSourceItemSheet({
     () => (source ? modeForSource(source) : undefined),
     () => modeForSource(source),
   )
+  const [tab, setTab] = useState<"CKB" | "KMR">("CKB")
   const localPreview = useObjectUrl(draft?.stagedVideoFile)
 
 
@@ -311,6 +314,57 @@ export function VideoSourceItemSheet({
               }}
             />
           ) : null}
+
+          <div className="flex gap-4 border-b border-border/60">
+            {(["CKB", "KMR"] as const).map((code) => (
+              <button
+                key={code}
+                type="button"
+                onClick={() => setTab(code)}
+                className={cn(
+                  "-mb-px pb-2 text-sm",
+                  tab === code
+                    ? "border-primary border-b-2 font-medium"
+                    : "text-muted-foreground",
+                )}
+              >
+                {code === "CKB" ? NS.lang.ckb : NS.lang.kmr}
+              </button>
+            ))}
+          </div>
+          {tab === "CKB" ? (
+            <>
+              <Input
+                value={draft.titleCkb ?? ""}
+                onChange={(e) => patch({ titleCkb: e.target.value })}
+                placeholder={NS.field.title_ckb}
+              />
+              <TiptapEditor
+                entity="videos"
+                lang="CKB"
+                contentMinHeightClass="min-h-[160px]"
+                placeholder={NS.field.body_ckb}
+                value={draft.descriptionCkb ?? ""}
+                onChange={(html) => patch({ descriptionCkb: html })}
+              />
+            </>
+          ) : (
+            <>
+              <Input
+                value={draft.titleKmr ?? ""}
+                onChange={(e) => patch({ titleKmr: e.target.value })}
+                placeholder={NS.field.title_kmr}
+              />
+              <TiptapEditor
+                entity="videos"
+                lang="KMR"
+                contentMinHeightClass="min-h-[160px]"
+                placeholder={NS.field.body_kmr}
+                value={draft.descriptionKmr ?? ""}
+                onChange={(html) => patch({ descriptionKmr: html })}
+              />
+            </>
+          )}
 
           <p className="text-muted-foreground text-xs">
             {NS.source.metadata_manual}

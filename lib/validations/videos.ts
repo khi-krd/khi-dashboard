@@ -22,6 +22,10 @@ export const VideoSourceFormSchema = z.object({
   label: z.string().max(300).optional(),
   labelCkb: z.string().max(300).optional(),
   labelKmr: z.string().max(300).optional(),
+  titleCkb: z.string().max(300).optional(),
+  titleKmr: z.string().max(300).optional(),
+  descriptionCkb: z.string().optional(),
+  descriptionKmr: z.string().optional(),
   durationSeconds: z.preprocess(
     nanToUndefined,
     z.number().int().min(0).optional().nullable(),
@@ -176,7 +180,7 @@ export function videoDtoToFormValues(d: import("@/types/videos").VideoDto): Vide
       : null
 
   const dtoSources = d.videoSources ?? []
-  const legacySources =
+  const legacySources: import("@/types/videos").VideoSourceDto[] =
     dtoSources.length === 0 &&
     (d.sourceUrl?.trim() || d.sourceExternalUrl?.trim() || d.sourceEmbedUrl?.trim())
       ? [
@@ -189,9 +193,6 @@ export function videoDtoToFormValues(d: import("@/types/videos").VideoDto): Vide
             labelCkb: "",
             labelKmr: "",
             durationSeconds: d.durationSeconds ?? null,
-            resolution: d.resolution ?? "",
-            fileFormat: d.fileFormat ?? "",
-            fileSizeMb: d.fileSizeMb ?? null,
           },
         ]
       : dtoSources
@@ -240,6 +241,10 @@ export function videoDtoToFormValues(d: import("@/types/videos").VideoDto): Vide
       label: s.label ?? "",
       labelCkb: s.labelCkb ?? "",
       labelKmr: s.labelKmr ?? "",
+      titleCkb: s.titleCkb ?? "",
+      titleKmr: s.titleKmr ?? "",
+      descriptionCkb: s.descriptionCkb ?? "",
+      descriptionKmr: s.descriptionKmr ?? "",
       durationSeconds: s.durationSeconds ?? null,
       resolution: "",
       fileFormat: "",

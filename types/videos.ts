@@ -18,6 +18,10 @@ export type VideoSourceDto = {
   label?: string | null
   labelCkb?: string | null
   labelKmr?: string | null
+  titleCkb?: string | null
+  titleKmr?: string | null
+  descriptionCkb?: string | null
+  descriptionKmr?: string | null
   durationSeconds?: number | null
 }
 

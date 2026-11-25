@@ -38,7 +38,12 @@ export function VideoSourceCard({
   const style = { transform: CSS.Transform.toString(transform), transition }
 
   const label =
-    source.labelCkb?.trim() || source.label?.trim() || source.labelKmr?.trim() || NS.source.no_label
+    source.titleCkb?.trim() ||
+    source.labelCkb?.trim() ||
+    source.label?.trim() ||
+    source.labelKmr?.trim() ||
+    source.titleKmr?.trim() ||
+    NS.source.no_label
   const localPreview = useObjectUrl(source.stagedVideoFile)
 
 

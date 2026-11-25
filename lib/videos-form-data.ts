@@ -138,6 +138,10 @@ export function videoFormValuesToMultipart(
         label: trimOrUndef(s.labelCkb) ?? trimOrUndef(s.label) ?? trimOrUndef(s.labelKmr),
         labelCkb: trimOrUndef(s.labelCkb) ?? trimOrUndef(s.label),
         labelKmr: trimOrUndef(s.labelKmr),
+        titleCkb: trimOrUndef(s.titleCkb),
+        titleKmr: trimOrUndef(s.titleKmr),
+        descriptionCkb: s.descriptionCkb?.trim() || undefined,
+        descriptionKmr: s.descriptionKmr?.trim() || undefined,
         durationSeconds: s.durationSeconds ?? undefined,
       }))
 
