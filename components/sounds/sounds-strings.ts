@@ -200,6 +200,7 @@ export const NS = {
     duration: "ماوە",
     duration_unit: "چرکە",
     size: "قەبارە",
+    size_unit_mb: "MB",
     bit_rate: "بایترەیت",
     bit_rate_placeholder: "بۆ نموونە: 320 kbps، 24-bit",
     sample_rate: "ڕێژەی نموونە",

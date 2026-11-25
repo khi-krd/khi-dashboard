@@ -193,6 +193,9 @@ export function videoDtoToFormValues(d: import("@/types/videos").VideoDto): Vide
             labelCkb: "",
             labelKmr: "",
             durationSeconds: d.durationSeconds ?? null,
+            resolution: d.resolution ?? "",
+            fileFormat: d.fileFormat ?? "",
+            fileSizeMb: d.fileSizeMb ?? null,
           },
         ]
       : dtoSources
@@ -246,9 +249,9 @@ export function videoDtoToFormValues(d: import("@/types/videos").VideoDto): Vide
       descriptionCkb: s.descriptionCkb ?? "",
       descriptionKmr: s.descriptionKmr ?? "",
       durationSeconds: s.durationSeconds ?? null,
-      resolution: "",
-      fileFormat: "",
-      fileSizeMb: null,
+      resolution: s.resolution ?? "",
+      fileFormat: s.fileFormat ?? "",
+      fileSizeMb: s.fileSizeMb ?? null,
       stagedVideoFile: null,
     })),
     sourcesTouched: false,

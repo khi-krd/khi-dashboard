@@ -384,6 +384,11 @@ export function VideoForm({
                   resolution={watch("resolution") ?? ""}
                   fileFormat={watch("fileFormat") ?? ""}
                   fileSizeMb={watch("fileSizeMb")}
+                  onChange={(p) => {
+                    for (const [k, v] of Object.entries(p)) {
+                      setValue(k as "durationSeconds" | "resolution" | "fileFormat" | "fileSizeMb", v, { shouldDirty: true })
+                    }
+                  }}
                 />
               </section>
             ) : null}

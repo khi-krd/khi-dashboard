@@ -7,6 +7,10 @@ import { useFieldArray, useFormContext } from "react-hook-form"
 import { SoundFileBrochures } from "@/components/sounds/sound-file-brochures"
 import { SoundSourcePanel } from "@/components/sounds/sound-source-panel"
 import { NS } from "@/components/sounds/sounds-strings"
+import {
+  DurationInput,
+  useMetaText,
+} from "@/components/videos/video-metadata-grid"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -17,11 +21,40 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet"
-import { formatBytes, formatDuration } from "@/lib/sound-format"
+import { cn } from "@/lib/utils"
 import type {
   SoundFileFormValues,
   SoundFormValues,
 } from "@/lib/validations/sounds"
+
+/** File size is stored in bytes; the editor works in MB. */
+function SizeBytesInput({
+  value,
+  onChange,
+}: {
+  value: number | null | undefined
+  onChange: (v: number | null) => void
+}) {
+  const { text, onText } = useMetaText(
+    value && value > 0 ? value : null,
+    (bytes) => String(Math.round((bytes / 1048576) * 100) / 100),
+    (t) => {
+      const mb = parseFloat(t)
+      return Number.isFinite(mb) && mb >= 0 ? Math.round(mb * 1048576) : null
+    },
+    onChange,
+  )
+  return (
+    <Input
+      dir="ltr"
+      inputMode="decimal"
+      className="h-8 font-mono text-xs"
+      placeholder="0"
+      value={text}
+      onChange={(e) => onText(e.target.value)}
+    />
+  )
+}
 
 export function SoundFileSheet({
   open,
@@ -116,9 +149,10 @@ export function SoundFileSheet({
           <SoundSourcePanel file={draft} onChange={patch} />
 
           {/*
-            Technical metadata is calculated automatically — from the staged
-            file in the browser, then re-verified server-side with ffprobe on
-            upload — so these fields are read-only.
+            Technical metadata auto-fills from a staged file (browser probe,
+            re-verified server-side with ffprobe on upload). For link/embed
+            sources there is nothing to probe, so every field stays editable —
+            manual values are the server's documented fallback.
           */}
           <section className="space-y-3">
             <h3 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
@@ -127,33 +161,59 @@ export function SoundFileSheet({
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
                 <Label className="text-xs">{NS.field.duration}</Label>
-                <p className="bg-muted/50 flex h-8 items-center rounded-md px-2 font-mono text-xs">
-                  {formatDuration(draft.durationSeconds)}
-                </p>
+                <DurationInput
+                  value={draft.durationSeconds}
+                  onChange={(v) => patch({ durationSeconds: v ?? 0 })}
+                />
               </div>
               <div className="space-y-1">
-                <Label className="text-xs">{NS.field.size}</Label>
-                <p className="bg-muted/50 flex h-8 items-center rounded-md px-2 font-mono text-xs">
-                  {formatBytes(draft.sizeBytes)}
-                </p>
+                <Label className="text-xs">
+                  {NS.field.size} ({NS.field.size_unit_mb})
+                </Label>
+                <SizeBytesInput
+                  value={draft.sizeBytes}
+                  onChange={(v) => patch({ sizeBytes: v ?? 0 })}
+                />
               </div>
               <div className="space-y-1">
                 <Label className="text-xs">{NS.field.bit_rate}</Label>
-                <p className="bg-muted/50 flex h-8 items-center rounded-md px-2 font-mono text-xs">
-                  {draft.bitRate?.trim() || "—"}
-                </p>
+                <Input
+                  dir="ltr"
+                  className="h-8 font-mono text-xs"
+                  placeholder={NS.field.bit_rate_placeholder}
+                  value={draft.bitRate ?? ""}
+                  onChange={(e) => patch({ bitRate: e.target.value })}
+                />
               </div>
               <div className="space-y-1">
                 <Label className="text-xs">{NS.field.sample_rate}</Label>
-                <p className="bg-muted/50 flex h-8 items-center rounded-md px-2 font-mono text-xs">
-                  {draft.sampleRate?.trim() || "—"}
-                </p>
+                <Input
+                  dir="ltr"
+                  className="h-8 font-mono text-xs"
+                  placeholder={NS.field.sample_rate_placeholder}
+                  value={draft.sampleRate ?? ""}
+                  onChange={(e) => patch({ sampleRate: e.target.value })}
+                />
               </div>
               <div className="space-y-1">
                 <Label className="text-xs">{NS.field.audio_channel}</Label>
-                <p className="bg-muted/50 flex h-8 items-center rounded-md px-2 font-mono text-xs">
-                  {draft.audioChannel === "MONO" ? NS.channel.mono : NS.channel.stereo}
-                </p>
+                <div className="bg-muted/50 inline-flex rounded-lg p-0.5">
+                  {(["STEREO", "MONO"] as const).map((ch) => (
+                    <button
+                      key={ch}
+                      type="button"
+                      onClick={() => patch({ audioChannel: ch })}
+                      className={cn(
+                        "rounded-md px-3 py-1 font-mono text-xs transition-colors",
+                        (draft.audioChannel ?? "STEREO") === ch
+                          ? "bg-background text-foreground shadow-sm"
+                          : "text-muted-foreground",
+                      )}
+                    >
+                      {ch === "MONO" ? NS.channel.mono : NS.channel.stereo}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           </section>

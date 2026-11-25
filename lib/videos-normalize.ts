@@ -59,6 +59,9 @@ function normalizeVideoSource(raw: unknown): VideoSourceDto {
       coerceStr(o.descriptionKmr) ?? coerceStr(o.description_kmr),
     durationSeconds:
       coerceNum(o.durationSeconds) ?? coerceNum(o.duration_seconds),
+    resolution: coerceStr(o.resolution),
+    fileFormat: coerceStr(o.fileFormat) ?? coerceStr(o.file_format),
+    fileSizeMb: coerceNum(o.fileSizeMb) ?? coerceNum(o.file_size_mb),
   }
 }
 

@@ -374,6 +374,7 @@ export function VideoSourceItemSheet({
             resolution={draft.resolution ?? ""}
             fileFormat={draft.fileFormat ?? ""}
             fileSizeMb={draft.fileSizeMb}
+            onChange={patch}
           />
         </div>
         <SheetFooter className="flex-row justify-between gap-2 sm:justify-between">

@@ -143,6 +143,9 @@ export function videoFormValuesToMultipart(
         descriptionCkb: s.descriptionCkb?.trim() || undefined,
         descriptionKmr: s.descriptionKmr?.trim() || undefined,
         durationSeconds: s.durationSeconds ?? undefined,
+        resolution: trimOrUndef(s.resolution),
+        fileFormat: trimOrUndef(s.fileFormat),
+        fileSizeMb: s.fileSizeMb ?? undefined,
       }))
 
       const mainIdx = payload.videoSources.findIndex((s) => s.main)

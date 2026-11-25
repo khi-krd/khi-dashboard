@@ -10,6 +10,27 @@ export function formatDuration(seconds: number | null | undefined): string {
   return `${pad(m)}:${pad(s)}`
 }
 
+/**
+ * Parse a typed duration into whole seconds. Accepts "MM:SS", "HH:MM:SS" or a
+ * bare second count ("754"); returns null for blank/invalid input.
+ */
+export function parseDuration(input: string | null | undefined): number | null {
+  const t = input?.trim()
+  if (!t) return null
+  const parts = t.split(":")
+  if (parts.length > 3) return null
+  const nums = parts.map((p) => p.trim())
+  if (nums.some((p) => !/^\d+$/.test(p))) return null
+  if (parts.length > 1 && nums.slice(1).some((p) => p.length !== 2)) return null
+  const seconds =
+    nums.length === 3
+      ? +nums[0] * 3600 + +nums[1] * 60 + +nums[2]
+      : nums.length === 2
+        ? +nums[0] * 60 + +nums[1]
+        : +nums[0]
+  return Number.isFinite(seconds) && seconds >= 0 ? seconds : null
+}
+
 /** Format file size in MB; auto-switch to GB when >= 1024 MB. */
 export function formatFileSizeMb(mb: number | null | undefined): string {
   if (mb == null || !Number.isFinite(mb) || mb < 0) return "—"

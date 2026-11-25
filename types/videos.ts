@@ -23,6 +23,9 @@ export type VideoSourceDto = {
   descriptionCkb?: string | null
   descriptionKmr?: string | null
   durationSeconds?: number | null
+  resolution?: string | null
+  fileFormat?: string | null
+  fileSizeMb?: number | null
 }
 
 export type VideoClipItemDto = {
