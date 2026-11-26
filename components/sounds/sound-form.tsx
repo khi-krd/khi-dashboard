@@ -414,9 +414,11 @@ export function SoundForm({
           <div dir="rtl" className="mx-auto w-full min-w-0 max-w-[860px] space-y-0">
             <div className="mb-6">
               <SoundStateToggle
-                value={trackState}
+                value={watch("stateOptionId") ?? null}
+                trackState={trackState}
                 editMode={mode === "edit"}
-                onChange={(v) => {
+                onChange={(id, v) => {
+                  setValue("stateOptionId", id, { shouldDirty: true })
                   setValue("trackState", v, { shouldDirty: true })
                 }}
               />

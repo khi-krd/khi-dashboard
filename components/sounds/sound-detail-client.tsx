@@ -215,7 +215,11 @@ function SoundDetailLoaded({
           dir="rtl"
           className="border-border bg-card space-y-6 self-start rounded-xl border p-6 text-sm xl:sticky xl:top-20"
         >
-          <SoundStatePill trackState={sound.trackState} size="large" />
+          <SoundStatePill
+            trackState={sound.trackState}
+            name={sound.stateOption?.nameCkb}
+            size="large"
+          />
           <p className="text-muted-foreground text-xs">
             {sound.trackState === "SINGLE"
               ? NS.state.context.single
@@ -375,7 +379,11 @@ function SoundDetailLoaded({
           className="mx-auto w-full max-w-[860px] px-6 pb-12 pt-8"
         >
           <div className="text-muted-foreground mb-6 flex flex-wrap items-center text-xs">
-            <SoundStatePill trackState={sound.trackState} className="w-auto" />
+            <SoundStatePill
+              trackState={sound.trackState}
+              name={sound.stateOption?.nameCkb}
+              className="w-auto"
+            />
             {statusParts.map((p, i) => (
               <span key={i} className="inline-flex items-center">
                 <MetaDot />

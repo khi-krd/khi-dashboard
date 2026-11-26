@@ -51,11 +51,14 @@ import type {
 } from "@/types/taxonomy"
 
 type NamedTarget = { id: number; nameCkb: string; nameKmr: string }
-type TypeRow = NamedTarget & { count: number }
+type TypeRow = NamedTarget & { count: number; locked?: boolean }
 
 /** The free-text "type" vocabularies — projects, sound tracks, contact offices,
  * plus the managed video_categories vocabulary. */
-type VocabKind = "project" | "sound" | "office" | "video"
+type VocabKind = "project" | "sound" | "office" | "video" | "soundState"
+
+/** Seeded rows that back the editor layout — rename only, never delete. */
+const LOCKED_SLUGS = new Set(["FILM", "VIDEO_CLIP", "SINGLE", "MULTI"])
 
 type NameDialogState =
   | { kind: "category"; mode: "create" }
@@ -86,7 +89,7 @@ function RowActions({
   onDelete,
 }: {
   onEdit?: () => void
-  onDelete: () => void
+  onDelete?: () => void
 }) {
   return (
     <div className="flex shrink-0 items-center justify-end gap-1">
@@ -102,16 +105,22 @@ function RowActions({
           {TX.action.edit}
         </Button>
       ) : null}
-      <Button
-        type="button"
-        variant="ghost"
-        size="sm"
-        className="text-destructive hover:bg-destructive/10 gap-1"
-        onClick={onDelete}
-      >
-        <TrashIcon className="size-4" />
-        {TX.action.delete}
-      </Button>
+      {onDelete ? (
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="text-destructive hover:bg-destructive/10 gap-1"
+          onClick={onDelete}
+        >
+          <TrashIcon className="size-4" />
+          {TX.action.delete}
+        </Button>
+      ) : (
+        <span className="text-muted-foreground px-2 text-xs">
+          {TX.delete.locked}
+        </span>
+      )}
     </div>
   )
 }
@@ -184,7 +193,7 @@ function TypePanel({
                     nameKmr: t.nameKmr,
                   })
                 }
-                onDelete={() => onDelete(t)}
+                onDelete={t.locked ? undefined : () => onDelete(t)}
               />
             </li>
           ))}
@@ -194,7 +203,14 @@ function TypePanel({
   )
 }
 
-const TAXONOMY_TABS = ["news", "projects", "sounds", "videos", "offices"]
+const TAXONOMY_TABS = [
+  "news",
+  "projects",
+  "sounds",
+  "sound-states",
+  "videos",
+  "offices",
+]
 
 export function TaxonomyClient() {
   const tabParam = useSearchParams().get("tab")
@@ -227,6 +243,10 @@ export function TaxonomyClient() {
   const createVideoCatMut = useCreateManagedOption("video-categories")
   const updateVideoCatMut = useUpdateManagedOption("video-categories")
   const deleteVideoCatMut = useDeleteManagedOption("video-categories")
+  const soundStatesQ = useManagedOptionsQuery("sound-states")
+  const createSoundStateMut = useCreateManagedOption("sound-states")
+  const updateSoundStateMut = useUpdateManagedOption("sound-states")
+  const deleteSoundStateMut = useDeleteManagedOption("sound-states")
 
   const [nameDialog, setNameDialog] = useState<NameDialogState>(null)
   const [deleteState, setDeleteState] = useState<DeleteState>(null)
@@ -236,6 +256,23 @@ export function TaxonomyClient() {
   const soundTypes = soundTypesQ.data ?? []
   const officeTypes = officeTypesQ.data ?? []
   const videoCats = videoCatsQ.data ?? []
+  const soundStates = soundStatesQ.data ?? []
+
+  /** The two BookGenreDto-shaped vocabularies (video types, sound states). */
+  const managed = {
+    video: {
+      rows: videoCats,
+      create: createVideoCatMut,
+      update: updateVideoCatMut,
+      remove: deleteVideoCatMut,
+    },
+    soundState: {
+      rows: soundStates,
+      create: createSoundStateMut,
+      update: updateSoundStateMut,
+      remove: deleteSoundStateMut,
+    },
+  } as const
 
   const typeMuts = {
     project: {
@@ -267,7 +304,9 @@ export function TaxonomyClient() {
     createOfficeTypeMut.isPending ||
     updateOfficeTypeMut.isPending ||
     createVideoCatMut.isPending ||
-    updateVideoCatMut.isPending
+    updateVideoCatMut.isPending ||
+    createSoundStateMut.isPending ||
+    updateSoundStateMut.isPending
 
   const deletePending =
     deleteCatMut.isPending ||
@@ -275,7 +314,8 @@ export function TaxonomyClient() {
     deleteTypeMut.isPending ||
     deleteSoundTypeMut.isPending ||
     deleteOfficeTypeMut.isPending ||
-    deleteVideoCatMut.isPending
+    deleteVideoCatMut.isPending ||
+    deleteSoundStateMut.isPending
 
   function nameDialogTitle(d: NonNullable<NameDialogState>): string {
     if (d.kind === "category")
@@ -299,6 +339,10 @@ export function TaxonomyClient() {
       video: {
         create: TX.dialog.create_video_category,
         edit: TX.dialog.edit_video_category,
+      },
+      soundState: {
+        create: TX.dialog.create_sound_state,
+        edit: TX.dialog.edit_sound_state,
       },
     }
     return titles[d.vocab][d.mode]
@@ -353,8 +397,11 @@ export function TaxonomyClient() {
           onError,
         },
       )
-    } else if (d.vocab === "video" && d.mode === "create") {
-      createVideoCatMut.mutate(
+    } else if (
+      (d.vocab === "video" || d.vocab === "soundState") &&
+      d.mode === "create"
+    ) {
+      managed[d.vocab].create.mutate(
         {
           slug: "",
           nameCkb: payload.nameCkb?.trim() || null,
@@ -370,9 +417,12 @@ export function TaxonomyClient() {
           onError,
         },
       )
-    } else if (d.vocab === "video" && d.mode === "edit") {
-      const row = videoCats.find((r) => r.id === d.target.id)
-      updateVideoCatMut.mutate(
+    } else if (
+      (d.vocab === "video" || d.vocab === "soundState") &&
+      d.mode === "edit"
+    ) {
+      const row = managed[d.vocab].rows.find((r) => r.id === d.target.id)
+      managed[d.vocab].update.mutate(
         {
           id: d.target.id,
           payload: row
@@ -396,7 +446,11 @@ export function TaxonomyClient() {
           onError,
         },
       )
-    } else if (d.vocab !== "video" && d.mode === "create") {
+    } else if (
+      d.vocab !== "video" &&
+      d.vocab !== "soundState" &&
+      d.mode === "create"
+    ) {
       typeMuts[d.vocab].create.mutate(payload, {
         onSuccess: () => {
           toast.success(TX.toast.created)
@@ -404,7 +458,11 @@ export function TaxonomyClient() {
         },
         onError,
       })
-    } else if (d.vocab !== "video" && d.mode === "edit") {
+    } else if (
+      d.vocab !== "video" &&
+      d.vocab !== "soundState" &&
+      d.mode === "edit"
+    ) {
       typeMuts[d.vocab].update.mutate(
         { id: d.target.id, payload },
         {
@@ -438,6 +496,7 @@ export function TaxonomyClient() {
     if (vocab === "project") return TX.unit.project
     if (vocab === "sound") return TX.unit.sound
     if (vocab === "video") return TX.unit.video
+    if (vocab === "soundState") return TX.unit.sound
     return TX.unit.office
   }
 
@@ -454,8 +513,8 @@ export function TaxonomyClient() {
       deleteCatMut.mutate(d.target.id, { onSuccess, onError })
     } else if (d.kind === "subcategory") {
       deleteSubMut.mutate(d.target.id, { onSuccess, onError })
-    } else if (d.vocab === "video") {
-      deleteVideoCatMut.mutate(d.target.id, { onSuccess, onError })
+    } else if (d.vocab === "video" || d.vocab === "soundState") {
+      managed[d.vocab].remove.mutate(d.target.id, { onSuccess, onError })
     } else {
       typeMuts[d.vocab].remove.mutate(d.target.id, { onSuccess, onError })
     }
@@ -477,6 +536,7 @@ export function TaxonomyClient() {
           <TabsTrigger value="news">{TX.tabs.news}</TabsTrigger>
           <TabsTrigger value="projects">{TX.tabs.projects}</TabsTrigger>
           <TabsTrigger value="sounds">{TX.tabs.sounds}</TabsTrigger>
+          <TabsTrigger value="sound-states">{TX.tabs.soundStates}</TabsTrigger>
           <TabsTrigger value="videos">{TX.tabs.videos}</TabsTrigger>
           <TabsTrigger value="offices">{TX.tabs.offices}</TabsTrigger>
         </TabsList>
@@ -684,6 +744,7 @@ export function TaxonomyClient() {
                       nameCkb: t.nameCkb ?? "",
                       nameKmr: t.nameKmr ?? "",
                       count: t.bookCount ?? 0,
+                      locked: LOCKED_SLUGS.has(t.slug ?? ""),
                     },
                   ],
             )}
@@ -695,6 +756,40 @@ export function TaxonomyClient() {
             }
             onDelete={(target) =>
               setDeleteState({ kind: "type", vocab: "video", target })
+            }
+          />
+        </TabsContent>
+
+        <TabsContent value="sound-states" className="space-y-4 pt-6">
+          <TypePanel
+            unit={TX.unit.sound}
+            isLoading={soundStatesQ.isLoading}
+            items={soundStates.flatMap((t) =>
+              t.id == null
+                ? []
+                : [
+                    {
+                      id: t.id,
+                      nameCkb: t.nameCkb ?? "",
+                      nameKmr: t.nameKmr ?? "",
+                      count: t.bookCount ?? 0,
+                      locked: LOCKED_SLUGS.has(t.slug ?? ""),
+                    },
+                  ],
+            )}
+            onCreate={() =>
+              setNameDialog({ kind: "type", vocab: "soundState", mode: "create" })
+            }
+            onEdit={(target) =>
+              setNameDialog({
+                kind: "type",
+                vocab: "soundState",
+                mode: "edit",
+                target,
+              })
+            }
+            onDelete={(target) =>
+              setDeleteState({ kind: "type", vocab: "soundState", target })
             }
           />
         </TabsContent>

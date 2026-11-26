@@ -22,6 +22,7 @@ import { cn } from "@/lib/utils"
 import {
   bookGenreLabel,
   suggestGenreSlug,
+  type ManagedOptionDto,
   type ManagedOptionKind,
 } from "@/types/managed-option"
 
@@ -35,6 +36,10 @@ const SEGMENT_OFF = "text-muted-foreground hover:text-foreground"
  * style: every option is a segment (Kurmanji name under the Sorani one when
  * `showKmr`), the trailing "+" segment opens a bilingual quick-add that
  * creates the option and selects it.
+ *
+ * `required` drops the × clear segment (a record always carries exactly one
+ * option); `fallbackSlug` highlights that row while nothing is stored yet —
+ * display only, the backend assigns the same default on save.
  */
 export function ManagedOptionSegments({
   kind,
@@ -42,12 +47,16 @@ export function ManagedOptionSegments({
   onChange,
   showKmr,
   manageHref,
+  required,
+  fallbackSlug,
 }: {
   kind: ManagedOptionKind
   value: number | null
-  onChange: (id: number | null) => void
+  onChange: (id: number | null, option: ManagedOptionDto | null) => void
   showKmr?: boolean
   manageHref?: string
+  required?: boolean
+  fallbackSlug?: string
 }) {
   const listQ = useManagedOptionsQuery(kind, false)
   const createMut = useCreateManagedOption(kind)
@@ -56,6 +65,8 @@ export function ManagedOptionSegments({
   const [nameKmr, setNameKmr] = useState("")
 
   const options = listQ.data ?? []
+  const selectedId =
+    value ?? options.find((o) => o.slug === fallbackSlug)?.id ?? null
 
   function closeAdd() {
     setAdding(false)
@@ -78,7 +89,7 @@ export function ManagedOptionSegments({
       {
         onSuccess: (created) => {
           toast.success(MO.toast.created)
-          if (created?.id != null) onChange(created.id)
+          if (created?.id != null) onChange(created.id, created)
           closeAdd()
         },
         onError: (err) => toastApiError(err, MO.error.generic),
@@ -92,14 +103,14 @@ export function ManagedOptionSegments({
     <div className="space-y-2">
       <div className="bg-muted/50 inline-flex flex-wrap gap-1 rounded-lg p-1">
         {options.map((o) => {
-          const on = value === o.id
+          const on = selectedId === o.id
           return (
             <button
               key={o.id}
               type="button"
               aria-pressed={on}
               onClick={() => {
-                if (!on) onChange(o.id ?? null)
+                if (!on) onChange(o.id ?? null, o)
               }}
               className={cn(SEGMENT, on ? SEGMENT_ON : SEGMENT_OFF)}
             >
@@ -116,12 +127,12 @@ export function ManagedOptionSegments({
             </button>
           )
         })}
-        {value != null ? (
+        {value != null && !required ? (
           <button
             type="button"
             aria-label={MO.action.clear}
             title={MO.action.clear}
-            onClick={() => onChange(null)}
+            onClick={() => onChange(null, null)}
             className={cn(SEGMENT, "px-3", SEGMENT_OFF)}
           >
             <XMarkIcon className="size-4" aria-hidden />

@@ -8,6 +8,7 @@ import {
 } from "@/lib/book-genre-form-data"
 import { compareBookGenres } from "@/lib/book-genre-normalize"
 import { writingsKeys } from "@/lib/writings-query-keys"
+import { soundKeys } from "@/lib/sounds-query-keys"
 import { videoKeys } from "@/lib/videos-query-keys"
 import {
   createManagedOption,
@@ -58,6 +59,8 @@ function useOptionInvalidator(kind: ManagedOptionKind) {
     // or delete makes those cached lists stale too.
     if (kind === "video-categories") {
       void queryClient.invalidateQueries({ queryKey: videoKeys.all })
+    } else if (kind === "sound-states") {
+      void queryClient.invalidateQueries({ queryKey: soundKeys.all })
     } else {
       void queryClient.invalidateQueries({ queryKey: writingsKeys.all })
     }

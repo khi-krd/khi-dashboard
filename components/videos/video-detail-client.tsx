@@ -486,6 +486,7 @@ function VideoDetailLoaded({
                 <VideoTypePill
                   videoType={dto.videoType}
                   albumOfMemories={dto.albumOfMemories}
+                  name={dto.category?.nameCkb}
                   size="large"
                 />
               </section>
@@ -725,12 +726,6 @@ function VideoDetailLoaded({
                     >
                       {topicCkb}
                     </Link>
-                  </>
-                ) : null}
-                {dto.category?.nameCkb ? (
-                  <>
-                    <MetaDot />
-                    <span>{dto.category.nameCkb}</span>
                   </>
                 ) : null}
                 {isFilm && dto.durationSeconds != null ? (

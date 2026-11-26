@@ -15,8 +15,11 @@ export function SoundStatePill({
   className,
   size = "default",
   albumOfMemoriesFilter = false,
+  name,
 }: {
   trackState: TrackState
+  /** Managed جۆر name — wins over the structural تاک/ئەلبووم label. */
+  name?: string | null
   className?: string
   size?: "default" | "large"
   /** When true, show album-of-memories label (server-filtered list rows). */
@@ -39,6 +42,8 @@ export function SoundStatePill({
     colors =
       "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20"
   }
+
+  if (!albumOfMemoriesFilter && name?.trim()) label = name.trim()
 
   return (
     <span

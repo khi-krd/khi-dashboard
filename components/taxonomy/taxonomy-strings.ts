@@ -8,7 +8,8 @@ export const TX = {
     projects: "جۆرەکانی پرۆژە",
     sounds: "جۆرەکانی دەنگ",
     offices: "جۆرەکانی نووسینگە",
-    videos: "پۆلەکانی ڤیدیۆ",
+    videos: "جۆرەکانی ڤیدیۆ",
+    soundStates: "تاک / ئەلبووم",
   },
   col: {
     nameCkb: "ناو (کوردی)",
@@ -39,8 +40,10 @@ export const TX = {
     edit_sound_type: "دەستکاری جۆری دەنگ",
     create_office_type: "جۆری نووسینگەی نوێ",
     edit_office_type: "دەستکاری جۆری نووسینگە",
-    create_video_category: "پۆلی ڤیدیۆی نوێ",
-    edit_video_category: "دەستکاری پۆلی ڤیدیۆ",
+    create_video_category: "جۆری ڤیدیۆی نوێ",
+    edit_video_category: "دەستکاری جۆری ڤیدیۆ",
+    create_sound_state: "جۆری تۆماری دەنگی نوێ",
+    edit_sound_state: "دەستکاری جۆری تۆماری دەنگ",
   },
   delete: {
     title: "سڕینەوە",
@@ -50,6 +53,7 @@ export const TX = {
     typeBody: (count: string, unit: string) =>
       `ئەم جۆرە لە ${count} ${unit} بەکارهێنراوە. سڕینەوەی تەنها لە لیستی هەڵبژاردن لایدەبات — ناوی جۆر لەسەر تۆمارەکان دەمێنێتەوە.`,
     typeBodyEmpty: "دڵنیایت لە سڕینەوەی ئەم جۆرە؟",
+    locked: "جۆری بنەڕەتی — تەنها ناوەکەی دەگۆڕدرێت",
   },
   unit: {
     news: "هەواڵ",

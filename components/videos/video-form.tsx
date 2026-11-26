@@ -34,7 +34,6 @@ import { DraftStatus } from "@/components/shared/draft-status"
 import { TiptapEditor } from "@/components/shared/tiptap-editor-lazy"
 import { UploadProgressLine } from "@/components/shared/upload-progress-line"
 import { VideoTopicCombobox } from "@/components/videos/video-topic-combobox"
-import { VideoCategoryToggle } from "@/components/videos/video-category-toggle"
 import { VideoTypeToggle } from "@/components/videos/video-type-toggle"
 import { VideosErrorState } from "@/components/videos/video-error-state"
 import { NS } from "@/components/videos/videos-strings"
@@ -429,18 +428,13 @@ export function VideoForm({
           <div dir="rtl" className="mx-auto w-full min-w-0 max-w-[860px] space-y-0">
             <div className="mb-6">
               <VideoTypeToggle
-                value={videoType}
-                editMode={mode === "edit"}
-                onChange={(v) => setValue("videoType", v, { shouldDirty: true })}
-              />
-            </div>
-
-            <div className="mb-6">
-              <VideoCategoryToggle
                 value={watch("categoryId") ?? null}
-                onChange={(id) =>
+                videoType={videoType}
+                editMode={mode === "edit"}
+                onChange={(id, v) => {
                   setValue("categoryId", id, { shouldDirty: true })
-                }
+                  setValue("videoType", v, { shouldDirty: true })
+                }}
               />
             </div>
 

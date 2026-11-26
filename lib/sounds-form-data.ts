@@ -125,6 +125,9 @@ export function soundFormValuesToMultipart(
   const payload: Record<string, unknown> = {
     ...(mode === "edit" && typeof soundId === "number" ? { id: soundId } : {}),
     trackState: values.trackState,
+    ...(values.stateOptionId != null
+      ? { stateOptionId: values.stateOptionId }
+      : {}),
     // Only meaningful on MULTI albums — the backend treats a SINGLE track as
     // never being an album of memories.
     albumOfMemories:

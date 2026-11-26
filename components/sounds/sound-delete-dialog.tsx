@@ -31,7 +31,7 @@ export function SoundDeleteDialog({
   onOpenChange: (v: boolean) => void
   target: Pick<
     SoundDto,
-    "id" | "trackState" | "ckbCoverUrl" | "files"
+    "id" | "trackState" | "stateOption" | "ckbCoverUrl" | "files"
   > & { titleCkb?: string | null } | null
   onConfirm: () => void
   isPending?: boolean
@@ -72,6 +72,7 @@ export function SoundDeleteDialog({
                 <div className="flex flex-wrap items-center gap-2">
                   <SoundStatePill
                     trackState={target.trackState}
+                    name={target.stateOption?.nameCkb}
                     className="w-auto"
                   />
                   <span className="text-muted-foreground font-mono text-xs">

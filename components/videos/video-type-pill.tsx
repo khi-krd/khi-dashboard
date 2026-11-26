@@ -13,11 +13,14 @@ import type { VideoDto } from "@/types/videos"
 export function VideoTypePill({
   videoType,
   albumOfMemories,
+  name,
   className,
   size = "default",
 }: {
   videoType: VideoDto["videoType"]
   albumOfMemories?: boolean
+  /** Managed جۆر name — wins over the structural film/clip label. */
+  name?: string | null
   className?: string
   size?: "default" | "large"
 }) {
@@ -41,6 +44,8 @@ export function VideoTypePill({
     colors =
       "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20"
   }
+
+  if (!isAlbum && name?.trim()) label = name.trim()
 
   return (
     <span

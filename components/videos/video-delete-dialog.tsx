@@ -34,6 +34,7 @@ export function VideoDeleteDialog({
     | "id"
     | "videoType"
     | "albumOfMemories"
+    | "category"
     | "ckbCoverUrl"
     | "durationSeconds"
   > & { titleCkb?: string | null } | null
@@ -73,6 +74,7 @@ export function VideoDeleteDialog({
                   <VideoTypePill
                     videoType={target.videoType}
                     albumOfMemories={target.albumOfMemories}
+                    name={target.category?.nameCkb}
                     className="w-auto"
                   />
                   <span className="text-muted-foreground font-mono text-xs">

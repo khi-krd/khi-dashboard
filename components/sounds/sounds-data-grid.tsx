@@ -290,6 +290,7 @@ export function SoundsDataGrid({
         cell: ({ row }) => (
           <SoundStatePill
             trackState={row.original.trackState}
+            name={row.original.stateOption?.nameCkb}
             albumOfMemoriesFilter={stateFilter === "album_of_memories"}
             className="w-auto"
           />

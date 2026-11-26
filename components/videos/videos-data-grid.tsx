@@ -255,6 +255,7 @@ export function VideosDataGrid({
           <VideoTypePill
             videoType={row.original.videoType}
             albumOfMemories={row.original.albumOfMemories}
+            name={row.original.category?.nameCkb}
             className="w-auto"
           />
         ),

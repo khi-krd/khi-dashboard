@@ -96,6 +96,13 @@ export type SoundDto = {
   /** Hero picture for the homepage carousel; falls back to the cover when unset. */
   featureImageUrl?: string | null
   trackState: TrackState
+  /** جۆری تۆماری دەنگ — the managed type row (تاک, ئەلبووم, …). */
+  stateOption?: {
+    id?: number | null
+    slug?: string | null
+    nameCkb?: string | null
+    nameKmr?: string | null
+  } | null
   /** Only meaningful when trackState is MULTI — flags the album as "بیرەوەرییەکان". */
   albumOfMemories?: boolean
   soundType?: string | null

@@ -14,6 +14,7 @@ export type ManagedOptionKind =
   | "editions"
   | "book-languages"
   | "video-categories"
+  | "sound-states"
 
 export type ManagedOptionDto = BookGenreDto
 
@@ -25,6 +26,7 @@ export const MANAGED_OPTION_BASE: Record<ManagedOptionKind, string> = {
   editions: "/api/v1/editions",
   "book-languages": "/api/v1/book-languages",
   "video-categories": "/api/v1/video-categories",
+  "sound-states": "/api/v1/sound-states",
 }
 
 export const MANAGED_OPTION_KINDS: ManagedOptionKind[] = [

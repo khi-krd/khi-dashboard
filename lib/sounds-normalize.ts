@@ -219,6 +219,18 @@ export function normalizeSoundDto(raw: unknown): SoundDto {
     featuredOrder: coerceNum(o.featuredOrder) ?? coerceNum(o.featured_order),
     sortOrder: coerceNum(o.sortOrder) ?? coerceNum(o.sort_order) ?? undefined,
     trackState,
+    stateOption:
+      o.stateOption && typeof o.stateOption === "object"
+        ? (() => {
+            const so = o.stateOption as Record<string, unknown>
+            return {
+              id: coerceNum(so.id),
+              slug: coerceStr(so.slug),
+              nameCkb: coerceStr(so.nameCkb),
+              nameKmr: coerceStr(so.nameKmr),
+            }
+          })()
+        : null,
     albumOfMemories: coerceBool(o.albumOfMemories ?? o.album_of_memories),
     soundType: coerceStr(o.soundType) ?? coerceStr(o.sound_type),
     soundTypes: coerceStringArray(o.soundTypes ?? o.sound_types),

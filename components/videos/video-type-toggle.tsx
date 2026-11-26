@@ -1,51 +1,39 @@
 "use client"
 
-import { ExclamationTriangleIcon, FilmIcon } from "@heroicons/react/24/outline"
-import { Square2StackIcon } from "@heroicons/react/24/outline"
+import { ExclamationTriangleIcon } from "@heroicons/react/24/outline"
 
+import { ManagedOptionSegments } from "@/components/shared/managed-option-segments"
 import { NS } from "@/components/videos/videos-strings"
-import { cn } from "@/lib/utils"
 import type { VideoType } from "@/types/videos"
 
+/**
+ * جۆری ڤیدیۆ — one managed bar (فیلم, ڤیدیۆ کلیپ and whatever admins add),
+ * exactly one per record. Types are names only: the seeded ڤیدیۆ کلیپ row
+ * opens the clip-collection editor, every other type the film (parts) one.
+ */
 export function VideoTypeToggle({
   value,
+  videoType,
   onChange,
   editMode,
 }: {
-  value: VideoType
-  onChange: (v: VideoType) => void
+  value: number | null
+  videoType: VideoType
+  onChange: (id: number | null, videoType: VideoType) => void
   editMode?: boolean
 }) {
   return (
     <div className="space-y-2">
-      <div className="bg-muted/50 inline-flex rounded-lg p-1">
-        <button
-          type="button"
-          onClick={() => onChange("FILM")}
-          className={cn(
-            "inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors",
-            value === "FILM"
-              ? "bg-primary/10 text-primary border-primary/20 border shadow-sm"
-              : "text-muted-foreground hover:text-foreground",
-          )}
-        >
-          <FilmIcon className="size-4" aria-hidden />
-          {NS.type.film}
-        </button>
-        <button
-          type="button"
-          onClick={() => onChange("VIDEO_CLIP")}
-          className={cn(
-            "inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors",
-            value === "VIDEO_CLIP"
-              ? "bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20 shadow-sm"
-              : "text-muted-foreground hover:text-foreground",
-          )}
-        >
-          <Square2StackIcon className="size-4" aria-hidden />
-          {NS.type.clip}
-        </button>
-      </div>
+      <ManagedOptionSegments
+        kind="video-categories"
+        required
+        value={value}
+        fallbackSlug={videoType}
+        onChange={(id, option) =>
+          onChange(id, option?.slug === "VIDEO_CLIP" ? "VIDEO_CLIP" : "FILM")
+        }
+        manageHref="/dashboard/taxonomy?tab=videos"
+      />
       <p className="text-muted-foreground text-xs">{NS.type.toggle.helper}</p>
       {editMode ? (
         <p className="flex items-center gap-1.5 text-xs text-amber-700 dark:text-amber-400">
