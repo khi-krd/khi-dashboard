@@ -25,7 +25,8 @@ import {
 import { NewsCategoryCombobox } from "@/components/news/news-category-combobox"
 import { NewsErrorState } from "@/components/news/news-error-state"
 import { NS } from "@/components/news/news-strings"
-import { LocationSelect } from "@/components/shared/location-picker"
+import { LocationOptionSegments } from "@/components/shared/location-option-segments"
+import { locationNameFor } from "@/components/shared/location-picker"
 import { MediaGalleryEditor } from "@/components/shared/media-gallery-editor"
 import { MediaCoverUpload } from "@/components/shared/media-cover-upload"
 import { NewsTagInput } from "@/components/news/news-tag-input"
@@ -706,31 +707,13 @@ export function NewsForm({
 
               <section className={cn("space-y-3", sectionCard)}>
                 <h2 className={sectionHeading}>{NS.field.location}</h2>
-                <Controller
-                  name="ckbContent.location"
-                  control={control}
-                  render={({ field }) => (
-                    <LocationSelect
-                      placeholder={NS.field.location_placeholder_ckb}
-                      lang="CKB"
-                      variant="field"
-                      value={field.value}
-                      onChange={(v) => field.onChange(v)}
-                    />
-                  )}
-                />
-                <Controller
-                  name="kmrContent.location"
-                  control={control}
-                  render={({ field }) => (
-                    <LocationSelect
-                      placeholder={NS.field.location_placeholder_kmr}
-                      lang="KMR"
-                      variant="field"
-                      value={field.value}
-                      onChange={(v) => field.onChange(v)}
-                    />
-                  )}
+                <LocationOptionSegments
+                  ckbValue={watch("ckbContent.location")}
+                  kmrValue={watch("kmrContent.location")}
+                  onPick={(loc) => {
+                    setValue("ckbContent.location", loc ? locationNameFor(loc, "CKB") : "", { shouldDirty: true })
+                    setValue("kmrContent.location", loc ? locationNameFor(loc, "KMR") : "", { shouldDirty: true })
+                  }}
                 />
               </section>
 

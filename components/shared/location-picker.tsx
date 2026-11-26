@@ -32,13 +32,13 @@ import type { LocationDto } from "@/types/taxonomy"
 export type LocationLang = "CKB" | "KMR"
 
 /** The option's label in the language the field belongs to. */
-function nameFor(loc: LocationDto, lang: LocationLang): string {
+export function locationNameFor(loc: LocationDto, lang: LocationLang): string {
   return (lang === "KMR" ? loc.nameKmr.trim() : "") || loc.nameCkb.trim()
 }
 
 function otherName(loc: LocationDto, lang: LocationLang): string {
   const other = lang === "KMR" ? loc.nameCkb.trim() : loc.nameKmr.trim()
-  return other && other !== nameFor(loc, lang) ? other : ""
+  return other && other !== locationNameFor(loc, lang) ? other : ""
 }
 
 const iconBtn =
@@ -105,7 +105,7 @@ function LocationRow({
   const [mode, setMode] = useState<"view" | "edit" | "delete">("view")
   const [ckb, setCkb] = useState(loc.nameCkb)
   const [kmr, setKmr] = useState(loc.nameKmr)
-  const label = nameFor(loc, lang)
+  const label = locationNameFor(loc, lang)
 
   const save = () => {
     const nameCkb = ckb.trim()
@@ -117,7 +117,7 @@ function LocationRow({
       { id: loc.id, payload: { nameCkb, nameKmr: kmr.trim() } },
       {
         onSuccess: (updated) => {
-          const next = nameFor(updated, lang)
+          const next = locationNameFor(updated, lang)
           if (checked && next !== label) onRenamed(label, next)
           toastSuccess(NS.toast.updated)
           setMode("view")
@@ -294,7 +294,7 @@ function LocationOptionsPanel({
   )
   const typed = query.trim()
   const typedIsKnown = all.some(
-    (l) => nameFor(l, lang) === typed || l.nameCkb === typed,
+    (l) => locationNameFor(l, lang) === typed || l.nameCkb === typed,
   )
 
   const startAdd = () => {
@@ -316,7 +316,7 @@ function LocationOptionsPanel({
       {
         onSuccess: (created) => {
           toastSuccess(NS.toast.created)
-          onPick(nameFor(created, lang))
+          onPick(locationNameFor(created, lang))
           setDraftCkb("")
           setDraftKmr("")
           setQuery("")
@@ -339,7 +339,7 @@ function LocationOptionsPanel({
           if (e.key === "Enter" && typed) {
             e.preventDefault()
             const match = items[0]
-            onPick(match && items.length === 1 ? nameFor(match, lang) : typed)
+            onPick(match && items.length === 1 ? locationNameFor(match, lang) : typed)
             setQuery("")
           }
         }}
@@ -359,7 +359,7 @@ function LocationOptionsPanel({
             key={`${loc.id}:${loc.nameCkb}:${loc.nameKmr}`}
             loc={loc}
             lang={lang}
-            checked={selected.includes(nameFor(loc, lang))}
+            checked={selected.includes(locationNameFor(loc, lang))}
             onPick={onPick}
             onRenamed={onRenamed}
           />

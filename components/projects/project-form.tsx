@@ -21,7 +21,8 @@ import {
   dashboardProjectsCrumbHref,
 } from "@/components/projects/project-breadcrumb"
 import { ProjectStatusPill } from "@/components/projects/project-status-pill"
-import { LocationSelect } from "@/components/shared/location-picker"
+import { LocationOptionSegments } from "@/components/shared/location-option-segments"
+import { locationNameFor } from "@/components/shared/location-picker"
 import { MediaGalleryEditor } from "@/components/shared/media-gallery-editor"
 import { MediaCoverUpload } from "@/components/shared/media-cover-upload"
 import { ProjectTagInput } from "@/components/projects/project-tag-input"
@@ -437,35 +438,15 @@ export function ProjectForm({
               <Label className={cn(sectionHeading, "mb-2")}>
                 {NS.section.location}
               </Label>
-              <div className="space-y-2">
-                <Controller
-                  name="ckbContent.location"
-                  control={control}
-                  render={({ field }) => (
-                    <LocationSelect
-                      placeholder={NS.lang.ckb}
-                      lang="CKB"
-                      variant="field"
-                      value={field.value}
-                      onChange={(v) => field.onChange(v)}
-                    />
-                  )}
+              <LocationOptionSegments
+                  ckbValue={watch("ckbContent.location")}
+                  kmrValue={watch("kmrContent.location")}
+                  onPick={(loc) => {
+                    setValue("ckbContent.location", loc ? locationNameFor(loc, "CKB") : "", { shouldDirty: true })
+                    setValue("kmrContent.location", loc ? locationNameFor(loc, "KMR") : "", { shouldDirty: true })
+                  }}
                 />
-                <Controller
-                  name="kmrContent.location"
-                  control={control}
-                  render={({ field }) => (
-                    <LocationSelect
-                      placeholder={NS.lang.kmr}
-                      lang="KMR"
-                      variant="field"
-                      value={field.value}
-                      onChange={(v) => field.onChange(v)}
-                    />
-                  )}
-                />
-              </div>
-            </section>
+                          </section>
 
             {mode === "edit" && editDto ? (
 

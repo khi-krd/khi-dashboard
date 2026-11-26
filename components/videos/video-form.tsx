@@ -27,7 +27,8 @@ import { VideoLanguageToggleChip } from "@/components/videos/video-language-chip
 import { VideoMetadataGrid } from "@/components/videos/video-metadata-grid"
 import { VideoSourceList } from "@/components/videos/video-source-list"
 import { VideoTagInput } from "@/components/videos/video-tag-input"
-import { LocationSelect } from "@/components/shared/location-picker"
+import { LocationOptionSegments } from "@/components/shared/location-option-segments"
+import { locationNameFor } from "@/components/shared/location-picker"
 import { DRAFT_NS } from "@/components/shared/draft-strings"
 import { DraftStatus } from "@/components/shared/draft-status"
 import { TiptapEditor } from "@/components/shared/tiptap-editor-lazy"
@@ -330,35 +331,15 @@ export function VideoForm({
               <Label className={cn(sectionHeading, "mb-2")}>
                 {NS.field.location}
               </Label>
-              <div className="space-y-2">
-                <Controller
-                  name="ckbContent.location"
-                  control={control}
-                  render={({ field }) => (
-                    <LocationSelect
-                      placeholder={NS.lang.ckb}
-                      lang="CKB"
-                      variant="field"
-                      value={field.value}
-                      onChange={(v) => field.onChange(v)}
-                    />
-                  )}
+              <LocationOptionSegments
+                  ckbValue={watch("ckbContent.location")}
+                  kmrValue={watch("kmrContent.location")}
+                  onPick={(loc) => {
+                    setValue("ckbContent.location", loc ? locationNameFor(loc, "CKB") : "", { shouldDirty: true })
+                    setValue("kmrContent.location", loc ? locationNameFor(loc, "KMR") : "", { shouldDirty: true })
+                  }}
                 />
-                <Controller
-                  name="kmrContent.location"
-                  control={control}
-                  render={({ field }) => (
-                    <LocationSelect
-                      placeholder={NS.lang.kmr}
-                      lang="KMR"
-                      variant="field"
-                      value={field.value}
-                      onChange={(v) => field.onChange(v)}
-                    />
-                  )}
-                />
-              </div>
-            </section>
+                          </section>
 
             <section className={sectionCard}>
               <Label className={cn(sectionHeading, "mb-2")}>
