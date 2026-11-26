@@ -4,7 +4,6 @@ import {
   CheckIcon,
   ExclamationCircleIcon,
   HashtagIcon,
-  MapPinIcon,
 } from "@heroicons/react/24/outline"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -329,41 +328,36 @@ export function VideoForm({
 
             <section className={sectionCard}>
               <Label className={cn(sectionHeading, "mb-2")}>
-                {NS.section.languages}
+                {NS.field.location}
               </Label>
-              <div className="flex flex-wrap gap-2">
-                {(["CKB", "KMR"] as const).map((code) => {
-                  const on = contentLanguages.includes(code)
-                  return (
-                    <button
-                      key={code}
-                      type="button"
-                      onClick={() => {
-                        const next = on
-                          ? contentLanguages.filter((l) => l !== code)
-                          : [...contentLanguages, code]
-                        if (next.length) {
-                          setValue("contentLanguages", next, { shouldDirty: true })
-                          setActiveLang(code)
-                        }
-                      }}
-                      className={cn(
-                        "rounded-full border px-3 py-1 text-xs",
-                        on
-                          ? "border-primary bg-primary/10 text-primary"
-                          : "border-dashed text-muted-foreground",
-                      )}
-                    >
-                      {code === "CKB" ? NS.lang.ckb : NS.lang.kmr}
-                    </button>
-                  )
-                })}
+              <div className="space-y-2">
+                <Controller
+                  name="ckbContent.location"
+                  control={control}
+                  render={({ field }) => (
+                    <LocationSelect
+                      placeholder={NS.lang.ckb}
+                      lang="CKB"
+                      variant="field"
+                      value={field.value}
+                      onChange={(v) => field.onChange(v)}
+                    />
+                  )}
+                />
+                <Controller
+                  name="kmrContent.location"
+                  control={control}
+                  render={({ field }) => (
+                    <LocationSelect
+                      placeholder={NS.lang.kmr}
+                      lang="KMR"
+                      variant="field"
+                      value={field.value}
+                      onChange={(v) => field.onChange(v)}
+                    />
+                  )}
+                />
               </div>
-              {errors.contentLanguages ? (
-                <FieldError className="mt-2">
-                  {errors.contentLanguages.message}
-                </FieldError>
-              ) : null}
             </section>
 
             <section className={sectionCard}>
@@ -440,15 +434,26 @@ export function VideoForm({
 
             <div className="mb-6 flex flex-wrap gap-2">
               {(["CKB", "KMR"] as const).map((code) => (
-                <VideoLanguageToggleChip
-                  key={code}
-                  lang={code}
-                  active={contentLanguages.includes(code) && activeLang === code}
-                  hasError={tabMarkers[code]}
-                  onClick={() => {
-                    if (contentLanguages.includes(code)) setActiveLang(code)
+                <span key={code} className={contentLanguages.includes(code) ? "" : "opacity-50"}>
+                  <VideoLanguageToggleChip
+                    lang={code}
+                    active={contentLanguages.includes(code) && activeLang === code}
+                    hasError={tabMarkers[code]}
+                    onClick={() => {
+                    const on = contentLanguages.includes(code)
+                    if (!on) {
+                      setValue("contentLanguages", [...contentLanguages, code], { shouldDirty: true })
+                      setActiveLang(code)
+                    } else if (activeLang === code && contentLanguages.length > 1) {
+                      const next = contentLanguages.filter((l) => l !== code)
+                      setValue("contentLanguages", next, { shouldDirty: true })
+                      setActiveLang(next[0])
+                    } else {
+                      setActiveLang(code)
+                    }
                   }}
-                />
+                  />
+                </span>
               ))}
             </div>
 
@@ -522,23 +527,6 @@ export function VideoForm({
                     />
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <MapPinIcon className="text-muted-foreground size-4 shrink-0" />
-<Controller
-                    name="ckbContent.location"
-                    control={control}
-                    render={({ field }) => (
-                      <LocationSelect
-                        placeholder={NS.field.location}
-                        lang="CKB"
-                        variant="inline"
-                        className="flex-1"
-                        value={field.value}
-                        onChange={(v) => field.onChange(v)}
-                      />
-                    )}
-                  />
-                </div>
                 <TiptapEditor entity="videos"
                   stickyToolbar
                   lang="CKB"
@@ -580,23 +568,6 @@ export function VideoForm({
                       {...register("kmrContent.producer")}
                     />
                   </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <MapPinIcon className="text-muted-foreground size-4 shrink-0" />
-<Controller
-                    name="kmrContent.location"
-                    control={control}
-                    render={({ field }) => (
-                      <LocationSelect
-                        placeholder={NS.field.location}
-                        lang="KMR"
-                        variant="inline"
-                        className="flex-1"
-                        value={field.value}
-                        onChange={(v) => field.onChange(v)}
-                      />
-                    )}
-                  />
                 </div>
                 <TiptapEditor entity="videos"
                   stickyToolbar

@@ -380,6 +380,56 @@ export function NewsForm({
 
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 lg:gap-8">
             <div className="space-y-6 lg:col-span-2">
+<div className="mb-6">
+                <Controller
+                  name="contentLanguages"
+                  control={control}
+                  render={({ field }) => (
+                    <div className="flex flex-wrap gap-2">
+                      {(["CKB", "KMR"] as const).map((code) => {
+                        const active = field.value.includes(code)
+                        const labelTxt =
+                          code === "CKB" ? NS.lang.ckb : NS.lang.kmr
+                        return (
+                          <button
+                            key={code}
+                            type="button"
+                            aria-pressed={active}
+                            onClick={() => {
+                              if (active) {
+                                if (activeLangTab !== code) {
+                                  setActiveLangTab(code)
+                                } else if (field.value.length > 1) {
+                                  const next = field.value.filter((l: Language) => l !== code)
+                                  field.onChange(next)
+                                  setActiveLangTab(next[0] ?? "CKB")
+                                }
+                              } else {
+                                field.onChange([...field.value, code])
+                                setActiveLangTab(code)
+                              }
+                            }}
+                            className={cn(
+                              "rounded-full border px-3 py-1.5 text-sm font-medium transition-colors",
+                              active
+                                ? "border-primary bg-primary/15 text-primary"
+                                : "border-border bg-muted/30 text-muted-foreground hover:bg-muted/50",
+                            )}
+                          >
+                            {labelTxt}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  )}
+                />
+                <p className="text-muted-foreground text-xs">
+                  {NS.help.languages_min_one}
+                </p>
+                <FieldError className="text-xs">
+                  {errors.contentLanguages?.message}
+                </FieldError>
+              </div>
               <section className={cn("space-y-6", sectionCard)}>
                 {bothLangActive ? (
                   <Tabs
@@ -655,51 +705,33 @@ export function NewsForm({
               </section>
 
               <section className={cn("space-y-3", sectionCard)}>
+                <h2 className={sectionHeading}>{NS.field.location}</h2>
                 <Controller
-                  name="contentLanguages"
+                  name="ckbContent.location"
                   control={control}
                   render={({ field }) => (
-                    <div className="flex flex-wrap gap-2">
-                      {(["CKB", "KMR"] as const).map((code) => {
-                        const active = field.value.includes(code)
-                        const labelTxt =
-                          code === "CKB" ? NS.lang.ckb : NS.lang.kmr
-                        return (
-                          <button
-                            key={code}
-                            type="button"
-                            aria-pressed={active}
-                            onClick={() => {
-                              if (active && field.value.length <= 1) return
-                              const on = !active
-                              let next = [...field.value]
-                              if (on) {
-                                if (!next.includes(code)) next.push(code)
-                              } else {
-                                next = next.filter((l: Language) => l !== code)
-                              }
-                              field.onChange(next.length ? next : field.value)
-                            }}
-                            className={cn(
-                              "rounded-full border px-3 py-1.5 text-sm font-medium transition-colors",
-                              active
-                                ? "border-primary bg-primary/15 text-primary"
-                                : "border-border bg-muted/30 text-muted-foreground hover:bg-muted/50",
-                            )}
-                          >
-                            {labelTxt}
-                          </button>
-                        )
-                      })}
-                    </div>
+                    <LocationSelect
+                      placeholder={NS.field.location_placeholder_ckb}
+                      lang="CKB"
+                      variant="field"
+                      value={field.value}
+                      onChange={(v) => field.onChange(v)}
+                    />
                   )}
                 />
-                <p className="text-muted-foreground text-xs">
-                  {NS.help.languages_min_one}
-                </p>
-                <FieldError className="text-xs">
-                  {errors.contentLanguages?.message}
-                </FieldError>
+                <Controller
+                  name="kmrContent.location"
+                  control={control}
+                  render={({ field }) => (
+                    <LocationSelect
+                      placeholder={NS.field.location_placeholder_kmr}
+                      lang="KMR"
+                      variant="field"
+                      value={field.value}
+                      onChange={(v) => field.onChange(v)}
+                    />
+                  )}
+                />
               </section>
 
               <section className={cn("space-y-3", sectionCard)}>
@@ -898,25 +930,6 @@ function CkbLangFields({
         </div>
       </div>
 
-      <div className="space-y-1.5">
-        <Label htmlFor="nf-ckb-location">{NS.field.location}</Label>
-<Controller
-                    name="ckbContent.location"
-                    control={control}
-                    render={({ field }) => (
-                      <LocationSelect
-                        id="nf-ckb-location"
-                        placeholder={NS.field.location_placeholder_ckb}
-                        lang="CKB"
-                        variant="field"
-                        className="flex-1"
-                        value={field.value}
-                        onChange={(v) => field.onChange(v)}
-                      />
-                    )}
-                  />
-      </div>
-
       <TiptapEditor entity="news"
         lang="CKB"
         label={undefined}
@@ -1006,24 +1019,7 @@ function KmrLangFields({
         </div>
       </div>
 
-      <div className="space-y-1.5">
-        <Label htmlFor="nf-kmr-location">{NS.field.location}</Label>
-<Controller
-                    name="kmrContent.location"
-                    control={control}
-                    render={({ field }) => (
-                      <LocationSelect
-                        id="nf-kmr-location"
-                        placeholder={NS.field.location_placeholder_kmr}
-                        lang="KMR"
-                        variant="field"
-                        className="flex-1"
-                        value={field.value}
-                        onChange={(v) => field.onChange(v)}
-                      />
-                    )}
-                  />
-      </div>
+      
 
       <TiptapEditor entity="news"
         lang="KMR"

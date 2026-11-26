@@ -399,47 +399,6 @@ export function WritingForm({
               />
             </section>
 
-            <section className={sectionCard}>
-              <Label className="text-muted-foreground mb-2 block text-xs uppercase">
-                {NS.section.languages}
-              </Label>
-              <div className="flex flex-wrap gap-2">
-                {(["CKB", "KMR"] as const).map((code) => {
-                  const on = contentLanguages.includes(code)
-                  return (
-                    <button
-                      key={code}
-                      type="button"
-                      onClick={() => {
-                        const next = on
-                          ? contentLanguages.filter((l) => l !== code)
-                          : [...contentLanguages, code]
-                        if (next.length) {
-                          setValue("contentLanguages", next, {
-                            shouldDirty: true,
-                          })
-                          setActiveLang(code)
-                        }
-                      }}
-                      className={cn(
-                        "rounded-full border px-3 py-1 text-xs",
-                        on
-                          ? "border-primary bg-primary/10 text-primary"
-                          : "border-dashed text-muted-foreground",
-                      )}
-                    >
-                      {code === "CKB" ? NS.lang.ckb : NS.lang.kmr}
-                    </button>
-                  )
-                })}
-              </div>
-              {errors.contentLanguages ? (
-                <FieldError className="mt-2">
-                  {errors.contentLanguages.message}
-                </FieldError>
-              ) : null}
-            </section>
-
             <section className={cn(sectionCard, "space-y-4")}>
               <div>
                 <Label className="text-muted-foreground mb-2 block text-xs uppercase">
@@ -552,7 +511,42 @@ export function WritingForm({
               />
             </section>
 
+            <section className={sectionCard}>
+              <Label className={cn(sectionHeading, "mb-2")}>
+                {NS.field.location}
+              </Label>
+              <div className="space-y-2">
+                <Controller
+                  name="ckbContent.location"
+                  control={control}
+                  render={({ field }) => (
+                    <LocationSelect
+                      placeholder={NS.lang.ckb}
+                      lang="CKB"
+                      variant="field"
+                      value={field.value}
+                      onChange={(v) => field.onChange(v)}
+                    />
+                  )}
+                />
+                <Controller
+                  name="kmrContent.location"
+                  control={control}
+                  render={({ field }) => (
+                    <LocationSelect
+                      placeholder={NS.lang.kmr}
+                      lang="KMR"
+                      variant="field"
+                      value={field.value}
+                      onChange={(v) => field.onChange(v)}
+                    />
+                  )}
+                />
+              </div>
+            </section>
+
             {mode === "edit" && editDto ? (
+
               <section className={cn(sectionCard, "space-y-2 text-xs")}>
                 <Label className="text-muted-foreground uppercase">
                   {NS.section.system}
@@ -588,17 +582,26 @@ export function WritingForm({
           <div dir="rtl" className="mx-auto w-full min-w-0 max-w-[860px] space-y-0">
             <div className="mb-6 flex flex-wrap gap-2">
               {(["CKB", "KMR"] as const).map((code) => (
-                <WritingLanguageToggleChip
-                  key={code}
-                  lang={code}
-                  active={
-                    contentLanguages.includes(code) && activeLang === code
-                  }
-                  hasError={tabMarkers[code]}
-                  onClick={() => {
-                    if (contentLanguages.includes(code)) setActiveLang(code)
+                <span key={code} className={contentLanguages.includes(code) ? "" : "opacity-50"}>
+                  <WritingLanguageToggleChip
+                    lang={code}
+                    active={contentLanguages.includes(code) && activeLang === code}
+                    hasError={tabMarkers[code]}
+                    onClick={() => {
+                    const on = contentLanguages.includes(code)
+                    if (!on) {
+                      setValue("contentLanguages", [...contentLanguages, code], { shouldDirty: true })
+                      setActiveLang(code)
+                    } else if (activeLang === code && contentLanguages.length > 1) {
+                      const next = contentLanguages.filter((l) => l !== code)
+                      setValue("contentLanguages", next, { shouldDirty: true })
+                      setActiveLang(next[0])
+                    } else {
+                      setActiveLang(code)
+                    }
                   }}
-                />
+                  />
+                </span>
               ))}
             </div>
 
@@ -654,23 +657,6 @@ export function WritingForm({
                   <Label className="text-xs">{NS.section.persons}</Label>
                   <WritingPersonsSection lang="CKB" />
                 </div>
-                <div className="space-y-1">
-                  <Label className="text-xs">{NS.field.location}</Label>
-<Controller
-                    name="ckbContent.location"
-                    control={control}
-                    render={({ field }) => (
-                      <LocationSelect
-                        placeholder={NS.field.location_ckb}
-                        lang="CKB"
-                        variant="field"
-                        className="flex-1"
-                        value={field.value}
-                        onChange={(v) => field.onChange(v)}
-                      />
-                    )}
-                  />
-                </div>
                 <TiptapEditor entity="writings"
                   stickyToolbar
                   lang="CKB"
@@ -695,23 +681,6 @@ export function WritingForm({
                 <div className="space-y-1">
                   <Label className="text-xs">{NS.section.persons}</Label>
                   <WritingPersonsSection lang="KMR" />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs">{NS.field.location}</Label>
-<Controller
-                    name="kmrContent.location"
-                    control={control}
-                    render={({ field }) => (
-                      <LocationSelect
-                        placeholder={NS.field.location_kmr}
-                        lang="KMR"
-                        variant="field"
-                        className="flex-1"
-                        value={field.value}
-                        onChange={(v) => field.onChange(v)}
-                      />
-                    )}
-                  />
                 </div>
                 <TiptapEditor entity="writings"
                   stickyToolbar

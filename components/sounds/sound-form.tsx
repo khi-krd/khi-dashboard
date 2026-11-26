@@ -4,7 +4,6 @@ import {
   CheckIcon,
   ExclamationCircleIcon,
   HashtagIcon,
-  MapPinIcon,
 } from "@heroicons/react/24/outline"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -340,45 +339,37 @@ export function SoundForm({
             </section>
 
             <section className={sectionCard}>
-              <h2 className={cn(sectionHeading, "mb-3")}>
-                {NS.section.languages}
-              </h2>
-              <div className="flex flex-wrap gap-2">
-                {(["CKB", "KMR"] as const).map((code) => {
-                  const on = contentLanguages.includes(code)
-                  return (
-                    <button
-                      key={code}
-                      type="button"
-                      onClick={() => {
-                        const next = on
-                          ? contentLanguages.filter((l) => l !== code)
-                          : [...contentLanguages, code]
-                        if (next.length) {
-                          setValue("contentLanguages", next, { shouldDirty: true })
-                          setActiveLang(code)
-                        }
-                      }}
-                      className={cn(
-                        "rounded-full border px-3 py-1 text-xs",
-                        on
-                          ? "border-primary bg-primary/10 text-primary"
-                          : "border-dashed text-muted-foreground",
-                      )}
-                    >
-                      {code === "CKB" ? NS.lang.ckb : NS.lang.kmr}
-                    </button>
-                  )
-                })}
+              <Label className={cn(sectionHeading, "mb-2")}>
+                {NS.credits.locations}
+              </Label>
+              <div className="space-y-2">
+                <Controller
+                  name="locationsCkb"
+                  control={control}
+                  render={({ field }) => (
+                    <LocationMultiSelect
+                      lang="CKB"
+                      values={field.value ?? []}
+                      onChange={field.onChange}
+                    />
+                  )}
+                />
+                <Controller
+                  name="locationsKmr"
+                  control={control}
+                  render={({ field }) => (
+                    <LocationMultiSelect
+                      lang="KMR"
+                      values={field.value ?? []}
+                      onChange={field.onChange}
+                    />
+                  )}
+                />
               </div>
-              {errors.contentLanguages ? (
-                <FieldError className="mt-2">
-                  {errors.contentLanguages.message}
-                </FieldError>
-              ) : null}
             </section>
 
             {mode === "edit" && editDto ? (
+
               <section className={cn(sectionCard, "space-y-2 text-xs")}>
                 <Label className="text-muted-foreground uppercase">
                   {NS.section.system}
@@ -426,15 +417,26 @@ export function SoundForm({
 
             <div className="mb-6 flex flex-wrap gap-2">
               {(["CKB", "KMR"] as const).map((code) => (
-                <SoundLanguageToggleChip
-                  key={code}
-                  lang={code}
-                  active={contentLanguages.includes(code) && activeLang === code}
-                  hasError={tabMarkers[code]}
-                  onClick={() => {
-                    if (contentLanguages.includes(code)) setActiveLang(code)
+                <span key={code} className={contentLanguages.includes(code) ? "" : "opacity-50"}>
+                  <SoundLanguageToggleChip
+                    lang={code}
+                    active={contentLanguages.includes(code) && activeLang === code}
+                    hasError={tabMarkers[code]}
+                    onClick={() => {
+                    const on = contentLanguages.includes(code)
+                    if (!on) {
+                      setValue("contentLanguages", [...contentLanguages, code], { shouldDirty: true })
+                      setActiveLang(code)
+                    } else if (activeLang === code && contentLanguages.length > 1) {
+                      const next = contentLanguages.filter((l) => l !== code)
+                      setValue("contentLanguages", next, { shouldDirty: true })
+                      setActiveLang(next[0])
+                    } else {
+                      setActiveLang(code)
+                    }
                   }}
-                />
+                  />
+                </span>
               ))}
             </div>
 
@@ -488,22 +490,6 @@ export function SoundForm({
                 {errors.ckbContent?.title ? (
                   <FieldError>{errors.ckbContent.title.message}</FieldError>
                 ) : null}
-                <div className="flex items-start gap-2">
-                  <MapPinIcon className="text-muted-foreground mt-2 size-4 shrink-0" />
-                  <div className="min-w-0 flex-1">
-                    <Controller
-                      name="locationsCkb"
-                      control={control}
-                      render={({ field }) => (
-                        <LocationMultiSelect
-                          lang="CKB"
-                          values={field.value ?? []}
-                          onChange={field.onChange}
-                        />
-                      )}
-                    />
-                  </div>
-                </div>
                 <TiptapEditor entity="sounds"
                   stickyToolbar
                   lang="CKB"
@@ -531,22 +517,6 @@ export function SoundForm({
                 {errors.kmrContent?.title ? (
                   <FieldError>{errors.kmrContent.title.message}</FieldError>
                 ) : null}
-                <div className="flex items-start gap-2">
-                  <MapPinIcon className="text-muted-foreground mt-2 size-4 shrink-0" />
-                  <div className="min-w-0 flex-1">
-                    <Controller
-                      name="locationsKmr"
-                      control={control}
-                      render={({ field }) => (
-                        <LocationMultiSelect
-                          lang="KMR"
-                          values={field.value ?? []}
-                          onChange={field.onChange}
-                        />
-                      )}
-                    />
-                  </div>
-                </div>
                 <TiptapEditor entity="sounds"
                   stickyToolbar
                   lang="KMR"

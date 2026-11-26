@@ -3,7 +3,6 @@
 import {
   CheckIcon,
   ExclamationCircleIcon,
-  MapPinIcon,
 } from "@heroicons/react/24/outline"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -392,44 +391,6 @@ export function ProjectForm({
             </section>
 
             <section className={sectionCard}>
-              <Label className={cn(sectionHeading, "mb-2")}>
-                {NS.section.languages}
-              </Label>
-              <div className="flex flex-wrap gap-2">
-                {(["CKB", "KMR"] as const).map((code) => {
-                  const on = contentLanguages.includes(code)
-                  return (
-                    <button
-                      key={code}
-                      type="button"
-                      onClick={() => {
-                        const next = on
-                          ? contentLanguages.filter((l) => l !== code)
-                          : [...contentLanguages, code]
-                        if (next.length) {
-                          setValue("contentLanguages", next, { shouldDirty: true })
-                          setActiveLang(code)
-                        }
-                      }}
-                      className={cn(
-                        "rounded-full border px-3 py-1 text-xs",
-                        on
-                          ? "border-primary bg-primary/10 text-primary"
-                          : "border-dashed text-muted-foreground",
-                      )}
-                    >
-                      {code === "CKB" ? NS.lang.ckb : NS.lang.kmr}
-                    </button>
-                  )
-                })}
-              </div>
-              {errors.contentLanguages ? (
-                <FieldError className="mt-2">{errors.contentLanguages.message}</FieldError>
-              ) : null}
-              <p className="text-muted-foreground mt-2 text-xs">لانیکەم زمانێک پێویستە</p>
-            </section>
-
-            <section className={sectionCard}>
               <div className="mb-2 flex items-center justify-between gap-2">
                 <Label className={sectionHeading}>
                   {NS.section.type}
@@ -472,7 +433,42 @@ export function ProjectForm({
               <p className="text-muted-foreground mt-1 text-xs">{NS.field.schedule_helper}</p>
             </section>
 
+            <section className={sectionCard}>
+              <Label className={cn(sectionHeading, "mb-2")}>
+                {NS.section.location}
+              </Label>
+              <div className="space-y-2">
+                <Controller
+                  name="ckbContent.location"
+                  control={control}
+                  render={({ field }) => (
+                    <LocationSelect
+                      placeholder={NS.lang.ckb}
+                      lang="CKB"
+                      variant="field"
+                      value={field.value}
+                      onChange={(v) => field.onChange(v)}
+                    />
+                  )}
+                />
+                <Controller
+                  name="kmrContent.location"
+                  control={control}
+                  render={({ field }) => (
+                    <LocationSelect
+                      placeholder={NS.lang.kmr}
+                      lang="KMR"
+                      variant="field"
+                      value={field.value}
+                      onChange={(v) => field.onChange(v)}
+                    />
+                  )}
+                />
+              </div>
+            </section>
+
             {mode === "edit" && editDto ? (
+
               <section className={cn(sectionCard, "space-y-2 text-xs")}>
                 <Label className="text-muted-foreground uppercase">{NS.section.system}</Label>
                 <div className="flex justify-between">
@@ -522,8 +518,18 @@ export function ProjectForm({
                   <button
                     key={code}
                     type="button"
-                    disabled={!active}
-                    onClick={() => setActiveLang(code)}
+                    onClick={() => {
+                      if (!active) {
+                        setValue("contentLanguages", [...contentLanguages, code], { shouldDirty: true })
+                        setActiveLang(code)
+                      } else if (current && contentLanguages.length > 1) {
+                        const next = contentLanguages.filter((l) => l !== code)
+                        setValue("contentLanguages", next, { shouldDirty: true })
+                        setActiveLang(next[0])
+                      } else {
+                        setActiveLang(code)
+                      }
+                    }}
                     className={cn(
                       "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
                       !active && "border-dashed opacity-40",
@@ -649,23 +655,6 @@ export function ProjectForm({
                 {errors.ckbContent?.title ? (
                   <FieldError>{errors.ckbContent.title.message}</FieldError>
                 ) : null}
-                <div className="flex items-center gap-2">
-                  <MapPinIcon className="text-muted-foreground size-4 shrink-0" />
-<Controller
-                    name="ckbContent.location"
-                    control={control}
-                    render={({ field }) => (
-                      <LocationSelect
-                        placeholder={NS.field.location_ckb}
-                        lang="CKB"
-                        variant="inline"
-                        className="flex-1"
-                        value={field.value}
-                        onChange={(v) => field.onChange(v)}
-                      />
-                    )}
-                  />
-                </div>
                 <TiptapEditor entity="projects"
                   stickyToolbar
                   lang="CKB"
@@ -685,23 +674,6 @@ export function ProjectForm({
                   placeholder={NS.field.title_kmr}
                   {...register("kmrContent.title")}
                 />
-                <div className="flex items-center gap-2">
-                  <MapPinIcon className="text-muted-foreground size-4 shrink-0" />
-<Controller
-                    name="kmrContent.location"
-                    control={control}
-                    render={({ field }) => (
-                      <LocationSelect
-                        placeholder={NS.field.location_kmr}
-                        lang="KMR"
-                        variant="inline"
-                        className="flex-1"
-                        value={field.value}
-                        onChange={(v) => field.onChange(v)}
-                      />
-                    )}
-                  />
-                </div>
                 <TiptapEditor entity="projects"
                   stickyToolbar
                   lang="KMR"
